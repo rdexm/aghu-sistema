@@ -1,0 +1,394 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>br.gov.mec</groupId>
+	<artifactId>casca-tools</artifactId>
+	<version>2.0-PROD</version>
+	<packaging>jar</packaging>
+	<name>casca-tools</name>
+
+	<properties>
+		<xslt.outputPath>file:///${project.build.directory}/perfisacesso.html</xslt.outputPath>
+	</properties>
+	
+	<dependencies>
+
+		<dependency>
+			<groupId>br.gov.mec</groupId>
+			<artifactId>aghu-infra</artifactId>
+			<version>8.80</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>br.gov.mec</groupId>
+			<artifactId>casca-client</artifactId>
+			<version>2.0-PROD</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.3</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.14</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		    <version>1.6.1</version>
+		</dependency>		
+		
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>3.3.2.GA</version>
+		</dependency>
+	
+	    <dependency>
+    	  <groupId>javassist</groupId>
+	      <artifactId>javassist</artifactId>
+	      <version>3.10.0.GA</version>
+    	</dependency>
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-annotations</artifactId>
+			<version>3.4.0.GA</version>
+		</dependency>
+
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>8.4-701.jdbc4</version>
+		</dependency>
+		
+		<!-- Esta dependência só é necessária para executar a aplicação contra banco Oracle -->
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>11.2.0.3.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.2</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
+		<filters>
+			<filter>${basedir}/src/main/filters/filter-${env}-${local}.properties</filter>
+		</filters>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>		
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>utf-8</encoding>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<finalName>aghu-seguranca</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+					<descriptors>
+						<descriptor>src/main/assembly/assembly.xml</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>xml-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>transform</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<transformationSets>
+						<transformationSet>
+							<dir>src/main/resources/mapeamento/</dir>
+							<includes>
+								<include>mapeamento-seguranca-perfis.xml</include>
+							</includes>
+							<stylesheet>src/main/resources/perfisacesso.xsl</stylesheet>
+							<parameters>
+								<parameter>
+									<name>outputPath</name>
+									<value>${xslt.outputPath}</value>
+								</parameter>
+							</parameters>
+						</transformationSet>
+					</transformationSets>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>net.sf.saxon</groupId>
+						<artifactId>saxon</artifactId>
+						<version>8.7</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+		</plugins>
+	</build>
+			
+	<profiles>
+		<profile>
+			<id>atualizar-banco</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.6</version>
+						<configuration>
+							<target>
+								<property name="compile_classpath" refid="maven.compile.classpath"/>
+	                			<property name="runtime_classpath" refid="maven.runtime.classpath"/>
+				                <echo message="${simular}"/>
+				                <echo message="${compile_classpath}"/>
+				                <echo message="${runtime_classpath}"/>
+								<java fork="false" classname="br.gov.mec.casca.tools.security.xml.DatabaseUpdater" failonerror="true">
+									<classpath refid="maven.compile.classpath" />
+									<jvmarg line="-Dfile.encoding=UTF-8" />
+									<!-- diretorio de mapeamento -->
+									<arg value="${project.basedir}/src/main/resources/mapeamento"/>
+									<!-- modo de simulacao -->
+									<arg value="${simular}"/>
+									<!-- local de criacao do arquivo - poa, bsb, cwb, etc.  -->
+									<arg value="${local}"/>
+									<!-- aplicacao alvo da execucao - aghu, aghu_pesquisa, etc. -->
+									<arg value="${aplicacao}"/>
+									<!-- versao da aplicacao - 0.99, 3.1, 4.2FR, 5.0, etc. -->
+									<arg value="${versao}"/>
+									<!-- priorizar itens de menu do XML ao invés do banco - true | false (padrão) (tarefa #39543)-->
+									<arg value="${priorizarXML}"/>
+								</java>
+							</target>
+						</configuration>
+					</plugin>			
+				</plugins>
+			</build>
+		</profile>
+		
+		<profile>
+			<id>criar-xml</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.6</version>
+						<configuration>
+							<target>
+								<input message="Todas as configurações do arquivo XML serão substituídas pelas existentes no banco de dados. Deseja prosseguir? (S/N)?" validargs="S,N" addproperty="apagar" />
+								<condition property="cancelar">
+									<equals arg1="N" arg2="${apagar}" />
+								</condition>
+								<fail if="cancelar" message="Ação cancelada" />
+								<java fork="true" classname="br.gov.mec.casca.tools.security.xml.XMLWriter">
+									<classpath refid="maven.compile.classpath" />
+									<jvmarg line="-Dfile.encoding=UTF-8" />
+									<!-- diretorio de mapeamento -->
+									<arg value="${project.basedir}/src/main/resources/mapeamento"/>
+									<!-- modo de simulacao -->
+									<arg value="${simular}"/>
+									<!-- local de criacao do arquivo - poa, bsb, cwb, etc.  -->
+									<arg value="${local}"/>
+								</java>
+							</target>
+						</configuration>
+					</plugin>			
+				</plugins>
+			</build>
+		</profile>
+		
+		<profile>
+			<id>atualizar-banco-menu</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.6</version>
+						<configuration>
+							<target>
+								<property name="compile_classpath" refid="maven.compile.classpath"/>
+	                			<property name="runtime_classpath" refid="maven.runtime.classpath"/>
+				                <echo message="${simular}"/>
+				                <echo message="${compile_classpath}"/>
+				                <echo message="${runtime_classpath}"/>
+								<java fork="false" classname="br.gov.mec.casca.tools.menu.xml.MenuUpdater">
+									<classpath refid="maven.compile.classpath" />
+									<jvmarg line="-Dfile.encoding=UTF-8" />
+									<!-- diretorio de mapeamento -->
+									<arg value="${project.basedir}/src/main/resources/menu"/>
+									<!-- modo de simulacao -->
+									<arg value="${simular}"/>
+									<!-- aplicacao alvo da execucao - aghu, aghu_pesquisa, etc. -->
+									<arg value="${aplicacao}"/>
+									<!-- versao da aplicacao - 0.99, 3.1, 4.2FR, 5.0, etc. -->
+									<arg value="${versao}"/>
+									<!-- priorizar itens de menu do XML ao invés do banco - true | false (padrão) (tarefa #38706)-->
+									<arg value="${priorizarXML}"/>
+								</java>
+							</target>
+						</configuration>
+					</plugin>			
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>atualizar-banco-menu-force</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.6</version>
+						<configuration>
+							<target>
+								<property name="compile_classpath" refid="maven.compile.classpath"/>
+	                			<property name="runtime_classpath" refid="maven.runtime.classpath"/>
+				                <echo message="${simular}"/>
+				                <echo message="${compile_classpath}"/>
+				                <echo message="${runtime_classpath}"/>
+								<java fork="false" classname="br.gov.mec.casca.tools.menu.xml.MenuUpdaterForce" failonerror="true">
+									<classpath refid="maven.compile.classpath" />
+									<jvmarg line="-Dfile.encoding=UTF-8" />
+									<!-- diretorio de mapeamento -->
+									<arg value="${project.basedir}/src/main/resources/menu"/>
+									<!-- modo de simulacao -->
+									<arg value="${simular}"/>
+									<!-- aplicacao alvo da execucao - 'AGHU', 'PESQUISA' etc -->
+									<arg value="${aplicacao}"/>
+									<!-- versao da aplicacao - 'dev' ou 'prod' -->
+									<arg value="${versao}"/>
+								</java>
+							</target>
+						</configuration>
+					</plugin>			
+				</plugins>
+			</build>
+		</profile>
+		
+		<profile>
+			<id>criar-xml-menu</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.6</version>
+						<configuration>
+							<target>
+								<input message="Todas as configurações do arquivo XML serão substituídas pelas existentes no banco de dados. Deseja prosseguir? (S/N)?" validargs="S,N" addproperty="apagar" />
+								<condition property="cancelar">
+									<equals arg1="N" arg2="${apagar}" />
+								</condition>
+								<fail if="cancelar" message="Ação cancelada" />
+								<java fork="true" classname="br.gov.mec.casca.tools.menu.xml.XMLWriter">
+									<classpath refid="maven.compile.classpath" />
+									<jvmarg line="-Dfile.encoding=UTF-8" />
+									<!-- diretorio de mapeamento -->
+									<arg value="${project.basedir}/src/main/resources/menu"/>
+									<!-- modo de simulacao -->
+									<arg value="${simular}"/>
+									<!-- local de criacao do arquivo - poa, bsb, cwb, etc.  -->
+									<arg value="${local}"/>
+								</java>
+							</target>
+						</configuration>
+					</plugin>			
+				</plugins>
+			</build>
+		</profile>		
+		
+		<profile>
+			<id>criar-xml-menu-parc</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.6</version>
+						<configuration>
+							<target>
+								<java fork="true" classname="br.gov.mec.casca.tools.menu.xml.XMLWriterParceiros">
+									<classpath refid="maven.compile.classpath" />
+									<jvmarg line="-Dfile.encoding=UTF-8" />
+									<!-- diretorio de mapeamento -->
+									<arg value="${project.basedir}/src/main/resources/menu"/>
+									<!-- modo de simulacao -->
+									<arg value="${simular}"/>
+									<!-- local de criacao do arquivo - poa, bsb, cwb, etc.  -->
+									<arg value="${local}"/>
+								</java>
+							</target>
+						</configuration>
+					</plugin>			
+				</plugins>
+			</build>
+		</profile>		
+		
+		<profile>
+			<id>importar-certificado</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.6</version>
+						<configuration>
+							<target>
+								<input message="Host:" addproperty="cert.host" />
+								<input message="Port:" defaultvalue="636" addproperty="cert.port" />
+								<input message="PassPhrase:" defaultvalue="changeit" addproperty="cert.passphrase" />
+								<java classname="br.gov.mec.seam.security.CertificateImporter">
+									<arg value="${cert.host}" />
+									<arg value="${cert.port}" />
+									<arg value="${cert.passphrase}" />
+									<classpath refid="maven.compile.classpath" />
+								</java>
+							</target>
+						</configuration>
+					</plugin>			
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
