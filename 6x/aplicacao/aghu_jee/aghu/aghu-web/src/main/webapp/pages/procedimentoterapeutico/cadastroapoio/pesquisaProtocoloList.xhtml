@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.LABEL_PESQUISAR_PROTOCOLOS}</title>
+		<style>
+			div.ui-selectonemenu-items-wrapper{
+			   overflow-x: hidden !important;
+			}
+			.grayscale {
+			    -webkit-filter: grayscale(100%);
+			    -webkit-filter: grayscale(1);
+			    filter: grayscale(100%);			 
+			    filter: gray;
+			}
+		</style>
+	</ui:define>
+	<ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaProtocoloPaginatorController.iniciar}" /> 
+      </f:metadata> 
+    </ui:define>
+	<ui:define name="body">
+	 	<mec:pageConfig controller="#{pesquisaProtocoloPaginatorController}" ignoreEnter="true"/> 
+	 	<h:form prependId="false" id="formFiltro"> 	 	
+	 		<aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_PROTOCOLO}">
+				<aghu:linha>
+					<aghu:column>
+		 				<mec:selectOneMenu id="tpSessao" itemLabel="descricao" 
+				    		label="#{messages.LABEL_TIPOS_SESSAO_PROTOCOLO}" 
+				    		title="#{messages.TITLE_TIPOS_SESSAO_PROTOCOLO}" 
+				    		requiredFake="true" style="width: 362px !important;"
+				    		items="#{pesquisaProtocoloPaginatorController.listaMptTipoSessao}" 
+				    		value="#{pesquisaProtocoloPaginatorController.tipoSessao}" />
+			    		
+				    	<mec:inputText id="txtProtocolo" value="#{pesquisaProtocoloPaginatorController.descricaoProtocolo}" maxlength="120"
+				    		label="#{messages.PESQUISA_PROTOCOLO_LABEL_PROTOCOLO}" title="#{messages.PESQUISA_PROTOCOLO_TITLE_PROTOCOLO}" 
+				    		size="65" style="text-transform:uppercase" />
+			    	</aghu:column>
+			    	<aghu:column style="width: 200px !important;">
+						<aghu:linha>
+							<p:graphicImage id="imgLiberada" styleClass="protocolo-situacao liberada silk-icon" style="margin-left: 2px;"  /> 
+							<h:outputText id="legendaLiberada" value="#{messages.LABEL_LIBERADO}" style="margin-left: 2px;" />
+							<p:graphicImage id="imgHomologacao" styleClass="protocolo-situacao homolagacao silk-icon" style="margin-left: 15px;" /> 
+							<h:outputText id="legendaHomologacao" value="#{messages.LABEL_EM_HOMOLOGACAO}" style="margin-left: 2px;" />
+						</aghu:linha>
+						<aghu:linha>
+							<p:graphicImage id="imgConstrucao" styleClass="protocolo-situacao construcao silk-icon" style="margin-left: 2px;"  /> 
+							<h:outputText id="legendaConstrucao" value="#{messages.LABEL_CONSTRUCAO}" style="margin-left: 2px;" />
+							<p:graphicImage id="imgInativo" styleClass="protocolo-situacao inativo silk-icon" style="margin-left: 5px;" /> 
+							<h:outputText id="legendaInativo" value="#{messages.LABEL_INATIVO}" style="margin-left: 2px;" />
+						</aghu:linha>
+					</aghu:column>		    	
+			    </aghu:linha>
+			    <aghu:linha>
+			    	<mec:suggestionBox id="sbMedicamento"
+							label="#{messages.LABEL_MEDICAMENTO}" title="#{messages.PESQUISA_PROTOCOLO_TITLE_MEDICAMENTO}"
+							descricaoInput="descricao" descricaoLabel="" size="70"
+							suggestionAction="obterMedicamentosAtivos" var="medicamento"
+							itemValue="#{medicamento}" maxlength="60" width="350px"
+							descricaoLimite="70"
+							controller="#{pesquisaProtocoloPaginatorController}"
+							value="#{pesquisaProtocoloPaginatorController.medicamento}">
+							<p:column style="max-width: 150px; min-width:99px; overflow: hidden;">
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> 
+								#{medicamento.descricao}
+		                    </p:column>
+					</mec:suggestionBox> 
+					
+					<mec:selectOneMenu id="situacao"
+						label="#{messages.LABEL_SITUACAO_PROTOCOLO}"
+						title="#{messages.PESQUISA_PROTOCOLO_TITLE_SITUACAO}"
+						enum="DominioSituacaoProtocolo" style="width: 120px !important;"
+						requiredFake="true"
+						value="#{pesquisaProtocoloPaginatorController.situacaoProtocolo}" />
+			    </aghu:linha>
+			</aghu:panelGeral>
+			
+			<aghu:acao> 
+	          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisaProtocoloPaginatorController.pesquisar}" profile="search"/>
+	          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{pesquisaProtocoloPaginatorController.limpar}"
+					profile="clear" ajax="true" process="@this" render="@(#formFiltro), @(#formLista)" />
+			  <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" rendered="#{pesquisaProtocoloPaginatorController.dataModel.pesquisaAtiva}" 
+			  	disabled="#{!mf:hasPermission(securityController,'admPesquisaProtocolos,executar')}" profile="add" 
+				action="#{pesquisaProtocoloPaginatorController.cadastrarProtocolo}" />
+	        </aghu:acao>	 		
+	 	</h:form>
+	 	
+	 	<br/>
+	 	
+	 	<h:form prependId="false" id="formLista"> 
+	 		<aghu:panelGeral id="panelGridProtocolos" legend="#{messages.LABEL_PROTOCOLOS}" rendered="#{pesquisaProtocoloPaginatorController.dataModel.pesquisaAtiva}">
+		 		<aghu:linha>
+		 		<aghu:column type="table" >
+			    	<mec:serverDataTable id="lista" dataModel="dataModel" controller="#{pesquisaProtocoloPaginatorController}" 
+			    			rendered="#{pesquisaProtocoloPaginatorController.dataModel.pesquisaAtiva}" selection="selecaoGrid"> 
+			        	<c:set var="item" value="#{item}"/>
+			        	<p:ajax event="rowSelect" process="@this" listener="#{pesquisaProtocoloPaginatorController.habilitarBotoes()}" update="@(#botoesGrid)"/>
+		        			<p:column style="width:60px;"> 
+			                	<f:facet name="header"> 
+			                  		<h:outputText value="#{messages.LABEL_ACAO}"/> 
+			                	</f:facet>	                	   						
+							
+									<mec:commandLink id="link_editar"  title="#{messages.TITLE_BOTAO_EDITAR_PROTOCOLO}" action="#{pesquisaProtocoloPaginatorController.editarProtocolo}" styleClass="silk-pencil silk-icon"> 
+										<f:setPropertyActionListener for="command" target="#{pesquisaProtocoloPaginatorController.parametroSelecionado}" value="#{item}"/> 
+									</mec:commandLink>                   
+		                		
+								<mec:commandLink id="link_exclusao2" styleClass="silk-delete silk-icon" style="opacity:0.4;cursor:default" title="#{messages.LABEL_EXCLUIR}" 
+		                			rendered="#{item.indSituacaoVersaoProtocoloSessao ne pesquisaProtocoloPaginatorController.situacaoProtocoloConstrucao}" />
+								
+			                		<mec:commandLink id="link_exclusao" styleClass="silk-delete silk-icon" title="#{messages.LABEL_EXCLUIR}" action="#{pesquisaProtocoloPaginatorController.prepararExclusao(item)}"
+			                			rendered="#{item.indSituacaoVersaoProtocoloSessao eq pesquisaProtocoloPaginatorController.situacaoProtocoloConstrucao}" />
+		                		<mec:commandLink id="link_relacionar" title="#{messages.TITLE_ICONE_RELACIONAR_2}" action="#{pesquisaProtocoloPaginatorController.exibirTelaRelacionamento(item)}" disabled="#{not mf:hasPermission(securityController,'admPesquisaProtocolos,executar') and not mf:hasPermission(securityController,'consultaPesquisaProtocolos,executar')}"
+		                			styleClass="silk-arrow-switch silk-icon grayscale" rendered="#{!pesquisaProtocoloPaginatorController.verificarExistenciaProtocolo(item)}"/>
+		                		<mec:commandLink id="link_relacionar2" title="#{messages.TITLE_ICONE_RELACIONAR}" action="#{pesquisaProtocoloPaginatorController.exibirTelaRelacionamento(item)}" disabled="#{not mf:hasPermission(securityController,'admPesquisaProtocolos,executar') and not mf:hasPermission(securityController,'consultaPesquisaProtocolos,executar')}"
+		                			styleClass="silk-arrow-switch silk-icon" rendered="#{pesquisaProtocoloPaginatorController.verificarExistenciaProtocolo(item)}"/>
+							
+			              	</p:column>
+			              	<p:column> 
+			                	<f:facet name="header"> 
+			                  		<h:outputText value="#{messages.PESQUISA_PROTOCOLO_LABEL_PROTOCOLO}"/> 
+			                	</f:facet>
+			                	<h:outputText value="#{pesquisaProtocoloPaginatorController.obterDescricaoTruncada(item.tituloProtocoloSessao, 81)}" title="#{item.tituloProtocoloSessao}" rendered="#{!item.repetido}" />
+			                	<h:outputText value="&#160;&#160;&#160;&#160; #{pesquisaProtocoloPaginatorController.obterDescricaoTruncada(item.tituloProtocoloSessao, 81)}" 
+			                		rendered="#{item.repetido}" style="font-weight: bold;" title="#{item.tituloProtocoloSessao}" />  
+			              	</p:column>
+			              	<p:column style="width:8%;"> 
+			                	<f:facet name="header"> 
+			                  		<h:outputText value="#{messages.LABEL_VERSAO}"/> 
+			                	</f:facet>
+			                	<h:outputText value="#{item.versao}"/> 
+			              	</p:column>
+			              	<p:column style="width:10%;"> 
+			                	<f:facet name="header"> 
+			                  		<h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+			                	</f:facet>
+			                	<center>
+				                	<mec:commandLink styleClass="protocolo-situacao liberada silk-icon" id="icon_liberada"
+				                	action="#{pesquisaProtocoloPaginatorController.obterHistoricoAlteracoes(item)}"
+					                rendered="#{(item.indSituacaoVersaoProtocoloSessao eq pesquisaProtocoloPaginatorController.situacaoProtocoloLiberada) and (mf:hasPermission(securityController,'visualizarProtocolo,acessar'))}"/>
+									
+									<mec:commandLink styleClass="protocolo-situacao homolagacao silk-icon" id="icon_homolagacao" 
+									action="#{pesquisaProtocoloPaginatorController.obterHistoricoAlteracoes(item)}"
+					                rendered="#{(item.indSituacaoVersaoProtocoloSessao eq pesquisaProtocoloPaginatorController.situacaoProtocoloEmHomologacao) and (mf:hasPermission(securityController,'visualizarProtocolo,acessar'))}"/>
+					                
+					                <mec:commandLink styleClass="protocolo-situacao construcao silk-icon" id="icon_construcao" 
+					                action="#{pesquisaProtocoloPaginatorController.obterHistoricoAlteracoes(item)}"
+					                rendered="#{(item.indSituacaoVersaoProtocoloSessao eq pesquisaProtocoloPaginatorController.situacaoProtocoloConstrucao) and (mf:hasPermission(securityController,'visualizarProtocolo,acessar'))}"/>
+					                
+					                <mec:commandLink styleClass="protocolo-situacao inativo silk-icon" id="icon_inativo" 
+					                action="#{pesquisaProtocoloPaginatorController.obterHistoricoAlteracoes(item)}"
+					                rendered="#{(item.indSituacaoVersaoProtocoloSessao eq pesquisaProtocoloPaginatorController.situacaoProtocoloInativo) and (mf:hasPermission(securityController,'visualizarProtocolo,acessar'))}"/>
+								</center> 
+			              	</p:column> 
+			        </mec:serverDataTable>
+		        </aghu:column>
+		        <aghu:column type="button">
+		        	<p:outputPanel id="botoesGrid">
+		        			<mec:commandButton id="btNovaVersao" value="#{messages.LABEL_NOVA_VERSAO}" ajax="true" immediate="true" 
+			        			disabled="#{!pesquisaProtocoloPaginatorController.habilitaNovaVersao}"
+			        			action="#{pesquisaProtocoloPaginatorController.redirecionarNovaVersao()}">
+			        			<f:setPropertyActionListener target="#{cadastrarProtocoloController.telaAnterior}" value="procedimentoterapeutico-pesquisarProtocolo" for="command"/>
+			        			<f:setPropertyActionListener target="#{cadastrarProtocoloController.parametroSelecionado}" value="#{pesquisaProtocoloPaginatorController.selecaoGrid}" for="command"/>
+			        			<f:setPropertyActionListener target="#{cadastrarProtocoloController.novaVersao}" value="true" for="command"/>
+			        		</mec:commandButton>			        
+			        		<mec:commandButton									
+										disabled="#{pesquisaProtocoloPaginatorController.habilitarBotoes or !mf:hasPermission(securityController, 'realizarCopiaProtocolo,acessar')}"
+										id="bt_detalhar_Cadastro" 										
+										ajax="true" process="@this"
+										value="#{messages.LABEL_COPIAR_PROTOCOLO}"
+										action="#{pesquisaProtocoloPaginatorController.copiarProtocolo}">
+							</mec:commandButton>
+			        		<mec:commandButton id="btHomologarProtocolo" value="#{messages.LABEL_HOMOLOGAR_PROTOCOLO}"
+			        			action="#{modalHomologarProtocoloCRUDController.iniciar()}" render="@(#panelModal)"
+			        			ajax="true" process="@this" disabled="#{!pesquisaProtocoloPaginatorController.habilitaHomologarProtocolo}">
+			        			<f:setPropertyActionListener target="#{modalHomologarProtocoloCRUDController.itemVersaoProtocolo}" value="#{pesquisaProtocoloPaginatorController.selecaoGrid}" for="command"/>
+			        			<f:setPropertyActionListener target="#{modalHomologarProtocoloCRUDController.tipoSessaoCombo}" value="#{pesquisaProtocoloPaginatorController.tipoSessao}" for="command"/>
+			        		</mec:commandButton>
+		        	</p:outputPanel>
+		        </aghu:column>
+		        </aghu:linha>
+		    </aghu:panelGeral>
+	    </h:form>
+	    
+	    <h:form prependId="false" id="formModalExclusao">
+		    <p:dialog id="modal_excluir" width="400" height="160"
+				autosized="false" resizeable="false"
+				modal="true" resizable="false" 
+				widgetVar="modal_excluir">
+				<f:facet name="header">
+					<h:outputText id="headerModalExclusao" value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText id="msgConfirmExclusao" value="#{messages.MSG_CONFIRMACAO_EXCLUSAO_VERSAO_PROTOCOLO}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="btSimConfirmExclusao" value="#{messages.CASCA_LABEL_SIM}" action="#{pesquisaProtocoloPaginatorController.excluir}"
+						oncomplete="PF('modal_excluir').hide();" profile="ok" ajax="true" render="@(#formLista)" process="@this" />
+					<mec:commandButton id="btNaoConfirmExclusao" value="#{messages.CASCA_LABEL_NAO}" onclick="PF('modal_excluir').hide(); return false;"
+						profile="cancel" ajax="true" />
+				</aghu:acao>
+			</p:dialog>
+		</h:form>
+		
+		
+		<p:dialog id="modalHistoricoDaVersao" zindex="2" width="900" height="340" modal="true" resizable="false" widgetVar="modalHistoricoDaVersaoWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_HISTORICO_VERSAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:form prependId="false" id="formHistoricoDaVersao"> 
+            <aghu:panelGeral legend="#{messages.TITLE_DADOS_PROTOCOLO}">
+              <mec:inputText label="#{messages.LABEL_DESCRICAO}" size="80" value="#{pesquisaProtocoloPaginatorController.tituloDescricao}" readonly="true"/>  
+            </aghu:panelGeral> 
+          
+            <aghu:panelGeral legend="#{messages.TITLE_LISTA_ALTERACOES}" style="width:840px !important;"> 
+                <mec:serverDataTable id="tabeHistoricoDaVersao" list="#{pesquisaProtocoloPaginatorController.historicoAlteracoes}" scrollable="true"> 
+                  <c:set var="item" value="#{item}"/>  
+                  <p:column style="width:30px !important; text-align:left;"> 
+                  <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>
+					<mec:commandLink id="detalhamentoHistorico" style="width:15px" styleClass="silk-zoom silk-icon" 
+					   title="#{messages.LABEL_DETALHAMENTO}" action="#{pesquisaProtocoloPaginatorController.acessarCadastroTratamento(item)}" /> 
+                  </p:column> 
+                   
+                  <p:column style="width:100px !important; text-align:left;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_CRIACAO_44393}" />
+                    </f:facet>  
+                    <h:outputText value="#{item.criadoEm}">
+						<f:convertDateTime pattern="dd/MM/yyyy"/>
+					</h:outputText>
+                  </p:column> 
+                   
+                  <p:column style="text-align:left;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_RESPONSAVEL}"/> 
+                    </f:facet>  
+                    <h:outputText id="idResponsavel" value="#{pesquisaProtocoloPaginatorController.obterDescricaoTruncada(item.nome, 50)}"/>  
+                    <p:tooltip for="idResponsavel" direction="bottom-right" rendered="#{item.nome.length() gt 50}" styleClass="tooltip" layout="block">
+						<h:outputText value="#{item.nome}"/>  
+					</p:tooltip>
+				 </p:column> 
+                   
+                  <p:column style="width:40px !important; text-align:left;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VERSAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.versao}"/>  
+                  </p:column>  
+                  
+                  <p:column style="width:150px !important; text-align:left;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.indSituacaoVersaoProtocoloSessao.descricao}"/>  
+                  </p:column> 
+                </mec:serverDataTable> 
+            </aghu:panelGeral> 
+        </h:form> 
+      </p:dialog>
+      <p:outputPanel id="panelModal" layout="inline">
+			<h:form prependId="false"> 
+				<p:outputPanel layout="inline"> 
+					<ui:include src="/pages/procedimentoterapeutico/cadastroapoio/modalHomologarProtocoloCRUD.xhtml"/> 
+				</p:outputPanel> 
+			</h:form>
+	  </p:outputPanel>        
+	</ui:define>
+</ui:composition>
+</html>

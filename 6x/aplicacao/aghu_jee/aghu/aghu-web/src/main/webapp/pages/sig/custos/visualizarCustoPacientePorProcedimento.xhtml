@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.ANALISE_CUSTO_PACIENTE_PROCEDIMENTO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{visualizarCustoPacienteProcedimentoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{visualizarCustoPacienteProcedimentoController}"/>
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral legend="#{messages.ANALISE_CUSTO_PACIENTE_PROCEDIMENTO}">
+				<aghu:linha>	
+					<aghu:panelGeral legend="#{messages.CUSTO_PACIENTE_COMPETENCIA}">
+						
+						<mec:selectOneMenu id="competencia"
+							showLabel="false"
+							itemLabel="competenciaMesAno"
+							value="#{visualizarCustoPacienteProcedimentoController.competencia}"
+							items="#{visualizarCustoPacienteProcedimentoController.listaCompetencias}"
+							noSelectionOption="false" itemsType="entity">
+						    <p:ajax id="competenciaChange" event="change" eventsQueue="changeQueue" process="@this"/>
+						</mec:selectOneMenu>
+						
+						<mec:selectOneRadio enum="DominioTipoCompetencia"
+							value="#{visualizarCustoPacienteProcedimentoController.tipoCompetencia}"
+							id="tipoCompetencia">
+						</mec:selectOneRadio>
+						
+					</aghu:panelGeral>
+				</aghu:linha>
+				
+				<aghu:linha id="convenio_cabecalho">
+					<p:accordionPanel id="toggleConvenio" name="toggleConvenio"
+						style="margin: 5px !important;" activeIndex="#{visualizarCustoPacienteProcedimentoController.activeIndexGrupoConvenio}"
+						prependId="false">
+						<p:tab title="#{messages.CUSTO_PACIENTE_CONVENIO_TOGGLEPANEL}">
+							<p:treeTable style="margin: 10px !important;" 
+								id="tabelaConvenioPagador"
+								styleClass="aghu-server-datatable" 
+								value="#{visualizarCustoPacienteProcedimentoController.rootGrupoConvenio}" 
+								selectionMode="checkbox" selection="#{visualizarCustoPacienteProcedimentoController.nodosSelecionados}"
+								var="convenioPagador">
+
+						        <p:column headerText="#{messages.LABEL_DESCRICAO}">
+						            <h:outputText value="#{convenioPagador.codigo} - #{convenioPagador.descricao}" />
+						        </p:column>
+						        
+						        <p:column headerText="#{messages.LABEL_GRUPO_CONVENIO}">
+						            <h:outputText value="#{convenioPagador.grupoConvenio}" />
+						        </p:column>
+
+						    </p:treeTable>
+						</p:tab>
+					</p:accordionPanel>
+				</aghu:linha>
+				
+				<aghu:linha id="procedimento_cabecalho">
+					<p:accordionPanel id="toggleProcedimento" name="toggleProcedimento"
+						style="margin: 5px !important;" activeIndex="#{visualizarCustoPacienteProcedimentoController.activeIndex}"
+						prependId="false">
+						<p:tab title="#{messages.CUSTO_PACIENTE_PROCEDIMENTO_TOGGLEPANEL}">
+							<aghu:linha>
+								<mec:suggestionBox id="suggestionProcedimento"
+									label="#{messages.LABEL_PROCEDIMENTO}"
+									title="#{messages.CUSTO_PACIENTE_PROCEDIMENTO_TITLE}"
+									suggestionAction="pesquisarProcedimento" descricaoInput="codigo"
+									descricaoLabel="descricao" width="450"
+									maxlength="60" posSelectionAction="adicionarProcedimentoNaLista"
+									controller="#{visualizarCustoPacienteProcedimentoController}"
+									cache="false"
+									value="#{visualizarCustoPacienteProcedimentoController.procedimento}"
+									render="panelExternoProcedimento">
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_CODIGO_TABELA}</b>
+										</f:facet> #{item.codTabela}
+                      					</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_DESCRICAO}</b>
+										</f:facet> #{item.descricao}
+                      					</p:column>
+								</mec:suggestionBox>
+							</aghu:linha>
+							
+							<aghu:linha>
+							<p:outputPanel id="panelExternoProcedimento">
+								
+								<p:dataTable name="tabelaProcedimento" id="tabelaProcedimento" styleClass="aghu-server-datatable"
+                                          emptyMessage="#{messages.MENSAGEM_SEM_PROCEDIMENTOS_SELECIONADOS_PESQUISA}"
+                                          value="#{visualizarCustoPacienteProcedimentoController.listaProcedimento}"
+                                          var="_item" scrollable="true" rowKey="#{_item}" selection="#{visualizarCustoPacienteProcedimentoController.procedimentoSelecionado}" selectionMode="single" >
+								    <p:ajax event="rowSelect"    update="@(#panelExternoProcedimento)"/>
+                                          <p:ajax event="rowUnselect"  update="@(#panelExternoProcedimento)"/>
+									
+									<p:column style="width:40px;text-align:center">
+										<f:facet name="header">
+											<h:outputText value="#{messages.PACIENTE_CUSTO_LABEL_ACAO}" />
+										</f:facet>
+										<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+											action="#{visualizarCustoPacienteProcedimentoController.deletarProcedimentoDaLista(_item)}"
+											immediate="true" profile="delete" ajax="true"
+											render="procedimento_cabecalho,panelExternoProcedimento" />
+									</p:column>
+									  <p:column selectionMode="single" style="width:40px;text-align:center">
+                                              <f:facet name="header">
+                                                  <h:outputText value="Principal" />
+                                              </f:facet>
+                                          </p:column>
+	                        		<p:column style="width:60px;text-align:center">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_CODIGO_TABELA}" />
+										</f:facet>
+										<h:outputText value="#{_item.codTabela}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText
+												value="#{messages.LABEL_PROCEDIMENTO}" />
+										</f:facet>
+										<h:outputText value="#{_item.descricao}" />
+									</p:column>
+								</p:dataTable>
+								</p:outputPanel>
+							</aghu:linha>
+							<aghu:linha>
+							
+		                    <mec:selectOneRadio 
+									   enum="DominioProcedimentoCustoPaciente"
+										value="#{visualizarCustoPacienteProcedimentoController.tipo}"
+										id="tipoProcedimento"
+										label="#{messages.LABEL_CONSIDERAR}">
+							</mec:selectOneRadio>
+							</aghu:linha>
+						</p:tab>
+					</p:accordionPanel>
+				</aghu:linha>										
+			</aghu:panelGeral>
+		
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}" block="true"
+					action="#{visualizarCustoPacienteProcedimentoController.pesquisar}"
+					ajax="true"
+					process="@this, competencia, tipoCompetencia, tabelaConvenioPagador, tipoProcedimento"
+					defaultCommand="true"
+					render="listagem_outputpanel"
+					profile="search" />
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					action="#{visualizarCustoPacienteProcedimentoController.limpar}"
+					styleClass="bt_cinza" profile="clear" />	
+			</aghu:acao>
+			
+			<p:outputPanel id="listagem_outputpanel" layout="inline" >
+				<style type="text/css"> .ui-treetable-empty-message{text-align: center;}</style>
+			    <p:treeTable style="margin: 10px !important;" styleClass="aghu-server-datatable" rendered="#{not empty visualizarCustoPacienteProcedimentoController.root}" value="#{visualizarCustoPacienteProcedimentoController.root}" var="procedimento" emptyMessage="#{messages.MENSAGEM_NENHUM_REGISTRO_ENCONTRADO_TREE_VIEW}">
+				    <p:ajax event="select" listener="#{visualizarCustoPacienteProcedimentoController.onNodeSelect}"/>
+					<p:ajax event="expand" listener="#{visualizarCustoPacienteProcedimentoController.onNodeExpand}"/>
+					<p:ajax event="collapse" listener="#{visualizarCustoPacienteProcedimentoController.onNodeCollapse}"/>		
+							
+			        <p:column headerText="#{messages.LABEL_CODIGO}" sortBy="#{procedimento.codTabela}">
+			            <h:outputText value="#{procedimento.codTabela}" />
+			            <f:facet name="footer"> 
+					    	<p:spacer/> 
+					    </f:facet>
+			        </p:column>
+			        <p:column headerText="#{messages.LABEL_PROCEDIMENTO}" sortBy="#{procedimento.descricao}">
+			            <p:tooltip direction="bottom-right" styleClass="tooltip" for="procedimentoId" layout="block" rendered="#{(procedimento.descricao.length() &gt; 90) and (procedimento.terceiroNivel==null or not procedimento.terceiroNivel)}"> 
+			              <h:outputText value="#{procedimento.descricao}"/> 
+			            </p:tooltip>  
+			            <h:outputText id="procedimentoId" rendered="#{(procedimento.terceiroNivel==null or not procedimento.terceiroNivel) and (procedimento.terceiroNivel==null or not procedimento.terceiroNivel)}" value="#{(procedimento.descricao.length() &gt; 90) ? fn:substring(procedimento.descricao,0,90) : procedimento.descricao}"/>  
+			            <h:outputText value="..." rendered="#{(procedimento.descricao.length() &gt; 90)}"/>
+			            <h:commandLink rendered="#{procedimento.terceiroNivel!=null and procedimento.terceiroNivel}" action="#{visualizarCustoPacienteProcedimentoController.redirecionarCustoPacienteArvore(procedimento)}" value="#{procedimento.prontuario}-#{procedimento.pacNome} #{visualizarCustoPacienteProcedimentoController.buscarContasPaciente(procedimento.atdSeq)}" style="color:blue;"/> 
+			        	<f:facet name="footer"> 
+					    	<p:spacer/> 
+					    </f:facet>
+			        </p:column>
+			        <p:column headerText="#{messages.LABEL_QUANTIDADE}" sortBy="#{procedimento.quantidade}">
+			            <h:outputText value="#{procedimento.quantidade}" rendered="#{procedimento.terceiroNivel==null or not procedimento.terceiroNivel}"/>
+			           <f:facet name="footer">
+							<p:outputPanel layout="block" style="text-align:left">	
+		                		<h:outputText value="#{visualizarCustoPacienteProcedimentoController.totalQuantidade}"/>
+		                	</p:outputPanel>
+   						</f:facet>
+			        </p:column>
+			        <p:column headerText="#{messages.PACIENTE_CUSTO_CUSTO_TOTAL}" sortBy="#{procedimento.custoTotal}">
+			            <h:outputText value="#{procedimento.custoTotal ne null ? procedimento.custoTotal: '-'}">
+							<f:converter converterId="currencyConverter"/> 
+						</h:outputText>
+						<f:facet name="footer">
+							<p:outputPanel layout="block" style="text-align:left">
+		                		<h:outputText value="#{visualizarCustoPacienteProcedimentoController.totalCusto}" >
+									<f:converter converterId="currencyConverter"/> 
+								</h:outputText>
+							</p:outputPanel>
+   						</f:facet>
+			        </p:column>
+			        <p:column headerText="#{messages.PACIENTE_CUSTO_RECEITA_TOTAL}" sortBy="#{procedimento.receitaTotal}">
+			            <h:outputText value="#{procedimento.receitaTotal ne null ? procedimento.receitaTotal : '-'}">
+							<f:converter converterId="currencyConverter"/> 
+						</h:outputText>
+						<f:facet name="footer">
+							<p:outputPanel layout="block" style="text-align:left">
+		                		<h:outputText value="#{visualizarCustoPacienteProcedimentoController.totalReceita}" >
+									<f:converter converterId="currencyConverter"/> 
+								</h:outputText>
+							</p:outputPanel>
+   						</f:facet>
+			        </p:column>
+			    </p:treeTable>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

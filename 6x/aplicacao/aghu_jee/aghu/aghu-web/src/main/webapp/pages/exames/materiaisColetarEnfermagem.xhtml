@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Materiais a coletar pela enfermagem :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{materiaisColetarEnfermagemController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <pe:remoteCommand name="selecionarAmostra" immediate="true" update="panelInformacoesItem,panelSituacoesAmostra" actionListener="#{materiaisColetarEnfermagemController.obterItemExamesDaAmostra}"> 
+          <pe:assignableParam name="param1" assignTo="#{materiaisColetarEnfermagemController.seqpSelecionado}"/>  
+          <pe:assignableParam name="param2" assignTo="#{materiaisColetarEnfermagemController.soeSeqSelecionado}"/> 
+        </pe:remoteCommand>  
+        <aghu:panelGeral legend="Materiais a coletar pela enfermagem"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestionUnidadeFuncional" label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_UNIDADE_FUNCIONAL}" suggestionAction="pesquisarUnidadeFuncionalPorCodigoEDescricao" descricaoInput="seq" descricaoLabel="andarAlaDescricao" converter="#{aghUnidadesFuncionaisPorAndarAlaDescricaoCaracteristicasInternacaoOuEmergenciaConverter}" required="true" controller="#{materiaisColetarEnfermagemController}" value="#{materiaisColetarEnfermagemController.unidadeFuncional}"> 
+              <p:column>#{item.andarAlaDescricao}</p:column>  
+              <p:column>#{item.seq}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestionPaciente" maxlength="9" styleClass="mask_prontuario" descricaoInput="prontuario" descricaoLabel="nome" suggestionAction="pesquisarPacientes" posSelectionAction="atualizarProntuario" posDeleteAction="atualizarProntuario" label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_LIST_PRONTUARIO_CONTA_HOPS}" ajaxRendered="true" controller="#{materiaisColetarEnfermagemController}" value="#{materiaisColetarEnfermagemController.paciente}"> 
+              <p:column>#{item.prontuario}</p:column>  
+              <p:column>#{item.nome}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_SOLICITACAO}" size="10" title="#{messages.TITLE_SOLICITACAO_PE}" maxlength="8" value="#{materiaisColetarEnfermagemController.soeSeq}" id="solicitacao"/>  
+            <mec:selectOneMenu itemLabel="descricao" enum="DominioSituacaoAmostra" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_EXAME_SITUACAO}" value="#{materiaisColetarEnfermagemController.situacao}" id="situacao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" block="true" action="#{materiaisColetarEnfermagemController.pesquisar}" render="panelInformacoesExames,panelInformacoesItem,panelSituacoesAmostra" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{materiaisColetarEnfermagemController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao>  
+        <p:outputPanel id="panelInformacoesExames" layout="inline"> 
+          <p:outputPanel id="informacoesExames" rendered="#{not empty materiaisColetarEnfermagemController.amostrasExames}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="Amostras"> 
+              <p:outputPanel layout="block" style="width: 100%; height:110px;overflow-y:scroll;"> 
+                <mec:serverDataTable name="tabelaMateriaisColetarAmostra" list="#{materiaisColetarEnfermagemController.amostrasExames}" scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column> 
+                    <p:outputPanel layout="block" style="float:left;"> 
+                      <p:outputPanel id="panelRadioAmostra" layout="block" rendered="#{_item.amoSeqp.equals(materiaisColetarEnfermagemController.seqpSelecionado) and            _item.soeSeq.equals(materiaisColetarEnfermagemController.soeSeqSelecionado)}"> 
+                        <input type="radio" id="#{_item.amoSeqp}" name="group2" onchange="selecionarAmostra(#{_item.amoSeqp},#{_item.soeSeq})" checked="checked"/> 
+                      </p:outputPanel>  
+                      <p:outputPanel id="panelRadioAmostraAux" layout="block" rendered="#{not _item.amoSeqp.equals(materiaisColetarEnfermagemController.seqpSelecionado) or            not _item.soeSeq.equals(materiaisColetarEnfermagemController.soeSeqSelecionado)}"> 
+                        <input type="radio" id="#{_item.amoSeqp}" onchange="selecionarAmostra(#{_item.amoSeqp},#{_item.soeSeq})" name="group2"/> 
+                      </p:outputPanel> 
+                    </p:outputPanel> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_LOCAL}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.local}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.prontuario}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.nomePaciente}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SOLICITACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.soeSeq}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_AMOSTRA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.amoSeqp}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.situacao.descricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelSituacoesAmostra" layout="inline"> 
+          <p:outputPanel id="situacoesAmostra" rendered="#{not empty materiaisColetarEnfermagemController.amostraSelecionada}" layout="inline"> 
+            <aghu:acao> 
+              <mec:commandButton name="bt_emColeta" value="#{messages.LABEL_EM_COLETA}" action="#{materiaisColetarEnfermagemController.alterarSituacaoAmostraItem('M')}" disabled="#{materiaisColetarEnfermagemController.desabilitaBotaoEmColeta or not mf:hasPermission(securityController,'materiaisColetarEnfermagem,alterar')}" reRender="panelInformacoesExames,panelInformacoesItem,panelSituacoesAmostra" styleClass="bt_cinza"/>  
+              <mec:commandButton name="bt_coletado" value="#{messages.LABEL_COLETADO}" action="#{materiaisColetarEnfermagemController.alterarSituacaoAmostraItem('C')}" disabled="#{materiaisColetarEnfermagemController.desabilitaBotaoColetado or not mf:hasPermission(securityController,'materiaisColetarEnfermagem,alterar')}" reRender="panelInformacoesExames,panelInformacoesItem,panelSituacoesAmostra" styleClass="bt_cinza"/>  
+              <mec:commandButton name="bt_gerado" value="#{messages.LABEL_GERADA}" action="#{materiaisColetarEnfermagemController.alterarSituacaoAmostraItem('G')}" disabled="#{materiaisColetarEnfermagemController.desabilitaBotaoGerada or not mf:hasPermission(securityController,'materiaisColetarEnfermagem,alterar')}" reRender="panelInformacoesExames,panelInformacoesItem,panelSituacoesAmostra" styleClass="bt_cinza"/> 
+            </aghu:acao> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelInformacoesItem" layout="inline"> 
+          <p:outputPanel id="informacoesItem" rendered="#{not empty materiaisColetarEnfermagemController.amostrasItemExames}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="Exames Amostra"> 
+              <p:outputPanel layout="block" style="width: 100%; height:110px;overflow-y:scroll;"> 
+                <mec:serverDataTable name="tabelaMateriaisColetarItem" list="#{materiaisColetarEnfermagemController.amostrasItemExames}" scrollable="true"> 
+                  <c:set var="_itemAmostra" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_PROGRAMADA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.dthrProgramada}"> 
+                      <f:convertDateTime pattern="dd/MM HH:mm"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ITEM}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemAmostra.iseSeqp}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_COLETA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemAmostra.nroAmostras}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_INTERVALO_DIAS}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemAmostra.intervaloDias}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_INTERVALO_HORAS}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemAmostra.intervaloHoras}"> 
+                      <f:convertDateTime pattern="HH:mm"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME_USUAL_MATERIAL_EXM}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemAmostra.nomeUsualMaterial}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SOLICITACAO_DIVERSOS_LABORATORIO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemAmostra.unfDescricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

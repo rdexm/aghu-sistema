@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component">
+
+ 	<aghu:div id="i_tab_pol" style="height:100%;" styleClass="casca-tabs-content">
+
+		<p:dialog id="pacientePol" header="Paciente" widgetVar="pacientePolWG" minHeight="80" minWidth="300" style="opacity:0.7;"  
+			closable="false" resizable="false" position="top" onShow="PF('pacientePolWG').jq.css('top', '52px')" >
+		    <h:outputText value="#{arvorePOLController.nodoSelecionado.prontuario}-#{arvorePOLController.nodoSelecionado.nomePaciente}" 
+		    	rendered="#{not empty arvorePOLController.nodoSelecionado}" />
+		    <h:outputText value="Pesquise e Selecione um Paciente!" rendered="#{empty arvorePOLController.nodoSelecionado}" />
+		</p:dialog>		
+
+		<pe:layout id="layoutPOL" style="width:100%;height:100%;" fullPage="false" togglerTipOpen="Fechar Árvore" 
+			togglerTipClosed="Abrir Árvore" widgetVar="layoutPOLWG">
+		    <p:ajax event="open" onstart="PF('pacientePolWG').hide();return false;" update="pacientePol" process="@this"  />
+		    <p:ajax event="close" onstart="PF('pacientePolWG').show();return false;" update="pacientePol" process="@this"  />
+			    
+		    <pe:layoutPane id="layoutPOL_west" position="west" size="270" resizable="false" styleClassContent="aghu-pol-west" 
+		    	styleContent="margin-top:2px !important;" initClosed="#{arvorePOLController.modoPesquisaPOL}">
+			    	
+				<h:form prependId="false" id="formPOL">
+			    	
+					<p:outputPanel id="accordionOutPanel" >
+				
+						<p:accordionPanel id="accordionPOL" value="#{arvorePOLController.pacienteList}" var="pac" dynamic="true" cache="false"   
+						prependId="false" widgetVar="accordionPOLWG" styleClass="accordion-pol" activeIndex="#{arvorePOLController.activeTab}">
+						
+							<p:ajax event="tabChange" listener="#{arvorePOLController.onTabChange}" update="@(div#panelFrame) @(div#pacientePol)" process="@this" oncomplete="pol.load(false, true);"/>
+						<p:ajax event="tabClose" listener="#{arvorePOLController.onTabClose}" update="@(div#panelFrame) @(div#pacientePol)" process="@this" />
+						
+				        <p:tab id="tab_#{pac.prontuario}" title="#{pac.prontuario} - #{fn:substring(pac.nome, 0,45)}" titletip="#{pac.nome}" titleStyleClass="accordion-tab-pol">
+			
+								<div style="float: left; width: 94%;">
+							<p:tree value="#{arvorePOLController.pacientesMap[pac.prontuario]}" var="node" animate="true" dynamic="true" 
+								cache="false" style="border:none;width:100%;" widgetVar="treePOLWG" >								
+								<p:ajax event="expand" listener="#{arvorePOLController.onNodeExpand}" />
+											
+								<p:treeNode styleClass="node-pol">
+									<div style="float:left; padding-right:6px;">
+										<p:graphicImage library="img" url="#{node.icone}" rendered="#{not empty node.icone}" />
+									</div>
+									<div>
+												<h:commandLink target="frame_pol" action="#{node.getPagina()}" 
+													styleClass="#{arvorePOLController.nodoSelecionado eq node or (empty arvorePOLController.nodoSelecionado and node.tipo eq 'dadosPaciente')?'node-link-pol-first':''} #{node.quebraLinha?'node-link-pol-break':'node-link-pol'}" 
+											onclick="pol.selectNodePOL(this); return pol.validaNodoPOL('#{node.pagina}', #{node.abreTab}, PF('layoutPOLWG'));">
+											<f:setPropertyActionListener target="#{arvorePOLController.nodoSelecionado}" value="#{node}" />
+											<h:outputText value="#{node.descricao}" />
+										</h:commandLink>
+									</div>
+								</p:treeNode>
+								
+							</p:tree>
+								</div>	
+						
+								<div style="float:right; margin-top: 7px; width:6%">
+									<p:commandLink action="#{arvorePOLController.removerPacienteArvore}" 
+												   ajax="true" update="@(div#accordionOutPanel) @(div#pacientePol) @(div#panelFrame)" 
+												   style="float: right;box-shadow:-1px 1px 5px #CCCCCC;margin:1px;" styleClass="silk-icon silk-close-window" 
+												   title="Remover paciente da lista." >
+												   <f:setPropertyActionListener target="#{arvorePOLController.pacienteRemove}" value="#{pac}" />
+												   
+									</p:commandLink>
+								</div>			      
+				        </p:tab>
+				    </p:accordionPanel>
+					 </p:outputPanel> 	
+				    
+					<script>
+						pol.load(#{not empty arvorePOLController.pacienteList}, #{not empty arvorePOLController.nodoSelecionado});
+					</script>
+					
+					<pe:remoteCommand name="addPOLPesquisa" action="#{arvorePOLController.addPOLPaciente}" process="@this" 
+						update="@(div#accordionOutPanel) @(div#pacientePol)" oncomplete="PF('layoutPOLWG').open('west');">
+						<pe:assignableParam name="param1" assignTo="#{arvorePOLController.prontuario}"/>
+						 <f:setPropertyActionListener value="false" target="#{arvorePOLController.chamadaForaPOL}" />
+						 <f:setPropertyActionListener value="true" target="#{arvorePOLController.modoPesquisaPOL}" />  
+					</pe:remoteCommand>	
+					
+				</h:form>
+		    </pe:layoutPane>
+		 
+		    <pe:layoutPane id="layoutPOL_center" position="center" resizable="false" styleContent="border: none;padding: 0;overflow: hidden;">
+		    	<p:outputPanel id="panelFrame" layout="block" style="width:100%;height:100%;">
+					<iframe id="frame_pol" name="frame_pol" scrolling="auto" frameborder="0" border="no" style="width:100%;height:100%;" src="#{arvorePOLController.openPage()}" />
+				</p:outputPanel>
+		    </pe:layoutPane>
+		</pe:layout>
+	</aghu:div>
+</html>

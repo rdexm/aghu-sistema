@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_FASES_SOLICITACAO_SERVICO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{fasesSolicitacaoServicoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{fasesSolicitacaoServicoController}"/>  
+      <p:outputPanel id="panelCorpoPagina" layout="inline"> 
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_FASES_SOLICITACAO_SERVICO}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="numeroSolicitacao" label="#{messages.LABEL_NRO_SOLICITACAO_SERVICO_FSC}" title="#{messages.TITLE_NRO_SOLICITACAO_SERVICO_FSC}" value="#{fasesSolicitacaoServicoController.numero}" maxlength="7" size="8" readonly="#{not fasesSolicitacaoServicoController.origemMenu}" required="true"/>  
+            <mec:inputText id="servico" label="#{messages.LABEL_SERVICO}" readonly="true" size="70" rendered="#{not empty fasesSolicitacaoServicoController.listFasesSolicitacao}" value="#{fasesSolicitacaoServicoController.solicitacaoServico.servico.codigoENome}"/>  
+            <mec:inputNumero id="qtdAprovada" label="#{messages.LABEL_QUANTIDADE_SOLICITADA}" rendered="#{not empty fasesSolicitacaoServicoController.listFasesSolicitacao}" value="#{fasesSolicitacaoServicoController.solicitacaoServico.qtdeSolicitada}" readonly="true"/> 
+          </aghu:linha>
+        </aghu:panelGeral>
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" rendered="#{fasesSolicitacaoServicoController.origemMenu}" action="#{fasesSolicitacaoServicoController.pesquisar}" profile="search"/>
+          <p:spacer height="28" width="73" rendered="#{not fasesSolicitacaoServicoController.origemMenu and not fasesSolicitacaoServicoController.habilitarBotaoResgatar()}"></p:spacer>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{fasesSolicitacaoServicoController.limparPesquisa}" rendered="#{fasesSolicitacaoServicoController.origemMenu}" ajax="true" process="@this" render="@form" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_resgatar" value="#{messages.LABEL_RESGATAR}" title="#{messages.TITLE_RESGATAR_SC_SS}" action="#{fasesSolicitacaoServicoController.resgatarSs}" rendered="#{fasesSolicitacaoServicoController.habilitarBotaoResgatar()}" styleClass="bt_cinza"/>  
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar" immediate="true" rendered="#{fasesSolicitacaoServicoController.mostrarBotaoVoltar}" action="#{fasesSolicitacaoServicoController.voltar}" styleClass="bt_cinza" profile="back"/> 
+        </aghu:acao>
+        <p:outputPanel layout="block" id="divtblistaFases" rendered="#{not empty fasesSolicitacaoServicoController.listFasesSolicitacao}"> 
+          <p:outputPanel id="paneltblistaFases" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.LABEL_LISTA_ENCAMINHAMENTO}"> 
+              <aghu:linha> 
+                <mec:serverDataTable id="tblistaFases" rowKeyVar="indice" scrollHeight="100" list="#{fasesSolicitacaoServicoController.listFasesSolicitacao}" scrollable="true"> 
+                  <c:set var="fase" value="#{item}"/>  
+                  <p:column style="#{fasesSolicitacaoServicoController.numero == fase.numero ? 'background-color:#F1F1F1' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink rendered="#{not mf:hasPermission(securityController,'consultarSolicitacaoServico,consultar')}" action="#{fasesSolicitacaoServicoController.acoesPontoParada}" title="#{(indice == 0 and fasesSolicitacaoServicoController.exibirEdicao(item)) ? messages.LABEL_EDITAR : messages.LABEL_VISUALIZAR}" styleClass="#{(indice == 0 and fasesSolicitacaoServicoController.exibirEdicao(item)) ? 'silk-icon silk-pencil' : 'silk-icon silk-zoom'}" > 
+                      <f:setPropertyActionListener target="#{acoesPontoParadaSsController.numero}" value="#{fase.numero}" for="command"/>  
+                      <f:setPropertyActionListener target="#{acoesPontoParadaSsController.seq}" value="#{fase.seqJn}" for="command"/>  
+                      <f:setPropertyActionListener target="#{acoesPontoParadaSsController.codigoPontoParada}" value="#{fase.ppsCodigo}" for="command"/>  
+                      <f:setPropertyActionListener target="#{acoesPontoParadaSsController.situacao}" value="#{fase.etapa}" for="command"/>  
+                      <f:setPropertyActionListener target="#{acoesPontoParadaSsController.modoEdicao}" value="#{fasesSolicitacaoServicoController.exibirEdicao(fase)}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column style="#{fasesSolicitacaoServicoController.numero == fase.numero ? 'background-color:#F1F1F1' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ETAPA_FSC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{fase.etapa}"/> 
+                  </p:column>  
+                  <p:column style="#{fasesSolicitacaoServicoController.numero == fase.numero ? 'background-color:#F1F1F1' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PONTO_PARADA_FSC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{fasesSolicitacaoServicoController.obterDescricaoPontoParada(fase)}"/> 
+                  </p:column>  
+                  <p:column style="#{fasesSolicitacaoServicoController.numero == fase.numero ? 'background-color:#F1F1F1' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_RESPONSAVEL_ENCAMINHAMENTO_FSC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{fasesSolicitacaoServicoController.obterNomeServidorAutorizador(fase)}"/>  
+                    <p:tooltip style="width:300px;             word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_GRID_RAMAL}: #{fasesSolicitacaoServicoController.obterRamalServidorAutorizador(fase)}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column style="#{fasesSolicitacaoServicoController.numero == fase.numero ? 'background-color:#F1F1F1' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_FSC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{fase.dataAlteracao}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column style="#{fasesSolicitacaoServicoController.numero == fase.numero ? 'background-color:#F1F1F1' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DEV_FSC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{fase.indDevolucao}"> 
+                      <f:converter converterId="simNaoConverter"/> 
+                    </h:outputText> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel>       
+      <p:outputPanel layout="block" id="licitacao_Div" rendered="#{not empty fasesSolicitacaoServicoController.listFasesSolicitacao}" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.TITLE_LICITACAO_SOLICITACAO_SERVICO}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="nroLicitacao" label="#{messages.LABEL_NRO_LICITACAO_FSC}" title="#{messages.TITLE_NRO_LICITACAO_FSC}" value="#{fasesSolicitacaoServicoController.nroLicitacao}" maxlength="7" size="8" readonly="true"/>  
+            <mec:inputNumero id="item" label="#{messages.LABEL_ITEM_FSC}" title="#{messages.TITLE_ITEM_FSC}" value="#{fasesSolicitacaoServicoController.item}" maxlength="10" size="10" readonly="true"/>  
+            <mec:inputText id="dataDigitacao" label="#{messages.LABEL_DATA_DIGITACAO_FSC}" title="#{messages.TITLE_DATA_DIGITACAO_FSC}" value="#{fasesSolicitacaoServicoController.dataDigitacao}" maxlength="10" size="11" readonly="true" datePattern="dd/MM/yyyy"/>  
+            <mec:inputText id="dataPublicacao" label="#{messages.LABEL_DATA_PUBLICACAO_FSC}" title="#{messages.TITLE_DATA_PUBLICACAO_FSC}" value="#{fasesSolicitacaoServicoController.dataPublicacao}" maxlength="10" size="11" readonly="true" datePattern="dd/MM/yyyy"/>  
+            <mec:inputText id="dataProposta" label="#{messages.LABEL_DATA_PROPOSTA_FSC}" title="#{messages.TITLE_DATA_PROPOSTA_FSC}" value="#{fasesSolicitacaoServicoController.dataProposta}" maxlength="10" size="11" readonly="true" datePattern="dd/MM/yyyy"/>  
+            <mec:commandButton id="bt_navegarPac" value="#{messages.LABEL_VISUALIZAR_PAC}" style="vertical-align:-32px;" action="#{fasesSolicitacaoServicoController.redirecionarPac()}" rendered="#{fasesSolicitacaoServicoController.nroLicitacao != null and mf:hasPermission(securityController,'consultarPAC,visualizar')}" styleClass="bt_cinza"/> 
+            
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </p:outputPanel>  
+      <p:outputPanel layout="block" id="af_Div" rendered="#{not empty fasesSolicitacaoServicoController.listFasesSolicitacao}" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.TITLE_AF_SOLICITACAO_COMPRA}"> 
+          <aghu:linha> 
+            <mec:inputText id="nro" label="#{messages.LABEL_NRO_AF_FSC}" title="#{messages.TITLE_NRO_AF_FSC}" value="#{fasesSolicitacaoServicoController.nroAF} / #{fasesSolicitacaoServicoController.nroComplemento}" size="10" readonly="true" converter="#{javax.faces.Integer}"/>  
+            <mec:inputText id="dataGeracao" label="#{messages.LABEL_DATA_GERACAO_FSC}" title="#{messages.TITLE_DATA_GERACAO_FSC}" value="#{fasesSolicitacaoServicoController.dataGeracao}" maxlength="10" size="11" readonly="true" datePattern="dd/MM/yyyy"/>  
+            <mec:inputNumero id="valorUnitario" value="#{fasesSolicitacaoServicoController.valorUnitario}" label="#{messages.LABEL_VALOR_SOLICITADO}" required="false" inteiros="11" decimais="2" actionBean="#{fasesSolicitacaoServicoController}" style="text-align:right;" readonly="true"/>  
+            <mec:inputNumero id="valorEntregue" value="#{fasesSolicitacaoServicoController.valorEntregue}" label="#{messages.LABEL_VALOR_ENTREGUE}" required="false" inteiros="11" decimais="2" actionBean="#{fasesSolicitacaoServicoController}" style="text-align:right;" readonly="true"/>  
+            <mec:inputNumero id="valorSaldo" value="#{fasesSolicitacaoServicoController.valorSaldo}" label="#{messages.LABEL_VALOR_SALDO}" required="false" inteiros="11" decimais="2" actionBean="#{fasesSolicitacaoServicoController}" style="text-align:right;" readonly="true"/>  
+            <mec:inputText id="UNIDADE" label="#{messages.LABEL_UNIDADE_FSC}" title="#{messages.TITLE_UNIDADE_FSC}" value="#{fasesSolicitacaoServicoController.unidade}" maxlength="10" size="10" readonly="true"/>  
+            <mec:inputText id="previsaoEntrega" label="#{messages.LABEL_PREVISAO_ENTREGA_FSC}" title="#{messages.TITLE_PREVISAO_ENTREGA_FSC}" value="#{fasesSolicitacaoServicoController.previsaoEntrega}" maxlength="10" size="11" readonly="true" datePattern="dd/MM/yyyy"/>  
+            <mec:inputText id="situacao" label="#{messages.LABEL_SITUACAO_FSC}" title="#{messages.TITLE_SITUACAO_FSC}" value="#{fasesSolicitacaoServicoController.situacao}" maxlength="10" size="10" readonly="true"/>  
+            <mec:commandButton id="bt_navegarAF" value="#{messages.LABEL_VISUALIZAR_AF}" action="#{fasesSolicitacaoServicoController.redirecionarAf()}" style="vertical-align:-32px;" rendered="#{fasesSolicitacaoServicoController.nroAF != null and mf:hasPermission(securityController,'consultarAF,visualizar')}" styleClass="bt_cinza"/> 
+            </aghu:linha> 
+	       </aghu:panelGeral>
+	   </p:outputPanel>
+	   </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

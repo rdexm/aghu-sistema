@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_KIT_MATERIAL} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterKitMaterialController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <p:outputPanel id="panelFields" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_KITS_MATERIAIS}"> 
+            <mec:inputNumero id="seqPesquisa" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_PESQUISA_GRUPO_DIAGNOSTICO}" value="#{manterKitMaterialController.seq}" maxlength="7" size="8"/>  
+            <mec:inputText id="descricaoPesquisa" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_PESQUISA_GRUPO_DIAGNOSTICO}" value="#{manterKitMaterialController.descricao}" size="110" maxlength="500" caixaAlta="false"/>  
+            <mec:selectOneMenu id="situacaoPesquisa" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_PESQUISA_GRUPO_DIAGNOSTICO}" value="#{manterKitMaterialController.situacao}" enum="DominioSituacao"/> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{manterKitMaterialController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{manterKitMaterialController.limpar}" ajax="true" render="panelFields,outputEdicao" process="@this" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:linha> 
+      </h:form>  
+      <p:outputPanel id="outputEdicao" layout="inline"> 
+        <p:outputPanel rendered="#{manterKitMaterialController.ativo}" layout="inline"> 
+          <h:form prependId="false" id="formDados">
+          <aghu:linha> 
+            <aghu:panelGeral legend="#{messages.TITLE_CADASTRAR_KIT_MATERIAL}"> 
+              <p:outputPanel id="panelKitIndiceBloco" rendered="#{mf:hasPermission(securityController,'manterKitsMaterial,executar')}" layout="inline"> 
+                  <mec:inputNumero id="seq" label="#{messages.LABEL_CODIGO}" value="#{manterKitMaterialController.aelKitMatPatologia.seq}" maxlength="4" size="4" readonly="true"/>  
+                  <mec:inputText id="descricao" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_KIT_MATERIAL}" value="#{manterKitMaterialController.aelKitMatPatologia.descricao}" readonly="#{manterKitMaterialController.aelKitMatPatologia.descricao != null}" size="100" maxlength="500" required="true" onkeyup="return disableEnterKey(event)" caixaAlta="false"/>  
+                  <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_DO_CADASTRO}" value="#{manterKitMaterialController.aelKitMatPatologia.indSituacao}" enum="DominioSituacao" noSelectionOption="false"/>  
+                  <br clear="none"/>  
+                  <mec:commandButton id="bt_salvar" value="#{messages.LABEL_GRAVAR}" action="#{manterKitMaterialController.gravar}" rendered="#{mf:hasPermission(securityController,'manterKitsMaterial,executar')}" profile="ok" ajax="true" render="outputEdicao"/> 
+              </p:outputPanel>
+              <aghu:linha> 
+                <p:outputPanel id="panelMsgNaoEncontrado" layout="inline"> 
+                  <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{empty manterKitMaterialController.lista}"> 
+                    <h:outputText value="#{messages.MESSAGE_KIT_MATERIAL_NAO_ENCONTRADO}"/> 
+                  </p:outputPanel> 
+                </p:outputPanel>  
+                <p:outputPanel id="panelResultado" rendered="#{not empty manterKitMaterialController.lista}" layout="inline"> 
+                  <p:outputPanel layout="block" style="width:99%; max-height:320px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;"> 
+                    <mec:serverDataTable id="tabelaProcedimentos"
+                    		controller="#{manterKitMaterialController}"
+                    		style="margin: 0px !important;" 
+                    		selection="materialSelecionado"
+                    		width="99%"	 
+                    		list="#{manterKitMaterialController.lista}" 
+                    		scrollable="true"> 
+                      <c:set var="_item" value="#{item}"/>  
+                      <p:column  style="width:70px;"> 
+                        <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+                        <mec:commandLink id="deleteKitIndiceBloco" 
+                        		title="#{messages.LABEL_EXCLUIR}" 
+                        		action="#{manterKitMaterialController.excluir}" 
+                        		rendered="#{mf:hasPermission(securityController,'manterKitsMaterial,executar')}" 
+                        		profile="delete" 
+                        		process="@this"
+                        		ajax="true" 
+                        		render="panelResultado"> 
+                          <f:setPropertyActionListener target="#{manterKitMaterialController.seqExcluir}" value="#{_item.seq}" for="command"/>
+                          <f:setPropertyActionListener target="#{manterKitMaterialController.aelKitMatPatologia}" value="#{_item}" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink id="ativarInativarKitIndiceBloco" 
+                        		title="#{_item.indSituacao eq 'A' ? messages.LABEL_DESATIVAR : messages.LABEL_ATIVAR}" 
+                        		action="#{manterKitMaterialController.ativarInativar(_item)}" 
+                        		rendered="#{mf:hasPermission(securityController,'manterKitsMaterial,executar')}" 
+                        		styleClass=" #{_item.indSituacao eq 'A' ? 'silk-activate' : 'silk-deactivate'} silk-icon" 
+                        		ajax="true" 
+                        		render="outputEdicao" 
+                        		process="@this"/>  
+                        <mec:commandLink id="detalharKitIndiceBloco" 
+                        		title="#{messages.LABEL_DETALHES}" 
+                        		immediate="true" 
+                        		action="#{manterKitMaterialController.detalhar}" 
+                        		rendered="#{mf:hasPermission(securityController,'manterKitsMaterial,pesquisar')}" 
+                        		styleClass=" silk-table silk-icon" 
+                        		ajax="true"> 
+                          <f:setPropertyActionListener target="#{manterKitItemMaterialController.seqAelKitMatPatologia}" value="#{_item.seq}" for="command"/> 
+                        </mec:commandLink> 
+                      </p:column>  
+                      <p:column style="width:60px;"> 
+                        <f:facet name="header">#{messages.LABEL_CODIGO}</f:facet>  
+                        <h:outputText value="#{_item.seq}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header">#{messages.LABEL_DESCRICAO}</f:facet>  
+                        <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{(_item.descricao.length() &gt; 110)}"> 
+                          <h:outputText value="#{_item.descricao}"/> 
+                        </p:tooltip>  
+                        <h:outputText value="#{(_item.descricao.length() &gt; 110) ? fn:substring(_item.descricao,0,110) : _item.descricao }"/>  
+                        <h:outputText value="#{(_item.descricao.length() &gt; 110) ? ' ...' : '' }"/> 
+                      </p:column>  
+                      <p:column style="width:70px;"> 
+                        <f:facet name="header">#{messages.LABEL_SITUACAO}</f:facet>  
+                        <h:outputText value="#{_item.indSituacao.descricao}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+            </aghu:linha>	
+          </h:form> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+   <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisarSociosFornecedoresController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisarSociosFornecedoresController}"/>  
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+        <h:form prependId="false" id="pesquisarSociosFornecedoresForm"> 
+          <aghu:panelGeral id="pesquisarSociosFornecedores" legend="#{messages.TITLE_PESQUISAR_SOCIOS_FORNECEDORES}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="filtroCodigo" label="#{messages.LABEL_CODIGO_SOCIOS_FORNECEDORES}" title="#{messages.TITLE_CODIGO_SOCIOS_FORNECEDORES}" value="#{pesquisarSociosFornecedoresController.filtroCodigo}" maxlength="8" size="8" readonly="false"/>  
+              <mec:inputText id="filtroNomeSocio" label="#{messages.LABEL_NOME_SOCIO_SOCIOS_FORNECEDORES}" title="#{messages.TITLE_NOME_SOCIO_SOCIOS_FORNECEDORES}" value="#{pesquisarSociosFornecedoresController.filtroNomeSocio}" maxlength="50" size="50" style="text-transform:uppercase"/>  
+              <mec:inputText id="filtroRG" label="#{messages.LABEL_RG_SOCIOS_FORNECEDORES}" title="#{messages.TITLE_RG_SOCIOS_FORNECEDORES}" value="#{pesquisarSociosFornecedoresController.filtroRG}" maxlength="14" size="14" style="text-transform:uppercase"/>  
+              <mec:inputNumero id="filtroCPF" label="#{messages.LABEL_CPF_SOCIOS_FORNECEDORES}" title="#{messages.TITLE_CPF_SOCIOS_FORNECEDORES}" value="#{pesquisarSociosFornecedoresController.filtroCPF}" maxlength="12" size="12" readonly="false"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox id="sugFornecedorAF" label="#{messages.LABEL_FORNECEDOR_SOCIOS_FORNECEDORES}" title="#{messages.TITLE_FORNECEDOR_SOCIOS_FORNECEDORES}" suggestionAction="pesquisarFornecedoresPorCgcCpfRazaoSocial" size="20" descricaoInput="cnpjCpf" descricaoLabel="razaoSocial" width="600" readonly="#{pesquisarSociosFornecedoresController.desabilitaConsultaFornecedor}" disabled="#{pesquisarSociosFornecedoresController.desabilitaConsultaFornecedor}" controller="#{pesquisarSociosFornecedoresController}" value="#{pesquisarSociosFornecedoresController.filtroFornecedor}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.numero}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CGC_CPF}</b> 
+                  </f:facet> #{item.cnpjCpf}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_RAZAO_SOCIAL}</b> 
+                  </f:facet> #{item.razaoSocial}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" disabled="false" action="#{pesquisarSociosFornecedoresController.pesquisar}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{pesquisarSociosFornecedoresController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+            <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" rendered="#{mf:hasPermission(securityController,'cadastrarSocioFornecedor,executar') and pesquisarSociosFornecedoresController.ativo}" action="#{pesquisarSociosFornecedoresController.novo}" profile="add"> 
+              <f:setPropertyActionListener target="#{cadastrarSociosFornecedoresController.seqSocio}" value="#{null}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastrarSociosFornecedoresController.voltarPara}" value="estoque-pesquisarSociosFornecedores" for="command"/>
+            </mec:commandButton> 
+			<mec:commandButton id="bt_voltar" styleClass="bt_secund alinha-direita" value="#{messages.LABEL_VOLTAR}" action="#{cadastroAcessoFornecedorController.voltar}" rendered="#{not empty cadastroAcessoFornecedorController.voltarParaUrl}" profile="back"/> 
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false" id="listaSocioForm"> 
+          <p:outputPanel id="panelListaSocio" rendered="#{pesquisarSociosFornecedoresController.ativo}" layout="inline"> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaSocios" rendered="#{pesquisarSociosFornecedoresController.ativo}" value="#{pesquisarSociosFornecedoresController}" controller="#{pesquisarSociosFornecedoresController}"> 
+              <c:set var="_item" value="#{item}"/>  
+              <p:column style="width:60px"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <mec:commandLink action="#{pesquisarSociosFornecedoresController.editar(_item.seq)}" title="#{messages.LABEL_EDITAR}" rendered="#{mf:hasPermission(securityController,'cadastrarSocioFornecedor,executar')}" profile="edit" ajax="true" process="@this"> 
+                  <f:setPropertyActionListener target="#{cadastrarSociosFornecedoresController.seqSocio}" value="#{_item.seq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{cadastrarSociosFornecedoresController.voltarPara}" value="estoque-pesquisarSociosFornecedores" for="command"/>
+                </mec:commandLink>  
+                <mec:commandLink title="#{messages.LABEL_EXCLUIR}" onclick="PF('modalConfirmacaoExclusaoWG').show();;" rendered="#{mf:hasPermission(securityController,'cadastrarSocioFornecedor,executar')}" profile="delete" ajax="true" render="panelListaSocio, panelPesquisarSociosFornecedores" process="@this"> 
+                  <f:setPropertyActionListener target="#{pesquisarSociosFornecedoresController.exclusaoSocio}" value="#{_item}" for="command"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column sortable="true" sortBy="#{_item.seq}"> 
+                <f:facet name="header"> 
+                  <h:outputText style="width:100px" value="#{messages.LABEL_COLUNA_CODIGO_SOCIOS_FORNECEDORES}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.seq}"/> 
+              </p:column>  
+              <p:column sortable="true" sortBy="#{_item.nome}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_COLUNA_NOME_SOCIOS_FORNECEDORES}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText style="width:150px" value="#{messages.LABEL_COLUNA_RG_SOCIOS_FORNECEDORES}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.rg}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText style="width:180px" value="#{messages.LABEL_COLUNA_CPF_SOCIOS_FORNECEDORES}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.cpf}"/> 
+              </p:column>  
+              <p:column sortable="true" sortBy="#{_item.quantidadeFornecedor}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_COLUNA_FORNECEDOR_SOCIOS_FORNECEDORES}"/> 
+                </f:facet>  
+                <p:outputPanel layout="inline"> 
+                  <mec:commandLink style="display:block; float:left;" title="#{messages.LABEL_HINT_VISUALIZAR_FORNECEDORES}" action="#{pesquisarSociosFornecedoresController.listarFornecedores(_item.seq)}" oncomplete="PF('modalVisualizarFornecedorWG').show();;" disabled="#{_item.qtdFornecedor eq 0}" styleClass=" silk-fornecedores silk-icon" ajax="true" render="modalVisualizarFornecedoresPanel" process="@this"/>  
+                  <h:outputText style="display:block; float:left; margin-top:5px; margin-left:10px;" value="#{_item.qtdFornecedor}"/> 
+                </p:outputPanel> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </h:form>  
+        <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_EXCLUSAO_MOTIVO_MOVIMENTO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalExclusao1" name="formModalExclusao1"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir" action="#{pesquisarSociosFornecedoresController.excluir}" render="panelListaSocio, panelPesquisarSociosFornecedores" profile="search"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" id="bt_cancelarExcluir" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <p:dialog id="modalVisualizarFornecedor" width="380" height="225" modal="true" resizable="false" widgetVar="modalVisualizarFornecedorWG" closable="true"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_MODAL_VISUALIZAR_FORNECEDOR}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <aghu:panelGeral> 
+            <p:outputPanel id="modalVisualizarFornecedoresPanel" layout="inline"> 
+              <ui:fragment> 
+                <aghu:linha> 
+                  <div style="overflow:auto; width:338px; height:156px" id="myDiv"> 
+                    <mec:serverDataTable id="tabelaFornecedores" name="tabelaFornecedor" list="#{pesquisarSociosFornecedoresController.listaScoFornecedores}" scrollable="true"> 
+                      <c:set var="_item" value="#{item}"/>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_COLUNA_NUMERO_SOCIOS_FORNECEDORES_CADASTRO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.numero}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_COLUNA_RAZAO_SOCIAL_SOCIOS_FORNECEDORES_CADASTRO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.razaoSocial}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </div> 
+                </aghu:linha> 
+              </ui:fragment> 
+            </p:outputPanel> 
+          </aghu:panelGeral> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisarSociosFornecedoresController.inicio}"/> 
+      </f:metadata> 
+    </ui:define> 
+  </ui:composition> 
+</html>

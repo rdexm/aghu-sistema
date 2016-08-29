@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+		<ui:define name="head">
+			<title>#{messages.TITLE_MOTIVOS_MOVIMENTACAO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+		    <style xml:space="preserve">
+		          .checked {
+		              background-image: url('../../../resources/img/icons/checked.png') !important;
+		              background-repeat: no-repeat;
+		              background-position: center;
+		          }
+		          
+		          .comboBoxSize {
+					  width: 350px !important;
+				}
+		    </style>
+		</ui:define>
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:viewAction action="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.iniciar}"/>
+			</f:metadata>
+		</ui:define>
+		<ui:define name="body">
+			<h:form prependId="false" id="formPesquisaMotivos">
+				<aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_MOTIVOS}">
+					<aghu:linha>
+					<p:column>
+							<mec:selectOneMenu id="situacao" styleClass="comboBoxSize"
+								label="#{messages.LABEL_MOTIVO_SITUACAO}" value="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.ptmDescMotivoMovimentos.ptmSituacaoMotivoMovimento}"
+								items="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.ptmSituacaoMotivoMovimentoList}" itemLabel="situacao" />
+						</p:column>
+						<p:column>
+							<mec:selectOneMenu label="#{messages.LABEL_MOTIVO_ATIVO}" enum="DominioSimNao" 
+											   value="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.ativo}" id="cboAtivo"/>
+						</p:column>
+						<p:column>
+							<mec:selectOneMenu label="#{messages.LABEL_MOTIVO_JUSTIFICATIVA_OBRIGATORIA}" enum="DominioSimNao" 
+										       value="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.justObrigatoria}" id="cboJustificativa"/>
+						</p:column>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputText id="descricao" style="text-transform:uppercase"
+							label="#{messages.LABEL_MOTIVO_DESCRICAO}" value="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.ptmDescMotivoMovimentos.descricao}"
+							required="false" maxlength="200" size="185" />
+					</aghu:linha>
+				</aghu:panelGeral>
+				<aghu:linha>
+				</aghu:linha>
+				<aghu:acao>
+					<mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" profile="search" action="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.pesquisar}" />
+					<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" immediate="true" process="@this" profile="clear" action="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.limpar}"/>
+					<mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" immediate="true" profile="add" rendered="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.dataModel.pesquisaAtiva}"
+									   action="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.inserir}"	>
+									   
+					<f:setPropertyActionListener
+								target="#{cadastraMotivosMovimentoPorSituacaoController.edicaoAtiva}"
+								value="false" for="command" />
+				   	</mec:commandButton>
+				</aghu:acao>
+				<aghu:linha>
+				</aghu:linha>
+				<aghu:panelGeral legend="#{messages.LABEL_MOTIVO_MOVIMENTO_POR_SITUACAO}" rendered="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.dataModel.pesquisaAtiva}">
+					<mec:serverDataTable dataModel="dataModel" id="gridDescMotivoMovimentoSituacao" controller="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController}" selection="selecionado" >
+						<c:set var="_descMotivo" value="#{item}"/>
+						
+						<p:column headerText="#{messages.LABEL_ACAO}"
+						exportable="false" style="text-align:center;"  width="44px;" >
+						<mec:commandLink id="gridDescMotivoMovimentoSituacaoEditar"
+							profile="edit" title="#{messages.LABEL_EDITAR}"
+							action="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.editar}">
+							<f:setPropertyActionListener
+								target="#{cadastraMotivosMovimentoPorSituacaoController.ptmDescMotivoMovimentos}"
+								value="#{_descMotivo}" for="command" />
+							<f:setPropertyActionListener
+								target="#{cadastraMotivosMovimentoPorSituacaoController.edicaoAtiva}"
+								value="true" for="command" />	
+						</mec:commandLink>
+						<mec:commandLink id="gridDescMotivoMovimentoSituacaoRemover"
+							profile="delete" title="Apagar"
+							action="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.excluir}">
+							<f:setPropertyActionListener for="command"
+								target="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.ptmDescMotivoMovimentosSelecionado}"
+								value="#{_descMotivo}" />
+						</mec:commandLink>
+					</p:column>
+						<p:column sortable="true" sortBy="#{_descMotivo.ptmSituacaoMotivoMovimento}" width="290px;"  >
+							<f:facet name="header">
+								#{messages.LABEL_MOTIVO_SITUACAO}
+							</f:facet>
+							<h:outputText value="#{_descMotivo.ptmSituacaoMotivoMovimento.situacao}" />
+						</p:column>
+		
+						<p:column sortable="true" sortBy="#{_descMotivo.descricao}" width="422px;">
+							<f:facet name="header">
+								#{messages.LABEL_MOTIVO_DESCRICAO}
+							</f:facet>
+							<h:outputText id="descricao" value="#{pesquisaMotivosMovimentoPorSituacaoPaginatorController.obterHint(_descMotivo.descricao, 53)}" />
+
+							<p:overlayPanel id="hintDescricao" for="descricao"
+								showEvent="mouseover" hideEvent="mouseout"
+								rendered="#{_descMotivo.descricao.length() > 53}">
+	
+								<h:outputText value="#{_descMotivo.descricao}" />
+							</p:overlayPanel>
+					</p:column>
+		
+						<p:column sortable="true" sortBy="#{_descMotivo.ativo}" width="48px;">
+							<f:facet name="header">
+								#{messages.LABEL_MOTIVO_ATIVO}
+							</f:facet>
+							<h:outputText value="#{(_descMotivo.ativo) ? messages.LABEL_SIM : messages.LABEL_NAO}" />
+						</p:column>
+		
+						<p:column sortable="true" sortBy="#{_descMotivo.justificativaObrig}" width="64px;">
+							<f:facet name="header">
+								<p:outputLabel title="#{messages.LABEL_MOTIVO_JUSTIFICATIVA_OBRIGATORIA}" value="#{messages.LABEL_MOTIVO_JUST_OBRIG}" />								
+							</f:facet>
+							<h:outputText value="#{(_descMotivo.justificativaObrig) ? messages.LABEL_SIM : messages.LABEL_NAO}" />
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:panelGeral>
+			</h:form>	
+		</ui:define>
+	</ui:composition>
+</html>

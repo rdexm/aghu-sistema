@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Responsáveis Paciente :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{responsaveisPacienteController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{responsaveisPacienteController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formCadastro"> 
+        <aghu:panelGeral legend="Cadastro de Responsável pelo Paciente Internado"> 
+          <aghu:linha>
+             <mec:inputText value="#{responsaveisPacienteController.responsavelPaciente.seq}" label="#{messages.LABEL_SEQ}" title="#{messages.TITLE_NUMERO_SOL_COMPR}" maxlength="5" size="6" readonly="true" id="numero"/>  
+	 
+             <mec:selectOneMenu enum="DominioTipoResponsabilidade" label="#{messages.LABEL_TIPO_RESPONSABILIDADE}" title="#{messages.TITLE_LABEL_TIPO_RESPONSABILIDADE}" required="true" value="#{responsaveisPacienteController.tipoResponsabilidade}" id="tipo_responsabilidade">
+                  <p:ajax event="change" process="@this" update="@(#selRespConta)"/>
+             </mec:selectOneMenu> 
+          </aghu:linha> 
+          <aghu:linha>
+           <mec:selectOneMenu label="#{messages.LABEL_EXAMES_RESP_CONTA}" 
+                                   enum="DominioResponsavelConta"                                       
+                                   value="#{responsaveisPacienteController.selRespConta}" 
+                                   id="selRespConta"
+                                   required="#{responsaveisPacienteController.tipoResponsabilidade != null}">
+                                   <p:ajax event="change" update="@(#respPanel)" process="@this" listener="#{responsaveisPacienteController.redirecionarResponsavel()}"  onclick="PF('loadDialogWG').show();"/>
+                </mec:selectOneMenu> 
+                <p:outputPanel id="respPanel" layout="inline">
+                <mec:suggestionBox label="#{messages.LABEL_EXAMES_RESP_CONTA_DOC}"                              
+                                   suggestionAction="listarResponsavel" 
+                                    size="40" maxlength="40" width="800" 
+                                   id="sbResponsavelConta" 
+                                   controller="#{responsaveisPacienteController}" 
+                                   value="#{responsaveisPacienteController.responsavelVo}"
+						           var="row" itemValue="#{row}"
+						           descricaoInput="seq" descricaoLabel="nome"
+					               posSelectionAction="posSelectionResponsavel"
+						           render="respPanel"
+						           readonly="#{responsaveisPacienteController.desabilitaResponsavelOutros()}"
+						           required="#{!responsaveisPacienteController.desabilitaResponsavelOutros()}"> 
+						           <p:column> 
+						                  <f:facet name="header"> 
+						                    <b>#{messages.LABEL_EXAMES_RESP_CONTA_CPF_CGC}</b> 
+						                  </f:facet> #{row.documento}
+						                </p:column>
+						                <p:column> 
+						                  <f:facet name="header"> 
+						                    <b>#{messages.LABEL_EXAMES_RESP_CONTA_NOME}</b> 
+						                  </f:facet> #{row.nome}
+						                </p:column>
+              </mec:suggestionBox> 
+              <aghu:acao style="margin-top: 13px !important;" newLine="false">   
+                <mec:commandButton id="btAddResponsavelExterno" style="margin-left: 10px" immediate="true" value="#{messages.LABEL_EXAMES_RESP_CONTA}" 
+                   action="#{responsaveisPacienteController.addResponsavel}" profile="add"  
+                   readonly="#{responsaveisPacienteController.desabilitaResponsavelOutros() or not empty responsaveisPacienteController.responsavelVo}"
+                   rendered="#{empty responsaveisPacienteController.responsavelVo}"> 
+                  <f:setPropertyActionListener target="#{responsavelContaController.paciente}" value="#{responsaveisPacienteController.paciente}" for="command"/>
+                  <f:setPropertyActionListener target="#{responsavelContaController.seq}" value="#{null}" for="command"/> 
+                  <f:setPropertyActionListener target="#{responsavelContaController.selRespConta}" value="#{responsaveisPacienteController.selRespConta}" for="command"/> 
+                  <f:setPropertyActionListener target="#{responsavelContaController.voltarPara}" value="internacao-cadastroResponsaveisPaciente" for="command"/> 
+                  <f:setPropertyActionListener target="#{responsavelContaController.isSus}" value="#{responsaveisPacienteController.isSus}" for="command"/>
+                </mec:commandButton> 
+                 <mec:commandButton id="btEditResponsavelExterno" style="margin-left: 10px" immediate="true" value="#{messages.LABEL_EXAMES_RESP_CONTA}" 
+                 action="#{responsaveisPacienteController.addResponsavel}" profile="edit"  
+                 readonly="#{responsaveisPacienteController.desabilitaResponsavelOutros()}"
+                 rendered="#{not empty responsaveisPacienteController.responsavelVo}"> 
+                  <f:setPropertyActionListener target="#{responsavelContaController.paciente}" value="#{responsaveisPacienteController.paciente}" for="command"/>
+                  <f:setPropertyActionListener target="#{responsavelContaController.selRespConta}" value="#{responsaveisPacienteController.selRespConta}" for="command"/> 
+                  <f:setPropertyActionListener target="#{responsavelContaController.seq}" value="#{responsaveisPacienteController.responsavelVo.seq}" for="command"/> 
+                  <f:setPropertyActionListener target="#{responsavelContaController.voltarPara}" value="internacao-cadastroResponsaveisPaciente" for="command"/> 
+                  <f:setPropertyActionListener target="#{responsavelContaController.isSus}" value="#{responsaveisPacienteController.isSus}" for="command"/>
+                </mec:commandButton> 
+               </aghu:acao>
+               </p:outputPanel>
+          </aghu:linha>
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton block="true" id="bt_incluirResponsavelPaciente" value="#{messages.LABEL_CONFIRMAR}" action="#{responsaveisPacienteController.incluirResponsavelPaciente}" profile="ok"/>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" immediate="true" action="#{responsaveisPacienteController.cancelar}" profile="cancel" ajax="true"/> 
+        </aghu:acao>  
+         
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

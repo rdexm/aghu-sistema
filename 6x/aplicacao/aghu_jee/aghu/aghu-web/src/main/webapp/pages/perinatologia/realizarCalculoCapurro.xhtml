@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_REALIZAR_CALCULO_CAPURRO} :: AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{calculoCapurroController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{calculoCapurroController}" />
+		<h:form prependId="false" id="formGeral">
+			<aghu:panelGeral legend="#{messages.LABEL_PACIENTE_CALCULO_CAPURRO}">
+				<aghu:linha>
+					<h:outputText value="#{calculoCapurroController.dadosRecemNascido}" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:panelGeral legend="#{messages.LABEL_PACIENTE_CALCULO_CAPURRO}">
+				<aghu:linha>
+					<p:outputPanel id="panelDadosCalculoCapurro" layout="inline">
+						<mec:inputText id="elaborador"
+							label="#{messages.LABEL_ELABORADOR_CALCULO_CAPURRO}"
+							title="#{messages.TITLE_ELABORADOR_CALCULO_CAPURRO}"
+							size="95" maxlength="80"
+							readonly="true"
+							value="#{calculoCapurroController.elaborador.vinculo} - #{calculoCapurroController.elaborador.matricula} - Elaborado por: #{calculoCapurroController.elaborador.nomePessoaFisica}" />
+	
+						<mec:inputNumero id="igSemanas"
+							label="#{messages.LABEL_IG_SEMANAS_CALCULO_CAPURRO}"
+							title="#{messages.TITLE_IG_SEMANAS_CALCULO_CAPURRO}"
+							value="#{calculoCapurroController.igSemanas}"
+							size="3" maxlength="2"
+							readonly="#{not mf:hasPermission(securityController,'realizarCalculoCapurro,executar') or not calculoCapurroController.mesmoServidor}"
+							converter="javax.faces.Byte">
+							<p:ajax event="change"
+								process="@this" />
+						</mec:inputNumero>
+							
+						<mec:inputNumero id="igDias"
+							label="#{messages.LABEL_IG_DIAS_CALCULO_CAPURRO}"
+							title="#{messages.TITLE_IG_DIAS_CALCULO_CAPURRO}"
+							value="#{calculoCapurroController.igDias}"
+							size="3" maxlength="2"
+							readonly="#{not mf:hasPermission(securityController,'realizarCalculoCapurro,executar') or not calculoCapurroController.mesmoServidor}"
+							converter="javax.faces.Byte">
+							<p:ajax event="change"
+								process="@this" />
+						</mec:inputNumero>
+
+						<mec:commandButton id="btNovoCalculo"
+							style="margin-top:17px !important;"
+							value="#{messages.LABEL_INCLUIR_NOVO_CALCULO_CAPURRO}"
+							disabled="#{calculoCapurroController.modoInclusao or not mf:hasPermission(securityController,'realizarCalculoCapurro,executar')}"
+							action="#{calculoCapurroController.prepararInclusaoCalculoCapurro}"
+							ajax="true" process="@this"
+							render="panelDadosCalculoCapurro,panelListaCalculoCapurro,panelControles,panelAcaoCapurro" profile="add" />
+					</p:outputPanel>
+				</aghu:linha>
+				
+				<aghu:linha>
+					<p:outputPanel id="panelListaCalculoCapurro" layout="inline">
+						<mec:serverDataTable id="tabelaCalculoCapurro"
+							list="#{calculoCapurroController.listaCalculos}"
+							controller="#{calculoCapurroController}"
+							emptyMessage="#{messages.MENSAGEM_NENHUM_REGISTRO_CAPURRO}"
+							selection="calculoSelecionado" scrollable="true" scrollHeight="85">
+							<c:set var="item" value="#{item}" />
+	
+							<p:ajax event="rowSelect"
+								listener="#{calculoCapurroController.verificarServidor}"
+								update="@(#panelDadosCalculoCapurro) @(#panelListaCalculoCapurro) @(#panelControles) @(#panelAcaoCapurro)" />
+	
+							<p:column style="text-align:center; width: 46px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ACAO}" />
+								</f:facet>
+								<mec:commandLink id="excluirCalculo"
+									title="#{messages.LABEL_EXCLUIR}"
+									rendered="#{mf:hasPermission(securityController,'realizarCalculoCapurro,executar') and item.mesmoServidor}"
+									action="#{calculoCapurroController.excluirCalculoCapurro}"
+									profile="delete" ajax="true"
+									render="panelDadosCalculoCapurro,panelListaCalculoCapurro,panelControles,panelAcaoCapurro"
+									process="@this">
+									<f:setPropertyActionListener
+										target="#{calculoCapurroController.calculoExcluir}"
+										value="#{item}" for="command" />
+								</mec:commandLink>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_VINC_MATR_ELABORADO_CALCULO_CAPURRO}" />
+								</f:facet>
+								<h:outputText value="#{item.elaborador.vinculo} - #{item.elaborador.matricula} - #{item.elaborador.nomePessoaFisica}" />
+							</p:column>
+							<p:column style="width: 70px">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_IG_SEMANAS_CALCULO_CAPURRO}" />
+								</f:facet>
+								<h:outputText value="#{item.igSemanas}" />
+							</p:column>
+							<p:column style="width: 50px">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_IG_DIAS_CALCULO_CAPURRO}" />
+								</f:facet>
+								<h:outputText value="#{item.igDias}" />
+							</p:column>
+						</mec:serverDataTable>
+					</p:outputPanel>
+				</aghu:linha>
+				
+				<p:outputPanel id="panelControles" layout="inline" rendered="#{not empty calculoCapurroController.listaCalculos}">
+					<aghu:linha>
+						<aghu:panelGeral legend="#{messages.LABEL_TEXTURA_PELE_CALCULO_CAPURRO}">
+							<aghu:linha>
+								<h:selectOneRadio id="texturaPele"
+									value="#{calculoCapurroController.calculoSelecionado.texturaPele}"
+									layout="pageDirection"
+									title="#{messages.TITLE_TEXTURA_PELE_CALCULO_CAPURRO}"
+									readonly="#{not mf:hasPermission(securityController,'realizarCalculoCapurro,executar') or not calculoCapurroController.mesmoServidor}">
+									<f:converter converterId="dominioConverter" />
+									<f:selectItems var="item" itemLabel="#{item.descricaoCompleta}"
+										value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioTexturaPele')}" />
+									<p:ajax event="change"
+										update="@(#panelDadosCalculoCapurro) @(#panelControles) @(#panelAcaoCapurro)"
+										process="@this"
+										listener="#{calculoCapurroController.calculoCapurro()}" />
+								</h:selectOneRadio>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</aghu:linha>
+					
+					<aghu:linha>
+						<aghu:panelGeral legend="#{messages.LABEL_FORMA_ORELHA_CALCULO_CAPURRO}">
+							<aghu:linha>
+								<h:selectOneRadio id="formaOrelha"
+									value="#{calculoCapurroController.calculoSelecionado.formaOrelha}"
+									layout="pageDirection"
+									title="#{messages.TITLE_FORMA_ORELHA_CALCULO_CAPURRO}"
+									readonly="#{not mf:hasPermission(securityController,'realizarCalculoCapurro,executar') or not calculoCapurroController.mesmoServidor}">
+									<f:converter converterId="dominioConverter" />
+									<f:selectItems var="item" itemLabel="#{item.descricaoCompleta}"
+										value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioFormaOrelha')}" />
+									<p:ajax event="change"
+										update="@(#panelDadosCalculoCapurro) @(#panelControles) @(#panelAcaoCapurro)"
+										process="@this"
+										listener="#{calculoCapurroController.calculoCapurro()}" />
+								</h:selectOneRadio>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</aghu:linha>
+					
+					<aghu:linha>
+						<aghu:panelGeral legend="#{messages.LABEL_GLANDULA_MAMARIA_CALCULO_CAPURRO}">
+							<aghu:linha>
+								<h:selectOneRadio id="glandulaMamaria"
+									value="#{calculoCapurroController.calculoSelecionado.glandulaMamaria}"
+									layout="pageDirection"
+									title="#{messages.TITLE_GLANDULA_MAMARIA_CALCULO_CAPURRO}"
+									readonly="#{not mf:hasPermission(securityController,'realizarCalculoCapurro,executar') or not calculoCapurroController.mesmoServidor}">
+									<f:converter converterId="dominioConverter" />
+									<f:selectItems var="item" itemLabel="#{item.descricaoCompleta}"
+										value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioGlandulaMamaria')}" />
+									<p:ajax event="change"
+										update="@(#panelDadosCalculoCapurro) @(#panelControles) @(#panelAcaoCapurro)"
+										process="@this"
+										listener="#{calculoCapurroController.calculoCapurro()}" />
+								</h:selectOneRadio>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</aghu:linha>
+					
+					<aghu:linha>
+						<aghu:panelGeral legend="#{messages.LABEL_PREGAS_PLANTARES_CALCULO_CAPURRO}">
+							<aghu:linha>
+								<h:selectOneRadio id="pregasPlantares"
+									value="#{calculoCapurroController.calculoSelecionado.pregasPlantares}"
+									layout="pageDirection"
+									title="#{messages.TITLE_PREGAS_PLANTARES_CALCULO_CAPURRO}"
+									readonly="#{not mf:hasPermission(securityController,'realizarCalculoCapurro,executar') or not calculoCapurroController.mesmoServidor}">
+									<f:converter converterId="dominioConverter" />
+									<f:selectItems var="item" itemLabel="#{item.descricaoCompleta}"
+										value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioPregasPlantares')}" />
+									<p:ajax event="change"
+										update="@(#panelDadosCalculoCapurro) @(#panelControles) @(#panelAcaoCapurro)"
+										process="@this"
+										listener="#{calculoCapurroController.calculoCapurro()}" />
+								</h:selectOneRadio>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</aghu:linha>
+					
+					<aghu:linha>
+						<aghu:panelGeral legend="#{messages.LABEL_FORMACAO_MAMILO_CALCULO_CAPURRO}">
+							<aghu:linha>
+								<h:selectOneRadio id="formacaoMamilo"
+									value="#{calculoCapurroController.calculoSelecionado.formacaoMamilo}"
+									layout="pageDirection"
+									title="#{messages.TITLE_FORMACAO_MAMILO_CALCULO_CAPURRO}"
+									readonly="#{not mf:hasPermission(securityController,'realizarCalculoCapurro,executar') or not calculoCapurroController.mesmoServidor}">
+									<f:converter converterId="dominioConverter" />
+									<f:selectItems var="item" itemLabel="#{item.descricaoCompleta}"
+										value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioFormacaoMamilo')}" />
+									<p:ajax event="change"
+										update="@(#panelDadosCalculoCapurro) @(#panelControles) @(#panelAcaoCapurro)"
+										process="@this"
+										listener="#{calculoCapurroController.calculoCapurro()}" />
+								</h:selectOneRadio>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			
+			<p:outputPanel id="panelAcaoCapurro" layout="inline" rendered="#{not empty calculoCapurroController.listaCalculos}">
+				<aghu:acao>
+					<mec:commandButton value="#{messages.LABEL_GRAVAR}" id="bt_gravar"
+						disabled="#{not mf:hasPermission(securityController,'realizarCalculoCapurro,executar')
+							or not calculoCapurroController.mesmoServidor or not calculoCapurroController.controlesPreenchidos}"
+						action="#{calculoCapurroController.gravarCalculoCapurro}"
+						ajax="true"
+						process="@this, igSemanas, igDias, panelControles"
+						render="panelDadosCalculoCapurro,panelListaCalculoCapurro,panelControles,panelAcaoCapurro"
+						profile="ok" />
+					<mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar"
+						action="#{calculoCapurroController.voltar}" profile="back"
+						ajax="true" process="@this" />
+				</aghu:acao>
+			</p:outputPanel>
+		</h:form>
+
+		<p:dialog id="modalConfirmacaoGravarAlteracao" width="400"
+			height="90"
+			modal="true" resizable="false" closable="false"
+			widgetVar="modalConfirmacaoGravarAlteracaoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.LABEL_GRAVAR}" />
+				</h:panelGroup>
+			</f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES_CALCULO_CAPURRO} 
+      <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formGravarModalCalculoCapurro">
+					<mec:commandButton value="#{messages.LABEL_SIM_CALCULO_CAPURRO}"
+						id="bt_sim_calculo"
+						action="#{calculoCapurroController.gravarCalculoCapurroModal}"
+						onclick="PF('modalConfirmacaoGravarAlteracaoWG').hide();"
+						profile="ok" ajax="true" render="panelDadosCalculoCapurro,panelListaCalculoCapurro,panelControles,panelAcaoCapurro"
+						process="@this, igSemanas, igDias" />
+					<mec:commandButton id="bt_nao_calculo"
+						value="#{messages.LABEL_NAO_CALCULO_CAPURRO}"
+						action="#{calculoCapurroController.selecionarCalculoCapurro}"
+						onclick="PF('modalConfirmacaoGravarAlteracaoWG').hide();"
+						profile="cancel" ajax="true" render="panelDadosCalculoCapurro,panelListaCalculoCapurro,panelControles,panelAcaoCapurro" process="@this"/>
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Disponibilidade de Vagas por Unidade :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{disponibilidadeUnidadePaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{disponibilidadeUnidadePaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="Pesquisar"> 
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CLINICA}" title="#{messages.TITLE_LABEL_CLINICA_PESQ}" width="500" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarClinicas" id="clinica" controller="#{disponibilidadeUnidadePaginatorController}" value="#{disponibilidadeUnidadePaginatorController.clinica}"> 
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox id="andar" label="#{messages.LABEL_ANDAR}" 
+            title="Digite o número de um andar de localização de leitos para realizar a pesquisa por este campo." 
+            descricaoInput="seq" width="500" descricaoLabel="andarAlaDescricao" suggestionAction="pesquisarUnidadeFuncionalInternacaoAtiva" 
+            controller="#{disponibilidadeUnidadePaginatorController}" value="#{disponibilidadeUnidadePaginatorController.unidadeFuncional}" 
+            render="comboAla"> 
+              <p:column>#{item.andar} #{item.indAla.descricao} - #{item.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <p:outputPanel id="comboAla" layout="inline"> 
+              <mec:selectOneMenu items="#{disponibilidadeUnidadePaginatorController.listarAlas()}" label="#{LABEL_ALA}" value="#{disponibilidadeUnidadePaginatorController.unidadeFuncional.indAla}" rendered="#{not empty disponibilidadeUnidadePaginatorController.unidadeFuncional.indAla}" readonly="true" id="ala"/> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" block="true" hotkey="Alt+P" value="#{messages.LABEL_PESQUISAR}" action="#{disponibilidadeUnidadePaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{disponibilidadeUnidadePaginatorController.limpar}" profile="clear"/>  
+          <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR}" rendered="#{not disponibilidadeUnidadePaginatorController.exibirVoltar()}" action="#{disponibilidadeUnidadePaginatorController.voltar}" profile="cancel"/>  
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" action="#{disponibilidadeUnidadePaginatorController.voltar}" rendered="#{disponibilidadeUnidadePaginatorController.exibirVoltar()}" styleClass=" bt_voltar bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formUnidades"> 
+        <mec:serverDataTable selection="unidade" id="tabelaUnidades" dataModel="dataModel" controller="#{disponibilidadeUnidadePaginatorController}"> 
+          <c:set var="_unidade" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="bt_leitos" title="#{messages.LABEL_LEITOS}" action="internacao-pesquisarDisponibilidadeLeito" view="/internacao/pesquisas/pesquisarDisponibilidadeLeito.xhtml" styleClass=" silk-leito silk-icon"> 
+              <f:setPropertyActionListener target="#{disponibilidadeLeitoPaginatorController.pacCodigo}" value="#{disponibilidadeUnidadePaginatorController.codigoPaciente}" for="command"/>  
+              <f:setPropertyActionListener target="#{disponibilidadeLeitoPaginatorController.unfSeq}" value="#{_unidade.ufUnfSeq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="bt_quartos" title="#{messages.LABEL_QUARTO}" action="internacao-pesquisarDisponibilidadeQuarto" view="/internacao/pesquisas/pesquisarDisponibilidadeQuarto.xhtml" styleClass=" silk-quarto silk-icon"> 
+              <f:setPropertyActionListener target="#{disponibilidadeQuartoPaginatorController.codigoPaciente}" value="#{disponibilidadeUnidadePaginatorController.codigoPaciente}" for="command"/>  
+              <f:setPropertyActionListener target="#{disponibilidadeQuartoPaginatorController.codigoUnidadeFuncional}" value="#{_unidade.ufUnfSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{disponibilidadeQuartoPaginatorController.voltarPara}" value="pesquisarDisponibilidadeUnidade" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="bt_internar" title="#{messages.LABEL_INTERNAR}" action="internacao-cadastroInternacao" view="/internacao/cadastrosbasicos/cadastroInternacao.xhtml" rendered="#{not empty disponibilidadeUnidadePaginatorController.codigoPaciente}" styleClass=" silk-internacao silk-icon"> 
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.aipPacCodigo}" value="#{disponibilidadeUnidadePaginatorController.codigoPaciente}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.aghUniFuncSeq}" value="#{_unidade.ufUnfSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.ainAtendimentoUrgenciaSeq}" value="#{disponibilidadeUnidadePaginatorController.seqAtendimentoUrgencia}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.cameFromBegin}" value="#{disponibilidadeUnidadePaginatorController.cameFrom}" for="command"/> 
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.cameFrom}" value="internacao-pesquisarDisponibilidadeUnidade" for="command"/>           
+            </mec:commandLink>  
+            <mec:commandLink id="bt_internar2" rendered="#{empty disponibilidadeUnidadePaginatorController.codigoPaciente}" title="#{messages.LABEL_INTERNAR}"  action="#{disponibilidadeUnidadePaginatorController.actionInternar(_unidade)}" styleClass=" silk-internacao silk-icon" ajax="true"/> 
+          </p:column>  
+          <p:column sortBy="#{_unidade.ufAndar}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+            </f:facet>  
+            <p:outputPanel layout="block"> 
+              <h:outputText value="#{_unidade.ufAndarAlaDescricao}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column sortBy="#{_unidade.clinica.descricao}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CLINICA}"/> 
+            </f:facet>  
+            <p:outputPanel layout="block"> 
+              <h:outputText value="#{_unidade.clinica.descricao}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column sortBy="#{_unidade.vciCapacInternacao}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CAPACIDADE}"/> 
+            </f:facet>  
+            <p:outputPanel layout="block"> 
+              <h:outputText value="#{_unidade.vciCapacInternacao}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column sortBy="#{_unidade.pdrvVciCapacInternacao}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_VAGAS}"/> 
+            </f:facet>  
+            <p:outputPanel layout="block"> 
+              <h:outputText value="#{_unidade.pdrvVciCapacInternacao}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column sortBy="#{_unidade.leitosReservados}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_RESERVAS}"/> 
+            </f:facet>  
+            <p:outputPanel layout="block"> 
+              <h:outputText value="#{_unidade.leitosReservados}"/> 
+            </p:outputPanel> 
+          </p:column> 
+        </mec:serverDataTable>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_solic_pend" value="#{messages.LABEL_SOLICITCOES_PENDENTES}" action="internacao-solicitacoesTransfPaciente" view="/internacao/leitos/solicitacoesTransferenciaPacienteList.xhtml" disabled="#{mf:hasPermission(securityController,'assistencial, somenteLeitura')}"> 
+            <f:setPropertyActionListener target="#{solicitacoesTransferenciaPacientePaginatorController.voltarPara}" value="internacao-pesquisarDisponibilidadeUnidade" for="command"/> 
+           </mec:commandButton>  
+          <mec:commandButton id="bt_transferir" value="#{messages.LABEL_TRANSFERIR}" action="internacao-transferirPacienteList" view="/internacao/transferir/transferirPacienteList.xhtml"> 
+            <f:setPropertyActionListener target="#{transferirPacientePaginatorController.voltarPara}" value="internacao-pesquisarDisponibilidadeUnidade" for="command"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="bt_redirecionarSolicitacoes" value="#{messages.LABEL_SOLICITAR}" action="#{redirecionarSolicitacao}" rendered="#{false and disponibilidadeUnidadePaginatorController.ativo}" styleClass="bt_cinza"/>  
+          <mec:commandButton id="bt_redirecionarSolicitacoesPendentes" value="#{messages.LABEL_SOLICITCOES_PENDENTES}" action="#{redirecionarSolicitacoesPendentes}" rendered="#{false and disponibilidadeUnidadePaginatorController.ativo}" styleClass="bt_cinza"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

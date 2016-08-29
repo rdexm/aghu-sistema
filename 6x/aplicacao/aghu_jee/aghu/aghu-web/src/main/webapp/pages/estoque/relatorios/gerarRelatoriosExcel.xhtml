@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	
+		<ui:define name="head">
+			<title>#{messages.TITLE_GERAR_RELATORIOS_EXCEL} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+		</ui:define>
+		<ui:define name="body">
+			<mec:pageConfig	controller="#{geracaoRelatoriosExcelController}" />
+			<h:form prependId="false" id="relatorio">
+			
+				<h:outputScript name="locale-primefaces.js" library="js" /> 
+				<p:outputPanel id="filtro">
+					<!-- <p:outputPanel id="filtros_esmp" rendered="#{geracaoRelatoriosExcelController.relatorioSelecionado eq 'ESMP'}"> 
+						<ui:include src="gerarRelatoriosExcelESMP.xhtml"/> 
+					</p:outputPanel>
+					 <p:outputPanel id="filtros_escc" rendered="#{geracaoRelatoriosExcelController.relatorioSelecionado eq 'ESCC'}"> 
+						<ui:include src="gerarRelatoriosExcelESCC.xhtml"/> 
+					</p:outputPanel>-->
+					<p:outputPanel id="filtros_essl" rendered="#{geracaoRelatoriosExcelController.relatorioSelecionado eq 'ESSL'}"> 
+						<ui:include src="gerarRelatoriosExcelESSL.xhtml"/> 
+					</p:outputPanel>
+					<!-- <p:outputPanel id="filtros_mdaf" rendered="#{geracaoRelatoriosExcelController.relatorioSelecionado eq 'MDAF'}"> 
+						<ui:include src="gerarRelatoriosExcelMDAF.xhtml"/> 
+					</p:outputPanel> 
+					<p:outputPanel id="filtros_nrgm" rendered="#{geracaoRelatoriosExcelController.relatorioSelecionado eq 'NRGM'}"> 
+						<ui:include src="gerarRelatoriosExcelNRGM.xhtml"/> 
+					</p:outputPanel>-->
+				</p:outputPanel>	
+				<aghu:panelGeral legend="#{messages.TITLE_GERAR_RELATORIOS_EXCEL}">
+					<aghu:linha>
+						<p:outputPanel layout="inline" id="pnl_tipo_relatorio">
+							  <mec:selectOneRadio id="tipo_relatorio" required="false" 
+								value="#{geracaoRelatoriosExcelController.tipoRelatorio}" layout="pageDirection"> 
+						  		<p:ajax event="change" update="@(#relatorio)" process="@this" 
+						  			listener="#{geracaoRelatoriosExcelController.selecionarTipoRelatorio}"/>
+                              	<f:selectItem id="idItem0" itemDisabled="#{not mf:hasPermission(securityController,'gerarRelatorioEstoqueESnoPeriodo,executar')}"
+                                     itemLabel="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[0].descricao}"
+                                     itemValue="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[0]}" />
+						  		<f:selectItem id="idItem1" itemDisabled="#{not mf:hasPermission(securityController,'gerarRelatorioEstoqueESporCentroCusto,executar')}" 
+                                     itemLabel="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[1].descricao}"
+                                     itemValue="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[1]}" />
+                                <f:selectItem id="idItem2" itemDisabled="#{not mf:hasPermission(securityController,'selecionarESEntradasSaidaSemLicitacao,executar')}"
+                                     itemLabel="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[2].descricao}"
+                                     itemValue="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[2]}" />
+                              	<f:selectItem id="idItem3" itemDisabled="#{not mf:hasPermission(securityController,'gerarRelatorioEstoqueMD,executar')}"
+                                     itemLabel="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[3].descricao}"
+                                     itemValue="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[3]}" />
+                              	<f:selectItem id="idItem4" itemDisabled="#{not mf:hasPermission(securityController,'gerarRelatorioEstoqueNR,executar')}"
+                                     itemLabel="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[4].descricao}"
+                                     itemValue="#{geracaoRelatoriosExcelController.listarTipoRelatorio()[4]}" />
+							</mec:selectOneRadio>
+						</p:outputPanel>
+					</aghu:linha>
+				</aghu:panelGeral>
+				<aghu:acao>
+						<mec:commandButton id="bt_download" ajax="true"
+							value="#{messages.LABEL_DOWNLOAD_CSV}"  render="downloadCSV"
+							action="#{geracaoRelatoriosExcelController.gerarCSV}"
+							styleClass="icon-download-csv bt_cinza">
+						</mec:commandButton>
+						
+						<mec:commandButton id="bt_limpar" 
+							value="#{messages.LABEL_LIMPAR}" 
+							action="#{geracaoRelatoriosExcelController.limpar}" 
+							render="relatorio" profile="clear" ajax="true" process="@this"/>
+							
+							<mec:commandButton id="abrirArquivoButton" immediate="true" ajax="false"
+							action="#{geracaoRelatoriosExcelController.dispararDownload()}"
+							value="Download do arquivo" style="visibility: hidden;">
+							<f:param name="cid"
+								value="#{javax.enterprise.context.conversation.id}" />
+						</mec:commandButton>
+							
+						<p:outputPanel id="downloadCSV">
+							<c:if xmlns:c="http://java.sun.com/jstl/core"
+									test="#{geracaoRelatoriosExcelController.gerarArquivo}">
+								<script type="text/javascript" xml:space="preserve">
+									jQuery(document).ready(function(){
+										document.getElementById('abrirArquivoButton:button').click();
+			
+									});
+								</script>
+							</c:if>
+						</p:outputPanel>
+	
+				</aghu:acao>
+				
+			</h:form>
+		</ui:define>
+	</ui:composition>
+</html>

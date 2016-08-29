@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition xmlns:mec="http://www.mec.gov.br/seam">  
+    <h:form prependId="false" id="formPanelEvolucao"> 
+      <p:outputPanel id="panelEvolucoes" layout="inline"> 
+        <aghu:linha> 
+          <mec:selectOneMenu id="dataReferenciaEvolucao" label="#{messages.LABEL_ANAMNESE_EVOLUCAO_DATA_REFERENCIA}" title="#{messages.TITLE_ANAMNESE_EVOLUCAO_DATA_REFERENCIA}" value="#{visualizarAnamneseEvolucoesController.dataReferencia}"> 
+            <s:selectItems xmlns:s="http://jboss.com/products/seam/taglib" value="#{visualizarAnamneseEvolucoesController.listaDataReferencia}" var="item" label="#{item}" semSelecione="true"></s:selectItems>  
+            <p:ajax event="change" update="@(#dataReferenciaEvolucao)" process="@this"/> 
+          </mec:selectOneMenu>  
+          <mec:field name="comboProfissionais" label="#{messages.LABEL_ANAMNESE_EVOLUCAO_PROFISSIONAL}" title="#{messages.TITLE_ANAMNESE_EVOLUCAO_FILTRAR_PROFISSIONAL}"> 
+            <h:selectOneMenu id="profissionais" value="#{visualizarAnamneseEvolucoesController.profissional}"> 
+              <s:selectItems xmlns:s="http://jboss.com/products/seam/taglib" value="#{visualizarAnamneseEvolucoesController.listaProfissionais}" var="item" label="#{item.pessoaFisica.nome}" noSelectionLabel="#{mec:getDefaultValue(noSelectionLabel,'Selecione')}"></s:selectItems>  
+              <p:ajax event="change" update="@(#profissionais)" process="@this"/>  
+              <s:convertEntity xmlns:s="http://jboss.com/products/seam/taglib"></s:convertEntity> 
+            </h:selectOneMenu> 
+          </mec:field>  
+          <mec:commandButton xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" id="filtrarEvolucoes" process="@this" value="#{messages.LABEL_ANAMNESE_EVOLUCAO_FILTRAR}" limitToList="true" action="#{visualizarAnamneseEvolucoesController.filtrarEvolucoes}" style="margin-top: 14px; margin-left: 10px;" ajax="true" render="panelTabelaListaEvolucoes, descricaoEvolucao"></mec:commandButton> 
+        </aghu:linha>  
+        <aghu:linha style="margin-top:15px"> 
+          <p:outputPanel id="panelTabelaListaEvolucoes" layout="inline"> 
+            <table class="rich-table tbl_docs">
+              <tr class="rich-table-subheader">
+                <th class="rich-table-subheadercell" style="width: 64px !important; text-align: left !important;" rowspan="1" colspan="1">
+                  <h:outputText value="#{messages.LABEL_ACAO}"/>
+                </th>
+                <th class="rich-table-subheadercell" style="width: 106px !important; text-align: left !important;" rowspan="1" colspan="1">
+                  <h:outputText value="#{messages.LABEL_ANAMNESE_EVOLUCAO_COLUNA_DATA_REFERENCIA}"/>
+                </th>
+                <th class="rich-table-subheadercell" style="width: 116px !important; text-align: left !important;" rowspan="1" colspan="1">
+                  <h:outputText value="#{messages.LABEL_ANAMNESE_EVOLUCAO_COLUNA_DATA_CRIACAO_HORA}"/>
+                </th>
+                <th class="rich-table-subheadercell" style="width: 116px !important; text-align: left !important;" rowspan="1" colspan="1">
+                  <h:outputText value="#{messages.LABEL_ANAMNESE_EVOLUCAO_COLUNA_DATA_FIM_HORA}"/>
+                </th>
+                <th class="rich-table-subheadercell" style="text-align: left !important;" rowspan="1" colspan="1">
+                  <h:outputText value="#{messages.LABEL_ANAMNESE_EVOLUCAO_COLUNA_NOME_RESPONSAVEL}"/>
+                </th>
+              </tr>
+            </table>  
+            <s:div xmlns:s="http://jboss.com/products/seam/taglib" style="max-height: 131px; overflow-y: auto;">  
+              <mec:serverDataTable xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" rendered="#{not empty visualizarAnamneseEvolucoesController.listaEvolucoes}" id="listaEvolucoes" list="#{visualizarAnamneseEvolucoesController.listaEvolucoes}" scrollable="true">  
+                <c:set var="_item" value="#{item}"/>
+                <p:ajax event="RowClick" update="@(#listaEvolucoes) @(#descricaoEvolucao) @(#dataReferenciaEvolucao)" listener="#{visualizarAnamneseEvolucoesController.marcarDataReferencia}"> 
+                  <f:setPropertyActionListener target="#{visualizarAnamneseEvolucoesController.evolucao}" value="#{_item}" for="command"/> 
+                </p:ajax>  
+                <p:column style="width:68px;" styleClass="#{(_item.seq eq visualizarAnamneseEvolucoesController.evolucao.seq) ? 'selected' : ''}"> 
+                  <p:outputPanel style="vertical-align:middle;padding-bottom:5px;" rendered="#{_item eq visualizarAnamneseEvolucoesController.evolucao}" layout="inline"> 
+                    <input type="radio" id="#{_item.seq}" checked="checked"/> 
+                  </p:outputPanel>  
+                  <p:outputPanel style="vertical-align:middle;padding-bottom:5px;" rendered="#{_item ne visualizarAnamneseEvolucoesController.evolucao}" layout="inline"> 
+                    <input type="radio" id="#{_item.seq}"/> 
+                  </p:outputPanel>  
+                  <mec:commandLink title="#{messages.LABEL_IMPRIMIR}" action="#{visualizarAnamneseEvolucoesController.imprimirEvolucao(_item.seq)}" rendered="#{s:hasPermission('imprimirAnamneseEvolucao','imprimir')}" styleClass=" silk-printer"/>  
+                  <mec:commandLink id="btNotaAdicional" action="#{visualizarAnamneseEvolucoesController.carregarNotaAdicionalEvolucao(_item.seq)}" oncomplete="PF('modalNotasAdicionaisEvolucoesWG').show();" rendered="#{visualizarAnamneseEvolucoesController.verificarEvolucaoPossuiNotas(_item.seq)}" title="#{messages.TITLE_ANAMNESE_EVOLUCAO_VISUALIZAR_NOTAS_EVOLUCAO}" styleClass=" silk-zoom" ajax="true" render="panelModalNotaAdicionalEvolucoes, modalNotasAdicionaisEvolucoes" process="@this"/> 
+                </p:column>  
+                <p:column style="width:110px;" styleClass="#{(_item.seq eq visualizarAnamneseEvolucoesController.evolucao.seq) ? 'selected' : ''}"> 
+                  <h:outputText value="#{_item.dthrReferencia}"> 
+                    <s:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column style="width:120px;" styleClass="#{(_item.seq eq visualizarAnamneseEvolucoesController.evolucao.seq) ? 'selected' : ''}"> 
+                  <h:outputText value="#{_item.dthrCriacao}"> 
+                    <s:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column style="width:120px;" styleClass="#{(_item.seq eq visualizarAnamneseEvolucoesController.evolucao.seq) ? 'selected' : ''}"> 
+                  <h:outputText value="#{_item.dthrFim}"> 
+                    <s:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column styleClass="#{(_item.seq eq visualizarAnamneseEvolucoesController.evolucao.seq) ? 'selected' : ''}"> 
+                  <h:outputText value="#{_item.servidor.pessoaFisica.nome}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </s:div> 
+          </p:outputPanel> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <mec:inputTextArea id="descricaoEvolucao" label="#{messages.LABEL_ANAMNESE_EVOLUCAO_DESCRICAO_EVOLUCAO}" cols="132" rows="5" readonly="true" value="#{empty visualizarAnamneseEvolucoesController.evolucao ? '' : visualizarAnamneseEvolucoesController.evolucao.descricao}"/> 
+        </aghu:linha> 
+      </p:outputPanel> 
+    </h:form>  
+    <p:outputPanel id="panelModalNotaAdicionalEvolucoes" layout="inline"> 
+      <p:dialog rendered="#{not empty visualizarAnamneseEvolucoesController.listaNotaAdicionalEvolucoes}" id="modalNotasAdicionaisEvolucoes" width="600" height="350" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalNotasAdicionaisEvolucoesWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_VISUALIZAR_ANAMNESE_NOTAS_ADICIONAIS}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <f:facet name="controls"> 
+          <h:panelGroup> 
+            <h:graphicImage value="/componentes/image/close.png" styleClass="hidelink" id="hideModalModalNotaAdicionalEvolucoes"> 
+              <rich:componentControl xmlns:rich="http://richfaces.org/rich" for="modalNotasAdicionaisEvolucoes" attachTo="hideModalModalNotaAdicionalEvolucoes" operation="hide" event="onclick"></rich:componentControl> 
+            </h:graphicImage> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:form> 
+          <aghu:linha> 
+            <h:outputText value="#{messages.LABEL_VISUALIZAR_ANAMNESE_DATA_HORA}: "/>  
+            <h:selectOneMenu id="notaAdicionalEvolucoes" value="#{visualizarAnamneseEvolucoesController.notaAdicionalEvolucaoSelecionada}"> 
+              <s:selectItems xmlns:s="http://jboss.com/products/seam/taglib" value="#{visualizarAnamneseEvolucoesController.listaNotaAdicionalEvolucoes}" var="notaAdicional" label="#{visualizarAnamneseEvolucoesController.formatarDataNotaAdicional(notaAdicional.dthrCriacao)}"></s:selectItems>  
+              <s:convertEntity xmlns:s="http://jboss.com/products/seam/taglib"></s:convertEntity>  
+              <p:ajax event="change" update="@(#textAreaDescricaoAnamnese)" process="@this"/> 
+            </h:selectOneMenu> 
+          </aghu:linha>  
+          <aghu:linha style="padding-top: 12px"> 
+            <h:outputText value="#{messages.LABEL_VISUALIZAR_ANAMNESE_REGISTRADO_POR}: "/>  
+            <h:outputText value="#{visualizarAnamneseEvolucoesController.notaAdicionalEvolucaoSelecionada.servidor.pessoaFisica.nome}"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextArea id="textAreaDescricaoAnamnese" cols="75" rows="14" styleClass="maxlength_(12000)" readonly="true" value="#{visualizarAnamneseEvolucoesController.notaAdicionalEvolucaoSelecionada.descricao}"/> 
+          </aghu:linha> 
+        </h:form> 
+      </p:dialog> 
+    </p:outputPanel> 
+  </ui:composition>
+</html>

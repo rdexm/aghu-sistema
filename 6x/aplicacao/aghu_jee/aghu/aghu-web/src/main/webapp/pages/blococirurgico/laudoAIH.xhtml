@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_LAUDO_AIH}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{laudoAIHPaginatorController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{laudoAIHPaginatorController}"/>  
+      <p:outputPanel id="panelTodos" layout="inline"> 
+        <h:form prependId="false" id="formCirurgiaRealizadaNotaConsumo"> 
+          <aghu:panelGeral legend="#{messages.LABEL_SOLIC_INTERNACAO_PACIENTE}"> 
+            <aghu:linha> 
+              <p:outputPanel id="pacienteDecorate" layout="inline"> 
+                <mec:pesquisaPaciente id="pesqPaciente" valueChangeListener="#{laudoAIHPaginatorController.pesquisaPaciente}" value="#{laudoAIHPaginatorController.paciente}" render="pacienteDecorate"/>  
+                <br clear="none"/>  
+                <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" id="nomePaciente" block="true" requestDelay="1000" action="#{laudoAIHPaginatorController.redirecionarPesquisaFonetica}" styleClass=" bt_cinza icon-pesquisa-fonetica"/> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{laudoAIHPaginatorController.pesquisarPacienteProntuario}" ajax="true" render="formCirurgiaRealizadaNotaConsumo,formListaLaudosAIH" profile="search"/>
+            <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" immediate="true" render="pacienteDecorate" action="#{laudoAIHPaginatorController.limparPesquisa}" profile="clear"/>  
+            <mec:commandButton id="bt_novo_laudo" value="#{messages.LABEL_NOVO_LAUDO_AIH}" action="#{laudoAIHPaginatorController.redirecionarNovoLaudoAih}" disabled="#{not mf:hasPermission(securityController,'manterLaudoAih,executar') or laudoAIHPaginatorController.paciente == null}" styleClass="bt_cinza"> 
+              <f:setPropertyActionListener target="#{laudoAIHController.pacCodigo}" value="#{laudoAIHPaginatorController.pacCodigo}" for="command"/>  
+              <f:setPropertyActionListener target="#{laudoAIHController.voltarPara}" value="laudoAIH" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{laudoAIHPaginatorController.voltarPara}"
+					rendered="#{not laudoAIHPaginatorController.voltarParaEmergencia}"	styleClass="bt_voltar bt_cinza" ajax="true" profile="back"/>
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false" id="formListaLaudosAIH"> 
+          <mec:serverDataTable dataModel="dataModel" id="tabelaLaudoAIH" controller="#{laudoAIHPaginatorController}"> 
+            <c:set var="_item" value="#{item}"/>  
+            <p:column style="background-color:#{_item.obsRevisaoMedica != null ? 'yellow' : 'blau'}" exportable="false"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink immediate="true" id="ajustar" action="#{laudoAIHPaginatorController.ajustarLaudoIncompleto()}" rendered="#{_item.indSituacao.name().equals('I') and mf:hasPermission(securityController,'manterLaudoAih,executar')}" styleClass=" silk-ajustar_laudo_incompleto silk-icon"> 
+                <f:setPropertyActionListener target="#{laudoAIHController.seq}" value="#{_item.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{laudoAIHController.voltarPara}" value="laudoAIH" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink immediate="true" id="visualizar" action="#{laudoAIHPaginatorController.visualizarLaudoAIH(_item.seq)}" rendered="#{mf:hasPermission(securityController,'laudoSolicitacaoInternacao,visualizar') and          mf:hasPermission(securityController,'visualizarLaudoSolicitacaoInternacao,visualizar')}" styleClass=" silk-magnifier silk-icon"> 
+                <f:setPropertyActionListener target="#{relatorioLaudoAIHController.seq}" value="#{_item.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{relatorioLaudoAIHController.matricula}" value="#{laudoAIHPaginatorController.servidor.id.matricula}" for="command"/>  
+                <f:setPropertyActionListener target="#{relatorioLaudoAIHController.vinCodigo}" value="#{laudoAIHPaginatorController.servidor.id.vinCodigo}" for="command"/>  
+                <f:setPropertyActionListener target="#{relatorioLaudoAIHController.voltarPara}" value="blococirurgico-laudoAIH" for="command"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column style="background-color:#{_item.obsRevisaoMedica != null ? 'yellow' : 'white'}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DATA}"/> 
+              </f:facet>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_item.obsRevisaoMedica != null}"> 
+                <h:outputText value="#{_item.obsRevisaoMedica}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{_item.dthrCriacao}" id="dthrCriacao"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column style="background-color:#{_item.obsRevisaoMedica != null ? 'yellow' : 'white'}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ESPECIALIDADE}"/> 
+              </f:facet>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_item.obsRevisaoMedica != null}"> 
+                <h:outputText value="#{_item.obsRevisaoMedica}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{_item.especialidade.nomeEspecialidade}" id="nomeEspecialidade"/> 
+            </p:column>  
+            <p:column style="background-color:#{_item.obsRevisaoMedica != null ? 'yellow' : 'white'}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_EQUIPE}"/> 
+              </f:facet>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_item.obsRevisaoMedica != null}"> 
+                <h:outputText value="#{_item.obsRevisaoMedica}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{_item.equipe.nome}" id="nomeEquipe"/> 
+            </p:column>  
+            <p:column style="background-color:#{_item.obsRevisaoMedica != null ? 'yellow' : 'white'}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PROV_INTERNACAO}"/> 
+              </f:facet>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_item.obsRevisaoMedica != null}"> 
+                <h:outputText value="#{_item.obsRevisaoMedica}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{_item.dtProvavelInternacao}" id="dtProvavelInternacao"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column style="background-color:#{_item.obsRevisaoMedica != null ? 'yellow' : 'white'}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+              </f:facet>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_item.obsRevisaoMedica != null}"> 
+                <h:outputText value="#{_item.obsRevisaoMedica}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{_item.indSituacao.descricao}" id="situacao"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

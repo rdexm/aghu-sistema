@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_GRUPOS_PESQUISAR']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{gruposAchadosListController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{gruposAchadosListController}"/>  
+      <p:outputPanel id="panelTodo" layout="inline"> 
+        <h:form prependId="false" id="formGrupo"> 
+          <aghu:panelGeral legend="#{messages.TITLE_GRUPOS_PESQUISAR}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="codigo" value="#{gruposAchadosListController.grupo.id.seqp}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_GRUPO_CODIGO}" maxlength="3" size="4"/>  
+              <mec:inputText label="#{messages.LABEL_DESCRICAO}" id="descricao" size="125" maxlength="120" title="#{messages.TITLE_GRUPO_DESCRICAO}" value="#{gruposAchadosListController.grupo.descricao}" style="text-transform:uppercase"/>  
+              <mec:selectOneMenu enum="DominioSituacao" label="#{messages.LABEL_SITUACAO}" id="ativoInativoItens" semSelecione="false" value="#{gruposAchadosListController.grupo.indSituacao}" title="#{messages.TITLE_GRUPO_SITUACAO}"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox width="300" id="suggestionProcedimento" label="#{messages.LABEL_PROCEDIMENTO}" title="#{messages.TITLE_GRUPO_PROCEDIMENTO}" suggestionAction="pesquisarPdtProcDiagTerap" descricaoInput="seq" descricaoLabel="descricao" descricaoLimite="70" controller="#{gruposAchadosListController}" value="#{gruposAchadosListController.procDiagTerap}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{gruposAchadosListController.pesquisar}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{gruposAchadosListController.limpar}" styleClass="bt_cinza" profile="clear"/>  
+            <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{gruposAchadosListController.iniciarInclusao()}" rendered="#{gruposAchadosListController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'manterGrupoAchadosPDT,atualizar')}" profile="add"/>  
+            <mec:backButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" styleClass="bt_voltar" immediate="true" rendered="#{gruposAchadosListController.dptSeq != null}" action="#{gruposAchadosListController.cancelar}"/> 
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false" id="formListaGrupos"> 
+          <p:outputPanel rendered="#{gruposAchadosListController.dataModel.pesquisaAtiva}" id="regionTabelaGruposAchados" layout="inline"> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaGrupos" value="#{gruposAchadosListController}" controller="#{gruposAchadosListController}"> 
+              <c:set var="_grupos" value="#{item}"/>  
+              <p:column id="columnAcao" style="width:30px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="columnAcao"/> 
+                </f:facet>  
+                <mec:commandLink id="lb_editar" action="#{gruposAchadosCRUDController.editar(_grupos.id.dptSeq,_grupos.id.seqp)}" title="#{messages.LABEL_EDITAR}" profile="edit"/> 
+              </p:column>  
+              <p:column id="columnSeqDescricao" style="width:390px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PROCEDIMENTO}"/> 
+                </f:facet>  
+                <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{(_grupos.pdtProcDiagTerap.descricao.length() &gt; 60)}"> 
+                  <h:outputText value="#{gruposAchadosListController.editarSeqDescricao(_grupos.pdtProcDiagTerap.seq, _grupos.pdtProcDiagTerap.descricao, 'false')}"/> 
+                </p:tooltip>  
+                <h:outputText value="#{gruposAchadosListController.editarSeqDescricao(_grupos.pdtProcDiagTerap.seq, _grupos.pdtProcDiagTerap.descricao, 'true')}"/> 
+              </p:column>  
+              <p:column id="columnCodigo" style="width:60px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_grupos.id.seqp}"/> 
+              </p:column>  
+              <p:column id="columnDescricao" style="width:310px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{(_grupos.descricao.length() &gt; 57)}"> 
+                  <h:outputText value="#{_grupos.descricao}"/> 
+                </p:tooltip>  
+                <h:outputText value="#{(_grupos.descricao.length() &gt; 57) ? fn:substring(_grupos.descricao,0,57) : _grupos.descricao}"/>  
+                <h:outputText value="..." rendered="#{(_grupos.descricao.length() &gt; 57)}"/> 
+              </p:column>  
+              <p:column id="columnSituacao" style="width:80px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_grupos.indSituacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

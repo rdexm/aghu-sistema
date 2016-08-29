@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisar Permissoes :: CASCA - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{permissaoController}"/>  
+      <h:form prependId="false" id="pesquisarPermissoes"> 
+        <aghu:panelGeral legend="#{messages.CASCA_MENSAGEM_PESQUISAR_PERMISSOES}"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.CASCA_LABEL_NOME}" title="#{messages.CASCA_TITULO_NOME_PERMISSAO}" value="#{permissaoController.permissaoFiltro.nome}" caixaAlta="false" id="nome"/>  
+            <mec:inputText label="#{messages.CASCA_LABEL_DESCRICAO}" title="#{messages.CASCA_TITULO_DESCRICAO_PERMISSAO}" value="#{permissaoController.permissaoFiltro.descricao}" caixaAlta="false" size="50" maxlength="50" id="descricao"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.CASCA_LABEL_MODULO}" title="#{messages.CASCA_TITULO_MODULO}" descricaoInput="id" descricaoLabel="descricao" suggestionAction="autocompleteModulos" width="360" id="modulo" controller="#{permissaoController}" value="#{permissaoController.modulo}"> 
+              <p:column>#{item.id}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.CASCA_LABEL_PESQUISAR}" action="#{permissaoController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.CASCA_LABEL_LIMPAR_PESQUISA}" action="#{permissaoController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton rendered="#{permissaoController.dataModel.pesquisaAtiva}" value="#{messages.CASCA_LABEL_CADASTRAR_NOVO}" action="#{permissaoController.novo}" profile="add"/>
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" action="#{permissaoController.voltar}" rendered="#{not empty permissaoController.voltarPara}" styleClass="icon-back bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="tabelaPesquisarPermissoes"> 
+        <mec:serverDataTable id="tabelaPermissoes" dataModel="dataModel" controller="#{permissaoController}"> 
+          <c:set var="item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink action="#{permissaoController.manterPermissaoComponente}" title="#{messages.CASCA_TITULO_EDITAR_PERMISSAO}" styleClass=" silk-report-magnify silk-icon"> 
+              <f:setPropertyActionListener target="#{permissaoComponenteController.permissao}" value="#{item}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaPermissoes_link_editar" profile="edit" title="editar" action="#{permissaoController.editar}"> 
+              <f:setPropertyActionListener target="#{permissaoController.permissao}" value="#{item}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{permissaoController.permissao}" value="#{item}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaPermissoes_link_remover" profile="delete" title="excluir" action="#{permissaoController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{permissaoController.permissao}" value="#{item}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column sortBy="#{item.nome}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_NOME}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.nome}"/> 
+          </p:column>  
+          <p:column sortBy="#{item.descricao}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.descricao}"/> 
+          </p:column>  
+          <p:column sortBy="#{item.dataCriacao}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_DATA_CADASTRO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.dataCriacao}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_MODULOS}"/> 
+            </f:facet>  
+            <ui:repeat value="#{item.permissoesModulos.toArray()}" var="pm" varStatus="row"> 
+              <h:outputText value="," rendered="#{row.index gt 1}"/>  
+              <h:outputText value="#{pm.modulo.descricao}"/> 
+            </ui:repeat> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.ativo.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

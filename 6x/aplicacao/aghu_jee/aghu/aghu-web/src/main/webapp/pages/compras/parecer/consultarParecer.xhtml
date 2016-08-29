@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_CONSULTA_PARECER} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{consultaParecerController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{consultaParecerController}" />
+
+			<h:form prependId="false" id="formPesquisa">
+				<aghu:panelGeral legend="#{messages.TITLE_CONSULTA_PARECER}">
+					<aghu:linha>					    
+						<p:outputPanel id="panelMaterial" layout="inline">
+							<mec:suggestionBox id="sbmaterial"
+								label="#{messages.LABEL_CONSULTA_PARECER_MATERIAL}"
+								title="#{messages.TITLE_CONSULTA_PARECER_MATERIAL}"
+								descricaoInput="codigo" descricaoLabel="nome" resultTitle=""
+								suggestionAction="listarMateriais" width="700"								
+								controller="#{consultaParecerController}"
+								posSelectionAction="atribuirGrupo"
+								posDeleteAction="apagarGrupo"
+								value="#{consultaParecerController.material}"
+								render="grupoEstocavelPanel, materialToolTip, panelMaterial"
+								var="itemMaterial"
+				                itemValue="#{itemMaterial}">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{itemMaterial.codigo}
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_NOME}</b>
+									</f:facet>
+									<h:outputText value="#{(itemMaterial.nome.length() &gt; 40) ? fn:substring(itemMaterial.nome,0,40) : itemMaterial.nome}#{(itemMaterial.nome.length() &gt; 40) ? '...' : '' }" 
+                        						  title="#{itemMaterial.nome}"/>
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_SC_ESTOCAVEL}</b>
+									</f:facet>
+									<h:outputText value="#{itemMaterial.estocavel}">
+										<f:converter converterId="simNaoConverter" />
+									</h:outputText>
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet>
+									<h:outputText title="#{itemMaterial.getDescricaoSplited(70)}"
+											      value="#{(itemMaterial.descricao.length() &gt; 40) ? fn:substring(itemMaterial.descricao,0,40) : itemMaterial.descricao}#{(itemMaterial.descricao.length() &gt; 40) ? '...' : '' }" />
+								</p:column>
+							</mec:suggestionBox>
+							<p:tooltip id="materialToolTip" for="panelMaterial" mode="ajax"
+								disabled="#{empty consultaParecerController.material}">
+								<h:outputText
+									value="#{messages.LABEL_NOME}: #{consultaParecerController.material.nome}"
+									rendered="#{not empty consultaParecerController.material.nome}" />
+								<br clear="none" />
+								<h:outputText
+									value="#{messages.LABEL_DESCRICAO}: #{consultaParecerController.material.descricao}"
+									rendered="#{not empty consultaParecerController.material.descricao}" />
+							</p:tooltip>
+						
+						</p:outputPanel>
+						<br/>  
+	                    <mec:commandLink action="#{consultaParecerController.selecionarMaterial()}" title="#{messages.LABEL_CATALOGO_DE_MATERIAIS}" immediate="true" style="margin-top: 6px;" styleClass=" silk-materiais silk-icon" ajax="true"> 
+	                        <f:setPropertyActionListener target="#{consultaCatalogoMaterialPaginatorController.origem}" value="compras-consultarParecer" for="command"/> 
+	                    </mec:commandLink> 
+	               </aghu:linha>
+	               <aghu:linha>	                    
+						<p:outputPanel id="grupoEstocavelPanel" layout="inline">
+							<mec:suggestionBox id="grupoMaterial"
+								label="#{messages.LABEL_CONSULTA_PARECER_GRUPO_MATERIAL}"
+								title="#{messages.TITLE_CONSULTA_PARECER_GRUPO_MATERIAL}"
+								descricaoInput="codigo" descricaoLabel="descricao"
+								suggestionAction="listarGrupoMateriais" width="400"
+								readonly="#{not empty consultaParecerController.material}"
+								controller="#{consultaParecerController}"
+								value="#{consultaParecerController.grupoMaterial}"
+								posDeleteAction="apagarMaterial"
+								render="panelMaterial"
+								var="itemGrupoMaterial"
+				                itemValue="#{itemGrupoMaterial}">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{itemGrupoMaterial.codigo}
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet> #{itemGrupoMaterial.descricao}
+								</p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>
+						<mec:selectOneMenu
+								label="#{messages.LABEL_ESTOCAVEL_MATERIAL_CATALOGO}"
+								title="#{messages.TITLE_ESTOCAVEL_MATERIAL_CATALOGO}"
+								id="som_estocavel" enum="DominioSimNao"
+								value="#{consultaParecerController.matIndEstocavel}" />
+					</aghu:linha>
+					<aghu:linha>
+						<p:outputPanel id="panelMarcaComercial" layout="inline">
+							<mec:suggestionBox id="sbMarcaComercial"
+								label="#{messages.LABEL_CONSULTA_PARECER_MARCA}"
+								title="#{messages.TITLE_CONSULTA_PARECER_MARCA}"
+								descricaoInput="codigo" descricaoLabel="descricao"
+								posDeleteAction="limparModeloComercial"
+								suggestionAction="pesquisarMarcaComercial"
+								readonly="#{not empty consultaParecerController.modeloComercial}"
+								controller="#{consultaParecerController}"
+								value="#{consultaParecerController.marcaComercial}"
+								render="panelModelo"
+								var="itemMarca"
+				                itemValue="#{itemMarca}">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{itemMarca.codigo}
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet> #{itemMarca.descricao}
+								</p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>
+						<p:outputPanel id="panelModelo" layout="inline">
+							<mec:suggestionBox id="sbModelo"
+								label="#{messages.LABEL_CONSULTA_PARECER_MODELO}"
+								title="#{messages.TITLE_CONSULTA_PARECER_MODELO}"
+								required="false" descricaoInput="id.seqp"
+								descricaoLabel="descricao"
+								suggestionAction="pesquisarMarcaModeloPorCodigoDescricao"
+								controller="#{consultaParecerController}"
+								value="#{consultaParecerController.modeloComercial}"
+								render="panelMarcaComercial"
+								var="itemModelo"
+				                itemValue="#{itemModelo}">
+								<p:column>#{itemModelo.id.seqp}</p:column>
+								<p:column>#{itemModelo.descricao}</p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:selectOneMenu
+							label="#{messages.LABEL_CONSULTA_PARECER_PARECER_FINAL}"
+							title="#{messages.TITLE_CONSULTA_PARECER_PARECER_FINAL}"
+							id="parecerFinal" enum="DominioParecer" itemsType="enum"
+							required="false"
+							value="#{consultaParecerController.parecerFinal}" />
+						<mec:selectBooleanCheckbox id="ultimosPareceres"
+							label="#{messages.LABEL_CONSULTA_PARECER_ULTIMOS_PARECERES}"
+							title="#{messages.TITLE_CONSULTA_PARECER_ULTIMOS_PARECERES}"
+							value="#{consultaParecerController.apenasUltimosPareceres}" 
+							readonly="true"/>
+						<mec:selectOneMenu
+							label="#{messages.LABEL_CONSULTA_PARECER_SITUACAO}"
+							title="#{messages.TITLE_CONSULTA_PARECER_SITUACAO}" id="situacao"
+							enum="DominioSituacao" itemsType="enum" required="false"
+							value="#{consultaParecerController.situacao}" />
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox id="sbPasta"
+							label="#{messages.LABEL_CONSULTA_PARECER_PASTA}"
+							title="#{messages.TITLE_CONSULTA_PARECER_PASTA}"
+							suggestionAction="pesquisarOrigemParecerTecnicoPorSeqDescricao"
+							descricaoInput="codigo" descricaoLabel="descricao" maxlength="30"
+							width="400" controller="#{consultaParecerController}"
+							value="#{consultaParecerController.pasta}"
+							var="itemPasta"
+				            itemValue="#{itemPasta}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_ORIGEM}</b>
+								</f:facet> #{itemPasta.codigo}
+								</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_MANTER_MATERIAL_AGRUPAMENTO}</b>
+								</f:facet> #{itemPasta.scoAgrupamentoMateriais.descricao} #{itemPasta.fccCentroCusto.descricao}
+								</p:column>
+						</mec:suggestionBox>
+						<mec:inputNumero id="subpasta"
+							value="#{consultaParecerController.nroSubPasta}"
+							label="#{messages.LABEL_CONSULTA_PARECER_SUBPASTA}"
+							title="#{messages.TITLE_CONSULTA_PARECER_SUBPASTA}" maxlength="4"
+							size="4" />
+						<mec:inputText id="numeroRegistro"
+							value="#{consultaParecerController.nroRegistro}"
+							label="#{messages.LABEL_CONSULTA_PARECER_NRO_REGISTRO}"
+							title="#{messages.TITLE_CONSULTA_PARECER_NRO_REGISTRO}"
+							maxlength="15" size="12" styleClass="numerico" />
+					</aghu:linha>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<mec:commandButton value="#{messages.LABEL_PESQUISAR}"
+						id="bt_pesquisar" action="#{consultaParecerController.pesquisar}"
+						profile="search" />
+					<mec:commandButton id="bt_limpar"
+						value="#{messages.LABEL_LIMPAR_CAMPOS}"
+						action="#{consultaParecerController.limparPesquisa}"
+						profile="clear" />
+					<mec:commandButton value="Novo"
+						action="#{consultaParecerController.iniciarInclusao}"
+						rendered="#{consultaParecerController.pesquisou and mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"
+						profile="add">
+						<f:setPropertyActionListener
+							target="#{parecerController.codigoParecerMaterial}"
+							value="#{null}" for="command" />
+						<f:setPropertyActionListener
+							target="#{parecerController.marcaComercialInserida}"
+							value="#{null}" for="command" />
+						<f:setPropertyActionListener
+							target="#{parecerController.marcaModeloInserida}"
+							value="#{null}" for="command" />
+						<f:setPropertyActionListener
+							target="#{parecerController.cameFromMarcaModeloCrud}"
+							value="false" for="command" />	
+						<f:setPropertyActionListener
+							target="#{parecerController.modoEdit}" value="false"
+							for="command" />
+						<f:setPropertyActionListener
+							target="#{parecerController.voltarPara}"
+							value="compras-consultarParecer" for="command" />
+						<f:setPropertyActionListener
+							target="#{parecerController.codigoMaterial}"
+							value="#{consultaParecerController.material.codigo}" for="command"/>
+							
+					</mec:commandButton>
+					<mec:commandButton id="btAddMarcaComercial"
+					value="#{messages.LABEL_ADICIONAR_MARCA_MODELO}" block="true"
+					rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"						
+					action="#{consultaParecerController.adicionarMarcaComercial}"
+					styleClass="bt_cinza">
+					<f:setPropertyActionListener
+						target="#{manterMarcaComercialController.voltarParaUrl}"
+						value="compras-consultarParecer" for="command" />
+				</mec:commandButton>
+					
+				</aghu:acao>
+			</h:form>
+			
+			<p:outputPanel id="panelTabela" style="margin-left: 10px; margin-right: 10px;">
+				<h:form prependId="false" id="formPesquisaResultado">				
+					 <mec:serverDataTable id="resultListParecer" dataModel="dataModel" controller="#{consultaParecerController}"> 
+                        <c:set var="itemParecerVO" value="#{item}"/>						
+						<p:column width="3%" >
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ACAO}" />
+							</f:facet>
+							<mec:commandLink
+								action="#{consultaParecerController.redirecionarParecerCrud}"
+								title="#{messages.LABEL_EDITAR}"
+								rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"
+								profile="edit">
+								<f:setPropertyActionListener
+									target="#{parecerController.codigoParecerMaterial}"
+									value="#{itemParecerVO.codigoParecerMaterial}" for="command" />
+								<f:setPropertyActionListener
+									target="#{parecerController.modoEdit}" value="true"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{parecerController.voltarPara}"
+									value="compras-consultarParecer" for="command" />
+							</mec:commandLink>
+							<mec:commandLink
+								action="#{consultaParecerController.redirecionarParecerCrud}"
+								title="#{messages.LABEL_VISUALIZAR}"
+								rendered="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"
+								styleClass=" silk-zoom silk-icon">
+								<f:setPropertyActionListener
+									target="#{parecerController.codigoParecerMaterial}"
+									value="#{itemParecerVO.codigoParecerMaterial}" for="command" />
+								<f:setPropertyActionListener
+									target="#{parecerController.voltarPara}"
+									value="compras-consultarParecer" for="command" />
+							</mec:commandLink>
+						</p:column>
+						<p:column width="5%" >
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTA_PARECER_COD_MARCA}" />
+							</f:facet>
+							<h:outputText 
+								value="#{itemParecerVO.codigoMarcaComercial}" />
+						</p:column>
+						<p:column width="10%" >
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTA_PARECER_MARCA}" />
+							</f:facet>
+							<h:outputText id="codMarcaComercial"
+								value="#{itemParecerVO.descricaoMarcaComercial}" />							
+						</p:column>
+						<p:column width="10%" >
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTA_PARECER_MODELO}" />
+							</f:facet>
+							<h:outputText value="#{itemParecerVO.descricaoModeloComercial}" />
+						</p:column>
+						<p:column width="7%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTA_PARACER_PARECER}" />
+							</f:facet>
+							<h:outputText
+								value="#{(itemParecerVO.parecerGeral != null ? itemParecerVO.parecerGeral.descricao : itemParecerVO.parecerOcorrecia.descricao )}" />
+						</p:column>
+						<p:column width="5%">
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.LABEL_CONSULTA_PARACER_DT_PARECER}" />
+							</f:facet>
+							<h:outputText value="#{itemParecerVO.dtParecer}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</p:column>
+						<p:column width="20%" >
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_RESPONSAVEL}" />
+							</f:facet>
+							<h:outputText value="#{itemParecerVO.servidor.id.matricula} - #{consultaParecerController.obterNomePessoaFisicaServidor(itemParecerVO.servidor)}" />
+						</p:column>
+						<p:column width="5%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTA_PARECER_NRO_REGISTRO}" />
+							</f:facet>
+							<h:outputText
+								value="#{itemParecerVO.nrRegistro}" />
+						</p:column>
+						<p:column  width="5%"
+							style="#{consultaParecerController.isVencidoReg(itemParecerVO.dtVenctRegistro) ? 'background-color:#FF6347;' : ''}">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTA_PARACER_VENC_REG}" />
+							</f:facet>
+							<h:outputText id="dtVenctRegistro" value="#{itemParecerVO.dtVenctRegistro}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+							<pe:tooltip for="dtVenctRegistro"
+								value="#{consultaParecerController.obterMensagemDTVenctReg(itemParecerVO.dtVenctRegistro)} #{itemParecerVO.nrRegistro}"
+								direction="bottom-right" styleClass="tooltip" layout="block" />
+						</p:column>						
+						<p:column  width="3%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTA_PARECER_PASTA}" />
+							</f:facet>
+							<h:outputText id="codPasta" value="#{itemParecerVO.codigoPasta}" />
+							<pe:tooltip for="codPasta"
+								value="#{consultaParecerController.obterDescricaoOrigemParecerTecnico(itemParecerVO.codigoPasta, itemParecerVO.numeroSubPasta)}" direction="bottom-right" styleClass="tooltip" layout="block" />
+						</p:column>						
+						<p:column width="5%">
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.LABEL_CONSULTA_PARACER_OCORRENCIA}" />
+							</f:facet>
+							<h:graphicImage value="../../images/accept.png"
+								rendered="#{itemParecerVO.ocorrencia}" />
+						</p:column>
+						<p:column width="20%" >
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTA_PARECER_MATERIAL}" />
+							</f:facet>
+							<h:outputText id="codigoMaterial"
+								value="#{itemParecerVO.codigoMaterial} - #{consultaParecerController.truncarTexto(itemParecerVO.nomeMaterial)}" />
+							<pe:tooltip for="codigoMaterial"
+								direction="bottom-right" styleClass="tooltip" layout="block">
+								  <h:panelGroup>
+								        <h:outputText value="#{itemParecerVO.nomeMaterial}" /><br />
+								        <h:outputText value="#{messages.LABEL_DESCRICAO}: #{itemParecerVO.descricaoMaterial}" />
+								  </h:panelGroup>
+							</pe:tooltip>
+						</p:column>
+						<p:column width="3%" >
+							<f:facet name="header">
+								<h:outputText  value="#{messages.LABEL_CONSULTA_PARECER_GRUPO}" />
+							</f:facet>
+							<h:outputText id="grupoParecer"
+								value="#{itemParecerVO.codigoGrupoMaterial}" />
+							<pe:tooltip for="grupoParecer" value="#{itemParecerVO.descricaoGrupoMaterial}"
+								direction="bottom-right" styleClass="tooltip" layout="block" />
+						</p:column>							
+					</mec:serverDataTable>
+				</h:form>
+			</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

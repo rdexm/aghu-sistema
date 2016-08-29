@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_CEDENCIAS_PROGRAMADAS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cedenciaSalasEntreEquipesPaginatorController}"/>  
+      <h:form prependId="false" id="formDados"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_CEDENCIAS_PROGRAMADAS}"> 
+          <aghu:linha> 
+            <mec:inputTextData id="data"
+                               label="#{messages.LABEL_DATA}"
+                               title="#{messages.TITLE_PESQUISAR_CEDENCIA_PROGRAMADA_DATA}"
+                               value="#{cedenciaSalasEntreEquipesPaginatorController.mbcCedenciaSala.id.data}"
+                               tipo="data"/>
+            <mec:suggestionBox id="unidadeCirurgica"
+                               label="#{messages.LABEL_UNIDADE_CIRURGICA}"
+                               title="#{messages.TITLE_PESQUISAR_CEDENCIA_PROGRAMADA_UNIDADE_CIRURGICA}"
+                               descricaoInput="seq" descricaoLabel="descricao"
+                               suggestionAction="pesquisarUnidadesCirurgicas" width="400"
+                               posSelectionAction="habilitarSuggestionEquipe"
+                               posDeleteAction="desabilitarSuggestionEquipe"
+                               controller="#{cedenciaSalasEntreEquipesPaginatorController}"
+                               value="#{cedenciaSalasEntreEquipesPaginatorController.mbcCedenciaSala.unidade}"
+                               render="panelEquipe, equipe">
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="panelEquipe" layout="inline"> 
+              <mec:suggestionBox id="equipe"
+                                 var="_equipe"
+                                 itemValue="#{_equipe}"
+                                 label="#{messages.LABEL_CEDENCIA_DE_SALA_ENTRE_EQUIPE_EQUIPE_SUBSTITUTA}"
+                                 title="#{messages.TITLE_CEDENCIA_DE_SALA_ENTRE_EQUIPE_EQUIPE_SUBSTITUTA}"
+                                 descricaoInput="numero11"
+                                 descricaoLabel="texto1"
+                                 suggestionAction="pesquisarEquipes"
+                                 width="400"
+                                 readonly="#{!cedenciaSalasEntreEquipesPaginatorController.habilitarSuggestionEquipe}"
+                                 controller="#{cedenciaSalasEntreEquipesPaginatorController}"
+                                 value="#{cedenciaSalasEntreEquipesPaginatorController.equipe}">
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VINCULO}" style="font-weight: bold;"/> 
+                  </f:facet> #{_equipe.numero4}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MATRICULA}" style="font-weight: bold;"/> 
+                  </f:facet> #{_equipe.numero11}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                  </f:facet> #{_equipe.texto1}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_PESQUISAR_CEDENCIA_PROGRAMADA_SITUACAO}" enum="DominioSituacao" value="#{cedenciaSalasEntreEquipesPaginatorController.mbcCedenciaSala.indSituacao}" semSelecione="false"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar"
+                             value="#{messages.LABEL_PESQUISAR}"
+                             block="true"
+                             action="#{cedenciaSalasEntreEquipesPaginatorController.efetuarPesquisa}" profile="search"/>
+          <mec:commandButton id="bt_limpar"
+                             value="#{messages.LABEL_LIMPAR}"
+                             immediate="true"
+                             ajax="true"
+                             render="data,formDados"
+                             action="#{cedenciaSalasEntreEquipesPaginatorController.limpar}"
+                             styleClass="bt_cinza"
+                             profile="clear"/>
+          <mec:commandButton value="#{messages.LABEL_PROGRAMAR_CEDENCIA}" immediate="true" type="button" action="#{cedenciaSalasEntreEquipesPaginatorController.programarCedencia}" rendered="#{cedenciaSalasEntreEquipesPaginatorController.dataModel.pesquisaAtiva}" profile="add" ajax="true"/> 
+        </aghu:acao>  
+        <p:outputPanel id="formPesquisa" rendered="#{cedenciaSalasEntreEquipesPaginatorController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_CEDENCIA_PROGRAMADA_MANUTENCAO_CEDENCIAS}"> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaResultado" controller="#{cedenciaSalasEntreEquipesPaginatorController}"> 
+              <c:set var="_item" value="#{item}"/>  
+              <p:column rendered="#{mf:hasPermission(securityController,'cedenciaSalaParaEquipe,editar')}"
+                        exportable="false">
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <mec:commandLink id="linkAtivarInativarCedencia" title="#{_item.indSituacao eq 'A' ? messages.LABEL_DESATIVAR : messages.LABEL_ATIVAR}" action="#{cedenciaSalasEntreEquipesPaginatorController.ativarInativar(_item)}" styleClass=" #{_item.indSituacao eq 'A' ? 'silk-activate' : 'silk-deactivate'} silk-icon" ajax="true" render="tabelaResultado" process="@this"/> 
+              </p:column>  
+              <p:column id="columnData"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DATA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.id.data}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column id="columnUnidade"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.mbcCaractSalaEsp.mbcCaracteristicaSalaCirg.unidadeSalaCirurgica.sigla}"/> 
+              </p:column>  
+              <p:column id="columnSala"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SALA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.mbcCaractSalaEsp.mbcCaracteristicaSalaCirg.mbcSalaCirurgica.id.seqp}"/> 
+              </p:column>  
+              <p:column id="columnDiaSemana"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DIA_DA_SEMANA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.mbcCaractSalaEsp.mbcCaracteristicaSalaCirg.diaSemana.descricaoCompleta}"/> 
+              </p:column>  
+              <p:column id="columnTurno"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_TURNO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.mbcCaractSalaEsp.mbcCaracteristicaSalaCirg.mbcTurnos.descricao}"/> 
+              </p:column>  
+              <p:column id="columnSiglaEsp" style="text-align: center !important;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CEDENCIA_DE_SALA_ENTRE_EQUIPE_ESP_CEDENTE}"/> 
+                </f:facet>  
+                <p:tooltip id="tooltipSiglaEspo" for="outputSiglaEsp" direction="bottom-right" styleClass="tooltip" layout="block">
+                  <h:outputText value="#{_item.mbcCaractSalaEsp.aghEspecialidades.nomeEspecialidade}"/> 
+                </p:tooltip>
+                  <h:outputText id="outputSiglaEsp" value="#{_item.mbcCaractSalaEsp.aghEspecialidades.sigla}"/>
+              </p:column>
+              <p:column id="columnEquipeOriginal"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CEDENCIA_DE_SALA_ENTRE_EQUIPE_EQUIPE_CEDENTE}"/> 
+                </f:facet>  
+                <p:tooltip id="tooltipEquipeOriginal" for="outputEquipeOriginal" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{(_item.mbcCaractSalaEsp.pucServidor.pessoaFisica.nome.length() &gt; 30)}">
+                  <h:outputText value="#{_item.mbcCaractSalaEsp.pucServidor.pessoaFisica.nome}"/> 
+                </p:tooltip>
+                <h:outputText id="outputEquipeOriginal" value="#{(_item.mbcCaractSalaEsp.pucServidor.pessoaFisica.nome.length() &gt; 30) ? fn:substring(_item.mbcCaractSalaEsp.pucServidor.pessoaFisica.nome,0,30).concat('...')  : _item.mbcCaractSalaEsp.pucServidor.pessoaFisica.nome}"/>
+              </p:column>
+              <p:column id="columnEquipeSubs"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CEDENCIA_DE_SALA_ENTRE_EQUIPE_EQUIPE_SUBSTITUTA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nomeUsual}"
+                   rendered="#{_item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nomeUsual != null}"   />
+                   
+                <p:tooltip for="panelEquipeSubs" rendered="#{_item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nomeUsual == null and (_item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nome.length() &gt; 30)}">
+                  <h:outputText value="#{_item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nome}"/>
+                </p:tooltip>
+ 				<p:outputPanel id="panelEquipeSubs">
+                  <h:outputText value="#{(_item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nome.length() &gt; 30) ? fn:substring(_item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nome,0,30).concat('...') : _item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nome}"
+                  			rendered="#{_item.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nomeUsual == null}" />
+                </p:outputPanel>                    
+              </p:column>
+              <p:column id="columnSiglaEspSub" style="text-align: center !important;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CEDENCIA_DE_SALA_ENTRE_EQUIPE_ESP_SUBSTITUTA}"/> 
+                </f:facet>  
+                <p:tooltip id="tooltipSiglaEspSub" for="outputSiglaEspSub" direction="bottom-right" styleClass="tooltip" layout="block">
+                  <h:outputText value="#{_item.aghProfEspecialidades.aghEspecialidade.nomeEspecialidade}"/> 
+                </p:tooltip>
+                  <h:outputText id="outputSiglaEspSub" value="#{_item.aghProfEspecialidades.aghEspecialidade.sigla}"/>
+              </p:column>  
+              <p:column id="columnSituacao"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.indSituacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

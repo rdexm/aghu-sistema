@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_TIPO_COMPOSICAO}</title> 
+    </ui:define>
+    <ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{cadastroTipoComposicaoNPTPaginatorController.iniciar}" />
+		</f:metadata>
+	</ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroTipoComposicaoNPTPaginatorController}" />  
+      <h:form prependId="false" id="campos"> 
+   			<pe:remoteCommand name="selecionarComposicao"
+				update="@(#lisPanel)"
+				actionListener="#{cadastroTipoComposicaoNPTPaginatorController.pesquisarListaGrupoComposicao}">
+				<pe:assignableParam name="param1"
+					assignTo="#{cadastroTipoComposicaoNPTPaginatorController.consultaTipoComposicoesVO.seq}" />
+			</pe:remoteCommand>
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_TIPO_COMPOSICAO}"> 
+	        <aghu:linha>
+	        	<mec:field label="#{messages.LABEL_CODIGO}" id="fieldCodigo" title="#{messages.HELP_CODIGO}">
+	            	<pe:inputNumber thousandSeparator="" maxValue="32767" decimalPlaces="0"  size="10"  maxlength="5" value="#{cadastroTipoComposicaoNPTPaginatorController.codigo}" id="codigo"/>
+	            </mec:field>  
+	            <mec:field label="#{messages.LABEL_ORDEM}" id="fieldOrdem" title="#{messages.HELP_ORDEM}">
+	            	<pe:inputNumber thousandSeparator="" maxValue="32767" decimalPlaces="0" size="10"  maxlength="5" value="#{cadastroTipoComposicaoNPTPaginatorController.ordem}" id="ordem"/> 
+	            </mec:field> 
+	            
+	       		<mec:selectOneMenu id="ativoTipoComposicao"
+						title="#{messages.HELP_TIPO_ATIVO}"
+						enum="DominioSituacao" style="width:80px;"
+						label="#{messages.LABEL_SITUACAO}"
+						value="#{cadastroTipoComposicaoNPTPaginatorController.indSituacao}">
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+	        </aghu:linha>
+        </aghu:panelGeral> 
+        <aghu:acao>
+          <mec:commandButton id="btn_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{cadastroTipoComposicaoNPTPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{cadastroTipoComposicaoNPTPaginatorController.limpar}" profile="clear"/> 
+          <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" action="#{cadastroTipoComposicaoNPTPaginatorController.editarTipoComposicao}" rendered="#{cadastroTipoComposicaoNPTPaginatorController.isExibirBotaoNovo()}"
+          	disabled="#{!mf:hasPermission(securityController,'manterCadastrosNPT,executar')}" profile="add"/> 
+        </aghu:acao> 
+	  </h:form>	
+	  <br clear="none" />
+      <br clear="none" />	
+      <p:outputPanel id="listPanelTipos">
+      <h:form prependId="false" id="formPesquisa"> 
+      <aghu:panelGeral legend="#{messages.TITLE_TIPOS_COMPOSICAO}" rendered="#{cadastroTipoComposicaoNPTPaginatorController.listaTipoComposicoes != null}">
+				<mec:serverDataTable id="lista" list="#{cadastroTipoComposicaoNPTPaginatorController.listaTipoComposicoes}"
+					scrollable="true" selection="consultaTipoComposicoesVOSelecionado" onRowClick="consultaTipoComposicoesVOSelecionado"
+					rowKeyVar="row"
+					controller="#{cadastroTipoComposicaoNPTPaginatorController}"
+					ajax="true">
+					<c:set var="item" value="#{item}" />
+               			<p:ajax event="rowSelect" update="@(#lisPanel)" listener="#{cadastroTipoComposicaoNPTPaginatorController.acaoLinhaSelecionada()}" />
+					<p:column headerText="#{messages.LABEL_ACAO}"
+						style="width:70px;" styleClass="first-column" exportable="false">
+						<mec:commandLink id="edit" profile="edit" title="#{messages.LABEL_EDITAR}"
+							disabled="#{!mf:hasPermission(securityController,'manterCadastrosNPT,executar')}"
+							action="#{cadastroTipoComposicaoNPTPaginatorController.editarTipoComposicao}">
+							<f:setPropertyActionListener target="#{cadastroTipoComposicaoNPTController.consultaTipoComposicoesVO}"
+								value="#{item}" for="command" />
+						</mec:commandLink>
+						<mec:commandLink id="remove" profile="delete" ajaxSingle="true"
+							title="#{messages.LABEL_EXCLUIR}" render="lisPanel, formlistGrupoComponentes"
+							disabled="#{!mf:hasPermission(securityController,'manterCadastrosNPT,executar')}"
+							action="#{cadastroTipoComposicaoNPTPaginatorController.removerTipoComposicao}">
+							<f:setPropertyActionListener
+								target="#{cadastroTipoComposicaoNPTPaginatorController.consultaTipoComposicoesVOSelecionado}"
+								value="#{item}" for="command" />
+						</mec:commandLink>
+					</p:column>
+					<p:column style="width:40px;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_CODIGO}" />
+						</f:facet>
+						<h:outputText id="colunaCodigo" value="#{item.seq}" />
+
+						<p:tooltip for="colunaCodigo" direction="bottom-right"
+							styleClass="tooltip" layout="block">
+							<h:outputText value="#{messages.LABEL_CRIADO_POR}: " />
+							<h:outputText value="#{item.criadoPor}" />
+							<br clear="none" />
+							<h:outputText value="#{messages.LABEL_CRIADO_EM}: " />
+							<h:outputText value="#{item.criadoEm}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</p:tooltip>
+					</p:column>
+					<p:column style="width:400px;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_DESCRICAO}" />
+						</f:facet>
+						<h:outputText id="colunaDescricao"
+							value="#{cadastroTipoComposicaoNPTPaginatorController.obterHint(item.descricao, 50)}" />
+						<p:overlayPanel id="hintDescricao" for="colunaDescricao"
+							showEvent="mouseover" hideEvent="mouseout"
+							rendered="#{item.descricao.length() > 50}">
+							<h:outputText value="#{item.descricao}" />
+						</p:overlayPanel>
+					</p:column>
+					<p:column style="width:40px;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_ORDEM}" />
+						</f:facet>
+						<h:outputText value="#{item.ordem}" />
+					</p:column>
+					<p:column style="width:60px;white-space:nowrap; text-align:center;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_PRODUCAO}" />
+						</f:facet>
+						<h:outputText styleClass="silk-icon  #{item.indProducao eq true? 'silk-checked' : 'silk-checked-off'}" />					
+					</p:column>
+					<p:column style="width:60px;white-space:nowrap; text-align:center;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_ATIVO}" />
+						</f:facet>
+						<h:outputText styleClass="silk-icon  #{item.indSituacao eq 'A'? 'silk-checked' : 'silk-checked-off'}" />
+					</p:column>
+				</mec:serverDataTable>
+			</aghu:panelGeral>
+     </h:form>
+     </p:outputPanel>
+     <br clear="none" />
+     <br clear="none" />
+     <p:outputPanel id="lisPanel">
+     <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_GRUPO_COMPOSICAO}" id="listGrupoComponentes" rendered="#{cadastroTipoComposicaoNPTPaginatorController.isExibirVinculo()}">
+		<h:form prependId="false" id="formBuscaGrupoCompomentes" >
+				<mec:suggestionBox id="sbGrupoComponentes" var="row" itemValue="#{row}"
+					label="#{messages.LABEL_GRUPO_COMPONENTES}"
+					title="#{messages.HELP_GRUPO_COMPONENTE}"
+					suggestionAction="pesquisarGrupoComponentes"
+					descricaoInput="seq" descricaoLabel="descricao"
+					maxlength="60" width="500"
+					requiredFake="true"
+					readonly="#{cadastroTipoComposicaoNPTPaginatorController.isEditar()}"
+					controller="#{cadastroTipoComposicaoNPTPaginatorController}"
+					value="#{cadastroTipoComposicaoNPTPaginatorController.afaGrupoComponenteNpt}">
+					<p:column>
+						<f:facet name="header">
+							<b>#{messages.LABEL_CODIGO}</b>
+						</f:facet> #{row.seq} 
+	                  </p:column>
+					<p:column>
+						<f:facet name="header">
+							<b>#{messages.LABEL_DESCRICAO}</b>
+						</f:facet> #{row.descricao}
+	                  </p:column>
+				</mec:suggestionBox>
+				<mec:selectBooleanCheckbox id="situacaoAtivo"
+					label="#{messages.LABEL_ATIVO}"
+					title="#{messages.HELP_ATIVO}"
+					value="#{cadastroTipoComposicaoNPTPaginatorController.ativoGrupo}">
+					<p:ajax event="change" process="@this" />
+				</mec:selectBooleanCheckbox>
+				<aghu:acao newLine="false">
+					<mec:commandButton id="bt_adicionar" 
+						rendered="#{!cadastroTipoComposicaoNPTPaginatorController.isEditar()}"
+						profile="add" value="#{messages.LABEL_ADICIONAR}" 
+						render="formlistGrupoComponentes,tablelistGrupoComponentes"
+						disabled="#{!mf:hasPermission(securityController,'manterCadastrosNPT,executar')}" 
+						action="#{cadastroTipoComposicaoNPTPaginatorController.adicionarGrupoComponenteNPT}" />  
+					<mec:commandButton id="bt_alterar" 
+						rendered="#{cadastroTipoComposicaoNPTPaginatorController.isEditar()}"
+						profile="add" value="#{messages.LABEL_ALTERAR}" 
+						render="formlistGrupoComponentes,tablelistGrupoComponentes" 
+						action="#{cadastroTipoComposicaoNPTPaginatorController.alterarGrupoComponenteNPT}" />  
+					<mec:commandButton id="bt_cancelar" 
+						rendered="#{cadastroTipoComposicaoNPTPaginatorController.isEditar()}"
+						profile="cancel" value="#{messages.LABEL_CANCELAR_EDICAO}" 
+						render="formlistGrupoComponentes,tablelistGrupoComponentes" 
+						action="#{cadastroTipoComposicaoNPTPaginatorController.cancelarGrupoComponenteNPT}" />  
+				</aghu:acao>
+		</h:form>
+			<h:form prependId="false" id="formlistGrupoComponentes" rendered="#{cadastroTipoComposicaoNPTPaginatorController.consultaTipoComposicoesVO.seq != null}">
+					<mec:serverDataTable id="tablelistGrupoComponentes" rowKeyVar="row"
+						list="#{cadastroTipoComposicaoNPTPaginatorController.listaGrupoComponente}"
+						scrollable="true" selection="listaGrupoComponenteSelecionado" onRowClick="listaGrupoComponenteSelecionado"
+						controller="#{cadastroTipoComposicaoNPTPaginatorController}">
+						<c:set var="item" value="#{item}" />
+						<p:column headerText="#{messages.LABEL_ACAO}"
+							styleClass="first-column"  style="width:45px;">
+							<mec:commandLink id="editGrupoCompos" profile="edit"
+								render="formlistGrupoComponentes, tablelistGrupoComponentes"
+								rendered="#{item.seq ne cadastroTipoComposicaoNPTPaginatorController.afaGrupoComponenteNpt.seq}"
+								disabled="#{!mf:hasPermission(securityController,'manterCadastrosNPT,executar')}" 
+								title="#{messages.LABEL_EDITAR}"
+								action="#{cadastroTipoComposicaoNPTPaginatorController.editarGrupoComponenteNPTAssociado}">
+								<f:setPropertyActionListener
+									target="#{cadastroTipoComposicaoNPTPaginatorController.listaGrupoComponenteSelecionado}"
+									value="#{item}" for="command" />
+							</mec:commandLink>
+							<mec:commandLink
+								action="#{cadastroTipoComposicaoNPTPaginatorController.removerGrupoComponenteNPT}"
+								profile="delete" ajaxSingle="true"
+								render="formlistGrupoComponentes, tablelistGrupoComponentes"
+								disabled="#{!mf:hasPermission(securityController,'manterCadastrosNPT,executar')}" 
+								id="deleteGrupoComps" title="#{messages.LABEL_EXCLUIR}">
+								<f:setPropertyActionListener
+									target="#{cadastroTipoComposicaoNPTPaginatorController.listaGrupoComponenteSelecionado}"
+									value="#{item}" for="command" />
+							</mec:commandLink>
+						</p:column>
+
+						<p:column style="width:60px;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CODIGO}" />
+							</f:facet>
+							<h:outputText id="colunaSeq" value="#{item.seq}" />
+							<p:tooltip for="colunaSeq" direction="bottom-right"
+								styleClass="tooltip" layout="block">
+								<h:outputText value="#{messages.LABEL_CRIADO_POR}: " />
+								<h:outputText value="#{item.criadoPor}" />
+								<br clear="none" />
+								<h:outputText value="#{messages.LABEL_CRIADO_EM}: " />
+								<h:outputText value="#{item.criadoEm}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</p:tooltip>
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+							</f:facet>
+							<h:outputText value="#{item.descricao}">
+							</h:outputText>
+						</p:column>
+						<p:column style="width:40px;white-space:nowrap; text-align:center;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ATIVO}" />
+							</f:facet>
+							<h:outputText styleClass="silk-icon  #{item.indSituacao eq 'A'? 'silk-checked' : 'silk-checked-off'}" />
+						</p:column>
+					</mec:serverDataTable>
+				</h:form>
+	</aghu:panelGeral>
+	</p:outputPanel>
+    </ui:define> 
+  </ui:composition> 
+</html>

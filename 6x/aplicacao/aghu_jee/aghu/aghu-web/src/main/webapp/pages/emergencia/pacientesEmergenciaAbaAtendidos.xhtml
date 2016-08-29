@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition> 
+    <!-- LISTAGEM DE PACIENTES ATENDIDOS EMERGENCIA  -->  
+    <aghu:linha> 
+      <mec:selectOneMenu label="#{messages.LABEL_ABA_ATENDIDOS_AGENDA}" title="#{messages.TITLE_ABA_ATENDIDOS_AGENDA}" value="#{pacientesEmergenciaAbaAtendidosController.espSeq}" noSelectionLabel="Todos" valueChangeListener="#{pacientesEmergenciaAbaAtendidosController.espSeq}" id="especialidadeAtendidos"> 
+        <p:ajax event="change" update="@(#panelTabela)" process="@this" listener="#{pacientesEmergenciaAbaAtendidosController.pesquisarPacientesAtendidos}"/>  
+        <f:selectItems var="item" itemLabel="#{item.espSigla}" itemValue="#{item.espSeq}" value="#{listaPacientesEmergenciaPaginatorController.listaEspecialidadeEmergencia}"/> 
+      </mec:selectOneMenu>  
+      <br clear="none"/>  
+      <br clear="none"/> 
+    </aghu:linha>  
+    <aghu:linha> 
+      <p:outputPanel id="panelTabela" layout="inline"> 
+        <mec:serverDataTable id="resuladotListaAtendidos" 
+        	list="#{pacientesEmergenciaAbaAtendidosController.listaPacientesAtendidos}" 
+        	controller="#{pacientesEmergenciaAbaAtendidosController}"
+			scrollable="true" 
+	      	scrollHeight="auto"> 
+          <c:set var="item" value="#{item}"/>
+          <p:column style="width:33px;" headerText="#{messages.LABEL_ACOES}" styleClass="first-column auto-adjust" exportable="false">
+            <mec:commandLink id="reabrir_pacientes_atendidos" action="#{pacientesEmergenciaAbaAtendidosController.reabrirPacienteAtendidos}" title="#{messages.TITLE_ABA_ATENDIDOS_REABRIR}" styleClass="silk-icon silk-migracao-pacientes" ajax="true" render="resuladotListaAtendidos" process="@this"> 
+              <f:setPropertyActionListener target="#{pacientesEmergenciaAbaAtendidosController.pacAtendidos}" value="#{item}" for="command"/>
+              <f:setPropertyActionListener target="#{registrarGestacaoController.voltarPara}" value="emergencia-pacientesEmergenciaAbaAtendidos" for="command"/> 
+            </mec:commandLink>
+          </p:column>
+          <p:column style="width:70px;" sortBy="#{item.dtConsulta}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ABA_ATENDIDOS_CONSULTA}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.dtConsulta}"> 
+              <f:convertDateTime pattern="dd/MM HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column sortBy="#{item.pacProntuario}" sortable="true" style="width:75px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ABA_ATENDIDOS_PRONTUARIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.pacProntuario}"/> 
+            <mec:commandLink title="Abrir prontuário de #{item.pacNome} - #{item.pacProntuarioFormatado}"
+				style="float:right;padding: 0px 4px;"
+				rendered="#{not empty item.pacProntuario and mf:hasPermission(securityController, '/paciente/prontuarioonline/arvorePOL.xhtml, render')}"
+				onclick="parent.addPOLProntuario(#{item.pacProntuario})"
+				styleClass="silk-icon silk-pol16 silk-icon" ajax="true" />		
+          </p:column>  
+          <p:column sortBy="#{item.pacNome}" sortable="true" style="white-space:nowrap;width:auto;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ABA_ATENDIDOS_PACIENTE}"/> 
+            </f:facet>  
+            <h:outputText id="pacNomeToolTip" value="#{item.pacNome}"/>  
+            <p:tooltip for="pacNomeToolTip" style="width:300px; word-wrap: break-word;" id="toolTipoUltimoAtendimento" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty item.tooltipUltimoAtendimento}"> 
+              <h:outputText value="#{item.tooltipUltimoAtendimento}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column style="width:50px;" sortBy="#{item.pacIdade}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ABA_ATENDIDOS_IDADE}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.pacIdade} anos"/> 
+          </p:column>  
+          <p:column style="width:55px;" sortBy="#{item.espSigla}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ABA_ATENDIDOS_AGENDA}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.espSigla}"/> 
+          </p:column>  
+          <p:column sortBy="#{item.localizacao}" sortable="true" style="white-space:nowrap;width:auto"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ABA_ATENDIDOS_LOCALIZACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.localizacao}"/> 
+          </p:column>  
+          <p:column style="width:5%;"> 
+            <h:outputText value="" rendered="#{item.pendenciaAssinaturaDigital}" styleClass="silk-icon silk-certificacao-digital"/> 
+          </p:column> 
+        </mec:serverDataTable>  
+        <aghu:linha> 
+          <h:outputFormat value="#{messages.LABEL_REGISTROS_ENCONTRADOS_ATENDIDOS_EMERG}"> 
+            <f:param value="#{pacientesEmergenciaAbaAtendidosController.listaPacientesAtendidos.size() &gt; 0 ? pacientesEmergenciaAbaAtendidosController.listaPacientesAtendidos.size() : 0}"/> 
+          </h:outputFormat> 
+        </aghu:linha> 
+      </p:outputPanel> 
+    </aghu:linha> 
+  </ui:composition>
+</html>

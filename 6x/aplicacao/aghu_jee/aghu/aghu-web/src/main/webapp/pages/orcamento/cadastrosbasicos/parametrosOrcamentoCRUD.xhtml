@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_MANTER_PARAMETRO_REGRA_ORCAMENTARIA']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{parametrosOrcamentoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{parametrosOrcamentoController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formOrcamentoController"> 
+        <aghu:panelGeral legend="#{messages.LABEL_ITEM_A_ANALISAR}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="tfRegra" label="#{messages.LABEL_SEQ_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_SEQ_PARAMETRO_ORCAMENTO}" value="#{parametrosOrcamentoController.entidade.seq}" size="10" maxlength="6" readonly="true" required="true"/>  
+            <mec:inputText value="#{parametrosOrcamentoController.entidade.regra}" label="#{messages.LABEL_NOME_REGRA_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_NOME_REGRA_PARAMETRO_ORCAMENTO}" maxlength="50" readonly="#{not mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" size="50" id="nomeRegra"/>  
+            <mec:selectOneMenu id="cbAplicacao" label="#{messages.LABEL_APLICACAO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_APLICACAO_PARAMETRO_ORCAMENTO}" value="#{parametrosOrcamentoController.entidade.tpProcesso}" readonly="#{parametrosOrcamentoController.entidade.seq != null}" enum="DominioTipoSolicitacao" required="true" noSelectionOption="true"> 
+              <p:ajax event="change" update="@(#opMaterialServico) @(#cbIndicador) @(#cbAcaoGrupoNaturezaDespesa) @(#cbAcaoNaturezaDespesa) @(#sbGrupoNaturezaDespesa) @(#sbNaturezaDespesa) @(#cbxSCCadastradaGrupo) @(#cbxSSCadastradaGrupo) @(#tpLimite) @(#vlrLimitePatrimonio) @(#sbCentroCusto) @(#cbAcaoCct) @(#sbCentroCustoReferencia) @(#opCbxSCCadastradaGrupo) @(#opCbxSSCadastradaGrupo)" process="@this" listener="#{parametrosOrcamentoController.refreshFromAplicacao}"/> 
+            </mec:selectOneMenu>  
+            <mec:selectOneMenu id="cbIndicador" label="#{messages.LABEL_INDICADOR_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_INDICADOR_PARAMETRO_ORCAMENTO}" value="#{parametrosOrcamentoController.entidade.indGrupo}" enum="DominioIndicadorParametrosOrcamento" readonly="#{parametrosOrcamentoController.isReadonly or           parametrosOrcamentoController.entidade.tpProcesso == 'SS' or                              not empty parametrosOrcamentoController.entidade.grupoMaterial or                             not empty parametrosOrcamentoController.entidade.material or                             not empty parametrosOrcamentoController.entidade.grupoServico or                             not empty parametrosOrcamentoController.entidade.servico}"> 
+              <p:ajax event="change" update="@(#sbGrupoMaterial) @(#sbMaterial) @(#sbGrupoServico) @(#sbServico)" process="@this"/> 
+            </mec:selectOneMenu> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="opMaterialServico" layout="inline"> 
+              <mec:suggestionBox id="sbGrupoMaterial" label="#{messages.LABEL_GRUPO_MATERIAL_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_GRUPO_MATERIAL_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarGruposMateriais" readonly="#{parametrosOrcamentoController.isReadonly or                              not empty parametrosOrcamentoController.entidade.material or                              not empty parametrosOrcamentoController.entidade.indGrupo}" rendered="#{parametrosOrcamentoController.entidade.tpProcesso == 'SC'}" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.grupoMaterial}" render="cbIndicador,sbMaterial"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.descricao}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_INDICADOR_PARAMETRO_ORCAMENTO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.indicador.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:suggestionBox id="sbMaterial" label="#{messages.LABEL_MATERIAL_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_MATERIAL_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarMateriais" width="700" readonly="#{parametrosOrcamentoController.isReadonly or                              not empty parametrosOrcamentoController.entidade.indGrupo or                               not empty parametrosOrcamentoController.entidade.grupoMaterial}" rendered="#{parametrosOrcamentoController.entidade.tpProcesso == 'SC'}" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.material}" render="cbIndicador,sbGrupoMaterial"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.nome}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:suggestionBox id="sbGrupoServico" label="#{messages.LABEL_GRUPO_SERVICO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_GRUPO_SERVICO_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarGruposServicos" readonly="#{not empty parametrosOrcamentoController.entidade.indGrupo or                                not empty parametrosOrcamentoController.entidade.servico}" rendered="#{parametrosOrcamentoController.entidade.tpProcesso == 'SS'}" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.grupoServico}" render="cbIndicador,sbServico"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:suggestionBox id="sbServico" label="#{messages.LABEL_SERVICO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_SERVICO_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarServicos" readonly="#{not empty parametrosOrcamentoController.entidade.indGrupo or                                  not empty parametrosOrcamentoController.entidade.grupoServico}" rendered="#{parametrosOrcamentoController.entidade.tpProcesso == 'SS'}" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.servico}" render="cbIndicador,sbGrupoServico"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.nome}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha>
+
+
+          <mec:selectOneMenu id="tpLimite"
+                             enum="DominioLimiteValorPatrimonio"
+                             label="#{messages.LABEL_LIMITE_VALOR_PATRIMONIO_PARAMETRO_ORCAMENTO}"
+                             title="#{messages.TITLE_LIMITE_VALOR_PATRIMONIO_PARAMETRO_ORCAMENTO}"
+                             value="#{parametrosOrcamentoController.entidade.tpLimite}"
+                             readonly="#{parametrosOrcamentoController.isReadonly or (parametrosOrcamentoController.entidade.tpProcesso == 'SS')}" >
+                             <p:ajax event="change" update="@(#vlrLimitePatrimonio),@(#tpLimite)" process="@this" listener="#{parametrosOrcamentoController.refreshFromTpLimite}"/>
+          </mec:selectOneMenu>
+
+          <mec:inputNumero  id="vlrLimitePatrimonio" value="#{parametrosOrcamentoController.entidade.vlrLimitePatrimonio}" style="text-align:right" size="20" maxlength="16" inteiros="16" decimais="2"  readonly="#{parametrosOrcamentoController.isReadonly or (parametrosOrcamentoController.entidade.tpProcesso == 'SS') or empty parametrosOrcamentoController.entidade.tpLimite}" disabled="#{parametrosOrcamentoController.isReadonly or (parametrosOrcamentoController.entidade.tpProcesso == 'SS') or empty parametrosOrcamentoController.entidade.tpLimite}">
+              <f:converter for="vlrLimitePatrimonio" converterId="bigDecimalConverter"/>
+          </mec:inputNumero>
+
+            <mec:suggestionBox id="sbCentroCusto" label="#{messages.LABEL_CENTRO_CUSTO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_CENTRO_CUSTO_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarCentrosCusto" readonly="#{parametrosOrcamentoController.isReadonly or (parametrosOrcamentoController.entidade.tpProcesso == 'SS')}" posSelectionAction="refreshFromCentroCusto" posDeleteAction="refreshFromCentroCusto" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.centroCusto}" render="cbAcaoCct,sbCentroCustoReferencia"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu id="cbSituacao" label="#{messages.LABEL_SITUACAO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_SITUACAO_PARAMETRO_ORCAMENTO}" value="#{parametrosOrcamentoController.entidade.indSituacao}" enum="DominioSituacao" required="true" readonly="#{parametrosOrcamentoController.isReadonly}"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText id="descricaoOCM" value="#{parametrosOrcamentoController.entidade.descricao}" label="#{messages.LABEL_DESCRICAO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_DESCRICAO_PARAMETRO_ORCAMENTO}" readonly="#{not mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" maxlength="500" size="60" panelView="true"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_GRUPO_NATUREZA_DESPESA}"> 
+          <mec:selectOneMenu id="cbAcaoGrupoNaturezaDespesa" label="#{messages.LABEL_ACAO_REGRA_ORCAMENTARIA}" title="#{messages.TITLE_ACAO_GRUPO_NATUREZA_DESPESA_REGRA_ORCAMENTARIA}" value="#{parametrosOrcamentoController.entidade.acaoGnd}" enum="DominioAcaoParametrosOrcamento" readonly="#{parametrosOrcamentoController.isReadonly}"> 
+            <p:ajax event="change" update="@(#sbGrupoNaturezaDespesa) @(#cbAcaoNaturezaDespesa) @(#sbNaturezaDespesa) @(#cbxSCCadastradaGrupo) @(#cbxSSCadastradaGrupo)" process="@this" listener="#{parametrosOrcamentoController.refreshFromAcaoGnd}"/> 
+          </mec:selectOneMenu>  
+          <mec:suggestionBox id="sbGrupoNaturezaDespesa" label="#{messages.LABEL_GRUPO_NATUREZA_DESPESA}" title="#{messages.TITLE_GRUPO_NATUREZA_DESPESA_REGRA_ORCAMENTARIA}" descricaoInput="codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarGruposNaturezaDespesa" readonly="#{parametrosOrcamentoController.isReadonly or                          empty parametrosOrcamentoController.entidade.acaoGnd or                         parametrosOrcamentoController.entidade.isCadastradaGrupo}" posSelectionAction="refreshFromGrupoNaturezaDespesa" posDeleteAction="refreshFromGrupoNaturezaDespesa" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.grupoNaturezaDespesa}" render="cbAcaoNaturezaDespesa,sbNaturezaDespesa,                         cbxSCCadastradaGrupo, cbxSSCadastradaGrupo"> 
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+              </f:facet> #{item.codigo}
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+              </f:facet> #{item.descricao}
+            </p:column> 
+          </mec:suggestionBox>  
+          <p:outputPanel id="opCbxSSCadastradaGrupo" layout="inline"> 
+            <mec:selectBooleanCheckbox label="#{parametrosOrcamentoController.cadastradaGrupoLabel}" title="#{parametrosOrcamentoController.cadastradaGrupoTitle}" id="cbxSSCadastradaGrupo" value="#{parametrosOrcamentoController.entidade.isCadastradaGrupo}" rendered="#{parametrosOrcamentoController.entidade.tpProcesso == 'SS'}" readonly="#{parametrosOrcamentoController.isReadonly}"> 
+              <p:ajax event="change" update="@(#sbNaturezaDespesa) @(#sbGrupoNaturezaDespesa)" process="@this" listener="#{parametrosOrcamentoController.refreshFromIsCadastradaGrupo}"/> 
+            </mec:selectBooleanCheckbox> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_NATUREZA_DESPESA}"> 
+          <mec:selectOneMenu id="cbAcaoNaturezaDespesa" label="#{messages.LABEL_ACAO_REGRA_ORCAMENTARIA}" title="#{messages.TITLE_ACAO_NATUREZA_DESPESA_REGRA_ORCAMENTARIA}" value="#{parametrosOrcamentoController.entidade.acaoNtd}" enum="DominioAcaoParametrosOrcamento" readonly="#{parametrosOrcamentoController.isReadonly or (empty parametrosOrcamentoController.entidade.grupoNaturezaDespesa and parametrosOrcamentoController.entidade.tpProcesso == 'SC')}"> 
+            <p:ajax event="change" update="@(#sbNaturezaDespesa)" process="@this" listener="#{parametrosOrcamentoController.refreshFromAcaoNtd}"/> 
+          </mec:selectOneMenu>  
+          <mec:suggestionBox id="sbNaturezaDespesa" label="#{messages.LABEL_NATUREZA_DESPESA}" title="#{messages.TITLE_NATUREZA_DESPESA_REGRA_ORCAMENTARIA}" descricaoInput="id.codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarNaturezasDespesa" readonly="#{parametrosOrcamentoController.isReadonly or                         empty parametrosOrcamentoController.entidade.acaoNtd or                         empty parametrosOrcamentoController.entidade.grupoNaturezaDespesa or                         parametrosOrcamentoController.entidade.isCadastradaGrupo}" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.naturezaDespesa}"> 
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+              </f:facet> #{item.id.codigo}
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+              </f:facet> #{item.descricao}
+            </p:column> 
+          </mec:suggestionBox>  
+          <p:outputPanel id="opCbxSCCadastradaGrupo" layout="inline"> 
+            <mec:selectBooleanCheckbox label="#{parametrosOrcamentoController.cadastradaGrupoLabel}" title="#{parametrosOrcamentoController.cadastradaGrupoTitle}" id="cbxSCCadastradaGrupo" value="#{parametrosOrcamentoController.entidade.isCadastradaGrupo}" rendered="#{parametrosOrcamentoController.entidade.tpProcesso == 'SC'}" readonly="#{parametrosOrcamentoController.isReadonly or empty parametrosOrcamentoController.entidade.grupoNaturezaDespesa}"> 
+              <p:ajax event="change" update="@(#sbNaturezaDespesa)" process="@this" listener="#{parametrosOrcamentoController.refreshFromIsCadastradaGrupo}"/> 
+            </mec:selectBooleanCheckbox> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_VERBA_GESTAO}"> 
+          <mec:selectOneMenu id="cbAcaoVbg" label="#{messages.LABEL_ACAO_REGRA_ORCAMENTARIA}" title="#{messages.TITLE_ACAO_VERBA_GESTAO_REGRA_ORCAMENTARIA}" value="#{parametrosOrcamentoController.entidade.acaoVbg}" enum="DominioAcaoParametrosOrcamento" readonly="#{parametrosOrcamentoController.isReadonly}"> 
+            <p:ajax event="change" update="@(#sbVerbaGestao)" process="@this" listener="#{parametrosOrcamentoController.refreshFromAcaoVbg}"/> 
+          </mec:selectOneMenu>  
+          <mec:suggestionBox id="sbVerbaGestao" label="#{messages.LABEL_VERBA_GESTAO}" title="#{messages.TITLE_VERBA_GESTAO_REGRA_ORCAMENTARIA}" width="700" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarVerbasGestao" readonly="#{parametrosOrcamentoController.isReadonly or empty parametrosOrcamentoController.entidade.acaoVbg}" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.verbaGestao}"> 
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+              </f:facet> #{item.seq}
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+              </f:facet> #{item.descricao}
+            </p:column> 
+          </mec:suggestionBox> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_CENTRO_CUSTO_REF_PARAMETRO_ORCAMENTO}"> 
+          <mec:selectOneMenu id="cbAcaoCct" label="#{messages.LABEL_ACAO_REGRA_ORCAMENTARIA}" title="#{messages.TITLE_ACAO_CENTRO_CUSTO_REGRA_ORCAMENTARIA}" value="#{parametrosOrcamentoController.entidade.acaoCct}" enum="DominioAcaoParametrosOrcamento" readonly="#{parametrosOrcamentoController.isReadonly or (parametrosOrcamentoController.entidade.tpProcesso == 'SS') or                         not empty parametrosOrcamentoController.entidade.centroCusto}"> 
+            <p:ajax event="change" update="@(#sbCentroCustoReferencia)" process="@this" listener="#{parametrosOrcamentoController.refreshFromAcaoCct}"/> 
+          </mec:selectOneMenu>  
+          <mec:suggestionBox id="sbCentroCustoReferencia" label="#{messages.LABEL_CENTRO_CUSTO_REF_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_CENTRO_CUSTO_REF_PARAMETRO_ORCAMENTO}" width="700" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarCentrosCusto" readonly="#{parametrosOrcamentoController.isReadonly or                          empty parametrosOrcamentoController.entidade.acaoCct or                         (parametrosOrcamentoController.entidade.tpProcesso == 'SS') or                         not empty parametrosOrcamentoController.entidade.centroCusto}" controller="#{parametrosOrcamentoController}" value="#{parametrosOrcamentoController.entidade.centroCustoReferencia}"> 
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+              </f:facet> #{item.codigo}
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+              </f:facet> #{item.descricao}
+            </p:column> 
+          </mec:suggestionBox> 
+        </aghu:panelGeral>  
+        <aghu:acao>
+            <mec:commandButton id="btSalvar" block="true"
+                               value="#{messages.LABEL_GRAVAR}"
+                               rendered="#{not parametrosOrcamentoController.isReadonly and   mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}"
+                               action="#{parametrosOrcamentoController.salvar}"
+                               profile="ok"/>
+            <mec:commandButton id="bt_copiar" value="#{messages.LABEL_COPIAR}" block="true"
+                               rendered="#{parametrosOrcamentoController.isUpdate and                    not parametrosOrcamentoController.isReadonly and                    mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}"
+                               action="#{parametrosOrcamentoController.copiar}" />
+
+            <mec:backButton id="btCancelar" action="#{parametrosOrcamentoController.cancelar}"/>
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

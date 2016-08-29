@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_MANTER_MODELO_BASICO_CUIDADO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterCuidadosModeloBasicoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig ignoreEnter="true" controller="#{manterCuidadosModeloBasicoController}"/>  
+      <h:form prependId="false" id="formPesquisar"> 
+        <p:outputPanel id="formulario" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_MANTER_MODELO_BASICO_CUIDADO}"> 
+            <mec:inputText label="#{messages.LABEL_DESCRICAO_MODELO}" value="#{manterCuidadosModeloBasicoController.modeloBasico.descricao}" readonly="true" size="80" id="descricao"/> 
+          </aghu:panelGeral>  
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <aghu:linha> 
+                <p:outputPanel id="panelSugestionItem" layout="inline"> 
+                  <mec:suggestionBox required="true" label="#{messages.LABEL_CUIDADO}" title="Selecione ou digite o código do cuidado usual." descricaoInput="seq" descricaoLabel="descricao" suggestionAction="obterListaCuidadoUsual" posSelectionAction="carregaCampos" posDeleteAction="limpar" readonly="#{manterCuidadosModeloBasicoController.alterar}" width="600" id="cuidado" controller="#{manterCuidadosModeloBasicoController}" value="#{manterCuidadosModeloBasicoController.modeloBasicoCuidado.cuidadoUsual}" render="panelFrequencia,panelAprazamento"
+                    var="cuidado" itemValue="#{cuidado}">
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_DESCRICAO}</b> 
+                      </f:facet> #{cuidado.descricao}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_FREQUENCIA}</b> 
+                      </f:facet> #{cuidado.frequencia}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_TIPO}</b> 
+                      </f:facet> #{cuidado.mpmTipoFreqAprazamentos.sigla}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_APRAZAMENTO}</b> 
+                      </f:facet> #{cuidado.sintaxeTipoFreqAprazamentoFormatada}
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </p:outputPanel> 
+              </aghu:linha>  
+              <p:outputPanel id="panelComplemento" layout="inline"> 
+                <aghu:linha> 
+                  <mec:inputText label="#{messages.LABEL_COMPLEMENTO_CUIDADO}" size="130" maxlength="120" required="false" value="#{manterCuidadosModeloBasicoController.modeloBasicoCuidado.descricao}" title="Digite um complemento para o cuidado usual." id="descricaoi"> 
+                    <p:ajax event="change" immediate="true" listener="#{manterCuidadosModeloBasicoController.marcarAlteracaoCampoFormularioItem}"/> 
+                  </mec:inputText> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelFrequencia" layout="inline"> 
+                <mec:field name="frequenciaField" required="#{manterCuidadosModeloBasicoController.verificaRequiredFrequencia()}" label="#{messages.LABEL_FREQUENCIA}" title="Informe a frequência de aprazamento desejada para este cuidado usual."> 
+                  <p:inputText id="frequencia" styleClass="numerico" value="#{manterCuidadosModeloBasicoController.frequencia}" size="7" maxlength="5" label="#{messages.LABEL_FREQUENCIA}"> 
+                    <p:ajax id="frequenciaSupOnChange" event="change" bypassUpdates="false" update="@(#tipoAprazamentoLabelPanel)" process="@this" listener="#{manterCuidadosModeloBasicoController.marcarAlteracaoCampoFormularioItem}"/> 
+                  </p:inputText> 
+                </mec:field> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelAprazamento" layout="inline"> 
+                <mec:suggestionBox label="#{messages.LABEL_TIPO_APRAZAMENTO}" title="Selecione um tipo de frequência de aprazamento para este cuidado usual." required="true" descricaoInput="sigla" externalDescricaoLabel="descricaoTipoFrequenciaAprazamento" labelId="tipoAprazamentoLabelPanel" suggestionAction="buscarTiposFrequenciaAprazamento" posSelectionAction="verificarFrequencia" posDeleteAction="verificarFrequencia" id="tipoAprazamento" controller="#{manterCuidadosModeloBasicoController}" value="#{manterCuidadosModeloBasicoController.tipoAprazamento}" render="panelFrequencia"
+                                   var="cuidado" itemValue="#{cuidado}">
+                  <p:column>#{manterCuidadosModeloBasicoController.buscaDescricaoTipoFrequenciaAprazamento(cuidado)}</p:column>
+                  <p:column>#{cuidado.sigla}</p:column>
+                </mec:suggestionBox> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="adicionar" value="#{messages.LABEL_GRAVAR}" block="true" action="#{manterCuidadosModeloBasicoController.salvar}" render="formulario,panelTabelaItensCuidado" profile="ok"/>  
+            <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{manterCuidadosModeloBasicoController.limpar()}" immediate="true"
+                               render="formulario"
+                               ajax="true"
+                               styleClass="bt_cinza" profile="clear"/>
+            <mec:commandButton immediate="true" id="bt_voltar" action="#{manterCuidadosModeloBasicoController.verificaPendencias}" value="#{messages.LABEL_VOLTAR}" styleClass=" alinha-direita icon-back bt_cinza" ajax="true" render="panelModal" profile="back"/>
+          </aghu:acao>  
+          <aghu:linha> 
+            <p:outputPanel id="panelTabelaItensCuidado" layout="inline"> 
+                <mec:serverDataTable id="tabelaItensCuidado" list="#{manterCuidadosModeloBasicoController.listaCuidados}" 
+                	scrollable="true" scrollHeight="120" rendered="#{not empty manterCuidadosModeloBasicoController.listaCuidados}"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column styleClass="first-column auto-adjus" style="width:60px; #{(_item.id.seq == manterCuidadosModeloBasicoController.seq)?'background-color:#EEE8AA':''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                    </f:facet>  
+                    <mec:commandLink rendered="#{_item.id.seq == manterCuidadosModeloBasicoController.seq}" onclick="return false;" styleClass=" silk-blank silk-icon" ajax="true"/>  
+                    <mec:commandLink action="#{manterCuidadosModeloBasicoController.preparaAlterar(_item.id.modeloBasicoPrescricaoSeq,_item.id.seq)}" process="@this"
+                                     title="#{messages.LABEL_EDITAR}" rendered="#{_item.id.seq != manterCuidadosModeloBasicoController.seq}"
+                                     profile="edit" ajax="true" render="formulario,panelModalConfirmacaoEdicao,panelComplemento"/>
+                    <mec:commandLink action="#{manterCuidadosModeloBasicoController.excluir(_item)}" title="#{messages.LABEL_EXCLUIR}" profile="delete" ajax="true" process="@this"
+                                     render="formulario,panelModalConfirmacaoEdicao,panelComplemento"/>
+                  </p:column>  
+                  <p:column width="auto" style="#{(_item.id.seq == manterCuidadosModeloBasicoController.seq)?'background-color:#EEE8AA':''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ITENS_CUIDADO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{manterCuidadosModeloBasicoController.obterDescricaoEditada(_item.id.modeloBasicoPrescricaoSeq,_item.id.seq)}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form> 
+        <pe:remoteCommand name="excluirJs"> 
+          <pe:assignableParam name="param1" assignTo="#{manterCuidadosModeloBasicoController.modeloBasicoPrescricaoSeq}"/>  
+          <pe:assignableParam name="param2" assignTo="#{manterCuidadosModeloBasicoController.seq}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+
+      <p:outputPanel id="panelModal" layout="inline"> 
+        <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" rendered="#{manterCuidadosModeloBasicoController.confirmaVoltar}" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO_CUIDADOS}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES_CUIDADOS} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalPendencias"> 
+              <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{manterCuidadosModeloBasicoController.voltar}" profile="ok"/>  
+              <mec:commandButton id="bt_cancelarConfirmacaoPendencia" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" action="#{manterCuidadosModeloBasicoController.cancelarModal}" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <h:form> 
+          <script xml:space="preserve">
+					PF('modalConfirmacaoPendenciaWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelModalConfirmacaoEdicao" layout="inline"> 
+        <p:dialog id="modalConfirmacaoEdicao" width="400" height="150" rendered="#{manterCuidadosModeloBasicoController.campoAlteradoFormularioItem}" modal="true" resizable="false" widgetVar="modalConfirmacaoEdicaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalEdicao"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" action="#{manterCuidadosModeloBasicoController.editarItem}" profile="ok"/>  
+              <mec:commandButton id="bt_cancelarConfirmacaoEdicao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoEdicaoWG').hide();" action="#{manterCuidadosModeloBasicoController.cancelarModal}" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

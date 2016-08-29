@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+  	<ui:define name="head"> 
+	
+	<script type="text/javascript" xml:space="preserve">
+	     
+		</script>
+	
+    </ui:define>
+    <ui:define name="metadata">
+	    <f:metadata>
+	        <f:viewAction action="#{periodoRetornoCRUDController.iniciar()}"/>
+	    </f:metadata>
+	</ui:define>  
+    <ui:define name="body"> 
+      	<mec:pageConfig controller="#{periodoRetornoCRUDController}"/>  
+      	<h:form prependId="false" id="formConsultarTipoRetorno" >
+      	 	<aghu:panelGeral legend="#{messages.LABEL_CONSULTAR_PERIODOS_RETORNO}" > 
+           		<aghu:linha>
+           			<p:outputPanel id="panelCombo" layout="inline">
+	                	<mec:selectOneMenu id="tipo" title="#{messages.LABEL_HP_TIPO_RETORNO_CRUD}" label="#{messages.LABEL_TIPO_DE_RETORNO}" required="true" noSelectionOption="false" enum="DominioTipoRetorno"  value="#{periodoRetornoCRUDController.mtxPeriodoRetorno.tipoRetorno.indTipo}">
+	       						<p:ajax event="change" listener="#{periodoRetornoCRUDController.isExibirDescricao()}"  process="@this" update="@(#panelCombo)"/> 
+	       				</mec:selectOneMenu>
+	                	<mec:suggestionBox  id="suggestionDescricao" label="#{messages.LABEL_DESCRICAO_PR}" width="500" descricaoInput="seq" required="true" descricaoLabel="descricao" posDeleteAction="limparCampo" maxlength="200"
+	                						suggestionAction="pesquisarTipoRetorno" title="#{messages.LABEL_HP_DESCRICAO_CRUD}" controller="#{periodoRetornoCRUDController}"  value="#{periodoRetornoCRUDController.selecionaDescricao}" size="80"
+	                						render="corpoPagina,panelLabel">
+		                  <p:column>
+		                    <f:facet name="header">
+		                      <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/>
+		                    </f:facet> #{item.seq}
+		                  </p:column>
+		                  
+		                   <p:column>
+		                    <f:facet name="header">
+		                      <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/>
+		                    </f:facet> #{item.descricao}
+		                  </p:column>
+		         
+		                </mec:suggestionBox>
+              		</p:outputPanel>       				
+       							
+       				<mec:selectOneMenu id="situacao" title="#{messages.LABEL_HP_ATIVO_CRUD}" label="#{messages.LABEL_ATIVO_PR}"  required="true"
+       					noSelectionOption="false" enum="DominioSimNao" value="#{periodoRetornoCRUDController.dominioSimNao}">
+       						<p:ajax event="change" listener="#{periodoRetornoListController.getDominioSimNao()}"  process="@this" update="@(#panelCombo)"/> 
+       					</mec:selectOneMenu>
+     			</aghu:linha>
+      		</aghu:panelGeral>
+			<br />
+			<aghu:panelGeral  legend="#{messages.LABEL_REPETICOES}" >
+					<p:outputPanel id = "panelDadosRepeticao"  > 
+						<mec:selectOneMenu id="repeticao" title="#{messages.LABEL_HP_REPETICAO_CRUD}" label="#{messages.LABEL_REPETICAO_PR}" 
+										noSelectionOption="false" enum="DominioRepeticaoRetorno" value="#{periodoRetornoCRUDController.repeticao}">
+       					</mec:selectOneMenu>
+       			
+       					<mec:inputNumero id="quantidade" onkeydown = "PrimeFaces.focus('tipo')"  onkeypress = "return event.keyCode != 13" label="#{messages.LABEL_QUANTIDADE_PR}" title="#{messages.LABEL_HP_QTD_RETORNO_CRUD}" value="#{periodoRetornoCRUDController.quantidadeRepeticao}" ajax="true" maxlength="2"> 
+							<p:ajax event="blur" listener="#{periodoRetornoCRUDController.verificarQtd()}"  process="@(#panelDadosRepeticao)" update="@(#panelDadosRepeticao)" ajax="true" /> 
+						</mec:inputNumero>
+						<br />
+						<mec:commandButton id="bt_adicionar" value="#{messages.LABEL_ADICIONAR}" action="#{periodoRetornoCRUDController.adcionar()}"  render="@tabelaRepitacaoAdd" disabled="#{periodoRetornoCRUDController.ativarBtEditar}" />
+					</p:outputPanel>
+					<br />
+					<br />
+					<p:outputPanel id="tabelaRepitacaoAdd" rendered="#{periodoRetornoCRUDController.ocultarGrid}" > 
+						<mec:serverDataTable  scrollHeight="200" rowKeyVar="index" list="#{periodoRetornoCRUDController.listaItensPeriodoRetorno}"  scrollable="true" controller="#{periodoRetornoCRUDController}" selection="selecionado"> 
+							<c:set var="row" value="#{item}"/>  
+       						<p:column width="55px;">
+			          			<f:facet name="header"> 
+			            			<h:outputText value="#{messages.LABEL_ACAO_PR}"/> 
+			          			</f:facet>
+					  			<center>
+					  				<mec:commandLink action="#{periodoRetornoCRUDController.excluirItem(index)}" title="#{messages.LABEL_EXCLUIR}" ajax="true"  styleClass="silk-icon silk-delete"
+													 render="tabelaRepitacaoAdd" process="@this, @(panelItensReceitaGeral)">
+									</mec:commandLink>
+					  				<mec:commandLink rendered="#{index gt 0 }" action="#{periodoRetornoCRUDController.upItem(index)}" title="#{messages.LABEL_UP}"
+													styleClass=" silk-arrow-up silk-icon" ajax="true" render="tabelaRepitacaoAdd" process="@this" />
+									<mec:commandLink rendered="#{index lt periodoRetornoCRUDController.sizeItensPeriodoRetorno-1 }" action="#{periodoRetornoCRUDController.downItem(index)}"
+														title="#{messages.LABEL_ARROW}" styleClass=" silk-arrow-down silk-icon" ajax="true" render="tabelaRepitacaoAdd" process="@this" />
+					  			</center>
+			        		</p:column>
+			        		<p:column width="150px;">
+			          			<f:facet name="header"> 
+			            			<h:outputText value="#{messages.LABEL_ORDEM_PR}"/> 
+			          			</f:facet>
+			          			<center><h:outputText id="TipodeRetorno" value="#{item.ordem}"/></center>
+			        		</p:column>
+			         		<p:column width="600px;" style="text-align:left !important">
+			          			<f:facet name="header"> 
+			            			<h:outputText value="#{messages.LABEL_REPETICAO_PR}"/> 
+			          			</f:facet>
+			          			<h:outputText id="outRepeticaoo" value="#{item.indRepeticao.getDescricao()}"/> 
+			        		</p:column>
+			        		<p:column width="100px;">
+			          			<f:facet name="header"> 
+			           				 <h:outputText value="#{messages.LABEL_QUANTIDADE_PR}"/> 
+			          			</f:facet>
+			          			<pe:inputNumber id="outSituacao" value="#{item.quantidade}" style="text-align:center !important" ajax="true" maxValue ="99" minValue="00" > 
+									<p:ajax event="change" listener="#{periodoRetornoCRUDController.atualizarQuantidade(index,row.quantidade)}"  process="@this" />							
+								</pe:inputNumber>				 
+			        		</p:column>
+		        		</mec:serverDataTable>
+		        	</p:outputPanel>
+	        </aghu:panelGeral>
+			</h:form>
+			<h:form prependId="false" id="formCancelar">
+				<p:outputPanel id="panel_button_gravar" layout="block">
+							<mec:commandButton id="confirmar" value="#{messages.LABEL_GRAVAR}" action="#{periodoRetornoCRUDController.gravar()}"
+								profile="ok" ajax="true" />
+							<mec:commandButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR}" action="#{periodoRetornoCRUDController.cancelar()}" profile="cancel" ajax="true" />
+				</p:outputPanel>
+						
+					
+			</h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="body">
+		<ui:param name="stopEnter" value="false" />
+		<mec:pageConfig controller="#{calendarioVencimentoTributosController}" />
+		<h:form prependId="false"
+			id="formPesquisarCalendarioVencimentoTributos">
+			<p:outputPanel id="outputPanelFiltro" layout="inline"
+				styleClass="aghu-panel-geral">
+				<aghu:panelGeral
+					legend="#{messages.TITLE_CALENDARIO_VENCIMENTO_TRIBUTOS}">
+					<mec:inputMesAno required="true"
+						value="#{calendarioVencimentoTributosController.mesApuracao}"
+						label="#{messages.LABEL_FILTRO_PERIODO_APURACAO}"
+						title="#{messages.TITLE_FILTRO_PERIODO_APURACAO}"
+						id="inputTextDataVencimentoTributos" />
+					<mec:selectOneMenu label="#{messages.LABEL_FILTRO_TIPO_TRIBUTO}"
+						enum="DominioTipoTributo"
+						value="#{calendarioVencimentoTributosController.dominioTipoTributo}"
+						id="tipoTributo" />
+				</aghu:panelGeral>
+			</p:outputPanel>
+			<aghu:acao>
+				<mec:commandButton id="btnPesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					action="#{calendarioVencimentoTributosController.pesquisar}"
+					profile="search" />
+				<mec:commandButton id="btnLimpar" value="#{messages.LABEL_LIMPAR}"
+					immediate="true"
+					action="#{calendarioVencimentoTributosController.limpar}"
+					render="outputPanelFiltro, outputPanelListaVencimentoTributos"
+					profile="clear" />
+				<p:outputPanel
+					rendered="#{calendarioVencimentoTributosController.exibirBotaoNovo and mf:hasPermission(securityController, 'cadastrarCalendarioVctTributo, executar')}"
+					layout="inline">
+					<mec:commandButton id="btnCadastrar" value="#{messages.LABEL_NOVO}"
+						immediate="true"
+						action="#{calendarioVencimentoTributosController.inserir}"
+						profile="add" />
+				</p:outputPanel>
+				<mec:commandButton id="bt_imprimir"
+					rendered="#{calendarioVencimentoTributosController.exibirBotaoNovo and calendarioVencimentoTributosController.fcpCalendariosVencimentosTributosVOs.size() > 0 }"
+					action="#{calendarioVencimentoTributosController.imprimir}"
+					value="#{messages.LABEL_IMPRIMIR}" styleClass="bt_ok icon-print"
+					profile="print">
+				</mec:commandButton>
+			</aghu:acao>
+			<br clear="none" />
+		</h:form>
+		<p:outputPanel id="outputPanelListaVencimentoTributos"  rendered="#{calendarioVencimentoTributosController.exibirBotaoNovo}" style="margin-left:10px !important; margin-right:10px !important;">
+			<h:form prependId="false" id="formListaVencimentosTributos">
+					<mec:serverDataTable id="tableCalendarionVencimentoTributos"
+						rendered="#{calendarioVencimentoTributosController.exibirBotaoNovo}"
+						list="#{calendarioVencimentoTributosController.fcpCalendariosVencimentosTributosVOs}"
+						controller="#{calendarioVencimentoTributosController}"
+						scrollable="true" scrollHeight="400">
+						<c:set var="_item" value="#{item}" style="margin-left:10px !important; margin-right:10px !important;"/>
+						
+						<p:column headerText="Ações" styleClass="first-column auto-adjust"
+							exportable="false">
+							<mec:commandLink
+								title="#{messages.HINT_VISUALIZAR_CADASTRO_CALENDARIO}"
+								action="#{calendarioVencimentoTributosController.visualizar(_item.seq)}"
+								rendered="#{mf:hasPermission(securityController, 'cadastrarCalendarioVctTributo, executar')}"
+								styleClass=" silk-zoom silk-icon" ajax="true" />
+							<mec:commandLink title="#{messages.HINT_EXCLUIR_CALENDARIO}"
+								action="#{calendarioVencimentoTributosController.remover}"
+								rendered="#{mf:hasPermission(securityController, 'cadastrarCalendarioVctTributo, executar')}"
+								profile="delete">
+								<f:setPropertyActionListener for="command"
+									target="#{calendarioVencimentoTributosController.fcpCalendarioVencimentoTributosVO}"
+									value="#{_item}" />
+							</mec:commandLink>
+							<mec:commandLink
+								title="#{messages.HINT_LISTAR_CODIGO_RECOLHIMENTO}"
+								action="#{retencaoTributoController.iniciarPesquisando(_item.tipoTributo)}"
+								styleClass=" silk-lista-consultar silk-icon" ajax="true" />
+						</p:column>
+						<p:column styleClass="auto-adjust">
+							<f:facet name="header">
+								<h:outputText value="#{messages.TITLE_SITUACAO_TRIBUTO}" />
+							</f:facet>
+							<h:outputText value="#{_item.formattedFields.tipoTributo}"
+								style="text-transform:uppercase" />
+						</p:column>
+						<p:column styleClass="auto-adjust">
+							<f:facet name="header">
+								<h:outputText value="#{messages.TITLE_PERIODO_APURACAO}" />
+							</f:facet>
+							<h:outputText value="#{_item.formattedFields.periodoApuracao}"
+								style="text-transform:uppercase" />
+						</p:column>
+						<p:column styleClass="auto-adjust">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_VENCIMENTO}" />
+							</f:facet>
+							<h:outputText value="#{_item.formattedFields.vencimento}"
+								style="text-transform:uppercase" />
+						</p:column>
+						<p:column styleClass="auto-adjust">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_INICIO_VIGENCIA}" />
+							</f:facet>
+							<h:outputText value="#{_item.formattedFields.inicioVigencia}"
+								style="text-transform:uppercase" />
+						</p:column>
+					</mec:serverDataTable>
+			</h:form>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

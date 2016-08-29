@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.TITLE_NOTAS_CCIH} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{cadastroNotasAdicionaisCCIHController.inicio}" />
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="body">
+		<mec:pageConfig controller="#{cadastroNotasAdicionaisCCIHController}"
+			ignoreEnter="true" />
+		<ui:param name="stopEnter" value="true" />
+		<h:form prependId="false" id="formPrincipal" name="formPrincipal">
+			<aghu:panelGeral legend="#{messages.LABEL_NOTA_CCIH_PACIENTE}">
+				<p:outputPanel id="panelCabecalho" layout="inline">
+					<aghu:linha>
+						<mec:inputText
+							label="#{messages.LABEL_NOTA_CCIH_PACIENTE_PRONTUARIO}"
+							id="prontuario" size="8" maxlength="8" style="width: 90px;"
+							readonly="true"
+							value="#{cadastroNotasAdicionaisCCIHController.prontuarioFormatado}" />
+						<mec:inputText label="#{messages.LABEL_NOTA_CCIH_PACIENTE_NOME}"
+							id="nome" size="60" maxlength="60" readonly="true"
+							value="#{cadastroNotasAdicionaisCCIHController.paciente.nome}" />
+						<mec:inputTextData
+							label="#{messages.LABEL_NOTA_CCIH_PACIENTE_DATA_NASC}"
+							id="dtNascimento" size="20" maxlength="20" readonly="true"
+							value="#{cadastroNotasAdicionaisCCIHController.paciente.dtNascimento}"
+							tipo="data" />
+						<mec:inputText label="#{messages.LABEL_NOTA_CCIH_PACIENTE_IDADE}"
+							id="idade" size="5" readonly="true"
+							value="#{cadastroNotasAdicionaisCCIHController.idade}" />
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+
+			<p:outputPanel id="panelCadastro" layout="inline"
+				styleClass="aghu-panel-geral">
+				<aghu:panelGeral
+					legend="#{messages.TITLE_FORMULARIO_CADASTRO_NOTAS_CCIH}">
+					<aghu:linha>
+						<mec:inputTextArea id="notaAdicional"
+							label="#{messages.LABEL_NOTA_ADICIONAL_NOTAS_CCIH}"
+							title="#{messages.TITLE_NOTA_ADICIONAL_NOTAS_CCIH}" cols="53"
+							rows="6" required="true" maxlength="500"
+							value="#{cadastroNotasAdicionaisCCIHController.notaCCIH.descricao}"
+							rendered="#{mf:hasPermission(securityController,'manterNotasCCIH,manter')}" />
+						<mec:inputTextData label="#{messages.LABEL_DATA_NOTAS_CCIH}"
+							title="#{messages.TITLE_DATA_NOTAS_CCIH}" id="data" size="6"
+							maxlength="20" tipo="data" required="true"
+							value="#{cadastroNotasAdicionaisCCIHController.notaCCIH.dtHrInicio}" 
+							rendered="#{mf:hasPermission(securityController,'manterNotasCCIH,manter')}"/>
+						<mec:inputTextData
+							label="#{messages.LABEL_ENCERRAMENTO_NOTAS_CCIH}"
+							title="#{messages.TITLE_ENCERRAMENTO_NOTAS_CCIH}"
+							id="dataEncerramento" size="6" maxlength="20" tipo="data"
+							value="#{cadastroNotasAdicionaisCCIHController.notaCCIH.dtHrEncerramento}" 
+							rendered="#{mf:hasPermission(securityController,'manterNotasCCIH,manter')}"/>
+						<aghu:acao newLine="false">
+							<mec:commandButton id="bt_adicionar"
+								value="#{messages.LABEL_ADICIONAR}"
+								rendered="#{cadastroNotasAdicionaisCCIHController.modoEdicao == false and mf:hasPermission(securityController,'manterNotasCCIH,manter')}"
+								block="true" ajax="true"
+								action="#{cadastroNotasAdicionaisCCIHController.gravarNota}"
+								render="panelCadastro,panelLista" profile="add" />
+							<mec:commandButton id="bt_alterar"
+								value="#{messages.LABEL_ALTERAR}"
+								rendered="#{cadastroNotasAdicionaisCCIHController.modoEdicao == true and mf:hasPermission(securityController,'manterNotasCCIH,manter')}"
+								ajax="true"
+								action="#{cadastroNotasAdicionaisCCIHController.alterarNota}"
+								render="panelCadastro,panelLista" profile="ok" />
+							<mec:commandButton id="bt_cancelar"
+								value="#{messages.LABEL_CANCELAR_EDICAO}"
+								rendered="#{cadastroNotasAdicionaisCCIHController.modoEdicao == true}"
+								block="true" ajax="true" process="@this"
+								action="#{cadastroNotasAdicionaisCCIHController.cancelarEdicao}"
+								render="panelCadastro,panelLista"
+								styleClass="bt_cancel_edit bt_cinza" />
+						</aghu:acao>
+					</aghu:linha>
+
+					<p:outputPanel id="panelLista" layout="inline">
+						<aghu:linha>
+							<p:outputPanel id="panelGrid" layout="block"
+								style="max-height: 267px; overflow-y: auto;">
+								<mec:serverDataTable id="table" rowKeyVar="_itemId"
+									list="#{cadastroNotasAdicionaisCCIHController.listaNotas}"
+									controller="#{cadastroNotasAdicionaisCCIHController}"
+									selection="notaCCIHSelecionada" scrollable="true">
+									<c:set var="_item" value="#{item}" />
+
+									<p:column styleClass="tdAcao" style="width:40px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACOES}" />
+										</f:facet>
+										<mec:commandLink
+											action="#{cadastroNotasAdicionaisCCIHController.editar(_item)}"
+											title="#{messages.LABEL_EDITAR}"
+											rendered="#{!cadastroNotasAdicionaisCCIHController.modoEdicao and mf:hasPermission(securityController,'manterNotasCCIH,manter')}"
+											profile="edit" ajax="true" process="@this" render="panelCadastro,panelLista" />
+										<mec:commandLink
+											action="#{cadastroNotasAdicionaisCCIHController.excluir}"
+											title="#{messages.LABEL_EXCLUIR}"
+											rendered="#{!cadastroNotasAdicionaisCCIHController.modoEdicao and mf:hasPermission(securityController,'manterNotasCCIH,manter')}"
+											profile="delete" ajax="true" process="@this" render="panelLista">
+											<f:setPropertyActionListener
+												target="#{cadastroNotasAdicionaisCCIHController.notaCCIHSelecionada}"
+												value="#{_item}" for="command" />
+										</mec:commandLink>
+									</p:column>
+
+									<p:column>
+										<f:facet name="header">
+											<h:outputText
+												value="#{messages.LABEL_NOTA_ADICIONAL_NOTAS_CCIH}" />
+										</f:facet>
+										<h:outputText id="desc"
+											value="#{(_item.descricao.length() &gt; 90) ? fn:substring(_item.descricao,0,90).concat('...') : _item.descricao}" />
+										<p:tooltip for="desc"
+											style="max-width:500px; word-wrap: break-word;"
+											rendered="#{_item.descricao.length() &gt; 90}">
+											<h:outputText value="#{_item.descricao}" />
+										</p:tooltip>
+									</p:column>
+
+									<p:column style="width:100px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_DATA_NOTAS_CCIH}" />
+										</f:facet>
+										<h:outputText value="#{_item.dtHrInicio}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:column>
+
+									<p:column style="width:100px">
+										<f:facet name="header">
+											<h:outputText
+												value="#{messages.LABEL_ENCERRAMENTO_NOTAS_CCIH}" />
+										</f:facet>
+										<h:outputText value="#{_item.dtHrEncerramento}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:column>
+								</mec:serverDataTable>
+							</p:outputPanel>
+						</aghu:linha>
+					</p:outputPanel>
+				</aghu:panelGeral>
+			</p:outputPanel>
+			<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+				immediate="true"
+				action="#{cadastroNotasAdicionaisCCIHController.voltar}"
+				styleClass="bt_cinza" profile="back" />
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

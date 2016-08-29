@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_ASSOCIAR_ORIGEM} :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{associaOrigemQuestionarioController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{associaOrigemQuestionarioController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formAssociarOrigens"> 
+        <p:outputPanel id="cabecalho" layout="inline"> 
+          <p:outputPanel rendered="#{associaOrigemQuestionarioController.exameQuestionario != null}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.TITLE_FIELDSET_ASSOCIAR_ORIGENS_QUESTIONARIO}"> 
+              <mec:inputText id="descricaoQuestionario" label="#{messages.LABEL_QUESTIONARIO_ASSOCIAR_ORIGENS_QUESTIONARIO}" value="#{associaOrigemQuestionarioController.exameQuestionario.aelQuestionarios.descricao}" size="60" readonly="true"/>  
+              <mec:inputText id="descricaoExame" label="#{messages.LABEL_EXAME_ASSOCIAR_ORIGENS_QUESTIONARIO}" value="#{associaOrigemQuestionarioController.descricaoExame}" size="60" readonly="true"/>  
+              <mec:inputText id="descricaoSituacao" label="#{messages.LABEL_SITUACAO_ASSOCIAR_ORIGENS_QUESTIONARIO}" value="#{associaOrigemQuestionarioController.exameQuestionario.situacao.descricao}" size="10" readonly="true"/> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <aghu:panelGeral id="fieldSetOrigensValidas" legend="#{messages.TITLE_FIELDSET_ORIGENS_QUESTIONARIO_EXAME}"> 
+          <aghu:linha> 
+            <p:outputPanel id="painelEdicao" layout="inline" rendered="#{mf:hasPermission(securityController,'associarOrigens,persistir')}"> 
+              <mec:inputNumero id="numeroVias" label="#{messages.LABEL_NRO_VIAS_ASSOCIAR_ORIGENS_QUESTIONARIO}" title="#{messages.TITLE_NRO_VIAS_ASSOCIAR_ORIGENS_QUESTIONARIO}" value="#{associaOrigemQuestionarioController.nroVias}" maxlength="2" onchange="limpaZero(this);" size="10"> 
+                <f:validateLongRange maximum="99" for="inputId"/> 
+              </mec:inputNumero>  
+              <mec:selectOneMenu id="origem" required="true" noSelectionOption="false" enum="DominioOrigemQuestionario" label="#{messages.LABEL_ORIGEM_ASSOCIAR_ORIGENS_QUESTIONARIO}" title="#{messages.TITLE_ORIGEM_ASSOCIAR_ORIGENS_QUESTIONARIO}" readonly="#{associaOrigemQuestionarioController.modoEdicao == true}" value="#{associaOrigemQuestionarioController.origemQuestionario}"/> 
+              <p:outputPanel id="painelBotoes" layout="block" style="margin-top: 20px;"> 
+                <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'associarOrigens,persistir') and associaOrigemQuestionarioController.modoEdicao == false}" disabled="#{not mf:hasPermission(securityController,'associarOrigens,persistir')}" block="true" action="#{associaOrigemQuestionarioController.gravar}" profile="ok"/>  
+                <mec:commandButton id="bt_alterar" value="#{messages.LABEL_ALTERAR}" rendered="#{mf:hasPermission(securityController,'associarOrigens,persistir') and associaOrigemQuestionarioController.modoEdicao == true}" disabled="#{not mf:hasPermission(securityController,'associarOrigens,persistir')}" block="true" action="#{associaOrigemQuestionarioController.gravar}" profile="ok"/>  
+                <mec:commandButton id="bt_cancel_edit" value="#{messages.LABEL_CANCELAR_EDICAO}" rendered="#{mf:hasPermission(securityController,'associarOrigens,persistir') and associaOrigemQuestionarioController.modoEdicao == true}" action="#{associaOrigemQuestionarioController.limpar}" profile="cancel"/> 
+              </p:outputPanel> 
+             </p:outputPanel>  
+          </aghu:linha>  
+          <p:outputPanel id="panelTabelaOrigens" layout="inline"> 
+            <aghu:linha> 
+              <mec:serverDataTable id="tabelaOrigens" list="#{associaOrigemQuestionarioController.listaQuestionarioOrigens}" scrollable="true"> 
+                <c:set var="item" value="#{item}"/>  
+                <p:column style="#{associaOrigemQuestionarioController.isOrigemSelecionada(item) ? 'background-color:#EEE8AA' : ''};" styleClass="tdAcao" rendered="#{mf:hasPermission(securityController,'associarOrigens,persistir')}"> 
+                  <f:facet name="header" style="white-space:nowrap;"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink immediate="true" id="linkEditar" title="#{messages.LABEL_EDITAR}" action="#{associaOrigemQuestionarioController.editar(item)}" rendered="#{associaOrigemQuestionarioController.modoEdicao == false}" disabled="#{not mf:hasPermission(securityController,'associarOrigens,persistir')}" profile="edit" ajax="true" render="panelTabelaOrigens,painelBotoes,painelEdicao,painelBotoesVoltar" process="@this"/>  
+                   <mec:commandLink immediate="true" id="linkExcluir" title="#{messages.LABEL_EXCLUIR}" action="#{associaOrigemQuestionarioController.excluir(item)}" rendered="#{associaOrigemQuestionarioController.modoEdicao == false}" disabled="#{not mf:hasPermission(securityController,'associarOrigens,excluir')}" profile="delete" ajax="true" render="panelTabelaOrigens,painelBotoes" process="@this"> 
+                  	<f:setPropertyActionListener target="#{associaOrigemQuestionarioController.questionarioOrigem}" value="#{item}" for="command"/>
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column style="#{associaOrigemQuestionarioController.isOrigemSelecionada(item) ? 'background-color:#EEE8AA' : ''};width:180px;"> 
+                  <f:facet name="header" style="white-space:nowrap;"> 
+                    <h:outputText value="#{messages.LABEL_NRO_VIAS_ASSOCIAR_ORIGENS_QUESTIONARIO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.nroVias}"/> 
+                </p:column>  
+                <p:column style="#{associaOrigemQuestionarioController.isOrigemSelecionada(item) ? 'background-color:#EEE8AA' : ''};"> 
+                  <f:facet name="header" style="white-space:nowrap;"> 
+                    <h:outputText value="#{messages.LABEL_ORIGEM_ASSOCIAR_ORIGENS_QUESTIONARIO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.id.origemQuestionario.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_voltar" immediate="true" profile="back" value="#{messages.LABEL_VOLTAR}" action="#{associaOrigemQuestionarioController.voltar}"/>  
+        </aghu:acao> 
+      </h:form>  
+    </ui:define> 
+  </ui:composition> 
+</html>

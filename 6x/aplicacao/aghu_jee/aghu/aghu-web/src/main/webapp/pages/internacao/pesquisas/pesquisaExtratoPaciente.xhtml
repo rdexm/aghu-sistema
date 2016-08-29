@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisar Extrato do Paciente:: AGHU - MEC</title> 
+    </ui:define>
+    <ui:define name="metadata">
+      <f:metadata>
+        <f:viewAction action="#{pesquisaExtratoPacientePaginatorController.inicio}"/>
+      </f:metadata>
+    </ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaExtratoPacientePaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <p:outputPanel id="panelPesquisa" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="Pesquisar Extrato do Paciente"> 
+            <aghu:linha> 
+              <mec:inputTextProntuario readonly="#{pesquisaExtratoPacientePaginatorController.renderDetalhes}" label="#{messages.LABEL_PRONTUARIO}" size="9" title="#{messages.TITLE_LABEL_PRONTUARIO_PESQ}" value="#{pesquisaExtratoPacientePaginatorController.prontuario}" required="true" id="prontuario"/>  
+              <p:focus id="focoProntuario" for="prontuario"/>
+              <p:outputPanel id="nomeDoPaciente" layout="inline"> 
+                <mec:inputText label="#{messages.LABEL_NOME}" size="50" readonly="true" title="Nome do paciente" value="#{pesquisaExtratoPacientePaginatorController.nomePaciente}" id="txtNome"/> 
+              </p:outputPanel>  
+              <p:outputPanel id="dataDaInternacao" rendered="#{!pesquisaExtratoPacientePaginatorController.renderDetalhes}" layout="inline"> 
+                <mec:inputTextData label="#{messages.LABEL_DATA}" size="15" value="#{pesquisaExtratoPacientePaginatorController.dataInternacao}" title="#{messages.TITLE_LABEL_DATA_EXTRATO_PAC_PESQ}" required="false" id="txtData" tipo="data"/> 
+              </p:outputPanel>  
+              <p:outputPanel id="dataHoraDaInternacao" rendered="#{pesquisaExtratoPacientePaginatorController.renderDetalhes}" layout="inline"> 
+                <mec:inputText label="#{messages.LABEL_DATA}" size="20" readonly="true" value="#{pesquisaExtratoPacientePaginatorController.dataHoraInternacao}" title="#{messages.TITLE_DATA}" id="txtData2"/> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <p:outputPanel id="infoConvenio" rendered="#{pesquisaExtratoPacientePaginatorController.renderDetalhes}" layout="inline"> 
+              <aghu:linha> 
+                <mec:inputText label="#{messages.LABEL_COD_CONVENIO}" readonly="true" size="5" title="Código do convênio de saude." value="#{pesquisaExtratoPacientePaginatorController.codConvenio}" id="txtCodigoConvenio"/>  
+                <mec:inputText label="#{messages.LABEL_COD_PLANO}" readonly="true" size="3" title="Código do plano de saude" value="#{pesquisaExtratoPacientePaginatorController.codPlano}" id="txtCodigoPlano"/>  
+                <mec:inputText label="#{messages.LABEL_DESC_CONVENIO_PLANO}" readonly="true" size="50" title="Desrição do convênio e plano de saude." value="#{pesquisaExtratoPacientePaginatorController.descricaoConvenioPlano}" id="txtDescricaoConvPlano"/> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisaExtratoPacientePaginatorController.pesquisar}" render="tabela , dataDaInternacao , dataHoraDaInternacao , nomeDoPaciente , bt_voltar , bt_avancar" profile="search"/>  
+            <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{pesquisaExtratoPacientePaginatorController.limparPesquisa}" profile="clear" ajax="true" render="panelPesquisa, tabela" process="@this"/>  
+            <p:outputPanel rendered="#{pesquisaExtratoPacientePaginatorController.dataModel.pesquisaAtiva}" layout="inline"> 
+              <mec:commandButton name="bt_anterior" value="#{messages.LABEL_VOLTAR_DATA}" rendered="#{!pesquisaExtratoPacientePaginatorController.desabilitaVoltar}" action="#{pesquisaExtratoPacientePaginatorController.voltar}" render="tabela , dataDaInternacao , bt_voltar , bt_avancar" styleClass="bt_cinza"/>  
+              <mec:commandButton name="bt_avancar" value="#{messages.LABEL_AVANCAR_DATA}" rendered="#{!pesquisaExtratoPacientePaginatorController.desabilitaAvancar}" action="#{pesquisaExtratoPacientePaginatorController.avancar}" render="tabela , dataDaInternacao , bt_voltar , bt_avancar" styleClass="bt_cinza" /> 
+            </p:outputPanel>  
+            <mec:commandButton value="#{messages.LABEL_CANCELAR}" id="cancelar" immediate="true" action="#{pesquisaExtratoPacientePaginatorController.cancelar}" rendered="#{pesquisaExtratoPacientePaginatorController.cameFrom != null}" profile="cancel"/> 
+          </aghu:acao> 
+        </p:outputPanel>  
+        <p:outputPanel id="tabela" layout="inline"> 
+          <mec:serverDataTable id="tabelaExtratoPaciente" dataModel="dataModel" controller="#{pesquisaExtratoPacientePaginatorController}"> 
+            <c:set var="_item" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+              <mec:commandLink title="#{messages.LABEL_DETALHES_MOVIMENTACAO_INTERNACAO}" action="#{pesquisaExtratoPacientePaginatorController.detalharMovimento(_item)}" oncomplete="PF('modalDetalhesWG').show();;" styleClass=" silk-note silk-icon" ajax="true" render="nomeDoInformante , criado , nomeDoMedico , crm" process="@this"/> 
+            </p:column>  
+            <p:column size="20"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DATA_MOVIMENTACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.dataLancamento}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_TIPO_MOVIMENTO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.tipoMovimento}"/> 
+            </p:column>  
+            <p:column size="15"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ESPECIALIDADE}"/> 
+              </f:facet>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{messages.LABEL_ESPECIALIDADE}: "/>  
+                <h:outputText value="#{_item.descEspecialidade}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{_item.especialidade}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LEITO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.leito}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_QUARTO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.quarto}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.unidade}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalDetalhes" width="590" height="270" modal="true" resizable="false" widgetVar="modalDetalhesWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_DETALHES_MOVIMENTACAO_INTERNACAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:form prependId="false" id="formModal"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_DATA_GERACAO}" title="#{messages.TITLE_DATA_GERACAO}" readonly="true" size="20" value="#{pesquisaExtratoPacientePaginatorController.item.criadoEm}" style="text-transform:uppercase" id="criado"/>  
+              <mec:inputText label="#{messages.LABEL_CRM_EXTRATO_PAC}" title="#{messages.TITLE_CRM}" size="8" readonly="true" value="#{pesquisaExtratoPacientePaginatorController.item.crmMedico}" style="text-transform:uppercase" id="crm"/>  
+              <mec:inputText label="#{messages.LABEL_NOME}" title="#{messages.TITLE_NOME}" readonly="true" size="70" value="#{pesquisaExtratoPacientePaginatorController.item.nomeMedico}" style="text-transform:uppercase" id="nomeDoMedico"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_INFORMADO_POR}" title="#{messages.TITLE_INFORMADO_POR}" readonly="true" size="70" value="#{pesquisaExtratoPacientePaginatorController.item.nomeInformante}" style="text-transform:uppercase" id="nomeDoInformante"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

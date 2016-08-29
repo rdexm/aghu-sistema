@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:viewAction action="#{informarDadosMaterialRecebidoTMOController.iniciar}" />
+			</f:metadata>
+		</ui:define>
+		
+		<ui:define name="body">
+		
+	<script  type="text/javascript">
+			jQuery(document).ready(function() {
+				jQuery('input[id^=leucocitosTotais]').priceFormat({limit:6,centsLimit: 2,centsSeparator: ','});
+			 });	 
+	</script>
+			<mec:pageConfig controller="#{informarDadosMaterialRecebidoTMOController}" />
+				<aghu:panelGeral legend="#{messages.LABEL_PAGINA_INFORMAR_DADOS_MATERIAL_TMO}">
+					<h:form id="formGeral" prependId="false">
+						<aghu:linha>
+						<!-- PRONTUARIO E NOME -->	
+							<mec:inputText id="prontuario" label="#{messages.LABEL_PRONTUARIO_TMO}" size="10" readonly="true"
+								value="#{informarDadosMaterialRecebidoTMOController.prontuario}" />
+							
+							<mec:inputText id="nome" label="#{messages.LABEL_NOME_TMO}" size="50" readonly="true"
+								value="#{informarDadosMaterialRecebidoTMOController.aipPacientes.nome}" />
+						</aghu:linha>
+					
+						<aghu:linha>
+						<!-- MATERIAL, VOLUME, PESO, CD34, LEUCOCITOS TOTAIS-->
+						<mec:field required="true" label="#{messages.LABEL_MATERIAL_TMO}"
+							 		title="#{messages.TITLE_MATERIAL_TMO}" id="idField">	
+								 <p:selectOneMenu id="material" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+								 		value="#{informarDadosMaterialRecebidoTMOController.material}" style="width:100px !important">
+								 		    <f:selectItem itemLabel="#{messages.VALUE_COMBO_SELECIONE}" itemValue="" />
+								 		    <f:selectItem itemLabel="#{messages.VALUE_COMBO_MEDULA_OSSEA}" itemValue="52" />
+	              							<f:selectItem itemLabel="#{messages.VALUE_COMBO_CELULA_TRONCO_PERIFERICA}" itemValue="67" /> 
+						       		 		<f:selectItem itemLabel="#{messages.VALUE_COMBO_SANGUE_CORDAO_UMBILICAL}" itemValue="211"/>
+					             	<p:ajax event="change" update="@(#exameCultural)"  process="@this" 
+					             			listener="#{informarDadosMaterialRecebidoTMOController.atualizarExameCultural()}"/> 
+					            </p:selectOneMenu>
+							</mec:field>			            
+		   					<mec:inputNumero id="volume" 
+		         				label="#{messages.LABEL_VOLUME_TMO}"
+								title="#{messages.TITLE_VOLUME_TMO}"
+								size="6" requiredFake="true"
+								posicaoLabel="abaixo"
+								inteiros="4"
+								maxlength="4"
+								value="#{informarDadosMaterialRecebidoTMOController.coletaMaterialTmo.volume}">
+								<p:ajax event="change" eventsQueue="storeQueue" process="@this"/>  
+								<p:ajax event="change" update="@(#cdPorKg) @(#celulaNucleadaPorKg)" 
+									process="@this" listener="#{informarDadosMaterialRecebidoTMOController.efetuarCalculos()}"/> 
+							</mec:inputNumero>
+								
+							<mec:field label="#{messages.LABEL_PESO_TMO}" title="#{messages.TITLE_PESO_TMO}" required="true" >
+								<pe:inputNumber value="#{informarDadosMaterialRecebidoTMOController.coletaMaterialTmo.peso}" 	
+									id="peso"
+									size="4"
+									decimalSeparator=","				
+									decimalPlaces="1"	
+									maxValue="999.9"
+									minValue="#{0}">
+									<p:ajax event="change" eventsQueue="storeQueue" process="@this"/>  
+									<p:ajax event="change" update="@(#cdPorKg) @(#celulaNucleadaPorKg)" 
+										process="@this" listener="#{informarDadosMaterialRecebidoTMOController.efetuarCalculos()}"/> 
+								</pe:inputNumber>
+							</mec:field>
+							
+							<mec:field label="#{messages.LABEL_CD34_TMO}" title="#{messages.TITLE_CD34_TMO}">
+								<pe:inputNumber value="#{informarDadosMaterialRecebidoTMOController.coletaMaterialTmo.cd34}" 
+									disabled="#{!informarDadosMaterialRecebidoTMOController.habilitaCD34}"
+									size="3"
+									decimalSeparator=","
+									decimalPlaces="2"	
+									maxValue="9.99"
+									minValue="#{0}">
+									<p:ajax event="change" eventsQueue="storeQueue" process="@this"/>  
+									<p:ajax event="change" update="@(#cdPorKg) @(#celulaNucleadaPorKg)" 
+										process="@this" listener="#{informarDadosMaterialRecebidoTMOController.efetuarCalculos()}"/> 
+								</pe:inputNumber>
+							</mec:field>
+							
+							<mec:inputText label="#{messages.LABEL_LEUCOCITOS_TOTAIS_TMO}"
+								title="#{messages.TITLE_LEUCOCITOS_TOTAIS_TMO}"
+								value="#{informarDadosMaterialRecebidoTMOController.leucocitos}"
+								maxlength="7" readonly="#{!informarDadosMaterialRecebidoTMOController.habilitaLeucocitosTotais}"
+								converter="bigDecimalConverter"
+								size="10" removerCaratersEspeciais="false" id="leucocitosTotais">
+								<p:ajax event="change" eventsQueue="storeQueue" process="@this"/>  
+								<p:ajax event="change" update="@(#cdPorKg) @(#celulaNucleadaPorKg)" 
+									process="@this" listener="#{informarDadosMaterialRecebidoTMOController.efetuarCalculos()}"/> 
+
+							</mec:inputText>
+							
+							
+						</aghu:linha>
+					
+						<aghu:linha>
+						<!-- CD34 POR KG, CELULA NUCLEADA-->
+						<mec:inputText id="cdPorKg"
+								label="#{messages.LABEL_CD34_POR_KG_TMO}" size="10"
+								maxlength="10" readonly="true"
+								value="#{informarDadosMaterialRecebidoTMOController.cd34PorKg}" />
+								
+						<mec:inputText id="celulaNucleadaPorKg"
+								label="#{messages.LABEL_CELULA_NUCLEADA_POR_KG_TMO}" size="10"
+								maxlength="10" readonly="true"
+								value="#{informarDadosMaterialRecebidoTMOController.celulaNucleadaPorKg}" />	
+						</aghu:linha>
+						
+						<aghu:linha>
+						<!-- EXAME CULTURAL-->
+						<mec:inputText id="exameCultural"
+								label="#{messages.LABEL_EXAME_CULTURAL_TMO}" size="66"
+								maxlength="300" readonly="#{!informarDadosMaterialRecebidoTMOController.habilitarExameCultural}"
+								value="#{informarDadosMaterialRecebidoTMOController.coletaMaterialTmo.exameCultural}" >	
+								<p:ajax event="change" process="@this" />
+						</mec:inputText>
+						</aghu:linha>
+			        </h:form>
+					</aghu:panelGeral>
+			        <h:form id="formBts" prependId="false">
+				        <aghu:acao>
+				        	<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" block="true"
+				           					action="#{informarDadosMaterialRecebidoTMOController.gravar}" profile="ok"/>  
+				        	<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" block="true" 
+				           					action="#{informarDadosMaterialRecebidoTMOController.voltar}" profile="back"/>
+		        		</aghu:acao>
+	        		</h:form> 
+		</ui:define>
+	</ui:composition>
+</html>

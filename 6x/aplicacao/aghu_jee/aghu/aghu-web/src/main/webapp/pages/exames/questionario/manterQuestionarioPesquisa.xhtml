@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_CONSULTA_QUESTIONARIOS}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaQuestionarioController.iniciarPesquisa}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaQuestionarioController}"/>  
+      <h:form prependId="false" id="formDadosBasicosExames"> 
+        <pe:remoteCommand name="selecionar" update="tabelaAcao"> 
+          <pe:assignableParam name="param" assignTo="#{pesquisaQuestionarioController.seqSelecionado}"/> 
+        </pe:remoteCommand>  
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_QUESTIONARIOS}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="codigo" label="#{messages.LABEL_QUESTIONARIO_CODIGO}" title="#{messages.TITLE_QUESTIONARIO_CODIGO}" value="#{pesquisaQuestionarioController.seq}" size="6" maxlength="7"/>  
+            <aghu:linha> 
+              <mec:inputText id="descricao" label="#{messages.LABEL_QUESTIONARIO_DESCRICAO}" title="#{messages.TITLE_QUESTIONARIO_DESCRICAO}" value="#{pesquisaQuestionarioController.descricao}" removerCaratersEspeciais="false" size="120" maxlength="100" style="text-transform:uppercase"/> 
+            </aghu:linha> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero id="nroVias" label="#{messages.LABEL_QUESTIONARIO_NRO_VIAS}" title="#{messages.TITLE_QUESTIONARIO_NRO_VIAS}" value="#{pesquisaQuestionarioController.nroVias}" size="6" maxlength="2"/>  
+            <mec:selectOneMenu id="situacao" label="#{messages.LABEL_QUESTIONARIO_SITUACAO}" title="#{messages.TITLE_QUESTIONARIO_SITUACAO}" value="#{pesquisaQuestionarioController.situacao}" enum="DominioSituacao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" name="bt_pesquisar" value="#{messages.LABEL_GRUPO_EXAMES_PESQUISAR}" disabled="#{!mf:hasPermission(securityController,'questionario,pesquisar')}" block="true" action="#{pesquisaQuestionarioController.pesquisar}" render="panelQuestionarios" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_GRUPO_EXAMES_LIMPAR}" action="#{pesquisaQuestionarioController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton id="bt_novo" value="#{messages.LABEL_QUESTIONARIO_NOVO}" action="#{pesquisaQuestionarioController.inserir}" rendered="#{mf:hasPermission(securityController,'questionario,persistir') and pesquisaQuestionarioController.exibirBotaoNovo}" profile="add"/> 
+        </aghu:acao> 
+        <p:outputPanel id="panelMsgNaoEncontrado" layout="inline"> 
+          <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{empty pesquisaQuestionarioController.listaQuestionarios and pesquisaQuestionarioController.pesquisaEfetuada}"> 
+            <h:outputText value="#{messages.MESSAGE_QUESTIONARIOS_NAO_ENCONTRADO}"/> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelQuestionarios" layout="inline"> 
+          <p:outputPanel rendered="#{not empty pesquisaQuestionarioController.listaQuestionarios}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.LEGENDA_QUESTIONARIOS}"> 
+              <aghu:linha> 
+                <table width="100%"> 
+                  <tr> 
+                    <td width="95%" rowspan="1" colspan="1"> 
+                      <p:outputPanel layout="block" style="width: 100%; height:450px; overflow:auto;"> 
+                        <mec:serverDataTable id="listaQuestionarios" list="#{pesquisaQuestionarioController.listaQuestionarios}" scrollable="true"> 
+                          <c:set var="_questionario" value="#{item}"/>  
+                          <p:column styleClass="tdAcao"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                            </f:facet>  
+                            <p:outputPanel rendered="#{_questionario.seq.equals(pesquisaQuestionarioController.seqSelecionado)}" layout="inline"> 
+                              <input type="radio" id="#{_questionario.seq}" name="group1" onchange="selecionar(#{_questionario.seq})" checked="checked" class="serverDataTable"/> 
+                            </p:outputPanel>  
+                            <p:outputPanel rendered="#{!_questionario.seq.equals(pesquisaQuestionarioController.seqSelecionado)}" layout="inline"> 
+                              <input type="radio" id="#{_questionario.seq}" onchange="selecionar(#{_questionario.seq})" name="group1" class="serverDataTable"/> 
+                            </p:outputPanel>  
+                            <mec:commandLink title="#{messages.LABEL_EDITAR}" rendered="#{mf:hasPermission(securityController,'questionario,persistir')}" action="#{pesquisaQuestionarioController.editar}" profile="edit"> 
+                              <f:setPropertyActionListener target="#{pesquisaQuestionarioController.questionario}" value="#{_questionario}" for="command"/> 
+                            </mec:commandLink>  
+                            <mec:commandLink title="#{messages.LABEL_EXCLUIR}" rendered="#{mf:hasPermission(securityController,'questionario,excluir')}" action="#{pesquisaQuestionarioController.excluir}" profile="delete"> 
+                              <f:setPropertyActionListener target="#{pesquisaQuestionarioController.idItemExclusao}" value="#{_questionario.seq}" for="command"/> 
+                            </mec:commandLink>  
+                          </p:column>  
+                          <p:column width="14%"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_QUESTIONARIO_CODIGO}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_questionario.seq}"/> 
+                          </p:column>  
+                          <p:column width="40%"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_QUESTIONARIO_DESCRICAO}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_questionario.descricao}"/> 
+                          </p:column>  
+                          <p:column width="10%"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_QUESTIONARIO_NRO_VIAS}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_questionario.nroVias}"/> 
+                          </p:column>  
+                          <p:column width="14%"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_QUESTIONARIO_SITUACAO}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_questionario.situacao.descricao}"/> 
+                          </p:column> 
+                        </mec:serverDataTable> 
+                      </p:outputPanel> 
+                    </td>  
+                    <td width="1%" rowspan="1" colspan="1"/>  
+                    <td width="4%" align="center" valign="top" rowspan="1" colspan="1"> 
+                      <div class="menu-direita" style="width:130px"> 
+                        <p:outputPanel id="tabelaAcao" layout="inline"> 
+                          <mec:commandButton id="bt_associar_exames" style="width:130px" value="#{messages.LABEL_QUESTIONARIO_ASSOCIAR_EXAME}" disabled="#{not mf:hasPermission(securityController,'questionario,pesquisar') or pesquisaQuestionarioController.seqSelecionado == null}" action="#{pesquisaQuestionarioController.exameQuestionario}" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{cadastroExameQuestionarioController.qtnSeq}" value="#{pesquisaQuestionarioController.seqSelecionado}" for="command"/> 
+                          </mec:commandButton>  
+                          <mec:commandButton id="bt_associar_questao" style="width:130px" value="#{messages.LABEL_QUESTIONARIO_ASSOCIAR_QUESTOES}" disabled="#{not mf:hasPermission(securityController,'questaoQuestionario,pesquisar') or pesquisaQuestionarioController.seqSelecionado == null}" action="#{pesquisaQuestionarioController.questoesQuestionario}" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{cadastroQuestaoQuestionarioController.qtnSeq}" value="#{pesquisaQuestionarioController.seqSelecionado}" for="command"/> 
+                          </mec:commandButton>  
+                          <mec:commandButton id="bt_requisitante" style="width:130px" value="#{messages.LABEL_QUESTIONARIO_REQUISITANTE}" disabled="#{not mf:hasPermission(securityController,'associarRequisitante,pesquisar') or pesquisaQuestionarioController.seqSelecionado == null}" action="#{pesquisaQuestionarioController.associacaoRequisitanteQuestionario}" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{associaRequisitanteQuestionarioController.seqQuestionario}" value="#{pesquisaQuestionarioController.seqSelecionado}" for="command"/> 
+                          </mec:commandButton> 
+                        </p:outputPanel> 
+                      </div> 
+                    </td> 
+                  </tr> 
+                </table> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form>  
+    </ui:define> 
+  </ui:composition> 
+</html>

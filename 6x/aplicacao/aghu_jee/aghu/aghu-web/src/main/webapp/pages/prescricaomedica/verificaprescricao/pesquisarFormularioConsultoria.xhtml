@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_CONSULTORES}</title> 
+    </ui:define>      
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisarFormularioConsultoriaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body">
+    <h:form prependId="false" id="formFormularioConsultoria">
+
+			<aghu:panelGeral id="panelPesquisa" legend="#{messages.TITLE_FORMULARIO_CONSULTORIA_REIMPRESSAO}"> 
+				<aghu:linha>
+					<mec:inputText label="#{messages.LABEL_FORMULARIO_CONSULTORIA_PRONTUARIO}"
+						id="prontuario"
+						value="#{pesquisarFormularioConsultoriaController.mpmPrescricaoMedicaVO.pacProntuarioFormatado}"
+						size="8" maxlength="8"
+						readonly="true" />
+					<mec:inputText label="#{messages.LABEL_FORMULARIO_CONSULTORIA_CODIGO_PACIENTE}"
+						id="pacCodigo"
+						value="#{pesquisarFormularioConsultoriaController.mpmPrescricaoMedicaVO.pacCodigo}"
+						size="8" maxlength="8"
+						readonly="true" />
+					<mec:inputText label="#{messages.LABEL_FORMULARIO_CONSULTORIA_NOME_DO_PACIENTE}"
+						id="pacNome"
+						value="#{pesquisarFormularioConsultoriaController.mpmPrescricaoMedicaVO.pacNome}"
+						size="50" maxlength="50"
+						readonly="true" />						
+				</aghu:linha> 
+				
+				<aghu:linha> 
+					<mec:inputText label="#{messages.LABEL_FORMULARIO_CONSULTORIA_INICIO}"
+						id="dthrInicio"
+						value="#{pesquisarFormularioConsultoriaController.mpmPrescricaoMedicaVO.dthrInicio}"
+						size="16" datePattern="dd/MM/yyyy HH:mm"
+						readonly="true" />
+					<mec:inputText label="#{messages.LABEL_FORMULARIO_CONSULTORIA_FIM}"
+						id="dthrFim"
+						value="#{pesquisarFormularioConsultoriaController.mpmPrescricaoMedicaVO.dthrFim}"
+						size="16" datePattern="dd/MM/yyyy HH:mm"
+						readonly="true" />
+				</aghu:linha> 
+			</aghu:panelGeral>
+
+			<aghu:panelGeral id="panelLista" legend="#{messages.TITLE_FORMULARIO_CONSULTORIA_SOLICITACOES}">
+				<mec:serverDataTable
+					rendered="#{not empty pesquisarFormularioConsultoriaController.listaSolicitacaoConsultoria}"
+					list="#{pesquisarFormularioConsultoriaController.listaSolicitacaoConsultoria}" scrollHeight="299" scrollable="true">
+					<c:set var="_solicitacaoConsultoria" value="#{item}" />
+					<p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_FORMULARIO_CONSULTORIA_ESPECIALIDADE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solicitacaoConsultoria.especialidade}"/> 
+          </p:column> 					
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_FORMULARIO_CONSULTORIA_DTHR_SOLICITACAO}" />
+						</f:facet>
+						<h:outputText value="#{_solicitacaoConsultoria.dtHrSolicitada}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+						</h:outputText>
+					</p:column>
+					<p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_FORMULARIO_CONSULTORIA_TIPO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solicitacaoConsultoria.tipo.descricao}"/> 
+          </p:column> 	
+          <p:column style="white-space:nowrap;text-align: center;"> 
+            <f:facet name="header" width="auto"> 
+              <h:outputText value="#{messages.LABEL_FORMULARIO_CONSULTORIA_URGENTE}"/> 
+            </f:facet>
+            <p:graphicImage rendered="#{_solicitacaoConsultoria.indUrgencia == 'S'}" value="../../../resources/img/icons/checked.png" />
+						<p:graphicImage rendered="#{_solicitacaoConsultoria.indUrgencia == 'N'}" value="../../../resources/img/icons/checked_off.png" />
+          </p:column>
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_FORMULARIO_CONSULTORIA_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solicitacaoConsultoria.indPendente.descricao}"/> 
+          </p:column> 			
+				</mec:serverDataTable>
+			</aghu:panelGeral>
+			<aghu:acao>
+			
+				<mec:commandButton id="bt_reimprimir"
+					value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+					action="#{pesquisarFormularioConsultoriaController.visualizarRelatorio}"
+					disabled="#{empty pesquisarFormularioConsultoriaController.listaSolicitacaoConsultoria}"
+					profile="view" ajax="true" process="@this">	
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.prescricaoMedicaVO}" value="#{pesquisarFormularioConsultoriaController.prescricaoMedicaVO}" for="command" />
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.validarIndImpSolicConsultoria}" value="#{pesquisarFormularioConsultoriaController.validarIndImpSolicConsultoria}" for="command" />
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.atdSeq}" value="#{pesquisarFormularioConsultoriaController.prescricaoMedicaVO.prescricaoMedica.atendimento.seq}" for="command" />
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.scnSeq}" value="#{pesquisarFormularioConsultoriaController.prescricaoMedicaVO.id.seq}" for="command" />
+				</mec:commandButton>
+				
+				<mec:commandButton id="btImprimir"
+					value="#{messages.LABEL_REIMPRIMIR}"
+					profile="print" ajax="true" process="@this"
+					action="#{relatorioConsultoriaController.directPrint}"
+					disabled="#{empty pesquisarFormularioConsultoriaController.listaSolicitacaoConsultoria}"
+					styleClass=" icon-print bt_cinza">
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.tipoImpressao}" value="#{EnumTipoImpressao.REIMPRESSAO}" for="command"/>
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.prescricaoMedicaVO}" value="#{pesquisarFormularioConsultoriaController.prescricaoMedicaVO}" for="command" />
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.validarIndImpSolicConsultoria}" value="#{pesquisarFormularioConsultoriaController.validarIndImpSolicConsultoria}" for="command" />
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.atdSeq}" value="#{pesquisarFormularioConsultoriaController.prescricaoMedicaVO.prescricaoMedica.atendimento.seq}" for="command" />
+					<f:setPropertyActionListener target="#{relatorioConsultoriaController.scnSeq}" value="#{pesquisarFormularioConsultoriaController.prescricaoMedicaVO.id.seq}" for="command" />
+				</mec:commandButton>
+				
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+					action="#{pesquisarFormularioConsultoriaController.voltar}"
+					styleClass=" alinha-direita bt_cinza" ajax="true" profile="back" />
+			</aghu:acao> 
+
+			</h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

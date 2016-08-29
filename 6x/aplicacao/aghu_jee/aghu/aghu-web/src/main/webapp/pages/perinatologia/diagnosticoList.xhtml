@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_DIAGNOSTICOS_CADASTRO_DIAGNOSTICO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{diagnosticoPerinatoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesq"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_DIAGNOSTICOS_CADASTRO_DIAGNOSTICO}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelCamposPesquisa" layout="inline"> 
+              <mec:inputNumero id="codigo" label="#{messages.LABEL_CODIGO_CADASTRO_DIAGNOSTICO}" value="#{diagnosticoPerinatoPaginatorController.filtro.seq}" maxlength="9" size="9"></mec:inputNumero>  
+              <mec:inputText id="descricao" label="#{messages.LABEL_DESCRICAO_CADASTRO_DIAGNOSTICO}" value="#{diagnosticoPerinatoPaginatorController.filtro.descricao}" maxlength="60" size="80" style="text-transform:uppercase"></mec:inputText>  
+              <mec:selectOneMenu id="indSituacao" label="#{messages.LABEL_SITUACAO_CADASTRO_DIAGNOSTICO}" value="#{diagnosticoPerinatoPaginatorController.filtro.indSituacao}" enum="DominioSituacao"></mec:selectOneMenu>  
+              <mec:selectOneMenu id="indPlacar" label="#{messages.LABEL_PLACAR_CADASTRO_DIAGNOSTICO}" value="#{diagnosticoPerinatoPaginatorController.indPlacar}" enum="DominioSimNao"></mec:selectOneMenu> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" rendered="#{diagnosticoPerinatoPaginatorController.permConsultarDiagnostico}" action="#{diagnosticoPerinatoPaginatorController.pesquisar}" profile="search"></mec:commandButton>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{diagnosticoPerinatoPaginatorController.limparPesquisa}" profile="clear"></mec:commandButton>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{diagnosticoPerinatoPaginatorController.redirecionarCadastro}" rendered="#{diagnosticoPerinatoPaginatorController.permManterDiagnostico and diagnosticoPerinatoPaginatorController.pesquisaAtiva}" profile="add"></mec:commandButton> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formResultado"> 
+        <p:outputPanel id="panelDiagnostico" layout="block" rendered="#{diagnosticoPerinatoPaginatorController.pesquisaAtiva}"> 
+          <aghu:panelGeral legend="#{messages.LABEL_DIAGNOSTICOS_CADASTRO_DIAGNOSTICO}"> 
+            <!-- LISTAGEM DE DIAGNOSTICO -->  
+            <aghu:linha> 
+              <p:outputPanel id="panelTabela" layout="inline"> 
+                <mec:serverDataTable id="tabelaDiadnostico" dataModel="dataModel" height="300px;" controller="#{diagnosticoPerinatoPaginatorController}"> 
+                  <c:set var="item" value="#{item}"/>
+                  <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                    <mec:commandLink id="ativarInativar" action="#{diagnosticoPerinatoPaginatorController.ativarInativar(item.seq)}" title="#{item.indSituacao.isAtivo() ? messages.BT_INATIVAR_CADASTRO_DIAGNOSTICO : messages.BT_ATIVAR_CADASTRO_DIAGNOSTICO}" rendered="#{diagnosticoPerinatoPaginatorController.permManterDiagnostico}" styleClass="#{item.indSituacao.isAtivo() ? 'silk-icon silk-activate' : 'silk-icon silk-desactive'}" style="float: left"/>  
+                    <mec:commandLink id="tabelaDiadnostico_link_editar" profile="edit" title="editar" action="#{diagnosticoPerinatoPaginatorController.redirecionarCadastro}" style="float: left"> 
+                      <f:setPropertyActionListener target="#{diagnosticoPerinatoController.seq}" value="#{item.seq}" for="command"/>  
+                      <f:setPropertyActionListener for="command" target="#{diagnosticoPerinatoPaginatorController.vo}" value="#{item}"/>
+                    </mec:commandLink>
+                  </p:column>
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO_CADASTRO_DIAGNOSTICO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.descricao}"/> 
+                  </p:column>  
+                  <p:column style="width: 100px; text-align:center;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PLACAR_CADASTRO_DIAGNOSTICO}"/> 
+                    </f:facet>  
+                    <h:outputText id="placar" styleClass="#{item.indPlacar ? 'silk-icon silk-checked' : ''}" readOnly="true"/> 
+                  </p:column>  
+                  <p:column style="width: 100px; text-align:center;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ATIVO_CADASTRO_DIAGNOSTICO}"/> 
+                    </f:facet>  
+                    <h:outputText id="ativo" styleClass="#{item.indSituacao.isAtivo() ? 'silk-icon silk-checked' : ''}" readOnly="true"/> 
+                  </p:column>  
+                  <p:column style="width: 100px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CID_CADASTRO_DIAGNOSTICO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.cidCodigo}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition>
+</html>

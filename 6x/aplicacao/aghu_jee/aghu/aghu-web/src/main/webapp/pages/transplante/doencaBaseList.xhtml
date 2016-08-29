@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_DOENCA_BASE} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+      <style xml:space="preserve">
+			.checked {
+				background-image: url('../../../resources/img/icons/checked.png') ;
+				background-repeat: no-repeat;
+				background-position: center;
+			}
+		</style> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{doencasBasePaginatorController}"/>  
+      <h:form prependId="false" id="pesquisaResultado"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_DOENCA_BASE}"> 
+          <aghu:linha> 
+            <mec:selectOneMenu id="orgaoDoencaBase"  enum="DominioTipoOrgao" label="#{messages.LABEL_ORGAO}" value="#{doencasBasePaginatorController.orgaoDoencaBase}" style="width:100px !important" >
+            <p:ajax event="change" process="@this"/>
+            </mec:selectOneMenu>
+            <mec:inputTextArea id="descricaoDoencaBase" cols="135" rows="2" value="#{doencasBasePaginatorController.descricaoDoencaBase}" label="#{messages.LABEL_DESCRICAO_DOENCA_BASE}" maxlength="150" size="180" />  
+            <mec:selectOneMenu id="situacaoDoencaBase" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO_DOENCA_BASE}" value="#{doencasBasePaginatorController.situacaoDoencaBase}" style="width:70px !important"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{doencasBasePaginatorController.pesquisar}" profile="search" render="pesquisaResultado, resultadosForm, tabelaResultado"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{doencasBasePaginatorController.limparPesquisa}" ajax="true" 
+		  render="pesquisaResultado, resultadosForm, tabelaResultado" process="@this" profile="clear"/> 
+          <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO_DOENCA_BASE}"  action="#{doencasBasePaginatorController.inserirEditar}" profile="add" rendered="#{doencasBasePaginatorController.dataModel.pesquisaAtiva}" />          
+        </aghu:acao> 
+  
+      </h:form> 
+      <!-- Tela de resultado de pesquisa --> 
+      <h:form prependId="false" id="formLista">
+		        <aghu:panelGeral legend="#{messages.TITLE_DOENCA_BASE}" id = "tabelaResultado" rendered="#{doencasBasePaginatorController.exibir}">
+		          <mec:serverDataTable id="lista" dataModel="dataModel" selection="parametroSelecionado" controller="#{doencasBasePaginatorController}">
+		            <c:set var="_item" value="#{item}"/>
+		            <p:column width="80" style="text-align: center" headerText="Ação"  exportable="false">
+		              <mec:commandLink id="doencasBaseEditar" profile="edit" title="Editar" action="#{doencasBasePaginatorController.inserirEditar}">
+		                <f:setPropertyActionListener for="command" target="#{doencaBaseCRUD.mtxDoencaBases}" value="#{_item}"/>
+		                <f:setPropertyActionListener for="command" target="#{doencaBaseCRUD.edicaoAtiva}" value="#{true}"/> 
+		              </mec:commandLink>
+		              <p:commandLink id="doencasBaseExcluir" title="Excluir" action="#{doencasBasePaginatorController.excluir(_item)}" styleClass="silk-icon silk-delete" ajax="true">
+						<p:confirm header="#{messages.CASCA_LABEL_EXCLUSAO}" message="#{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_DOENCA_BASE}" icon="ui-icon-alert"  />
+					  </p:commandLink>
+					 </p:column>
+		            <p:column width="115"> 
+						<f:facet name="header"> 
+							<h:outputText id="resultado_orgao" value="#{messages.LABEL_ORGAO}"/> 
+						</f:facet>  
+						<h:outputText value="#{_item.tipoOrgao.getDescricao()}"/> 
+					</p:column>  
+		            <p:column styleClass="auto-adjust" text-transform="uppercase">
+						<h:outputText id="resultado_descricao"
+							value="#{doencasBasePaginatorController.obterHint(item.descricao,80)}" />
+						<p:overlayPanel id="hintDescricao" for="resultado_descricao"
+							showEvent="mouseover" hideEvent="mouseout"
+							rendered="#{_item.descricao.length() > 80}">
+							<h:outputText value="#{_item.descricao}" />
+						</p:overlayPanel>
+						<f:facet name="header">
+							<h:outputText
+								value="#{messages.LABEL_DESCRICAO_DOENCA_BASE}" />
+						</f:facet>
+					</p:column>
+					<p:column width="50">
+		              <f:facet name="header">
+		                <h:outputText id="resultado_situacao" value="#{messages.LABEL_ATIVO_DOENCA_BASE}"/>
+		              </f:facet>
+		              <h:outputText value="#{_item.indSituacao.isAtivo()? 'Sim' : 'Não'}"/>
+		            </p:column>  
+		          </mec:serverDataTable> 
+		        </aghu:panelGeral> 
+		      </h:form> 
+      <!-- FIM Tela de resultado de pesquisa -->
+    </ui:define> 
+  </ui:composition> 
+</html>

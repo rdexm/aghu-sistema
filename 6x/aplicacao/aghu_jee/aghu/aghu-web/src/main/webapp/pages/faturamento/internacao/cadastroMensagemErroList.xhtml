@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PESQUISAR_MENSAGEM_ERRO}</title>
+
+		<script type="text/javascript" xml:space="preserve">		
+				function Pesquisar(Event)
+				{
+				        if(document.all)
+				        {
+				                Tecla = Event.keyCode; // Internet Explorer
+				        }
+				        else
+				        {
+				                Tecla = Event.which; // Mozilla, etc.
+				        }
+
+				        if(Tecla == 9) document.getElementById('bt_pesquisar:button').click();
+				        if(Tecla == 13) document.getElementById('bt_pesquisar:button').click();
+				}
+		</script>
+	</ui:define>
+
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{cadastroMensagemErroPaginatorController}" />
+		<h:form prependId="false" id="campos">
+			<aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_MENSAGEM_ERRO}">
+				<aghu:linha>
+					<mec:inputNumero id="pesquisarCodigo"
+						label="#{messages.LABEL_CODIGO_MENSAGEM_ERRO}" size="9"
+						maxlength="9"
+						onkeypress="Pesquisar(Event);"
+						value="#{cadastroMensagemErroPaginatorController.codigo}"></mec:inputNumero>
+					<mec:inputText id="pesquisarDescricao"
+						label="#{messages.LABEL_DESCRICAO_MENSAGEM_ERRO}" size="75"
+						maxlength="300"
+						onkeypress="Pesquisar(Event);"
+						imediate="true"
+						style="text-transform: uppercase"
+						value="#{cadastroMensagemErroPaginatorController.descricao}"></mec:inputText>
+					<mec:selectOneMenu id="avisaSecretario"
+						value="#{cadastroMensagemErroPaginatorController.indSecretario}"
+						enum="DominioSimNao"
+						onkeypress="Pesquisar(Event);"
+						title="#{messages.HELP_AVISA_SECRETARIO_MENSAGEM_ERRO}"
+						label="#{messages.LABEL_AVISA_SECRETARIO_MENSAGEM_ERRO}">
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+					
+					<mec:selectOneMenu id="criticidade"
+						value="#{cadastroMensagemErroPaginatorController.situacao}"
+						noSelectionOption="true" readonly="false"
+						title="#{messages.HELP_CRITICIDADE_MENSAGEM_ERRO}"
+						onkeypress="Pesquisar(Event);"
+						label="#{messages.LABEL_CRITICIDADE_MENSAGEM_ERRO}">
+						<f:selectItem
+							itemLabel="#{cadastroMensagemErroPaginatorController.situacaoNaoEnc.descricao}"
+							itemValue="#{cadastroMensagemErroPaginatorController.situacaoNaoEnc}" />
+						<f:selectItem
+							itemLabel="#{cadastroMensagemErroPaginatorController.situacaoNaoCob.descricao}"
+							itemValue="#{cadastroMensagemErroPaginatorController.situacaoNaoCob}" />
+						<f:selectItem
+							itemLabel="#{cadastroMensagemErroPaginatorController.situacaoNaoIncons.descricao}"
+							itemValue="#{cadastroMensagemErroPaginatorController.situacaoNaoIncons}" />
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR_MENSAGEM_ERRO}"
+					action="#{cadastroMensagemErroPaginatorController.pesquisar}"
+					profile="search"></mec:commandButton>
+				<mec:commandButton id="bt_limpar"
+					value="#{messages.LABEL_LIMPAR_MENSAGEM_ERRO}" block="true"
+					action="#{cadastroMensagemErroPaginatorController.limpar}"
+					immediate="true"
+					profile="clear"></mec:commandButton>
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formListaMensagem"
+			rendered="#{cadastroMensagemErroPaginatorController.dataModel.pesquisaAtiva}">
+			<aghu:panelGeral legend="#{messages.TITLE2_PESQUISA_MENSAGEM_ERRO}">
+				<mec:serverDataTable id="listaMensagem" dataModel="dataModel"
+					selection="fatMensagemErroFiltro"
+					controller="#{cadastroMensagemErroPaginatorController}">
+					<c:set var="itemMensagens" value="#{item}" />
+					<p:column headerText="#{messages.LABEL_ACAO_MENSAGEM_ERRO}"
+						rendered="#{mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}"
+						styleClass="first-column auto-adjust" exportable="false">
+						<mec:commandLink
+							action="#{cadastroMensagemErroPaginatorController.desativarCaracteristica(itemMensagens)}"
+							styleClass="silk-icon silk-checked" ajaxSingle="true"
+							id="desativarCaract"
+							title="#{messages.LABEL_SITUACAO_CAT_FIN_ATIVO}"
+							reRender="formListaMensagem"
+							permission="manterCadastrosBasicosFaturamento,executar"
+							rendered="#{item.indSecretario.equals('A')}">
+						</mec:commandLink>
+						<mec:commandLink
+							action="#{cadastroMensagemErroPaginatorController.ativarCaracteristica(itemMensagens)}"
+							styleClass="silk-icon silk-checked-off" ajaxSingle="true"
+							id="ativarCaract"
+							title="#{messages.LABEL_SITUACAO_CAT_FIN_INATIVO}"
+							reRender="formListaMensagem"
+							permission="manterCadastrosBasicosFaturamento,executar"
+							rendered="#{item.indSecretario.equals('I')}">
+						</mec:commandLink>
+						<mec:commandLink id="lista_link_editar" profile="edit"
+							title="#{messages.LABEL_EDITAR}"
+							action="#{cadastroMensagemErroPaginatorController.editar}"
+							permission="manterCadastrosBasicosFaturamento,executar">
+							<f:setPropertyActionListener
+								target="#{cadastroMensagemErroController.fatMensagemErro}"
+								value="#{item}" for="command" />
+						</mec:commandLink>
+					</p:column>
+					<p:column style="width: 50px;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_CODIGO_MENSAGEM_ERRO}" />
+						</f:facet>
+						<h:outputText value="#{itemMensagens.codigo}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_DESCRICAO_MENSAGEM_ERRO}" />
+						</f:facet>
+							<h:outputText title="#{itemMensagens.erro.length() > 90 ? itemMensagens.erro : ''}"	value="#{cadastroMensagemErroPaginatorController.obterHint(itemMensagens.erro, 90)}" />
+					</p:column>
+					<p:column style="width:80px;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_AVISA_SECRETARIO_MENSAGEM_ERRO}" />
+						</f:facet>
+						<h:outputText value="#{itemMensagens.indSecretario}">
+							<f:converter converterId="situacaoAtivoSimNaoConverter" />
+						</h:outputText>
+					</p:column>
+					<p:column style="width:150px;">
+						<f:facet name="header">
+							<h:outputLabel
+								value="#{messages.LABEL_CRITICIDADE_MENSAGEM_ERRO}" />
+						</f:facet>
+						<h:outputText value="#{itemMensagens.situacao.descricao}" />
+					</p:column>
+				</mec:serverDataTable>
+			</aghu:panelGeral>
+		</h:form>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{cadastroMensagemErroPaginatorController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+</ui:composition>
+</html>

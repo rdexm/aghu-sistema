@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition> 
+    <p:dialog id="modalInformarFluxograma" 
+    		width="850"
+    		height="auto" 
+    		modal="true" 
+    		resizable="false" 
+    		widgetVar="modalInformarFluxogramaWG"
+    		closable="false" 
+            closeOnEscape="false"> 
+      <f:facet name="header"> 
+        <h:outputText value="#{realizarAcolhimentoPacienteController.mamTriagemVO.informacoesPaciente}" /> 
+      </f:facet>  
+      <f:facet name="controls"> 
+        <h:panelGroup> 
+          <mec:commandLink action="#{realizarAcolhimentoPacienteController.prepararModalInformarFluxograma}" 
+          		process="@this" 
+          		immediate="true" 
+          		oncomplete="PF('modalInformarFluxogramaWG').hide();" 
+          		ajax="true" 
+          		render="panelInformarFluxograma"> 
+            <h:graphicImage value="/resources/img/close.png" styleClass="hidelink" id="hidelinkModalInformarFluxograma" /> 
+          </mec:commandLink> 
+        </h:panelGroup> 
+      </f:facet>  
+      <h:form prependId="false" id="formInformarFluxograma"> 
+      <p:outputPanel id="panelInformarFluxograma" layout="inline"> 
+        <aghu:linha> 
+          <mec:suggestionBox label="#{messages.LABEL_FLUXOGRAMA_ACOLHIMENTO}" 
+          		title="#{messages.TITLE_FLUXOGRAMA_ACOLHIMENTO}" 
+          		suggestionAction="pesquisarMamFluxograma" 
+          		posSelectionAction="posSelectionMamFluxograma" 
+          		posDeleteAction="posDeleteMamFluxograma" 
+          		descricaoInput="seq" 
+          		descricaoLabel="descricao" 
+          		width="360" 
+          		required="true" 
+          		readonly="#{!realizarAcolhimentoPacienteController.permRealizarAcolhimento or realizarAcolhimentoPacienteController.tudoDesabilitado}" 
+          		id="mamFluxogramaInformarFluxograma" 
+          		controller="#{realizarAcolhimentoPacienteController}" 
+          		value="#{realizarAcolhimentoPacienteController.mamFluxograma}" 
+          		render="panelIFListaDescritorFluxogramaInterno, panelPermiteChecagemLote"
+          		var="_itemInformarFluxograma"
+          		itemValue="#{_itemInformarFluxograma}"> 
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_CODIGO}</b> 
+              </f:facet> 
+               <h:outputLabel value=" #{_itemInformarFluxograma.seq}"/> 
+            </p:column>
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_EMERG_SIT_DESCRICAO}</b> 
+              </f:facet> #{_itemInformarFluxograma.descricao}
+            </p:column>
+          </mec:suggestionBox>
+          <p:outputPanel id="panelPermiteChecagemLote" layout="inline"> 
+            <p:outputPanel id="panelPermiteChecagemLoteInterno" styleClass="alinha-direita" rendered="#{realizarAcolhimentoPacienteController.permiteChecagemLote and not empty realizarAcolhimentoPacienteController.listaDescritores}" layout="inline"> 
+              <p:outputPanel id="permiteCheck" layout="block"> 
+                <mec:selectBooleanCheckbox id="input_permiteCheck" 
+                		value="#{realizarAcolhimentoPacienteController.checagemLote}"
+                		label="#{messages.LABEL_PROT_CLASSIF_RISCO_CHECAGEM_LOTE}" 
+                		title="#{messages.TITLE_PROT_CLASSIF_RISCO_CHECAGEM_LOTE}"
+                		disabled="#{realizarAcolhimentoPacienteController.tudoDesabilitado}" >
+                  <p:ajax event="change" update="@(#tabelaIFDescritorFluxograma)" process="@this" listener="#{realizarAcolhimentoPacienteController.clicarChecagemLote}" /> 
+                </mec:selectBooleanCheckbox>   
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <p:outputPanel id="panelIFListaDescritorFluxograma" layout="inline"> 
+            <p:outputPanel id="panelIFListaDescritorFluxogramaInterno" styleClass="tabela-hachurada" style="width: 100%; height:350px;" layout="inline"> 
+              <p:outputPanel layout="block" style="width: 100%; height:320px;"> 
+                <mec:serverDataTable id="tabelaIFDescritorFluxograma" 
+                		list="#{realizarAcolhimentoPacienteController.listaDescritores}"
+                		selection="itemSelecionado" 
+                		rendered="#{not empty realizarAcolhimentoPacienteController.listaDescritores and realizarAcolhimentoPacienteController.renderizaTableFluxograma}" 
+                		controller="#{realizarAcolhimentoPacienteController}" 
+                		scrollable="true" 
+                		scrollHeight="297"
+                		> 
+                		<c:set var="_itemDescritores" value="#{item}"/>
+                  <p:column style="width: 10px; background-color: #{_itemDescritores.descritor.gravidade.codCor} !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRITOR_GRAVIDADE}"/> 
+                    </f:facet>
+                    <p:spacer width="100px" height="10px" id="gravidadeToolTip"/>  
+                    <p:tooltip for="gravidadeToolTip" style="width:300px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_itemDescritores.descritor.gravidade.descricao != null}"> 
+                      <h:outputText value="#{_itemDescritores.descritor.gravidade.descricao} #{realizarAcolhimentoPacienteController.tempoMaximoEspera(_itemDescritores.descritor.gravidade.tempoEspera)}"/> 
+                    </p:tooltip>
+                  </p:column>  
+                  <p:column style="width: 80px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_FLUXOGRAMA_DESCRITOR}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemDescritores.descritor.descricao}"/> 
+                  </p:column>  
+                  <p:column style="text-align:center; width: 100px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CHECAGEM_LOTE_RESPOSTA}"/> 
+                    </f:facet>  
+                    <h:selectOneRadio id="radio_desc_#{_itemDescritores.descritor.seq}" 
+                    		required="false" 
+                    		disabled="#{!_itemDescritores.habilitado or realizarAcolhimentoPacienteController.tudoDesabilitado}" 
+                    		readonly="#{!_itemDescritores.habilitado or realizarAcolhimentoPacienteController.tudoDesabilitado}" 
+                    		value="#{_itemDescritores.trgGravidade}" > 
+                      <f:selectItem itemValue="true" itemLabel="#{messages.LABEL_SIM}" itemDisabled="#{!_itemDescritores.habilitado}" />  
+                      <f:selectItem itemValue="false" itemLabel="#{messages.LABEL_NAO}" itemDisabled="#{!_itemDescritores.habilitado}" />  
+                      <p:ajax event="change" 
+                      		disabled="#{realizarAcolhimentoPacienteController.tudoDesabilitado}" 
+                      		update="@(#tabelaIFDescritorFluxograma)" 
+                      		process="@this" 
+                      		listener="#{realizarAcolhimentoPacienteController.clicarItem(_itemDescritores)}">    
+                      </p:ajax> 
+                    </h:selectOneRadio> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:linha>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_GRAVAR}" 
+          		action="#{realizarAcolhimentoPacienteController.gravarItemSelecionado}" 
+          		process="@this" 
+          		disabled="#{!realizarAcolhimentoPacienteController.permRealizarAcolhimento or realizarAcolhimentoPacienteController.tudoDesabilitado}" 
+          		profile="ok" 
+          		ajax="true" 
+          		render="panelInformarFluxograma, queixa_principal, fieldGravidade, panelDadosGeraisExterno, 
+          					panelExamesExterno, panelMedicacoesExterno, dataQueixa, horaQueixa, panelInfoComplementares, toolTip" />  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" 
+          		action="#{realizarAcolhimentoPacienteController.prepararModalInformarFluxogramaClose}" 
+          		oncomplete="PF('modalInformarFluxogramaWG').hide();" 
+          		immediate="true" 
+          		profile="cancel" 
+          		ajax="true" 
+          		render="panelInformarFluxograma" 
+          		process="@this" /> 
+        </aghu:acao> 
+      </p:outputPanel>
+      </h:form> 
+    </p:dialog> 
+  </ui:composition>
+</html>

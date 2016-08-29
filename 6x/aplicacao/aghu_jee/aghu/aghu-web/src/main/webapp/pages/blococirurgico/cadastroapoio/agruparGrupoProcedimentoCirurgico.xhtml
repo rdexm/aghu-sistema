@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_AGRUPAR_PROCEDIMENTO_CIRURGICO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{agruparGrupoProcedCirurgicoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{agruparGrupoProcedCirurgicoController}" ignoreEnter="true"/>  
+      <p:outputPanel id="panelTodo" layout="inline"> 
+        <h:form prependId="false" id="formDados"> 
+          <p:accordionPanel id="toggleGrupoProcedimentoCirurgico" style="margin-top: 2px !important;" prependId="false"> 
+            <p:tab title="#{messages.LABEL_GRUPO_PROCEDIMENTOS_CIRURGICOS}"> 
+              <aghu:linha> 
+                <mec:inputNumero id="seqPai" label="#{messages.LABEL_CODIGO}" value="#{agruparGrupoProcedCirurgicoController.mbcGrupoProcedCirurgico.seq}" size="6" readonly="true"/>  
+                <mec:inputText id="descricaoPai" label="#{messages.LABEL_DESCRICAO_PROCEDIMENTO_CIRURGICO}" value="#{agruparGrupoProcedCirurgicoController.mbcGrupoProcedCirurgico.descricao}" maxlength="120" size="120" readonly="true"/>  
+                <mec:selectOneMenu id="situacaoPai" label="#{messages.LABEL_SITUACAO}" value="#{agruparGrupoProcedCirurgicoController.mbcGrupoProcedCirurgico.situacao}" enum="DominioSituacao" readonly="true"/> 
+              </aghu:linha> 
+            </p:tab> 
+          </p:accordionPanel>  
+          <p:accordionPanel id="toggleGrupoProc" style="margin-top: 2px !important;" prependId="false"> 
+            <p:tab title="#{messages.LABEL_PROCEDIMENTOS_CIRURGICOS_DE_UM_GRUPO}"> 
+              <aghu:linha> 
+                <p:outputPanel id="panelProcedimentoCirurgico" rendered="#{mf:hasPermission(securityController,'agruparGrupoProcedimentoCirurgico,executar')}" layout="inline"> 
+                  <aghu:linha> 
+                    <mec:suggestionBox var="_var1" itemValue="#{_var1}" id="procedCirurgico" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO}" title="#{messages.TITLE_GRUPO_PROCEDIMENTO_CIRURGICO}" descricaoInput="seq" descricaoLabel="descricao" required="true" size="30" maxlength="120" width="900" suggestionAction="pesquisarMbcProcedimentoCirurgicos" controller="#{agruparGrupoProcedCirurgicoController}" value="#{agruparGrupoProcedCirurgicoController.procedCirurgico}"> 
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <b>#{messages.LABEL_CODIGO}</b> 
+                        </f:facet> #{_var1.seq}
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <b>#{messages.LABEL_DESCRICAO}</b> 
+                        </f:facet> #{_var1.descricao}
+                      </p:column> 
+                    </mec:suggestionBox>  
+                    <br clear="none"/>  
+                    <mec:commandButton id="bt_salvar" value="#{messages.LABEL_GRAVAR}" action="#{agruparGrupoProcedCirurgicoController.gravar}" status="commonstatus" process="@this" disabled="#{not mf:hasPermission(securityController,'agruparGrupoProcedimentoCirurgico,gravar')}" profile="ok" ajax="true" render="panelProcedimentoCirurgico, panelResultado"/> 
+                  </aghu:linha> 
+                </p:outputPanel>  
+                <aghu:linha> 
+                  <p:outputPanel id="panelResultado" layout="inline"> 
+                    <p:outputPanel layout="block" style="width:99%; max-height:320px; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;" rendered="#{not empty agruparGrupoProcedCirurgicoController.lista}"> 
+                      <mec:serverDataTable name="tabelaProcedimentos" rowKeyVar="_itemId" sortMode="single" style="margin: 0px !important;" width="99%" list="#{agruparGrupoProcedCirurgicoController.lista}" scrollable="true"> 
+                        <c:set var="_item" value="#{item}"/>  
+                        <p:column style="width: 60px; white-space:nowrap;" rendered="#{mf:hasPermission(securityController,'agruparGrupoProcedimentoCirurgico,executar')}"> 
+                          <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>
+						  <mec:commandLink id="deleteProcedDoGrupo"
+							title="#{messages.LABEL_EXCLUIR}"
+							action="#{agruparGrupoProcedCirurgicoController.excluir(_item.id.pciSeq)}"
+							disabled="#{not mf:hasPermission(securityController,'agruparGrupoProcedimentoCirurgico,remover')}"
+							profile="delete" ajax="true" process="@this" 
+							render="panelResultado"/>
+						</p:column>  
+                        <p:column style="width:70px; white-space:nowrap;"> 
+                          <f:facet name="header">#{messages.LABEL_CODIGO}</f:facet>  
+                          <h:outputText value="#{_item.id.pciSeq}"/> 
+                        </p:column>  
+                        <p:column style="width: 100%;"> 
+                          <f:facet name="header">#{messages.LABEL_PROCEDIMENTO_CIRURGICO}</f:facet>  
+                          <h:outputText value="#{_item.mbcProcedimentoCirurgicos.descricao}"/> 
+                        </p:column> 
+                      </mec:serverDataTable> 
+                    </p:outputPanel> 
+                  </p:outputPanel> 
+                </aghu:linha> 
+              </aghu:linha> 
+            </p:tab> 
+          </p:accordionPanel>  
+          <aghu:linha> 
+            <br clear="none"/>  
+            <mec:backButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" icon="aghu-icons-16x16 aghu-icon-back" styleClass="button-acao bt_vermelho" action="#{agruparGrupoProcedCirurgicoController.voltar}"/> 
+          </aghu:linha> 
+        </h:form>  
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CRUD_TEMPO_LOC_PAC} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{etapaPacModalidadeController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{etapaPacModalidadeController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+          <aghu:panelGeral legend="#{messages.LABEL_ETAPAS_PAC_LOCALIZACAO}"> 
+            <aghu:linha> 
+              <mec:inputText id="modalidade" label="#{messages.LABEL_MODALIDADE_TEMPO_LOC_PAC}" size="20" value="#{etapaPacModalidadeController.tempoLocalizacaoPac.modalidadeLicitacao.codigo} - #{etapaPacModalidadeController.tempoLocalizacaoPac.modalidadeLicitacao.descricao}" readonly="true" title="#{messages.TITLE_MODALIDADE_TEMPO_LOC_PAC}"/>  
+              <mec:inputText id="localizacao" label="#{messages.LABEL_LOCALIZACAO_TEMPO_LOC_PAC}" size="30" value="#{etapaPacModalidadeController.tempoLocalizacaoPac.localizacaoProcesso.codigo} - #{etapaPacModalidadeController.tempoLocalizacaoPac.localizacaoProcesso.descricao}" readonly="true" title="#{messages.TITLE_LOCALIZACAO_TEMPO_LOC_PAC}"/>  
+              <mec:selectOneMenu id="objetoPacPesquisa" label="#{messages.LABEL_CADASTRO_ETAPAS_MODAL_OBJETO_PAC}" enum="DominioObjetoDoPac" required="true" title="#{messages.TITLE_CADASTRO_ETAPAS_MODAL_OBJETO_PAC}" value="#{etapaPacModalidadeController.objetoPacPesquisa}"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText id="tempoTotal" label="#{messages.LABEL_TEMPO_TOTAL_ETAPAS_PAC}" title="#{messages.TITLE_TEMPO_TOTAL_ETAPAS_PAC}" value="#{etapaPacModalidadeController.tempoTotal}" size="3" readonly="true"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton value="#{messages.LABEL_PESQUISAR}" ajax="true" process="@form" render="cadastroEtapas,formGravarCancelar" id="bt_pesquisar" action="#{etapaPacModalidadeController.validarItensPendentesPesquisa}" profile="search"/> 
+          </aghu:acao> 
+      </h:form>  
+      <h:form id="cadastroEtapas" prependId="false">
+        	<aghu:panelGeral legend="#{messages.LABEL_ETAPA_ETAPAS_PAC}"> 
+	            <p:outputPanel id="panelEtapaEmEdicao" layout="inline"> 
+	              <aghu:linha> 
+	                <mec:inputText id="inputDescricaoEtapa" size="60" maxlength="60" required="true" label="#{messages.LABEL_DESCRICAO_ETAPAS_PAC}" value="#{etapaPacModalidadeController.novaEtapaModPac.descricao}"/>  
+	                <mec:selectBooleanCheckbox id="situacaoEtapa" label="#{messages.LABEL_SITUACAO_ETAPAS_PAC}" value="#{etapaPacModalidadeController.novaEtapaModPac.ativo}"/>  
+	                <mec:inputNumero id="numeroDias" label="#{messages.LABEL_NUMERO_DIAS_ETAPAS_PAC}" title="#{messages.TITLE_NUMERO_DIAS_ETAPAS_PAC}" value="#{etapaPacModalidadeController.novaEtapaModPac.numeroDias}" maxlength="3" size="3"/> 
+	              </aghu:linha>  
+	              <aghu:linha>
+	                <mec:selectOneMenu noSelectionOption="false" id="selectObjetoPac" itemValue="#{item.value}" itemLabel="#{item.label}" items="#{etapaPacModalidadeController.itemsObjetosPac}" label="#{messages.LABEL_CADASTRO_ETAPAS_MODAL_OBJETO_PAC}" required="true" title="#{messages.TITLE_CADASTRO_OBJETO_PAC_ETAPAS_PAC}" value="#{etapaPacModalidadeController.novaEtapaModPac.descricaoObjetoPac}"/>
+	                <p:tooltip  id="toolTipObjetoPac" for="selectObjetoPac" value="#{messages.TITLE_CADASTRO_OBJETO_PAC_ETAPAS_PAC}" style="min-width:200px;"/>
+	              </aghu:linha> 
+		            <br clear="none"/>  
+		            <aghu:acao> 
+		                <mec:commandButton id="btAlterarInserirEtapa" value="#{etapaPacModalidadeController.edicaoEtapa eq true ? messages.LABEL_ALTERAR : messages.LABEL_ADICIONAR}" action="#{etapaPacModalidadeController.salvarEtapaPac}" rendered="#{mf:hasPermission(securityController,'cadastrarApoioPAC,gravar')}" profile="ok" ajax="true" process="@form" render="cadastroEtapas,:formPesquisa:tempoTotal,:formGravarCancelar:btCancelarVoltar"/>  
+		                <mec:commandButton id="btCancelarEdicao" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{etapaPacModalidadeController.limparCampos}" rendered="#{etapaPacModalidadeController.edicaoEtapa}" styleClass="bt_cancel_edit bt_cinza" ajax="true" render="panelAcoesCadastroEtapaPac,@form"/> 
+		            </aghu:acao>
+	            </p:outputPanel> 
+                <mec:serverDataTable rowKeyVar="index" id="dataTableEtapas" list="#{etapaPacModalidadeController.etapasModPac}" scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                    </f:facet>  
+                    <mec:commandLink action="#{etapaPacModalidadeController.editarEtapaPac(_item, index)}" title="#{messages.LABEL_EDITAR}" rendered="#{(mf:hasPermission(securityController,'cadastrarApoioPAC,gravar')) and (etapaPacModalidadeController.novaEtapaModPac.codigo ne _item.codigo or (empty _item.codigo and etapaPacModalidadeController.edicaoEtapa eq false))}" profile="edit" ajax="true" render="@form" process="@this"/>  
+                    <mec:commandLink action="#{etapaPacModalidadeController.excluirEtapaPac(_item, index)}" title="#{messages.LABEL_EXCLUIR}" rendered="#{(mf:hasPermission(securityController,'cadastrarApoioPAC,gravar')) and (etapaPacModalidadeController.novaEtapaModPac.codigo ne _item.codigo or (empty _item.codigo and etapaPacModalidadeController.edicaoEtapa eq false))}" profile="delete" ajax="true" render="@all" process="@this"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO_GRID_ETAPAS_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.descricao}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_TEMPO_PREVISTO_GRID_ETAPAS_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{empty _item.numeroDias ? 0 : _item.numeroDias}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SITUACAO_GRID_ETAPAS_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.situacao.descricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+        	</aghu:panelGeral>
+        	<aghu:acao>
+        	    <mec:commandButton id="btGravar" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'cadastrarApoioPAC,gravar')}" action="#{etapaPacModalidadeController.gravar}" profile="search" ajax="true" process="@this"/> 
+          		<mec:commandButton immediate="true" id="btCancelarVoltar" value="#{etapaPacModalidadeController.possuiAlteracoes eq true ? messages.LABEL_CANCELAR : messages.LABEL_VOLTAR}" action="#{etapaPacModalidadeController.validarItensPendentes}" render="panelModalPendencias" ajax="true" profile="back"/> 
+        	</aghu:acao>
+        </h:form>  
+ 
+
+        <h:form prependId="false" id="formModalPendencias">  
+          <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText id="titlePendencias" value="#{messages.TITLE_PENDENCIAS_ALTERACOES}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+                <mec:commandButton id="bt_simPendencias" value="#{messages.LABEL_SIM}" action="#{etapaPacModalidadeController.cancelar}" profile="search" />  
+                <mec:commandButton id="bt_naoPendencias" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" profile="cancel" /> 
+            </h:panelGroup> 
+          </p:dialog>  
+		</h:form>
+        <h:form prependId="false" id="formModalPendenciasPesquisa"> 
+	        <p:dialog id="modalConfirmacaoPendenciaPesquisa" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaPesquisaWG"> 
+	          <f:facet name="header"> 
+	            <h:panelGroup> 
+	              <h:outputText id="titlePendenciasPesquisa" value="#{messages.TITLE_PENDENCIAS_ALTERACOES}"/> 
+	            </h:panelGroup> 
+	          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+	          <br clear="none"/>  
+	          <br clear="none"/>  
+	          <br clear="none"/>  
+	          <h:panelGroup> 
+	              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_simPendenciasPesquisa" ajax="true" oncomplete="PF('modalConfirmacaoPendenciaPesquisaWG').hide();" action="#{etapaPacModalidadeController.iniciar}" render="panelAcoesCadastroEtapaPac,panelEtapaEmEdicao,tempoTotal,btCancelarVoltar" profile="search"/>  
+	              <mec:commandButton id="bt_naoPendenciasPesquisa" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaPesquisaWG').hide();" profile="cancel" /> 
+	          </h:panelGroup> 
+	        </p:dialog>  
+        </h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

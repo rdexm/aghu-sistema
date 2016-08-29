@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:mf="http://www.mec.gov.br/taglib"
+      xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+
+    <h:head>
+        <title>mec:commandLink</title>
+    </h:head>	
+	
+	<ui:remove><!-- Comments -->	
+	COMPONENTE COMMANDLINK
+	============================
+	Autor: Cristiano Quadros (2013)
+	
+	Renderiza um botão de ação na tela.  
+	
+	Principais Propriedades:
+	
+	id   : identificador do componente
+	value: Label do componente
+	title: Hint do componente
+	action: método a ser executado
+	disabled: (true/false) Habilita/desabilita o botão
+	rendered: (true/false) Mostrar ou não o componente em tela
+	styleClass: class do componente
+	style: css do componente
+	immediate: ignora fase de validação do JSF
+	ajax: especifica se o componente executa em modo do Ajax
+	process: componentes para processar no modo ajax
+	render: componentes a serem atualizados com ajax
+	permission: Permissão para exibir o botão
+	block: ativa modal de espera "processando..."
+	print: (true/false) Ativa modo de impressão
+	
+	profile: Estilo e usabilidade determinado dos links
+	         delete: icone de excluir e cria uma modal para confirmação da exclusão
+	         edit: icone editar
+	
+	Migração (commandLink):
+
+	styleClass="silk-icon silk-delete"   : profile="delete"	
+	styleClass="silk-icon silk-edit"   	 : profile="edit"
+	styleClass="silk-icon silk-zoom"   	 : profile="view"
+	
+	</ui:remove>	
+		
+    <h:body>
+        <cc:interface name="commandLink" displayName="Cria um botão de ação">        
+        	
+	        <cc:attribute name="readonly" default="false" />
+   	        <cc:attribute name="disabled" default="false" />
+	        <cc:attribute name="title"  />
+	        <cc:attribute name="value" />
+			<cc:attribute name="style" />
+			<cc:attribute name="styleClass" />
+			<cc:attribute name="immediate" default="false" />
+			<cc:attribute name="onclick" />
+			<cc:attribute name="oncomplete" />
+			<cc:attribute name="icon" />
+			<cc:attribute name="ajax" default="false" />
+			<cc:attribute name="process" />
+			<cc:attribute name="render" />
+			<cc:attribute name="hotkey" />
+			<cc:attribute name="icon" />
+			<cc:attribute name="type" default="submit" />
+			<cc:attribute name="block" default="false" />
+			<cc:attribute name="permission" />
+			<cc:attribute name="profile" />
+			<cc:attribute name="print" default="false" />
+			<cc:attribute name="action" targets="link" />
+			<cc:attribute name="partialSubmit" default="false" />
+			
+			<cc:actionSource  name="command" targets="link" />
+		</cc:interface>
+		
+	    <cc:implementation>
+	    	<c:choose>
+	    		<c:when test="#{not empty cc.attrs.permission}">
+	    			<ui:param name="hasPermission" value="#{mf:hasPermission(securityController, cc.attrs.permission)}" />
+	    		</c:when>
+	    		<c:otherwise>
+	    			<ui:param name="hasPermission" value="true" />
+	    		</c:otherwise>
+	    	</c:choose>
+	    	<c:choose>
+	    		<c:when test="#{cc.attrs.profile eq 'delete'}">
+	    			<ui:param name="prof_class" value="silk-icon silk-delete" />
+	    		</c:when>
+	    		<c:when test="#{cc.attrs.profile eq 'edit'}">
+	    			<ui:param name="prof_class" value="silk-icon silk-pencil" />
+	    		</c:when>
+	    		<c:when test="#{cc.attrs.profile eq 'view'}">
+	    			<ui:param name="prof_class" value="silk-icon silk-zoom" />
+	    		</c:when>
+	    		<c:otherwise>
+	    			<ui:param name="prof_class" value="#{cc.attrs.styleClass}" />
+	    		</c:otherwise>	    		
+	    	</c:choose>
+	    	
+	    	<ui:param name="render" value="#{mf:customPrefixAjaxRender(cc.attrs.render)}" />
+	    	<ui:param name="process" value="#{mf:customPrefixAjaxRender(cc.attrs.process)}" />
+	    	
+	    	<c:if test="#{not cc.attrs.ajax and cc.attrs.block}">
+	    		<ui:param name="blockJS" value="PF('loadDialogWG').show();" />
+	    	</c:if>
+	    	
+	    	<c:if test="#{cc.attrs.ajax and cc.attrs.print}">
+	    		<ui:param name="printAjaxJS" value="core.downloadAutomaticoRelatorios(true);" />
+	    	</c:if>	    	
+	    	
+			<p:commandLink id="link" 
+				value       ="#{cc.attrs.value}"
+				title       = "#{cc.attrs.title}"						
+				immediate	= "#{cc.attrs.immediate}" 
+				readonly	= "#{cc.attrs.readonly}"
+				styleClass	= "cmdLink #{prof_class}"
+				style       = "#{cc.attrs.style}"
+				disabled	= "#{cc.attrs.disabled}" 
+				onclick   	= "#{cc.attrs.onclick};#{blockJS}"
+				oncomplete	= "#{cc.attrs.oncomplete}"
+				onsuccess   = "#{printAjaxJS}"
+				icon   		= "#{cc.attrs.icon}"
+				ajax		= "#{cc.attrs.ajax}"
+				type		= "#{cc.attrs.type}"
+				process		= "#{process}"
+				update		= "#{render}"
+				rendered    = "#{hasPermission}"
+				partialSubmit="#{cc.attrs.partialSubmit}" >
+		 		<cc:insertChildren />
+		 		<c:if test="#{cc.attrs.profile eq 'delete'}">
+		 			<p:confirm header="#{messages.CASCA_LABEL_EXCLUSAO}" message="#{messages.CASCA_MENSAGEM_CONFIRMACAO_EXCLUSAO}" icon="ui-icon-alert"  />
+		 		</c:if>
+		 		
+		 	</p:commandLink>
+		
+			<c:if test="#{cc.attrs.disabled}">
+				<script>
+					jQuery(document).ready(function () {						
+						jQuery('span.cmdLink').removeClass('ui-state-disabled');
+					});
+				</script>
+			</c:if>			
+		</cc:implementation>
+	</h:body>		
+</html>

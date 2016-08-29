@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Manter Grupo de Exames</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterGrupoExamesController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterGrupoExamesController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formGrupoExamesController"> 
+        <aghu:panelGeral legend="#{messages.LABEL_GRUPO_EXAMES_PENDENCIAS}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="codigo" label="#{messages.LABEL_CODIGO}" value="#{manterGrupoExamesController.grupoExameTecnicas.seq}" rendered="#{not empty manterGrupoExamesController.grupoExameTecnicas.seq}" readonly="true" size="6" maxlength="5"/>  
+            <mec:inputText id="descricao" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_MANTER_GRUPO_EXAMES_DESCRICAO}" value="#{manterGrupoExamesController.grupoExameTecnicas.descricao}" size="30" maxlength="100" readonly="#{not mf:hasPermission(securityController,'grupoExames,persistir')}" style="text-transform:uppercase" required="true"/>  
+            <mec:selectOneMenu id="ativoInativo" label="#{messages.LABEL_SITUACAO}" enum="DominioSituacao" title="#{messages.TITLE_MANTER_GRUPO_EXAMES_SITUACAO}" value="#{manterGrupoExamesController.grupoExameTecnicas.indSituacao}" required="true" readonly="#{not mf:hasPermission(securityController,'grupoExames,persistir')}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar"
+                             name="bt_gravar"
+                             value="#{messages.LABEL_GRAVAR}"
+                             ajaxSingle="true" block="true"
+                             rendered="#{mf:hasPermission(securityController,'grupoExames,persistir')}"
+                             action="#{manterGrupoExamesController.confirmar}"
+                             profile="ok"/>
+          <mec:backButton id="bt_voltar"
+                          value="#{messages.LABEL_VOLTAR}"
+                          action="#{manterGrupoExamesController.cancelar}"
+                          icon="aghu-icons-16x16 aghu-icon-back"
+                          styleClass="button-acao bt_vermelho"/>
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelGrupoExames" rendered="#{not empty manterGrupoExamesController.grupoExameTecnicas.seq}" layout="inline"> 
+        <h:form prependId="false" id="formCadastroSecond"> 
+          <aghu:panelGeral legend="#{messages.LABEL_EXAMES}"> 
+
+              <p:outputPanel id="suggestionExame_panel" layout="inline">
+                <aghu:linha>
+                    <mec:suggestionBox id="suggestionExame"
+                                       label="#{messages.LABEL_EXAME}"
+                                       title="#{messages.TITLE_SUGGESTION_EXAME}"
+                                       descricaoInput="idExameFormatado"
+                                       descricaoLabel="descricaoExameFormatada"
+                                       suggestionAction="obterExames"
+                                       rendered="#{mf:hasPermission(securityController,'grupoExames,persistir')}"
+                                       width="900"
+                                       required="true"
+                                       controller="#{manterGrupoExamesController}"
+                                       value="#{manterGrupoExamesController.exameVO}"
+                                       render="button_Div">
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <b>#{messages.LABEL_DESCRICAO}</b> 
+                        </f:facet> #{item.descricaoExameFormatada}
+                      </p:column> 
+                    </mec:suggestionBox> 
+
+                  <div style="float: left; margin-top: 15px;">
+                    <p:outputPanel layout="block" id="button_Div"> 
+                      <mec:commandButton id="bt_gravarexame" value="#{messages.LABEL_GRAVAR}" disabled="#{empty manterGrupoExamesController.exameVO}" block="true" rendered="#{mf:hasPermission(securityController,'grupoExames,persistir')}" action="#{manterGrupoExamesController.confirmarExame}" profile="ok"/> 
+                    </p:outputPanel> 
+                  </div>
+
+                </aghu:linha>
+              </p:outputPanel>
+
+            <aghu:linha> 
+              <mec:serverDataTable list="#{manterGrupoExamesController.listaAelGrpTecnicaUnfExamesVO}" scrollable="true"> 
+                <c:set var="_itemVO" value="#{item}"/>  
+                <p:column styleClass="first-column auto-adjust"
+                          rendered="#{mf:hasPermission(securityController,'grupoExames,excluir') or mf:hasPermission(securityController,'manterCampoLaudoPendencia,executar')}">
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+                                   action="#{manterGrupoExamesController.excluirExame}"
+                                   rendered="#{mf:hasPermission(securityController,'grupoExames,excluir')}"
+                                   profile="delete">
+                    <f:setPropertyActionListener for="command" target="#{manterGrupoExamesController.itemVOExclusao}" value="#{_itemVO}"/>
+                  </mec:commandLink>
+                  <mec:commandLink title="#{messages.LABEL_RESULTADOS}" action="#{manterGrupoExamesController.chamarTelaCampoLaudoPendencia}" rendered="#{mf:hasPermission(securityController,'manterCampoLaudoPendencia,executar')}" styleClass=" silk-table silk-icon" ajax="true" process="@this"> 
+                    <f:setPropertyActionListener target="#{manterCampoLaudoPendenciaController.grtSeq}" value="#{_itemVO.id.grtSeq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{manterCampoLaudoPendenciaController.ufeEmaExaSigla}" value="#{_itemVO.id.ufeEmaExaSigla}" for="command"/>  
+                    <f:setPropertyActionListener target="#{manterCampoLaudoPendenciaController.ufeEmaManSeq}" value="#{_itemVO.id.ufeEmaManSeq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{manterCampoLaudoPendenciaController.ufeUnfSeq}" value="#{_itemVO.id.ufeUnfSeq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{manterCampoLaudoPendenciaController.voltarPara}" value="manterGrupoExamesCRUD" for="command"/> 
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column style="white-space:nowrap;"> 
+                  <f:facet name="header" style="white-space:nowrap;"> 
+                    <h:outputText value="#{messages.LABEL_EXAME}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemVO.descricaoExame}"/> 
+                </p:column>  
+                <p:column style="white-space:nowrap;"> 
+                  <f:facet name="header" style="white-space:nowrap;"> 
+                    <h:outputText value="#{messages.LABEL_MATERIAL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemVO.descricaoMaterialAnalise}"/> 
+                </p:column>  
+                <p:column style="white-space:nowrap;"> 
+                  <f:facet name="header" style="white-space:nowrap;"> 
+                    <h:outputText value="#{messages.LABEL_UNIDADE_EXECUTORA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemVO.descricaoUnidadeExecutora}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form> 
+      </p:outputPanel>  
+      <h:form> 
+        <pe:remoteCommand name="excluir"> 
+          <pe:assignableParam name="param1" assignTo="#{manterGrupoExamesController.itemVOExclusao}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_EXCLUSAO_GRUPO_TECNICA_UNF_EXAME}"/> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_GRUPO_EXAMES} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir" block="true" action="#{manterGrupoExamesController.excluirExame}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();; return false;" id="bt_cancelarExcluir" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

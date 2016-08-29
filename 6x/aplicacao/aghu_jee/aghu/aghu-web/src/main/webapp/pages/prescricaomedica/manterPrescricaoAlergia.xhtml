@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	
+	<style type="text/css">
+		.editandoLinha {background: #FF0000;}
+	</style>
+	
+	<ui:define name="head">
+		<title>Prescrever Alergia :: AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{manterPrescricaoAlergiaController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manterPrescricaoAlergiaController}"
+			ignoreEnter="true" />
+		<p:outputPanel id="corpoPagina" layout="inline">
+			<h:form prependId="false" id="formPrescricaoCabecalho">
+				<aghu:panelGeral>
+					<aghu:linha>
+						<mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}"
+							value="#{manterPrescricaoAlergiaController.prescricaoMedicaVO.prontuario}"
+							size="8" maxlength="9"
+							emptyStringToNullConverter="emptyStringToNullConverter"
+							readonly="true" id="prontuarioPaciente"
+							converter="#{prontuarioConverter}" />
+						<mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}"
+							value="#{manterPrescricaoAlergiaController.prescricaoMedicaVO.nome}"
+							size="56" maxlength="50" style="text-transform:uppercase"
+							readonly="true" id="nomePaciente" />
+						<mec:inputText label="#{messages.LABEL_LOCAL}"
+							value="#{manterPrescricaoAlergiaController.prescricaoMedicaVO.local}"
+							size="15" maxlength="15" style="text-transform:uppercase"
+							readonly="true" id="localPaciente" />
+						<mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}"
+							value="#{manterPrescricaoAlergiaController.prescricaoMedicaVO.dthrInicio}"
+							readonly="true" size="15" datePattern="dd/MM/yyyy HH:mm"
+							id="dataValidadeInicial" />
+						<mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}"
+							value="#{manterPrescricaoAlergiaController.prescricaoMedicaVO.dthrFim}"
+							readonly="true" size="15" datePattern="dd/MM/yyyy HH:mm"
+							id="dataValidadeFinal" />
+					</aghu:linha>
+				</aghu:panelGeral>
+			</h:form>
+			<p:outputPanel id="panelAlergia" layout="inline">
+				<h:form prependId="false" id="formAdicionar">
+					<p:outputPanel id="formulario" layout="inline"
+						styleClass="aghu-panel-geral">
+						<aghu:panelGeral id="geralPrescricaoAlergia"
+							legend="#{messages.LEGENDA_PRESCRICAO_ALERGIA}">
+							<p:outputPanel id="panelCamposItemAlergia" layout="inline">
+								<aghu:linha>
+									<p:outputPanel id="panelItemAlergia">
+										<mec:suggestionBox id="sbMpmAlergiaUsual" label="#{messages.LABEL_ALERGIA_USUAL}"
+											title="#{messages.TITLE_DESCRICAO_ALERGIA}" descricaoInput="seq" descricaoLabel="descricao"
+											suggestionAction="obterMpmAlergiaUsual" size="60" descricaoLimite="60"
+											controller="#{manterPrescricaoAlergiaController}" var="item"
+											value="#{manterPrescricaoAlergiaController.mpmAlergiaUsualSelecionado}"
+											render="panelAlergiaSemCadastro">
+											<p:column>
+												<f:facet name="header">
+													<b>#{messages.LABEL_CODIGO}</b>
+												</f:facet> #{item.seq}
+		                      	            </p:column>
+		                      	            <p:column>
+												<f:facet name="header">
+													<b>#{messages.LABEL_DESCRICAO}</b>
+												</f:facet> #{item.descricao}
+		                      	            </p:column>
+										</mec:suggestionBox>
+										<mec:selectBooleanCheckbox
+											value="#{manterPrescricaoAlergiaController.motivoCancelamentoHabilitado}"
+											label="#{messages.LABEL_ATIVO}"
+											id="ckMotivoCancelamento">
+											<p:ajax event="change" process="@this" 
+												update="@(#panelMotivo)" listener="#{manterPrescricaoAlergiaController.validarCampoMotivoCancelamento}">
+											</p:ajax>
+										</mec:selectBooleanCheckbox>
+									</p:outputPanel>
+								</aghu:linha>
+								<aghu:linha>
+									<p:outputPanel id="panelAlergiaSemCadastro" layout="inline">
+										<mec:inputText label="#{messages.LABEL_NAO_CADASTRADO}"
+											title="#{messages.TITLE_NAO_CADASTRADO}" maxlength="50"
+											value="#{manterPrescricaoAlergiaController.descricaoNaoCadastrado}"
+											size="40" id="alergiaSemCadastro" />
+									</p:outputPanel>
+									<p:outputPanel id="panelMotivo" layout="inline">
+										<mec:inputText label="#{messages.LABEL_MOTIVO_CANCELAMENTO}"
+											readonly="#{manterPrescricaoAlergiaController.motivoCancelamentoHabilitado}"
+											title="#{messages.TITLE_MOTIVO_CANCELAMENTO}" 
+											value="#{manterPrescricaoAlergiaController.motivoCancelamento}"
+											maxlength="60" size="40" id="motivo">
+										</mec:inputText>
+									</p:outputPanel>
+									<aghu:acao newLine="false">
+										<mec:commandButton id="bt_adicionarItem"
+											value="#{messages.LABEL_ADICIONAR}" rendered="#{!manterPrescricaoAlergiaController.editando}"
+											action="#{manterPrescricaoAlergiaController.adicionar}"
+											process="panelCamposItemAlergia" profile="add" ajax="true"
+											render="@(#corpoPagina)" />
+										<mec:commandButton id="bt_alterar"
+											value="#{messages.LABEL_ALTERAR}" rendered="#{manterPrescricaoAlergiaController.editando}"
+											action="#{manterPrescricaoAlergiaController.alterar}"
+											process="panelCamposItemAlergia" profile="ok" ajax="true"
+											render="@(#corpoPagina)" />
+										<mec:commandButton id="bt_cancelarEdic"
+											value="#{messages.LABEL_CANCELAR_EDICAO}" rendered="#{manterPrescricaoAlergiaController.editando}"
+											action="#{manterPrescricaoAlergiaController.cancelarAlteracao}"
+											process="panelCamposItemAlergia" styleClass="bt_cancel_edit" ajax="true"
+											render="@(#corpoPagina)" profile="cancel"/>	
+									</aghu:acao>
+								</aghu:linha>
+								<aghu:linha>
+								<p:outputPanel id="panelGridAlergia">
+									<mec:serverDataTable id="tabelaItensAlergia" rowKeyVar="_key"
+										list="#{manterPrescricaoAlergiaController.listaAipAlergiaPacientes}"
+										scrollable="true" scrollHeight="250">
+										<c:set var="_item" value="#{item}" />
+										<p:column style="width:25px;">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ACAO}" />
+											</f:facet>
+											<p:outputPanel id="panelBotoesEditar" layout="inline"
+												rendered="#{manterPrescricaoAlergiaController.aipPacientesSelecionado.id.seq ne _item.id.seq}">
+												<mec:commandLink id="bt_editar" title="#{messages.LABEL_EDITAR}"
+													action="#{manterPrescricaoAlergiaController.editar(_item)}"
+													profile="edit" ajax="true" render="@(#corpoPagina)"
+													process="@this" />
+											</p:outputPanel>
+										</p:column>
+										<p:column sortBy="#{_item.ausSeq}"
+											style="width:58px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CODIGO}" />
+											</f:facet>
+											<h:outputText value="#{_item.ausSeq}" rendered="#{_item.ausSeq gt 0}"/>
+										</p:column>
+										<p:column sortBy="#{_item.ausSeq}"
+											style="width:222px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ALERGIA_USUAL}" />
+											</f:facet>
+											<p:outputPanel rendered="#{_item.ausSeq != null}" >
+											<h:outputText id="itemAusSeq" rendered="#{_item.ausSeq != null}" 
+												value="#{_item.mpmAlergiaUsual.descricao.length() lt 31 ? _item.mpmAlergiaUsual.descricao : _item.mpmAlergiaUsual.descricao.substring(0, 27).concat('...')}"/>
+												<p:tooltip for="itemAusSeq" direction="bottom-right" styleClass="tooltip" layout="block" 
+												rendered="#{_item.mpmAlergiaUsual.descricao.length() gt 30}" value="#{_item.mpmAlergiaUsual.descricao}"/>
+											</p:outputPanel>
+										</p:column>
+										<p:column sortBy="#{_item.descricao}"
+											style="width:221px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_NAO_CADASTRADO}" />
+											</f:facet>
+											<h:outputText id="naoCadastrado" value="#{_item.descricao.length() lt 30 ? _item.descricao : _item.descricao.substring(0, 27).concat('...')}" />
+											<p:tooltip for="naoCadastrado" direction="bottom-right" styleClass="tooltip" layout="block" 
+												rendered="#{_item.descricao.length() gt 30}">
+												<h:outputText value="#{_item.descricao}" rendered="#{_item.descricao.length() lt 35}"/>
+							                    <h:outputText value="#{_item.descricao.substring(0, 35)}" rendered="#{_item.descricao.length() gt 34}"/>
+							                    <br/>
+							                    <h:outputText value="#{_item.descricao.substring(36, _item.descricao.length())}" rendered="#{_item.descricao.length() gt 34}"/>
+											</p:tooltip>
+										</p:column>
+										<p:column sortBy="#{_item.motivo}"
+											style="width:222px">
+											<f:facet name="header"> 
+												<h:outputText value="#{messages.LABEL_MOTIVO_CANCELAMENTO}" />
+											</f:facet>
+											<h:outputText id="motCancelamento" value="#{_item.motivo.length() lt 30 ? _item.motivo : _item.motivo.substring(0, 27).concat('...')}" />
+											<p:tooltip for="motCancelamento" direction="bottom-right" styleClass="tooltip" layout="block" 
+												rendered="#{_item.motivo.length() gt 30}" value="#{_item.motivo}"/>
+										</p:column>
+										<p:column sortBy="#{_item.indSituacao}"
+											style="width:65px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_SITUACAO}" />
+											</f:facet>
+											<h:outputText value="#{manterPrescricaoAlergiaController.obterValorIndSituacao(_item)}" />
+										</p:column>
+									</mec:serverDataTable>
+								</p:outputPanel>
+							</aghu:linha>
+							</p:outputPanel>
+						</aghu:panelGeral>
+					</p:outputPanel>
+				</h:form>
+			</p:outputPanel>
+			<br />
+			<h:form prependId="false" id="formGravar">
+				<aghu:acao>
+					<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}"
+						status="commonstatus"
+						action="#{manterPrescricaoAlergiaController.gravar}" profile="ok" />
+					<mec:commandButton id="bt_historico" value="#{messages.LABEL_HISTORICO}"
+						status="commonstatus" action="#{manterPrescricaoAlergiaController.redirecionarHistorico}" >
+						<f:setPropertyActionListener
+								target="#{historicoAlergiasPacienteController.pacCodigo}"
+								value="#{manterPrescricaoAlergiaController.atendimento.paciente.codigo}"
+								for="command" />
+						<f:setPropertyActionListener
+							target="#{historicoAlergiasPacienteController.prescricaoMedicaVO}"
+							value="#{manterPrescricaoAlergiaController.prescricaoMedicaVO}"
+							for="command" />
+					</mec:commandButton>	
+					<p:outputPanel id="panelBotoesVoltar" layout="inline">
+						<mec:commandButton id="bt_voltar_sem_confirma"
+							action="#{manterPrescricaoAlergiaController.solicitarConfirmacao}"
+							value="#{messages.LABEL_VOLTAR}"
+							styleClass="bt_vermelho icon-back bt_cinza" ajax="true"
+							process="@this" profile="back">
+						</mec:commandButton>
+					</p:outputPanel>
+				</aghu:acao>
+				
+				
+				
+				<p:outputPanel id="panelConfirmarVoltar" layout="inline"> 
+		          <p:dialog id="modalConfirmacaoVoltar" 
+		          	width="400" 
+		          	height="110" 
+		          	modal="true" 
+		          	resizable="false" 
+		          	widgetVar="modalConfirmacaoVoltarWG"> 
+		            <f:facet name="header"> 
+		              <h:panelGroup> 
+		                <h:outputText value="#{messages.LABEL_CONFIRMAR_CANCELAR_PRESCRICAO}"/> 
+		              </h:panelGroup> 
+		            </f:facet>  
+		            <p:outputPanel layout="inline">#{messages.MENSAGEM_CONFIRMAR_CANCELAR_PRESC_ALERGIA} 
+		              <br clear="none"/>  
+		              <br clear="none"/>  
+		              <br clear="none"/>  
+		              <h:panelGroup> 
+		                <h:form prependId="false" id="formModalConfirmacaoVoltar"> 
+		                  <mec:commandButton block="true" id="bt_confirmar" value="#{messages.LABEL_SIM}" onclick="PF('modalConfirmacaoVoltarWG').hide();" action="#{manterPrescricaoAlergiaController.voltar(false)}" profile="ok"> 
+		                    <f:setPropertyActionListener
+								target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}"
+								value="#{manterPrescricaoAlergiaController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{manterPrescricaoMedicaController.pmeSeq}"
+								value="#{manterPrescricaoAlergiaController.prescricaoMedicaVO.prescricaoMedica.id.seq}"
+								for="command" /> 
+		                  </mec:commandButton>  
+		                  <mec:commandButton block="true" id="bt_cancelarModal" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoVoltarWG').hide();" action="#{manterPrescricaoAlergiaController.cancelarModal}" profile="cancel" ajax="true"/> 
+		                </h:form> 
+		              </h:panelGroup> 
+		            </p:outputPanel> 
+		          </p:dialog> 
+		        </p:outputPanel> 
+				
+			
+			</h:form>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

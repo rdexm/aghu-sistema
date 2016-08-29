@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_CONDUTA}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <h:form prependId="false" id="PesquisarCondutasForm"> 
+        <aghu:panelGeral id="ffdl_pessoais" legend="#{messages.LABEL_PESQUISAR_CONDUTA}"> 
+          <p:outputPanel id="panelPesquisaConduta" layout="inline"> 
+            <aghu:linha> 
+              <mec:inputNumero id="filtroCodigo" label="#{messages.LABEL_CODIGO_CONDUTA}" title="#{messages.TITLE_CODIGO_CONDUTA}" value="#{manterCadastroCondutaController.filtroCodigo}" maxlength="10" size="10"></mec:inputNumero>  
+              <mec:inputText id="filtroDescricao" label="#{messages.LABEL_DESCRICAO_CONDUTA}" title="#{messages.TITLE_DESCRICAO_CONDUTA}" value="#{manterCadastroCondutaController.filtroDescricao}" maxlength="60" size="60" style="text-transform:uppercase"></mec:inputText>  
+              <mec:inputNumero id="filtroFaturamento" label="#{messages.LABEL_FATURAMENTO_CONDUTA}" title="#{messages.TITLE_FATURAMENTO_CONDUTA}" value="#{manterCadastroCondutaController.filtroFaturamento}" maxlength="10" size="10"></mec:inputNumero>  
+              <mec:selectOneMenu id="filtroSituacao" label="#{messages.LABEL_SITUACAO_CONDUTA}" title="#{messages.TITLE_SITUACAO_CONDUTA}" value="#{manterCadastroCondutaController.filtroSituacao}" enum="DominioSituacao"></mec:selectOneMenu> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{manterCadastroCondutaController.pesquisar}" profile="search" />  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{manterCadastroCondutaController.limparPesquisa}" render="panelPesquisaConduta" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelCadastroConduta" rendered="#{manterCadastroCondutaController.pesquisaAtiva}" layout="inline"> 
+        <aghu:panelGeral legend="#{messages.LABEL_CADASTRAR_CONDUTA}"> 
+          <!-- CADASTRAR CONDUTA -->  
+          <p:outputPanel id="panelCadastroCondutaAdicao" rendered="#{manterCadastroCondutaController.manterCondutas}" layout="inline"> 
+            <h:form prependId="false" id="cadastroCondutaForm"> 
+              <aghu:linha> 
+                <mec:inputText id="novaDescricao" label="#{messages.LABEL_DESCRICAO_CONDUTA}" title="#{messages.TITLE_NOVA_DESCRICAO_CONDUTA}" value="#{manterCadastroCondutaController.novaDescricao}" readonly="#{manterCadastroCondutaController.editar  eq 'true'}" required="true" maxlength="60" size="60" style="text-transform:uppercase"></mec:inputText>  
+                <mec:inputNumero id="novoFaturamento" label="#{messages.LABEL_FATURAMENTO_CONDUTA}" title="#{messages.TITLE_NOVO_FATURAMENTO_CONDUTA}" value="#{manterCadastroCondutaController.novoFaturamento}" maxlength="10" size="10"></mec:inputNumero>  
+                <mec:selectBooleanCheckbox id="novaSituacao" label="#{messages.LABEL_ATIVO_EXAME_EXTERNO}" title="#{messages.TITLE_NOVA_SITUACAO_CONDUTA}" value="#{manterCadastroCondutaController.novaSitucao}" required="true"></mec:selectBooleanCheckbox>  
+                <p:outputPanel id="panelAcoes" layout="inline"> 
+                  <aghu:acao newLine="false"> 
+                    <mec:commandButton value="#{messages.LABEL_BOTAO_ADICIONAR_CONDUTA}" id="bt_adicionarConduta" rendered="#{!manterCadastroCondutaController.editar}" action="#{manterCadastroCondutaController.persistirConduta}" render="panelTableCondutas" profile="add" />
+                    <mec:commandButton value="#{messages.LABEL_BOTAO_ALTERACAO_CONDUTA}" id="bt_adicionarAlterarConduta" rendered="#{manterCadastroCondutaController.editar}" action="#{manterCadastroCondutaController.persistirConduta}" render="panelTableCondutas" profile="ok" />  
+                    <mec:commandButton value="#{messages.LABEL_BOTAO_CANCELAR_EDICAO_CONDUTA}" id="bt_cancelarEdicao" rendered="#{manterCadastroCondutaController.editar}" action="#{manterCadastroCondutaController.cancelarEdicao}" render="panelCadastroConduta" profile="cancel" /> 
+                  </aghu:acao> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </h:form> 
+          </p:outputPanel>  
+          <!-- LISTAGEM DE CONDUTAS -->  
+          <h:form prependId="false" id="listaCadastroCondutaForm"> 
+            <p:outputPanel id="panelTableCondutas" layout="inline"> 
+              <aghu:linha> 
+                <mec:serverDataTable id="tabelaCondutas" dataModel="dataModel" controller="#{manterCadastroCondutaController}"> 
+                  <c:set var="_item" value="#{item}"/>
+                  <p:column style="width:80px; white-space:nowrap; #{(manterCadastroCondutaController.editar and _item.seq eq manterCadastroCondutaController.mcoConduta.seq) ? 'background-color:#FFC970' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO_CONDUTAS}"/> 
+                    </f:facet>  
+                    <p:outputPanel id="panelAcao" rendered="#{manterCadastroCondutaController.manterCondutas}" layout="inline"> 
+                    <mec:commandLink id="ativarInativar" 
+                      	action="#{manterCadastroCondutaController.ativarInativar}"
+                      	title="#{manterCadastroCondutaController.convertDominioSituacaoToBoolean(_item.indSituacao) ? messages.LABEL_SITUACAO_CONDUTA_DESATIVAR : messages.LABEL_SITUACAO_CONDUTA_ATIVAR}" 
+                      	styleClass="#{manterCadastroCondutaController.convertDominioSituacaoToBoolean(_item.indSituacao) ? 'silk-activate silk-icon' : 'silk-deactivate silk-desactive silk-icon'}"
+                      	ajax="true" 
+                      	render="panelTableCondutas"
+                      	process="@this"
+                      	rendered="#{manterCadastroCondutaController.editar eq 'false'}"> 
+                        <f:setPropertyActionListener target="#{manterCadastroCondutaController.mcoConduta}" value="#{_item}" for="command"/> 
+                      </mec:commandLink>  
+                      
+                      <mec:commandLink id="editar" 
+	                      action="#{manterCadastroCondutaController.editar}" 
+	                      title="#{messages.CASCA_LABEL_EDITAR}" 
+	                      rendered="#{manterCadastroCondutaController.editar eq 'false'}" 
+	                      profile="edit" ajax="true" render="panelCadastroConduta" 
+	                      process="@this"> 
+                       <f:setPropertyActionListener target="#{manterCadastroCondutaController.mcoConduta}" value="#{_item}" for="command"/> 
+                      </mec:commandLink> 
+                    </p:outputPanel> 
+                  </p:column>  
+                  <p:column style="width:100px; white-space:nowrap; #{(manterCadastroCondutaController.editar and _item.seq eq manterCadastroCondutaController.mcoConduta.seq) ? 'background-color:#FFC970' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_COLUNA_CODIGO_CONDUTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.seq}"/> 
+                  </p:column>  
+                  <p:column style="white-space:nowrap; #{(manterCadastroCondutaController.editar and _item.seq eq manterCadastroCondutaController.mcoConduta.seq) ? 'background-color:#FFC970' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_COLUNA_DESCRICAO_CONDUTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.descricao}"/> 
+                  </p:column>  
+                  <p:column style="width:100px; white-space:nowrap; #{(manterCadastroCondutaController.editar and _item.seq eq manterCadastroCondutaController.mcoConduta.seq) ? 'background-color:#FFC970' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_COLUNA_FATURAMENTO_CONDUTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.cod}"/> 
+                  </p:column>  
+                  <p:column style="width:100px; white-space:nowrap; #{(manterCadastroCondutaController.editar and _item.seq eq manterCadastroCondutaController.mcoConduta.seq) ? 'background-color:#FFC970' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_COLUNA_SITUACAO_CONDUTA}"/> 
+                    </f:facet>  
+                    <h:outputText id="indSituacao" styleClass="#{manterCadastroCondutaController.convertDominioSituacaoToBoolean(_item.indSituacao) ? 'silk-icon silk-checked' : ''}" readOnly="true"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </h:form> 
+        </aghu:panelGeral> 
+      </p:outputPanel> 
+    </ui:define>  
+    <!-- fim do conteudo --> 
+  </ui:composition>
+</html>

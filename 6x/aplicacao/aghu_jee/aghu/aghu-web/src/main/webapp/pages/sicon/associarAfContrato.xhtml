@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Contratos com Licitação</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterContratoLicitacaoController.init}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterContratoLicitacaoController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="form_af_contrato"> 
+        <aghu:panelGeral legend="#{messages.LABEL_CADASTRAR_CONT_COM_LIC}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="licitacao" label="#{messages.LABEL_LIC}" required="true" title="#{messages.LABEL_LIC_HLP}" 
+            descricaoInput="numero" descricaoLabel="descricao" 
+            suggestionAction="pesquisarLicitac" controller="#{manterContratoLicitacaoController}" 
+            value="#{manterContratoLicitacaoController.licitacaoSelected}"> 
+              <p:column>#{item.numero}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestionFornecedor" label="#{messages.LABEL_FORNECEDOR}" required="false" 
+      			   title="#{messages.TITLE_FORNECEDOR}" descricaoInput="numero" externalDescricaoLabel="formatFornText" 
+		           suggestionAction="pesquisarFornecedor" posSelectionAction="pesquisar" width="400" 
+		           controller="#{manterContratoLicitacaoController}" value="#{manterContratoLicitacaoController.fornecedorSelected}" 
+		           render="tablePnl,panelGeracao"> 
+              <p:column>#{item.numero}</p:column>  
+              <p:column>#{item.razaoSocial}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="btn_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{manterContratoLicitacaoController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{manterContratoLicitacaoController.limpar}" immediate="true" reRender="tablePnl,panelGeracao,searchFlds,panelGeracao" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{manterContratoLicitacaoController.voltar}" styleClass=" alinha-direita bt_cinza" profile="back"/> 
+        </aghu:acao>  
+        <p:outputPanel id="tablePnl"> 
+          <mec:serverDataTable id="tableItens" rendered="#{not empty manterContratoLicitacaoController.afs}"  
+          list="#{manterContratoLicitacaoController.afs}" > 
+            <c:set var="_item" value="#{item}"/>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink oncomplete="PF('modalDetalharItensWG').show();" title="#{messages.LABEL_VISUALIZAR_ITENS_AF}" 
+              styleClass=" silk-folder-database silk-icon" ajax="true" render="panelModal,popuppanelTabelaItens" 
+              action="#{manterContratoLicitacaoController.setAf(_item)}" >
+              </mec:commandLink> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_AFCP}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.af.propostaFornecedor.id.lctNumero}/#{_item.af.nroComplemento}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_FORNECEDOR_CONTRATADO}"/> 
+              </f:facet>  
+              <h:outputText value="#{manterContratoLicitacaoController.formatFornTextGrid(_item)}" />
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_VALOR_TOTAL}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.valorProposta}"> 
+                <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_MODALIDADE_EMPENHO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.af.modalidadeEmpenho.getDescricao()}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.TITLE_CONV}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.af.convenioFinanceiro.descricao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_VNC_CONT}"/> 
+              </f:facet>  
+              <p:selectOneMenu id="selectVincCont"  value="#{_item.vincularAoContrato}">
+                  <f:converter converterId="dominioConverter" />
+                  <f:selectItems var="item" itemLabel="#{item.descricao}"
+						value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+              </p:selectOneMenu>               
+            </p:column> 
+          </mec:serverDataTable> 
+          <aghu:acao>
+           <mec:commandButton id="btn_gerar" action="#{manterContratoLicitacaoController.gerarContrato}" rendered="#{not empty manterContratoLicitacaoController.afs}" value="#{messages.LABEL_GERARCONT}" profile="ok" ajax="true"> 
+             <f:setPropertyActionListener target="#{manterContratoAutomaticoController.voltarParaUrl}" value="gerenciarContratos" for="command"/>  
+             <f:setPropertyActionListener target="#{manterContratoAutomaticoController.afsSelec}" value="#{manterContratoLicitacaoController.afs}" for="command"/> 
+           </mec:commandButton> 
+          </aghu:acao>
+        </p:outputPanel>        
+      </h:form>  
+      <p:outputPanel id="panelModal" layout="inline"> 
+        <p:dialog id="modalDetalharItens" width="850" height="500" modal="true" resizable="false" widgetVar="modalDetalharItensWG" closable="true"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_ITENS_AF}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <h:form prependId="false" id="formModalDetalharItens"> 
+            <p:outputPanel id="popuppanel_hdr" layout="inline" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral style="width: 715px;" legend="#{messages.TITLE_MODAL_AF_HDR}"> 
+                <aghu:linha style="width: 700px;"> 
+                  <mec:inputNumero id="numAf" label="#{messages.LABEL_AF}" size="15" readonly="true" value="#{manterContratoLicitacaoController.af.af.propostaFornecedor.id.lctNumero}"/>  
+                  <mec:inputNumero id="numCp" label="#{messages.LABEL_CP}" size="3" readonly="true" value="#{manterContratoLicitacaoController.af.af.nroComplemento}"/>  
+                  <mec:inputText label="#{messages.LABEL_HEADER_CNPJCPF}" value="#{manterContratoLicitacaoController.af.af.propostaFornecedor.fornecedor.cgc != null             ? manterContratoLicitacaoController.af.af.propostaFornecedor.fornecedor.cgc             : manterContratoLicitacaoController.af.af.propostaFornecedor.fornecedor.cpf}" style="text-transform:uppercase" size="20" readonly="true" id="cpfcnpjPopup"/>  
+                  <mec:inputText label="#{messages.LABEL_HEADER_RAZAO_SOCIAL}" value="#{manterContratoLicitacaoController.af.af.propostaFornecedor.fornecedor.razaoSocial}" style="text-transform:uppercase ;width:480px" readonly="true" id="razaosocialPopup"/> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:inputText label="#{messages.LABEL_FREQ_COMPRAS}" value="#{manterContratoLicitacaoController.af.af.propostaFornecedor.licitacao.frequenciaEntrega == null ? 1 : manterContratoLicitacaoController.af.af.propostaFornecedor.licitacao.frequenciaEntrega}" style="width:20px" readonly="true" id="freq"/>  
+                  <mec:inputText label="#{messages.LABEL_VALOR_PROPOSTA}" value="#{manterContratoLicitacaoController.af.valorProposta}" 
+                  				 readonly="true" id="vlTotPopup" converter="currencyConverter"/> 
+                </aghu:linha> 
+              </aghu:panelGeral> 
+            </p:outputPanel>  
+            <p:outputPanel id="popuppanel_bdy" layout="inline" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral style="width: 715px;" legend="#{messages.TITLE_MODAL_AF_BDY}"> 
+                <aghu:linha> 
+                  <p:outputPanel id="popuppanelTabelaItens" layout="inline"> 
+                    <mec:serverDataTable id="popuptabelaItens" rendered="#{not empty manterContratoLicitacaoController.af.itensAF}" width="700px" height="190px" 
+                    list="#{manterContratoLicitacaoController.af.itensAF}" scrollable="true"> 
+                      <c:set var="pu_item" value="#{item}"/>  
+                      <p:column width="30px"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ITEM}" style="font-weight:bold;                             color:#000000;"/> 
+                        </f:facet>  
+                        <h:outputText value="#{pu_item.numItem}"/> 
+                      </p:column>  
+                      <p:column width="500px"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.POPUP_DESC}" style="font-weight:bold;                             color:#000000;"/> 
+                        </f:facet>  
+                        <h:outputText value="#{pu_item.material != null ? pu_item.material.codigo : pu_item.servico.codigo} - "/>  
+                        <h:outputText value="#{pu_item.material != null ? pu_item.material.nome : pu_item.servico.nome}"/> 
+                      </p:column>  
+                      <p:column width="120px"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_UNID}" style="font-weight:bold;                             color:#000000;"/> 
+                        </f:facet>  
+                        <h:outputText value="#{pu_item.unidade.descricao}"/> 
+                      </p:column>  
+                      <p:column width="50px"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_QTDE}" style="font-weight:bold;                             color:#000000;"/> 
+                        </f:facet>  
+                        <h:outputText value="#{pu_item.quant}"/> 
+                      </p:column>  
+                      <p:column width="25px"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_FREQ}" style="font-weight:bold;                             color:#000000;"/> 
+                        </f:facet>  
+                        <h:outputText value="#{pu_item.freq == null ? 1 : pu_item.freq}"/> 
+                      </p:column>  
+                      <p:column width="110px"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_VL_UNIT}" style="font-weight:bold;                             color:#000000;"/> 
+                        </f:facet>  
+                        <h:outputText value="#{pu_item.valorUnit}"> 
+                          <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column width="30px" style="text-align: center"> 
+                        <p:outputPanel layout="inline"> 
+                          <h:graphicImage id="img1" value="/resources/img/icons/marcador_verde.png" rendered="#{pu_item.material != null ? manterContratoLicitacaoController.materialPossuiCodSiasg(pu_item.material) : manterContratoLicitacaoController.servicoPossuiCodSiasg(pu_item.servico)}"/>  
+                          <h:graphicImage id="img3" value="/resources/img/icons/marcador_vermelho.png" rendered="#{pu_item.material != null ? not manterContratoLicitacaoController.materialPossuiCodSiasg(pu_item.material) : not manterContratoLicitacaoController.servicoPossuiCodSiasg(pu_item.servico)}"/> 
+                        </p:outputPanel> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </aghu:linha> 
+              </aghu:panelGeral> 
+            </p:outputPanel> 
+          </h:form> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

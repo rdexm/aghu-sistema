@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_LISTA_GMR_PACIENTE} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{listaGMRPacienteController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="body">
+		<mec:pageConfig controller="#{listaGMRPacienteController}" />
+
+		<h:form prependId="false" id="formPrincipal">
+
+			<aghu:panelGeral legend="#{messages.TITLE_PACIENTE}">
+				<aghu:linha>
+
+					<mec:inputText id="prontuario"
+						label="#{messages.LABEL_PRONTUARIO_PACIENTE_CCIH}"
+						value="#{listaGMRPacienteController.prontuarioFormatado}"
+						readonly="true" size="8" />
+
+					<mec:inputText id="nome"
+						label="#{messages.LABEL_NOME_PACIENTE_CCIH}"
+						value="#{listaGMRPacienteController.paciente.nome}" maxlength="50"
+						size="50" style="text-transform:uppercase" readonly="true" />
+
+					<mec:inputText id="dataInternacao"
+						label="#{messages.LABEL_DT_RCAE}"
+						value="#{listaGMRPacienteController.dataInternacao}"
+						datePattern="dd/MM/yyyy" size="8" style="width: 90px;"
+						readonly="true" />
+
+					<mec:inputText id="leito" label="#{messages.LABEL_LEITO}"
+						value="#{listaGMRPacienteController.leito}" size="14"
+						readonly="true" />
+
+				</aghu:linha>
+			</aghu:panelGeral>
+
+
+			<aghu:panelGeral
+				legend="#{messages.TITLE_INCLUIR_NOTIFICACAO_GMR_PACIENTE}">
+				<aghu:linha>
+
+					<mec:suggestionBox id="sbBacteria"
+						label="#{messages.LABEL_BACTERIA}"
+						title="#{messages.TITLE_SELECIONE_GMR}" descricaoInput="seq"
+						descricaoLabel="descricao" required="true"
+						controller="#{listaGMRPacienteController}"
+						suggestionAction="pesquisarBacteria"
+						value="#{listaGMRPacienteController.bacteria}" width="600"
+						render="comboResistenciaAntimicrobiano"
+						rendered="#{mf:hasPermission(securityController,'manterGMR,manter')}">
+
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.seq}
+							</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.descricao}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.bmnDescricao}
+						</p:column>
+
+					</mec:suggestionBox>
+
+					<mec:selectOneMenu id="comboResistenciaAntimicrobiano"
+						label="#{messages.LABEL_RESISTENCIA_AO_ANTIMICROBIANO}"
+						title="#{messages.TITLE_RESISTENCIA_AO_ANTIMICROBIANO}"
+						readonly="#{listaGMRPacienteController.bacteria == null}"
+						rendered="#{mf:hasPermission(securityController,'manterGMR,manter')}"
+						items="#{listaGMRPacienteController.pesquisarAntimicrobianosResistentes()}"
+						value="#{listaGMRPacienteController.resistenciaAntimicrobianoSelecionada}"
+						itemsType="entity" itemLabel="mciAntiMicrobianos.descricao"
+						noSelectionOption="true" style="min-width:200px;" />
+
+
+					<mec:commandButton id="bt_adicionar"
+						value="#{messages.LABEL_ADICIONAR}"
+						action="#{listaGMRPacienteController.adicionar}"
+						style="margin-top: 16px !important;" profile="add"
+						rendered="#{mf:hasPermission(securityController,'manterGMR,manter')}"
+						block="true" />
+
+				</aghu:linha>
+
+				<aghu:linha>
+
+					<mec:serverDataTable id="tabelaGMR" rowKeyVar="_itemId"
+						list="#{listaGMRPacienteController.listaNotificacao}"
+						scrollable="true"
+						controller="#{listaGMRPacienteController}"
+						selection="notificacaoSelecionada">
+						<c:set var="_item" value="#{item}" />
+
+						<p:column
+							style="white-space:nowrap;width:30px;text-align: center;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.AMP_LABEL_ATIVO}" />
+							</f:facet>
+
+							<!-- Ativo -->
+							<mec:commandLink
+								rendered="#{_item.ativo and mf:hasPermission(securityController,'manterGMR,manter')}"
+								title="#{messages.TITLE_DESATIVAR_NOTIFICACAO_GMR}"
+								action="#{listaGMRPacienteController.setNotificacaoSelecionada(_item)}"
+								render="tabelaGMR"
+								oncomplete="PF('modalConfirmarWG').show();"
+								styleClass="silk-activate silk-icon" ajax="true" process="@this" />
+
+							<!-- Ativo quando  -->
+							<p:graphicImage
+								rendered="#{_item.ativo and not mf:hasPermission(securityController,'manterGMR,manter')}"
+								title="#{messages.TITLE_NOTIFICACAO_GMR_ATIVA}"
+								value="../../resources/img/icons/bt-ativar.png" />
+
+							<!-- Inativo -->
+							<p:graphicImage rendered="#{not _item.ativo}"
+								title="#{messages.TITLE_NOTIFICACAO_GMR_INATIVA}"
+								value="../../resources/img/icons/bt-desativar.png" />
+
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.LABEL_LISTA_GMR_MATERIAL_ANALISE}" />
+							</f:facet>
+							<h:outputText value="#{_item.materialAnalise}" />
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DATA_IDENTIFICACAO}" />
+							</f:facet>
+							<h:outputText value="#{_item.dataIdentificacao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_SOLICITACAO}" />
+							</f:facet>
+							<h:outputText value="#{_item.solicitacao}" />
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_BACTERIA}" />
+							</f:facet>
+							<h:outputText value="#{_item.bacteria}" />
+						</p:column>
+
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_MEDICAMENTO}" />
+							</f:facet>
+							<h:outputText value="#{_item.medicamento}" />
+						</p:column>
+					</mec:serverDataTable>
+
+				</aghu:linha>
+
+			</aghu:panelGeral>
+
+
+			<aghu:acao>
+				<mec:commandButton id="btVoltar" value="#{messages.LABEL_VOLTAR}"
+					immediate="true" action="#{listaGMRPacienteController.voltar}"
+					styleClass="alinha-direita icon-back bt_cinza" profile="back"
+					block="true" />
+			</aghu:acao>
+		</h:form>
+
+		<p:outputPanel id="panelModalConfirmar" layout="inline">
+			<p:dialog id="modalConfirmar" width="400" height="100" modal="true"
+				resizable="false" widgetVar="modalConfirmarWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.LABEL_CONFIRMAR}" />
+					</h:panelGroup>
+				</f:facet> #{messages.CONFIRMACAO_DESATIVACAO} 
+          <br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalConfirmar"
+						name="formModalConfirmar">
+						<mec:commandButton value="#{messages.LABEL_CONFIRMAR}"
+							id="bt_confimar_modal" limitToList="true" immediate="true"
+							action="#{listaGMRPacienteController.desativarNotificacao}"
+							oncomplete="PF('modalConfirmarWG').hide();" profile="search"
+							ajax="true" render="tabelaGMR" process="@this" block="true"
+							rendered="#{mf:hasPermission(securityController,'manterGMR,manter')}" />
+						<mec:commandButton value="#{messages.LABEL_CANCELAR}"
+							action="#{listaGMRPacienteController.setNotificacaoSelecionada(null)}"
+							onclick="PF('modalConfirmarWG').hide(); return false;"
+							id="bt_cancelar_modal" profile="cancel" ajax="true" block="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+		</p:outputPanel>
+
+
+	</ui:define>
+</ui:composition>
+</html>

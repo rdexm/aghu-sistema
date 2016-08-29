@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_MONITORAR_COLETAS_EMERGENCIA}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{monitorarColetasEmergenciaController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{monitorarColetasEmergenciaController}" ignoreEnter="true"/>  
+
+      <h:form prependId="false" id="formMonitorarColetasEmergencia" name="formMonitorarColetasEmergencia"> 
+        <p:poll id="poll" interval="300000" enabled="true" onsubmit="PF('atualizacaoAutomaticaLoadingModalBoxWG').show();" oncomplete="PF('atualizacaoAutomaticaLoadingModalBoxWG').hide();;" ignoreDupResponses="true" update="tableSolicitacoesCadastradas,tableItensProgramadosUrgentes" listener="#{monitorarColetasEmergenciaController.pesquisaAutomatica}"/>  
+        <aghu:panelGeral legend="#{messages.LABEL_AVISOS_URGENCIAS_COLETA_PROGRAMADA}"> 
+          <mec:suggestionBox var="_itemDescricao" itemValue="#{_itemDescricao}" label="#{messages.LABEL_UNID_EXEC}" title="#{messages.TITLE_DESCRICAO_UNID_EXEC_SUGGESTION}" suggestionAction="obterAghUnidadesFuncionaisExecutoras" posDeleteAction="limparAghUnidadesFuncionaisExecutoras" posSelectionAction="pesquisarSolicitacoesColeta" descricaoInput="seq" descricaoLabel="descricao" maxlength="30" required="true" block="true" width="500" id="sbIdentificacaoUnidade" controller="#{monitorarColetasEmergenciaController}" value="#{monitorarColetasEmergenciaController.unidadeExecutora}" render="tableSolicitacoesCadastradas,tableItensProgramadosUrgentes">
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_DESCRICAO}</b> 
+              </f:facet> #{_itemDescricao.descricao}
+            </p:column> 
+          </mec:suggestionBox> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_SOLICITACOES}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelSolicitacoesCadastradas" layout="inline"> 
+              <p:outputPanel layout="block" style="height:220px; overflow-y:scroll;"> 
+                <mec:serverDataTable id="tableSolicitacoesCadastradas" 
+                	selection="solicitacaoColetaSelecionada"
+                	controller="#{monitorarColetasEmergenciaController}" 
+                	list="#{monitorarColetasEmergenciaController.listaSolicitacoesColeta}" >
+                  <c:set var="_itemSolicitacaoColeta" value="#{item}"/>  
+                  <p:ajax event="rowSelect" ajax="true" process="@this" update="@(#tableSolicitacoesCadastradas) @(#tableItensProgramadosUrgentes)" listener="#{monitorarColetasEmergenciaController.pesquisarSolicitacoesColetaItensProgramadosaAtualizar()}"/>
+                    
+                  <p:column width="10px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="commandLinkDetalharSolicitacao" title="#{messages.TITLE_DETALHAR_SOLICITACAO}" rendered="#{mf:hasPermission(securityController,'detalharSolicitacaoExames,pesquisar')}" action="#{monitorarColetasEmergenciaController.detalharSolicitacaoColeta(_itemSolicitacaoColeta.numero)}" styleClass=" silk-page-white-magnify silk-icon" ajax="true" process="@this"> 
+                      <f:setPropertyActionListener target="#{detalhesSolicitacaoExameController.soeSeq}" value="#{_itemSolicitacaoColeta.numero}" for="command"/>  
+                      <f:setPropertyActionListener target="#{detalhesSolicitacaoExameController.voltarPara}" value="exames-monitorarColetasEmergenciaPesquisa" for="command"/>
+                    </mec:commandLink>  
+                    <mec:commandLink id="commandLinkImprimirSolicitacao" title="#{messages.TITLE_IMPRIMIR_SOLICITACAO}" rendered="#{mf:hasPermission(securityController,'monitorarColetasEmergencia,imprimirSolicitacoesColeta')}" action="#{monitorarColetasEmergenciaController.imprimirSolicitacaoColeta(_itemSolicitacaoColeta.numero)}" styleClass=" silk-printer silk-icon" ajax="true" process="@this"/>                 
+                  </p:column>
+                    
+                  <p:column width="10px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_NUMERO}"/> 
+                    </f:facet>
+                    <h:outputText id="numero" value="#{_itemSolicitacaoColeta.numero}"/>
+					<p:tooltip for="numero" rendered="#{_itemSolicitacaoColeta.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+			        	<h:outputText value="#{messages.LABEL_GRM}"/> 
+					</p:tooltip>				                               
+                  </p:column>  
+                  
+                  <p:column width="10px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_PRIORIDADE}"/> 
+                    </f:facet>  
+                    <h:outputText id="prioridade" value="#{_itemSolicitacaoColeta.prioridade}"/> 
+					<p:tooltip for="prioridade" rendered="#{_itemSolicitacaoColeta.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+			        	<h:outputText value="#{messages.LABEL_GRM}"/> 
+					</p:tooltip>                  
+                  </p:column>
+                  
+                  <p:column width="10px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_PROGRAMADA}"/> 
+                    </f:facet>  
+                    <h:outputText id="programada" value="#{_itemSolicitacaoColeta.programada}"/>
+					<p:tooltip for="programada" rendered="#{_itemSolicitacaoColeta.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+			        	<h:outputText value="#{messages.LABEL_GRM}"/> 
+					</p:tooltip>                     
+                  </p:column>
+                  
+                  <p:column width="10px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_DATA_SOLICITACAO}"/> 
+                    </f:facet>  
+                    <h:outputText id="dataSolicitacao" value="#{_itemSolicitacaoColeta.dataSolicitacao}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                    </h:outputText> 
+					<p:tooltip for="dataSolicitacao" rendered="#{_itemSolicitacaoColeta.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+			        	<h:outputText value="#{messages.LABEL_GRM}"/> 
+					</p:tooltip>
+                  </p:column>
+                  
+                  <p:column width="10px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                    </f:facet>  
+                    <h:outputText id="prontuario" value="#{_itemSolicitacaoColeta.prontuario}"/>
+					<p:tooltip for="prontuario" rendered="#{_itemSolicitacaoColeta.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+			        	<h:outputText value="#{messages.LABEL_GRM}"/> 
+					</p:tooltip>                    
+                  </p:column>
+                  
+                  <p:column width="10px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{LABEL_QUARTO}"/> 
+                    </f:facet>  
+                    <h:outputText id="quarto" value="#{_itemSolicitacaoColeta.quarto}"/>
+					<p:tooltip for="quarto" rendered="#{_itemSolicitacaoColeta.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+			        	<h:outputText value="#{messages.LABEL_GRM}"/> 
+					</p:tooltip>                          
+                  </p:column>
+                  
+                  <p:column width="10px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_LEITO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemSolicitacaoColeta.leito}"/> 
+                  </p:column> 
+                   
+                  <p:column width="410px" style="#{(_itemSolicitacaoColeta.pacienteGMR) ? 'background-color:#66CCFF' : ''}"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_PACIENTE_OU_DIVERSOS}"/> 
+                    </f:facet>  
+                    <h:outputText id="pacienteDiversos" value="#{_itemSolicitacaoColeta.pacienteDiversos}"/>
+					<p:tooltip for="pacienteDiversos" rendered="#{_itemSolicitacaoColeta.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+			        	<h:outputText value="#{messages.LABEL_GRM}"/>
+					</p:tooltip>
+                  </p:column>
+                  
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_ITENS_PROGRAMADOS_URGENTES}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelItensProgramadosUrgentes" layout="inline"> 
+              <p:outputPanel layout="block" style="height:140px; overflow-y:scroll;"> 
+                <mec:serverDataTable id="tableItensProgramadosUrgentes" name="tableItensProgramadosUrgentes" rowKeyVar="_itemId" onRowMouseOver="this.style.backgroundColor='#F1F1F1'" onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'" list="#{monitorarColetasEmergenciaController.listaItensProgramadosUrgentes}" scrollable="true"> 
+                  <c:set var="_itemProgramadoUrgente" value="#{item}"/>  
+                  <p:column style="width:7%; white-space:nowrap;"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_NUMERO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemProgramadoUrgente.id.seqp}"/> 
+                  </p:column>  
+                  <p:column style="width:12%;white-space:nowrap;"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_COLETA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemProgramadoUrgente.tipoColeta.descricao}"/> 
+                  </p:column>  
+                  <p:column style="width:12%;white-space:nowrap;"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_DATA_PROGRAMADA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemProgramadoUrgente.dthrProgramada}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column style="width:69%;white-space:nowrap;"> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_EXAME}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemProgramadoUrgente.exame.descricaoUsual} / #{_itemProgramadoUrgente.materialAnalise.descricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <p:outputPanel rendered="true" id="panelCadastro" layout="inline"> 
+          <aghu:linha> 
+            <mec:commandButton id="bt_VisualizarImpressaoTodosItens" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_TODOS_ITENS}" rendered="#{mf:hasPermission(securityController,'monitorarColetasEmergencia,imprimirSolicitacoesColeta')}" block="true" action="#{monitorarColetasEmergenciaController.visualizarImpressaoTodosItens}" render="tableSolicitacoesCadastradas,tableItensProgramadosUrgentes" styleClass="bt_cinza"/>
+            <mec:commandButton id="bt_Atualizar" value="#{messages.LABEL_PESQUISAR_PACIENTES_ATUALIZAR_PESQUISA}" action="#{monitorarColetasEmergenciaController.iniciar}" styleClass="bt_secund" ajaxSingle="true" bypassUpdates="true" /> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog style="text-align:center;" id="atualizacaoAutomaticaLoadingModalBox" height="200" top="200" resizeable="false" moveable="false" width="400" zindex="2000" modal="true" resizable="false" widgetVar="atualizacaoAutomaticaLoadingModalBoxWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_ATUALIZACAO_AUTOMATICA}"/> 
+        </f:facet>  
+        <div style="text-align: center;"> 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:graphicImage value="/img/loading.gif"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:outputText value="#{mf:getDefaultValue(blockMsg,messages.LABEL_ATUALIZACAO_AUTOMATICA_EM_ANDAMENTO)}"/> 
+        </div> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

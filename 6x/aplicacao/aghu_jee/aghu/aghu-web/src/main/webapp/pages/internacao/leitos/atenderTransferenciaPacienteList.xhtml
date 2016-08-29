@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Atender Solicitação de Transferência de Pacientes :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <h:form> 
+        <pe:remoteCommand name="cancelarSolicitacao"> 
+          <pe:assignableParam name="param1" assignTo="#{atenderTransferenciaPacientePaginatorController.solicitacaoSeq}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="Pesquisar Solicitação de Transferência"> 
+          <aghu:linha> 
+            <mec:selectOneMenu enum="DominioSituacaoSolicitacaoTransferencia" label="#{messages.LABEL_SITUACAO}" value="#{atenderTransferenciaPacientePaginatorController.situacao}" title="#{messages.TITLE_LABEL_SITUACAO_TRANSF_PESQ}" id="situacao"/>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_SOLICITACAO}" title="#{messages.TITLE_LABEL_DATA_SOLICITACAO_TRANSF_PESQ}" size="10" maxlength="10" value="#{atenderTransferenciaPacientePaginatorController.dataSolicitacao}" id="dataSolicitacao" tipo="data"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO_INTERNACAO}" value="#{atenderTransferenciaPacientePaginatorController.prontuario}" id="prontuario"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CRM}" title="#{messages.TITLE_LABEL_CRM_PROFESSOR_INT}" 
+            suggestionAction="pesquisarCRM"  
+            descricaoInput="nroRegConselho" descricaoLabel="nome" id="crmSuggestion" 
+            controller="#{atenderTransferenciaPacientePaginatorController}" 
+            value="#{atenderTransferenciaPacientePaginatorController.servidorCRMVO}"> 
+              <p:column>#{item.nroRegConselho}</p:column>  
+              <p:column>#{item.nome}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_ESPECIALIDADE}" title="#{messages.TITLE_LABEL_ESPECIALIDADE_TRANS}" 
+            suggestionAction="pesquisarEspecialidades" converter="#{aghEspecialidadesSiglaNomeConverter}" 
+            descricaoInput="sigla" descricaoLabel="nomeEspecialidade" id="especialidadeSuggestion" 
+            controller="#{atenderTransferenciaPacientePaginatorController}" value="#{atenderTransferenciaPacientePaginatorController.especialidade}"> 
+              <p:column>#{item.seq}</p:column>  
+              <p:column>#{item.nomeEspecialidade}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_LABEL_UNIDADE_SOLICITANTE_TRANSF}" suggestionAction="pesquisarUnidadeFuncionalPorCodigoEDescricao" converter="#{aghUnidadesFuncionaisPorAndarAlaDescricaoAtivasInativasConverter}" descricaoInput="seq" descricaoLabel="andarAlaDescricao" id="unidadeFuncionalSuggestion" controller="#{atenderTransferenciaPacientePaginatorController}" value="#{atenderTransferenciaPacientePaginatorController.unidadeFuncional}"> 
+              <p:column>#{item.seq}</p:column>  
+              <p:column>#{item.andarAlaDescricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{atenderTransferenciaPacientePaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" 
+          action="#{atenderTransferenciaPacientePaginatorController.limpar}" 
+          styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao>  
+        <mec:serverDataTable id="tabelaSolTransf" style="font-size:9px!important" dataModel="dataModel" controller="#{atenderTransferenciaPacientePaginatorController}"> 
+          <c:set var="_solTransf" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false" style="width:50px;white-space:nowrap;"> 
+            <mec:commandLink title="#{messages.LABEL_DETALHAR}" action="#{atenderTransferenciaPacientePaginatorController.detalhar}" styleClass=" silk-table silk-icon"> 
+              <f:setPropertyActionListener target="#{verificarCaracteristicasPedidoInternacaoController.solicTransfPaciente}" value="#{_solTransf.solicitacao}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_ATENDER_VISUALIZAR}" rendered="#{_solTransf.solicitacao.indSitSolicLeito == 'P'}" action="#{atenderTransferenciaPacientePaginatorController.atenderVisualizar}" styleClass=" silk-accept silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{atenderTransferenciaPacienteController.solicitacao}" value="#{_solTransf.solicitacao}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_TRANSFERIR}" rendered="#{_solTransf.solicitacao.indSitSolicLeito == 'A'}" action="#{atenderTransferenciaPacientePaginatorController.transferir(_solTransf.solicitacao.internacao.seq, _solTransf.solicitacao.leito.leitoID)}" styleClass=" silk-arrow-switch silk-icon" ajax="true"/>  
+            <mec:commandLink title="#{messages.LABEL_CANCELAR}" rendered="#{_solTransf.solicitacao.indSitSolicLeito == 'P'}" onclick="cancelarSolicitacao(#{_solTransf.solicitacao.seq}); PF('modalConfirmacaoCancelamentoWG').show();;" styleClass=" silk-icon silk-delete"  ajax="true"/> 
+          </p:column>  
+          <p:column style="width:60px;white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solTransf.solicitacao.indSitSolicLeito.descricao}" style="#{_solTransf.estilo}"/> 
+          </p:column>  
+          <p:column style="width:90px;white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_SOLICITACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solTransf.solicitacao.criadoEm}" style="#{_solTransf.estilo}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column style="width:100px;white-space:nowrap;">  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACOMODACOES}"/> 
+            </f:facet>  
+            <h:outputText id="descricaoAcomodacao" value="#{_solTransf.solicitacao.acomodacoes.descricao}" style="#{_solTransf.estilo}"/>  
+            <p:tooltip for="descricaoAcomodacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{messages.LABEL_PACIENTE}: #{atenderTransferenciaPacientePaginatorController.getProntuarioFormatado(_solTransf.solicitacao.internacao.paciente)}" style="#{_solTransf.estilo}"/> - 
+              <h:outputText value=" #{_solTransf.solicitacao.internacao.paciente.nome}" style="#{_solTransf.estilo}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_DATA_HORA_ATENDIMENTO}: "/>  
+              <h:outputText value="#{_solTransf.solicitacao.dthrAtendimentoSolicitacao}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+              </h:outputText>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_LEITO_INTERNACAO}: #{_solTransf.solicitacao.internacao.leito.leitoID}#{_solTransf.solicitacao.internacao.quarto.descricao}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_CONVENIO_PLANO}: #{_solTransf.solicitacao.internacao.convenioSaude.descricao} - #{_solTransf.solicitacao.internacao.convenioSaudePlano.descricao}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_OBSERVACAO}: #{_solTransf.solicitacao.observacao}"/>               
+            </p:tooltip> 
+          </p:column>  
+          <p:column style="width:50px;white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_INFECCAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solTransf.solicitacao.indLeitoIsolamento.descricao}" style="#{_solTransf.estilo}"/> 
+          </p:column>  
+          <p:column style="width:50px;white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ESP}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solTransf.solicitacao.especialidades.sigla}" style="#{_solTransf.estilo}"/> 
+          </p:column>  
+          <p:column style="width:100px;white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PROFESSOR_NOME}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solTransf.solicitacao.servidorProfessor.pessoaFisica.nomeUsual}" style="#{_solTransf.estilo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_UNIDADE_SOLICITANTE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solTransf.descricaoUnidadeFuncional}" style="#{_solTransf.estilo}"/> 
+          </p:column> 
+          <p:column style="width:80px;white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_LEITO_CONCEDIDO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solTransf.solicitacao.leito.leitoID}" style="#{_solTransf.estilo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PACIENTE}"/> 
+            </f:facet>  
+            <h:outputText value="#{atenderTransferenciaPacientePaginatorController.getProntuarioFormatado(_solTransf.solicitacao.internacao.paciente)}" style="#{_solTransf.estilo}"/> - 
+            <h:outputText value=" #{_solTransf.solicitacao.internacao.paciente.nome}" style="#{_solTransf.estilo}"/> 
+          </p:column>  
+          <p:column style="width:30px;white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SEXO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solTransf.solicitacao.internacao.paciente.sexo}" style="#{_solTransf.estilo}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoCancelamento" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoCancelamentoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CANCELAR_SOLICITACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_CANCELAMENTO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalCancelamento"> 
+            <mec:commandButton id="bt_confirmar" value="#{messages.LABEL_CONFIRMAR}" action="#{atenderTransferenciaPacientePaginatorController.cancelarSolicitacao}" profile="search" disabled="#{mf:hasPermission(securityController, 'paciente,somenteLeitura')}"/>    
+            <mec:commandButton value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoCancelamentoWG').hide();return false;" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

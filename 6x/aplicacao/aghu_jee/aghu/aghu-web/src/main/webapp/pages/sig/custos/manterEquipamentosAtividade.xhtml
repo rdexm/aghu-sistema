@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <aghu:panelGeral> 
+      <p:outputPanel id="panelCamposEquipamentos" rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" layout="inline"> 
+        <aghu:linha id="panelCodigoEquipamento"> 
+            <mec:suggestionBox label="#{messages.LABEL_EQUIPAMENTO_EQUIPAMENTO}" title="#{messages.TITLE_EQUIPAMENTO_CODIGO}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarEquipamento" posSelectionAction="posSelectionEquipamento" posDeleteAction="posDeleteEquipamento" required="true" readonly="#{manterEquipamentosAtividadeController.edicao}" width="800" id="suggestionEquipamento" controller="#{manterEquipamentosAtividadeController}" value="#{manterEquipamentosAtividadeController.equipamentoSelecionado}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>Código</b> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>Descrição</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <mec:selectOneMenu label="#{messages.LABEL_EQUIPAMENTO_DIRECIONADOR}" title="#{messages.TITLE_EQUIPAMENTO_DIRECIONADOR}" itemLabel="nome" required="true" value="#{manterEquipamentosAtividadeController.equipamentoAtividade.sigDirecionadores}" items="#{manterEquipamentosAtividadeController.listaDirecionadores}" id="comboDirecionadorDeTempoEquipamento"/>  
+          <mec:selectOneMenu title="#{messages.TITLE_EQUIPAMENTO_SITUACAO}" label="#{messages.LABEL_EQUIPAMENTO_SITUACAO}" enum="DominioSituacao" value="#{manterEquipamentosAtividadeController.equipamentoAtividade.indSituacao}" id="comboSituacaoEquipamento"/> 
+        </aghu:linha>  
+        <aghu:linha id="panelBotoesEquipamentos"> 
+          <mec:commandButton id="bt_adicionar_equipamento" value="#{messages.LABEL_ADICIONAR}" action="#{manterEquipamentosAtividadeController.adicionar}" rendered="#{!manterEquipamentosAtividadeController.edicao}" process="@this,codigo,comboDirecionadorDeTempoEquipamento,comboSituacaoEquipamento, suggestionCentroCusto" profile="add" ajax="true" render="panelCamposEquipamentos,panelTabelaEquipamentos,panelBotoesEquipamentos"/>  
+          <mec:commandButton id="bt_adicionar_equipamento_lote" value="#{messages.LABEL_ADICIONAR_EQUIPAMENTO_LOTE}" action="#{manterEquipamentosAtividadeController.adicionarEquipamentoLote}" rendered="#{!manterEquipamentosAtividadeController.edicao and manterEquipamentosAtividadeController.atividadeJaAdicionada}" profile="add" ajax="true" render="panelCamposEquipamentos,panelTabelaEquipamentos,panelBotoesEquipamentos" process="@this"/>  
+          <mec:commandButton id="bt_alterar_equipamento" value="#{messages.LABEL_ALTERAR}" action="#{manterEquipamentosAtividadeController.gravar}" rendered="#{manterEquipamentosAtividadeController.edicao}" process="@this,codigo,comboDirecionadorDeTempoEquipamento,comboSituacaoEquipamento, suggestionCentroCusto" profile="ok" ajax="true" render="panelCamposEquipamentos,panelTabelaEquipamentos,panelBotoesEquipamentos"/>  
+          <mec:commandButton id="bt_cancelarEdic_equipamento" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{manterEquipamentosAtividadeController.cancelar}" rendered="#{manterEquipamentosAtividadeController.edicao}" profile="cancel" ajax="true" render="panelCamposEquipamentos, panelBotoesEquipamentos, panelTabelaEquipamentos" process="@this"/> 
+        </aghu:linha> 
+      </p:outputPanel>  
+      <aghu:linha id="panelTabelaEquipamentos"> 
+        <mec:serverDataTable id="tblistaEquipamentos" rowKeyVar="indEquipamento" rendered="#{not empty manterEquipamentosAtividadeController.listEquipamentoAtividade}" list="#{manterEquipamentosAtividadeController.listEquipamentoAtividade}" scrollable="true">   
+          <p:column rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_ACOES}"/> 
+            </f:facet>  
+            <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{manterEquipamentosAtividadeController.editar(item, indEquipamento)}" rendered="#{not item.emEdicao and not manterEquipamentosAtividadeController.edicao}" profile="edit" ajax="true" render="panelCamposEquipamentos, panelBotoesEquipamentos, panelTabelaEquipamentos" process="@this"/>  
+            <mec:commandLink rendered="#{not item.emEdicao and manterEquipamentosAtividadeController.edicao}" title="#{messages.LABEL_EDITAR}" onclick="PF('modalRegistroEmEdicaoEditarWG').show();;" profile="edit" ajax="true" process="@this"/>  
+            <h:graphicImage styleClass="silk-icon silk-blank" style="margin:1px; padding:2px" rendered="#{item.emEdicao}"/>  
+            <mec:commandLink rendered="#{not manterEquipamentosAtividadeController.edicao}" title="#{messages.LABEL_EXCLUIR}" action="#{manterEquipamentosAtividadeController.excluir}" profile="delete" ajax="true" process="@this" render="panelTabelaEquipamentos"> 
+              <f:setPropertyActionListener target="#{manterEquipamentosAtividadeController.codigoEquipamentoExclusao}" value="#{item.codPatrimonio}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink rendered="#{manterEquipamentosAtividadeController.edicao}" title="#{messages.LABEL_EXCLUIR}" onclick="PF('modalRegistroEmEdicaoExcluirWG').show();" styleClass="silk-icon silk-delete" ajax="true" process="@this"/> 
+          </p:column>  
+          <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.codPatrimonio}"/> 
+          </p:column>  
+          <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{manterEquipamentosAtividadeController.getDescricaoBem(item)}" rendered="#{manterEquipamentosAtividadeController.integracaoPatrimonioOnline}"/> 
+          </p:column>  
+          <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_VRLBEM}"/> 
+            </f:facet>  
+            <h:outputText value="#{manterEquipamentosAtividadeController.valorBem}" rendered="#{manterEquipamentosAtividadeController.integracaoPatrimonioOnline}"> 
+              <f:converter converterId="currencyConverter"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_VLRDEPRECIADO}"/> 
+            </f:facet>  
+            <h:outputText value="#{manterEquipamentosAtividadeController.valorDepreciado}" rendered="#{manterEquipamentosAtividadeController.integracaoPatrimonioOnline}"> 
+              <f:converter converterId="currencyConverter"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_EQUIPAMENTO_DIRECIONADOR}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.sigDirecionadores.nome}"/> 
+          </p:column>  
+          <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.indSituacao.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable>  
+        <h:outputText value="#{messages.MENSAGEM_EQUIPAMENTO_NAO_ENCONTRADO_PARA_ATIVIDADE}" rendered="#{empty manterEquipamentosAtividadeController.listEquipamentoAtividade and not mf:hasPermission(securityController,'editarAtividade,editar')}"/> 
+      </aghu:linha>  
+      <p:outputPanel rendered="#{!manterEquipamentosAtividadeController.integracaoPatrimonioOnline}" layout="inline"> 
+        <div class="div-alerta"> 
+          <h:outputText value="#{messages.MENSAGEM_GRID_SERVICO_FORA}" rendered="#{!manterEquipamentosAtividadeController.integracaoPatrimonioOnline}"/> 
+        </div> 
+      </p:outputPanel> 
+    </aghu:panelGeral> 
+  </ui:composition> 
+</html>

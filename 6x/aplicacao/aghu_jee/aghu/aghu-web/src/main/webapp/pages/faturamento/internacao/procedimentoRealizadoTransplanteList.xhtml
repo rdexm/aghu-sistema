@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQ_PROCEDIMENTO_TRANSPLANTE} :: #{messages.NOME_ABREVIADO_PROJETO}</title>  
+      <style xml:space="preserve">
+			.checked {
+				background-image: url('../../../resources/img/icons/checked.png')
+					!important;
+				background-repeat: no-repeat;
+				background-position: center;
+			}
+		</style> 
+    </ui:define>
+    <ui:define name="metadata">
+      <f:metadata>
+        <f:viewAction action="#{procedimentoRealizadoXTransplantePaginatorController.iniciar}"/>
+      </f:metadata>
+    </ui:define>  
+    <ui:define name="body"> 
+      <h:form prependId="false" id="formPesquisar"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQ_PROCEDIMENTO_TRANSPLANTE}"> 
+          <aghu:linha>
+					<mec:suggestionBox id="pesqTabela"
+						descricaoLimite="33" label="#{messages.LABEL_TABELA_PxT}"
+						title="#{messages.TITLE_TABELA_PxT}" size="5" maxlength="5"
+						width="420" required="true" suggestionAction="pesquisarTabelas"
+						descricaoInput="seq" descricaoLabel="descricao"
+						posDeleteAction="limparFiltroTabela"
+						controller="#{procedimentoRealizadoXTransplantePaginatorController}"
+						value="#{procedimentoRealizadoXTransplantePaginatorController.tabela}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.seq}
+            			</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.descricao}
+              		</p:column>
+					</mec:suggestionBox>
+					<mec:inputNumero id="pesqItem" value="#{procedimentoRealizadoXTransplantePaginatorController.filtro.itemProcHospTransp.id.iphSeq}" size="8" maxlength="8" label="#{messages.LABEL_ITEM_PxT}" title="#{messages.TITLE_ITEM_PxT}" style="text-transform: uppercase"/>  
+            <mec:inputNumero id="pesqCodSus" value="#{procedimentoRealizadoXTransplantePaginatorController.filtro.codTabela}" size="10" maxlength="10" label="#{messages.LABEL_CODSUS_PxT}" title="#{messages.TITLE_CODSUS_PxT}" style="text-transform: uppercase"/>  
+            <mec:inputText id="pesqDescricao" value="#{procedimentoRealizadoXTransplantePaginatorController.filtro.descricao}" size="50" maxlength="250" label="#{messages.LABEL_DESCRICAO}" style="text-transform: uppercase"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox id="pesqTransplante" label="#{messages.LABEL_TRANSPLANTE_PxT}" title="#{messages.TITLE_TRANSPLANTE_PxT}" size="10" maxlength="10" width="420" suggestionAction="pesquisarTransplantes" descricaoInput="codigo" descricaoLabel="descricao" posDeleteAction="limparFiltroTransplante" controller="#{procedimentoRealizadoXTransplantePaginatorController}" value="#{procedimentoRealizadoXTransplantePaginatorController.transplante}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.codigo}
+              </p:column>
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column>
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao>  
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" title="#{messages.LABEL_PESQUISAR}" action="#{procedimentoRealizadoXTransplantePaginatorController.pesquisar}" profile="ok"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" title="#{messages.LABEL_LIMPAR}" action="#{procedimentoRealizadoXTransplantePaginatorController.limpar}" render="formPesquisar, formResultado, btn_incluir" profile="clear" ajax="true" process="@this"/>  
+          <mec:commandButton id="bt_incluir" value="#{messages.LABEL_NOVO}" title="#{messages.LABEL_NOVO}" action="#{procedimentoRealizadoXTransplantePaginatorController.incluir}" immediate="true" profile="add"  rendered="#{procedimentoRealizadoXTransplantePaginatorController.dataModel.pesquisaAtiva}" permission="manterCadastrosBasicosFaturamento,executar"/>
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formResultado"> 
+        <h:panelGroup rendered="#{procedimentoRealizadoXTransplantePaginatorController.dataModel.pesquisaAtiva}"> 
+          <aghu:panelGeral legend="#{messages.LABEL_RESULTADO_PESQUISAR_PROCEDIMENTO_TRANSPLANTE}">
+					<mec:serverDataTable dataModel="dataModel"
+						selection="procedimentosComTransplanteSelection"
+						id="tabelaProdHospTransp"
+						style="white-space:normal !important;"
+						controller="#{procedimentoRealizadoXTransplantePaginatorController}">
+						<c:set var="transp" value="#{item}" />
+						<p:column headerText="#{messages.LABEL_ACAO}"
+							styleClass="first-column auto-adjust" exportable="false" style="width:10px;">
+							<mec:commandLink
+								action="#{procedimentoRealizadoXTransplantePaginatorController.relacionar}"
+								styleClass="silk-icon silk-application-link"
+								permission="manterCadastrosBasicosFaturamento,executar"
+								title="#{messages.LABEL_RELACIONAR_PxT}">
+								<f:setPropertyActionListener
+									target="#{procedimentoRealizadoXTransplanteController.entidade}"
+									value="#{transp}" for="command" />
+								<f:setPropertyActionListener
+									target="#{procedimentoRealizadoXTransplanteController.modoEdicao}"
+									value="true" for="command" />
+							</mec:commandLink>
+							<mec:commandLink render="formResultado"
+								action="#{procedimentoRealizadoXTransplantePaginatorController.excluir}"
+								id="lnk_excluir" title="#{messages.CASCA_LABEL_EXCLUIR}"
+								permission="manterCadastrosBasicosFaturamento,executar"
+								profile="delete" ajax="true" process="@this">
+								<f:setPropertyActionListener
+									target="#{procedimentoRealizadoXTransplantePaginatorController.entidade}"
+									value="#{transp}" for="command" />
+							</mec:commandLink>
+						</p:column>
+						<p:column style="width:21px;">
+							<f:facet name="header">#{messages.LABEL_TABELA_PxT}</f:facet>
+							<h:outputText id="colTabela"
+								value="#{transp.itemProcHospTransp.id.iphPhoSeq}" />
+						</p:column>
+						<p:column sortAble="true" style="width:20px;">
+							<f:facet name="header">#{messages.LABEL_ITEM_PxT}</f:facet>
+							<h:outputText id="colItem"
+								value="#{transp.itemProcHospTransp.id.iphSeq}" />
+						</p:column>
+						<p:column style="text-align:center; width:24px;">
+							<f:facet name="header">#{messages.LABEL_CODSUS_PxT}</f:facet>
+							<h:outputText id="colCodSus" value="#{transp.codTabela}" />
+						</p:column>
+						<p:column style="width:42px;">
+							<f:facet name="header">#{messages.LABEL_DESCRICAO}</f:facet>
+							<!-- <h:outputText title="#{transp.descricao.length() > 50 ? transp.descricao : ''}" id="colDescricao" value="#{procedimentoRealizadoXTransplantePaginatorController.obterHintDescricao(transp.descricao)}"/> -->
+
+							<h:outputText id="colDescricao" value="#{procedimentoRealizadoXTransplantePaginatorController.obterHintDescricao(transp.descricao)}" />
+							<p:overlayPanel id="pnlDescricao" my="bottom" for="colDescricao" style="white-space:normal !important;"  
+								showEvent="mouseover" hideEvent="mouseout"
+								rendered="#{transp.descricao.length() > 50}">
+								<h:outputText value="#{transp.descricao}" />
+							</p:overlayPanel>
+						</p:column>
+						<p:column style="width:14px;">
+							<f:facet name="header">#{messages.LABEL_TRANSPLANTE_PxT}</f:facet>
+							<h:outputText id="colTransp"
+								value="#{transp.itemProcHospTransp.fatTipoTransplante.descricao}" />
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:panelGeral> 
+        </h:panelGroup> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition>
+</html>

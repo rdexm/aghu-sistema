@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.AMP_TITLE_DOENCA} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+		<style xml:space="preserve">
+.checked {
+	background-image: url('../../../resources/img/icons/checked.png')
+		!important;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+</style>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{cadastroCriteriosSelecaoBacteriasController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{cadastroCriteriosSelecaoBacteriasController}" />
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral
+				legend="#{messages.TITLE_BACTERIAS_MULTIRESISTENTES}">
+				<aghu:linha>
+					<mec:inputNumero id="codigo"
+						value="#{cadastroCriteriosSelecaoBacteriasController.codigoBacteria}"
+						label="#{messages.LABEL_CODIGO_BACTERIAS_MULTIRESISTENTES}"
+						title="#{messages.TITLE_CODIGO_BACTERIAS_MULTIRESISTENTES}"
+						maxlength="6" size="6" style="text-transform:uppercase" />
+					<mec:inputText id="descricao"
+						value="#{cadastroCriteriosSelecaoBacteriasController.descricaoBacteria}"
+						label="#{messages.LABEL_DESCRICAO_BACTERIAS_MULTIRESISTENTES}"
+						title="#{messages.TITLE_DESCRICAO_BACTERIAS_MULTIRESISTENTES}"
+						maxlength="50" size="50" style="text-transform:uppercase" />
+					<mec:selectOneMenu id="situacaoOrigem" enum="DominioSituacao"
+						label="#{messages.LABEL_SITUACAO_BACTERIAS_MULTIRESISTENTES}"
+						title="#{messages.TITLE_SITUACAO_BACTERIAS_MULTIRESISTENTES}"
+						value="#{cadastroCriteriosSelecaoBacteriasController.situacaoBacteria}" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					disabled="#{not mf:hasPermission(securityController,'consultarCriterioGMR,pesquisar')}"
+					action="#{cadastroCriteriosSelecaoBacteriasController.pesquisar}"
+					render="resultados, tabelaCriteriosSelecaoBacterias"
+					profile="search" />
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					action="#{cadastroCriteriosSelecaoBacteriasController.limparPesquisa}"
+					profile="clear" ajax="true"
+					render="formPesquisa, resultados, resultadosCriterios"
+					process="@this" />
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="resultados">
+			<mec:serverDataTable id="tabelaCriteriosSelecaoBacterias"
+				value="#{cadastroCriteriosSelecaoBacteriasController}"
+				dataModel="dataModel" 
+				selection="bacteriaSelecionada"
+				rendered="#{cadastroCriteriosSelecaoBacteriasController.dataModel.pesquisaAtiva}"
+				controller="#{cadastroCriteriosSelecaoBacteriasController}">
+				<c:set var="_item" value="#{item}" />
+				
+				<p:ajax event="rowSelect"
+							listener="#{cadastroCriteriosSelecaoBacteriasController.selecionaRegistro}"
+							update="@(#resultadosCriterios)" />
+				
+				<p:column>
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_DESCRICAO_TABELA_BACTERIAS_MULTIRESISTENTES}" />
+					</f:facet>
+					<h:outputText value="#{_item.codigoBacteria}" /> - 
+            		<h:outputText value="#{_item.descricaoBacteria}" />
+				</p:column>
+				<p:column style="white-space:nowrap;width:40px;"
+					styleClass="#{_item.situacaoBacteria == 'A' ? 'checked' : ''}">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_ATIVO_BACTERIAS_MULTIRESISTENTES}" />
+					</f:facet>
+				</p:column>
+			</mec:serverDataTable>
+		</h:form>
+		<br clear="none" />
+		<br clear="none" />
+		<br clear="none" />
+		<h:form prependId="false" id="resultadosCriterios">
+			<p:outputPanel id="panelCriteriosExterno"
+				rendered="#{cadastroCriteriosSelecaoBacteriasController.edicaoBacteria}"
+				layout="inline" styleClass="aghu-panel-geral">
+				<aghu:panelGeral legend="#{messages.LABEL_DESCRICAO_RESISTENTE_A}">
+					<aghu:linha>
+						<mec:suggestionBox
+							label="#{messages.LABEL_DESCRICAO_DESCRICAO_ANTIMICROBIANO}"
+							title="#{messages.TITLE_DESCRICAO_DESCRICAO_ANTIMICROBIANO}"
+							descricaoInput="seq" descricaoLabel="descricao" required="true"
+							maxlength="60"
+							var="row" itemValue="#{row}"
+							suggestionAction="pesquisarAntiMicrobianosPorSeqDescricao"
+							readonly="#{cadastroCriteriosSelecaoBacteriasController.edicaoCriterio or not mf:hasPermission(securityController,'manterCriterioGMR,manter')}"
+							id="antimicrobiano"
+							controller="#{cadastroCriteriosSelecaoBacteriasController}"
+							value="#{cadastroCriteriosSelecaoBacteriasController.mciAntimicrobiano}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{row.seq}
+                </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{row.descricao}
+                </p:column>
+						</mec:suggestionBox>
+						<mec:selectBooleanCheckbox id="checkAtivo"
+							label="#{messages.LABEL_ATIVO_ANTIMICROBIANOS}"
+							title="#{messages.TITLE_ATIVO_CRITERIOS}"
+							value="#{cadastroCriteriosSelecaoBacteriasController.situacaoCriterio}"
+							disabled="#{not mf:hasPermission(securityController,'manterCriterioGMR,manter')}" />
+						<aghu:acao style="margin-top: 18px !important" newLine="false">
+							<mec:commandButton id="b_adicionar"
+								value="#{messages.LABEL_ADICIONAR}" ajaxSingle="true"
+								block="true"
+								rendered="#{!cadastroCriteriosSelecaoBacteriasController.edicaoCriterio}"
+								disabled="#{not mf:hasPermission(securityController,'manterCriterioGMR,manter')}"
+								action="#{cadastroCriteriosSelecaoBacteriasController.gravarCriterio}"
+								render="panelCriteriosExterno" profile="add" />
+							<mec:commandButton id="bt_alterar"
+								value="#{messages.LABEL_ALTERAR}" ajaxSingle="true" block="true"
+								rendered="#{cadastroCriteriosSelecaoBacteriasController.edicaoCriterio}"
+								disabled="#{not mf:hasPermission(securityController,'manterCriterioGMR,manter')}"
+								action="#{cadastroCriteriosSelecaoBacteriasController.gravarCriterio}"
+								render="panelCriteriosExterno" profile="ok" />
+							<mec:commandButton id="bt_cancelar"
+								value="#{messages.LABEL_CANCELAR_EDICAO_ANTIMICROBIANO}"
+								block="true"
+								rendered="#{cadastroCriteriosSelecaoBacteriasController.edicaoCriterio}"
+								action="#{cadastroCriteriosSelecaoBacteriasController.cancelarEdicao}"
+								render="panelCriteriosExterno"
+								profile="cancel"
+								styleClass="bt_cancel_edit bt_cinza" />
+						</aghu:acao>
+					</aghu:linha>
+					<br clear="none" />
+					<p:outputPanel id="panelCriterios" name="panelCriterios"
+						layout="inline">
+						<mec:serverDataTable id="tabelaCriterios" name="tabelaCriterios"
+							list="#{cadastroCriteriosSelecaoBacteriasController.listaCriterios}"
+							scrollable="true">
+							<c:set var="item" value="#{item}" />
+							<p:column style="width:10px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ACOES}" />
+								</f:facet>
+								<mec:commandLink id="linkEdit" name="linkEdit"
+									title="#{messages.LABEL_EDITAR_ITEM}"
+									action="#{cadastroCriteriosSelecaoBacteriasController.editarCriterio(item)}"
+									rendered="#{!cadastroCriteriosSelecaoBacteriasController.edicaoCriterio and mf:hasPermission(securityController,'manterCriterioGMR,manter')}"
+									profile="edit" ajax="true"
+									render="panelCriteriosExterno, tabelaCriterios, antiMicrobiano, checkAtivo"
+									process="@this" />
+								<mec:commandLink id="linkExcluir" name="linkExcluir"
+									title="#{messages.LABEL_EXCLUIR}" immediate="true"
+									action="#{cadastroCriteriosSelecaoBacteriasController.excluirCriterio}"
+									rendered="#{!cadastroCriteriosSelecaoBacteriasController.edicaoCriterio and mf:hasPermission(securityController,'manterCriterioGMR,manter')}"
+									profile="delete" ajax="true"
+									render="panelCriteriosExterno, panelCriterios, tabelaCriterios">
+									<f:setPropertyActionListener
+										target="#{cadastroCriteriosSelecaoBacteriasController.ambSeqSelecionado}"
+										value="#{item.ambSeq}" for="command" />
+									<f:setPropertyActionListener
+										target="#{cadastroCriteriosSelecaoBacteriasController.descricaoExclusao}"
+										value="#{item.descricao}" for="command" />
+								</mec:commandLink>
+
+								<mec:commandLink id="linkExcluir" name="linkExcluir"
+									title="#{messages.LABEL_EXCLUIR}" immediate="true"
+									rendered="#{!cadastroCriteriosSelecaoBacteriasPaginatorController.edicaoCriterio and mf:hasPermission(securityController,'manterCriterioGMR,manter')}"
+									profile="delete" ajax="true"
+									render="panelCriteriosExterno, panelCriterios, panelModalConfirmacaoExclusao, tabelaCriterios"
+									action="#{cadastroCriteriosSelecaoBacteriasPaginatorController.excluirCriterio}">
+									<f:setPropertyActionListener
+										target="#{cadastroCriteriosSelecaoBacteriasPaginatorController.ambSeqSelecionado}"
+										value="#{item.ambSeq}" for="command" />
+									<f:setPropertyActionListener
+										target="#{cadastroCriteriosSelecaoBacteriasPaginatorController.mostraModalConfirmacaoExclusao}"
+										value="true" for="command" />
+									<f:setPropertyActionListener
+										target="#{cadastroCriteriosSelecaoBacteriasPaginatorController.descricaoExclusao}"
+										value="#{item.descricao}" for="command" />
+								</mec:commandLink>
+							</p:column>
+							<p:column style="white-space:nowrap;width:400px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ANTIMICROBIANO}" />
+								</f:facet>
+								<h:outputText value="#{item.descricao}" />
+							</p:column>
+							<p:column style="white-space:nowrap;width:20px;"
+								styleClass="#{item.indSituacao == 'A' ? 'checked' : ''}">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_ATIVO_BACTERIAS_MULTIRESISTENTES}" />
+								</f:facet>
+							</p:column>
+						</mec:serverDataTable>
+					</p:outputPanel>
+				</aghu:panelGeral>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition> 
+</html>

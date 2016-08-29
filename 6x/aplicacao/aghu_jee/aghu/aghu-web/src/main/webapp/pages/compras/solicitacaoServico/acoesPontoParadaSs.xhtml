@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_FASES_SOLICITACAO_SERVICO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{acoesPontoParadaSsController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{acoesPontoParadaSsController}"/> 
+      <h:form prependId="false" id="formTable"> 
+      <aghu:panelGeral legend="#{messages.TITLE_ACOES_PONTO_PARADA}"> 
+        <aghu:linha> 
+          <mec:inputNumero id="numeroSolicitacao" label="#{messages.LABEL_NRO_SOLICITACAO_COMPRA_APP}" title="#{messages.TITLE_NRO_SOLICITACAO_SERVICO_APP}" value="#{acoesPontoParadaSsController.numero}" maxlength="7" size="8" readonly="true"/>  
+          <mec:inputText id="pontoParada" label="#{messages.LABEL_PONTO_PARADA_FSC}" title="#{messages.LABEL_PONTO_PARADA_FSC}" value="#{acoesPontoParadaSsController.descricaoPontoParada}" maxlength="60" size="60" readonly="true"/>  
+          <mec:inputText id="responsavelEncaminhamento" label="#{messages.LABEL_RESPONSAVEL_ENCAMINHAMENTO_FSC}" title="#{messages.LABEL_RESPONSAVEL_ENCAMINHAMENTO_FSC}" value="#{acoesPontoParadaSsController.responsavel}" maxlength="60" size="60" style="text-transform:uppercase" readonly="true"/>  
+          <mec:inputText id="data" label="#{messages.LABEL_DATA_FSC}" title="#{messages.LABEL_DATA_FSC}" datePattern="dd/MM/yyyy HH:mm" value="#{acoesPontoParadaSsController.data}" maxlength="20" size="20" readonly="true"/>  
+          <mec:inputText id="situacao" label="#{messages.LABEL_SITUACAO_FSC}" title="#{messages.LABEL_SITUACAO_FSC}" value="#{acoesPontoParadaSsController.situacao}" maxlength="10" size="10" style="text-transform:uppercase" readonly="true"/> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <p:outputPanel id="panelEdicao" rendered="#{acoesPontoParadaSsController.modoEdicao}" layout="inline"> 
+              <aghu:linha>
+              	<mec:inputText id="textoAcao" value="#{acoesPontoParadaSsController.textoAcao}" label="#{messages.LABEL_ACAO_PONTO_PARADA}" title="#{messages.TITLE_ACAO_PONTO_PARADA}" maxlength="500" size="60" removerCaratersEspeciais="false" required="true" panelView="true"/>
+              	<aghu:acao newLine="false">  
+	              <mec:commandButton id="bt_adicionar" style="vertical-align:-5px;" action="#{acoesPontoParadaSsController.atualizarAcao()}" value="#{acoesPontoParadaSsController.itemEmEdicao == null ? messages.LABEL_ADICIONAR : messages.LABEL_ALTERAR}" ajax="true" render="panelEdicao, panelTabela,panelNaoLocalizado,tblistaHistorico" styleClass="bt_cinza"/>  
+	              <mec:commandButton id="flux_cnc" style="vertical-align:-18px;" action="#{acoesPontoParadaSsController.cancelarEdicao()}" value="#{messages.LABEL_CNC_ED}" rendered="#{acoesPontoParadaSsController.itemEmEdicao == null ? false : true}" profile="cancel" render="formTable" process="formTable"/>
+	            </aghu:acao>
+              </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:linha> 
+      </aghu:panelGeral>  
+       
+      <aghu:panelGeral legend="#{messages.TITLE_HISTORICO_APP}"> 
+        <aghu:linha>               
+            <mec:serverDataTable id="tblistaHistorico" rowKeyVar="indice" list="#{acoesPontoParadaSsController.listHistoricoFases}" scrollable="true"> 
+              <c:set var="historico" value="#{item}"/>  
+              <p:column rendered="#{acoesPontoParadaSsController.modoEdicao}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <mec:commandLink id="editLink" action="#{acoesPontoParadaSsController.editarAcao(historico)}" title="#{messages.LABEL_EDITAR}" rendered="#{not acoesPontoParadaSsController.itemEmEdicao.seq.equals(historico.seq) and acoesPontoParadaSsController.seqPrimeiroRegistro.equals(historico.seq)}" profile="edit" ajax="true" render="panelEdicao, tblistaHistorico" process="@this"/>  
+                <mec:commandLink id="deleteLink" action="#{acoesPontoParadaSsController.removerAcao()}" rendered="#{not acoesPontoParadaSsController.itemEmEdicao.seq.equals(historico.seq) and acoesPontoParadaSsController.seqPrimeiroRegistro.equals(historico.seq)}" profile="delete" ajax="true" render="formTable" process="@this">
+		           	<f:setPropertyActionListener target="#{acoesPontoParadaSsController.seqExclusao}" value="#{historico.seq}" for="command"/>
+		         </mec:commandLink>
+                 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DATA_FSC}"/> 
+                </f:facet>  
+                <h:outputText value="#{historico.dataAcao}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_RESPONSAVEL_FSC}"/> 
+                </f:facet>  
+                <h:outputText value="#{historico.servidor.pessoaFisica.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <p:outputPanel id="panelAcao">
+                	<h:outputText value="#{historico.acao}"/>
+                </p:outputPanel>  
+                <p:tooltip for="panelAcao" rendered="#{historico.acao.length() &gt; 80}" style="width: 300px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{historico.acao}"/> 
+                </p:tooltip> 
+              </p:column> 
+            </mec:serverDataTable>              
+        </aghu:linha> 
+	  </aghu:panelGeral> 
+             
+      <aghu:acao> 
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{acoesPontoParadaSsController.voltar()}" immediate="true" ajax="true" styleClass="bt_cinza" profile="back"/> 
+      </aghu:acao>       
+     </h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

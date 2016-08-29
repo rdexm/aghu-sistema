@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+xmlns:p="http://primefaces.org/ui" 
+xmlns:pe="http://primefaces.org/ui/extensions" 
+xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+xmlns:f="http://xmlns.jcp.org/jsf/core" 
+xmlns:h="http://xmlns.jcp.org/jsf/html" 
+xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+xmlns:mf="http://www.mec.gov.br/taglib">
+
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_VISUALIZAR_EVOLUCOES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{visualizarEvolucoesPOLController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body"> 
+      <ui:include src="/pages/prescricaomedica/anamneseevolucao/cabecalhoAnamneseEvolucao.xhtml"/>  
+      <h:form prependId="false" id="formVisualizarEvolucoesPOL"> 
+        <aghu:panelGeral legend="#{messages.PANEL_VISUALIZAR_ANAMNSES_EVOLUCAO_EVOLUCOES}"> 
+          <aghu:linha> 
+            <mec:selectOneMenu id="dataReferenciaEvolucao" label="#{messages.LABEL_ANAMNESE_EVOLUCAO_DATA_REFERENCIA}" title="#{messages.TITLE_ANAMNESE_EVOLUCAO_DATA_REFERENCIA}" value="#{visualizarEvolucoesPOLController.dataReferencia}"> 
+              <f:selectItems value="#{visualizarEvolucoesPOLController.listaDataReferencia}" var="item" label="#{item}" semSelecione="true"></f:selectItems>  
+              <p:ajax event="change" update="@(#dataReferenciaEvolucao)" process="@this"/> 
+            </mec:selectOneMenu>            
+             <mec:selectOneMenu id="profissionais" label="#{messages.LABEL_ANAMNESE_EVOLUCAO_PROFISSIONAL}" title="#{messages.TITLE_ANAMNESE_EVOLUCAO_PROFISSIONAL}" value="#{visualizarEvolucoesPOLController.profissional}"> 
+                <f:selectItems value="#{visualizarEvolucoesPOLController.listaProfissionais}" var="item"  itemLabel="#{item.pessoaFisica.nome}" noSelectionLabel="#{mf:getDefaultValue(noSelectionLabel,'Selecione')}"/>  
+                <p:ajax event="change" update="@(#profissionais)" process="@this"/>  
+             </mec:selectOneMenu> 
+            <mec:commandButton id="filtrarEvolucoes" process="@this" value="#{messages.LABEL_ANAMNESE_EVOLUCAO_FILTRAR}" limitToList="true" style="margin-top: 14px; margin-left: 10px;" action="#{visualizarEvolucoesPOLController.filtrarEvolucoes}" ajax="true" render="panelTabelaListaEvolucoes, descricaoEvolucao, panelNotasAdicionais"></mec:commandButton> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <aghu:linha style="margin-top: 15px"> 
+              <p:outputPanel id="panelTabelaListaEvolucoes" layout="inline"> 
+                <p:outputPanel  style="max-height: 165px; overflow-y: auto;">  
+                  <mec:serverDataTable id="listaEvolucoes" list="#{visualizarEvolucoesPOLController.evolucoesVO}" scrollable="true">  
+                    <c:set var="_item" value="#{item}"/>
+                    <p:column style="width:110px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink title="#{messages.LABEL_VISUALIZAR}" styleClass="silk-icon silk-eye" ajax="true" render="listaEvolucoes, descricaoEvolucao, panelNotasAdicionais, dataReferenciaEvolucao"> 
+                        <f:setPropertyActionListener target="#{visualizarEvolucoesPOLController.evolucao}" value="#{_item.evolucao}" for="command"/> 
+                      </mec:commandLink> 
+                    </p:column>  
+                    <p:column style="width:110px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ANAMNESE_EVOLUCAO_COLUNA_DATA_REFERENCIA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.evolucao.dthrReferencia}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column style="width:120px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ANAMNESE_EVOLUCAO_COLUNA_DATA_CRIACAO_HORA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.evolucao.dthrCriacao}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column style="width:120px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ANAMNESE_EVOLUCAO_COLUNA_DATA_FIM_HORA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.evolucao.dthrFim}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ANAMNESE_EVOLUCAO_COLUNA_NOME_RESPONSAVEL}"/> 
+                      </f:facet>  
+                      <h:outputText id="pessoa_#{itemRowKeyVar}" value="#{(_item.evolucao.servidor.pessoaFisica.nome.length() &gt; 30) ? fn:substring(_item.evolucao.servidor.pessoaFisica.nome,0,30) : _item.evolucao.servidor.pessoaFisica.nome}"/>  
+                      <p:outputPanel rendered="#{_item.evolucao.servidor.pessoaFisica.nome.length() &gt; 30}" layout="inline"> 
+                        <h:outputText value="..."/>  
+                        <p:tooltip for="pessoa_#{itemRowKeyVar}" direction="bottom-left" style="width:20%;" layout="block"> 
+                          <h:outputText value="#{_item.evolucao.servidor.pessoaFisica.nome}"/> 
+                        </p:tooltip> 
+                      </p:outputPanel> 
+                    </p:column>  
+                    <p:column  width="20px">  
+                      <h:selectBooleanCheckbox id="marcador" value="#{_item.selecionado}" style="margin-left: 6px;" title="#{messages.TITLE_ANAMNESE_EVOLUCAO_MARCAR_IMPRESSAO}"> 
+                        <p:ajax event="click" bypassUpdates="false" update="@(#panelTabelaListaEvolucoes) @(#panelBotoes) @(#panelModalImprimirEvolucoes) @(#panelModalVisualizarEvolucoes)" process="@this" listener="#{visualizarEvolucoesPOLController.atualizarEvolucoesSelecionadas}"/> 
+                      </h:selectBooleanCheckbox>  
+                      <ui:define name="headerCustomizado" width="20px"> 
+                        <p:outputPanel layout="inline"> 
+                          <h:selectBooleanCheckbox title="#{messages.LABEL_SELECIONAR_TODOS}" id="checkall" value="#{visualizarEvolucoesPOLController.allChecked}"> 
+                            <p:ajax event="click" update="@(#panelTabelaListaEvolucoes) @(#panelBotoes) @(#panelModalImprimirEvolucoes) @(#panelModalVisualizarEvolucoes)" process="@this" listener="#{visualizarEvolucoesPOLController.checkAll()}"/> 
+                          </h:selectBooleanCheckbox>  
+                          <h:outputLabel for="checkall" value="#{messages.LABEL_ANAMNESE_EVOLUCAO_MARCAR_IMPRESSAO}" style="vertical-align:super; font:11px Arial !important; font-weight: bold !important;"/> 
+                        </p:outputPanel> 
+                      </ui:define> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextArea id="descricaoEvolucao" label="#{messages.LABEL_ANAMNESE_EVOLUCAO_DESCRICAO_EVOLUCAO}" style="resize:none;width:99%" cols="250" rows="7" readonly="true" value="#{visualizarEvolucoesPOLController.evolucao.descricao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_NOTAS_ADICIONAIS}"> 
+          <p:outputPanel id="panelNotasAdicionais" layout="block"> 
+            <p:outputPanel id="panelSemNotasAdicionais" layout="block" styleClass="div-alerta" rendered="#{empty visualizarEvolucoesPOLController.listarNotasAdicionais()}"> 
+              <h:outputText value="#{messages.MENSAGEM_SEM_NOTAS_ADICIONAIS} "/> 
+            </p:outputPanel>  
+            <p:outputPanel id="panelListaNotasAdicionais" rendered="#{not empty visualizarEvolucoesPOLController.listarNotasAdicionais()}" layout="inline"> 
+              <p:outputPanel style="max-height: 250px; overflow-y: auto;">  
+                <aghu:linha> 
+                  <mec:serverDataTable xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" id="listaNotasAdicionais" list="#{visualizarEvolucoesPOLController.listarNotasAdicionais()}" scrollable="true">  
+                    <c:set var="item" value="#{item}"/>
+                    <p:column sortBy="#{item.dthrCriacao}" sortable="true"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DATA_HORA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.dthrCriacao}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column id="descricao_#{itemRowKeyVar}" sortBy="#{item.descricao}" sortable="true"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NOTA_ADICIONAL}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{(item.descricao.length() &gt; 90) ? fn:substring(item.descricao,0,90) : item.descricao}"/>  
+                      <p:outputPanel rendered="#{item.descricao.length() &gt; 90}" layout="inline"> 
+                        <h:outputText value="..."/>  
+                        <p:tooltip for="descricao_#{itemRowKeyVar}" direction="bottom-right" style="width:60%;" layout="block"> 
+                          <h:outputText value="#{item.descricao}"/> 
+                        </p:tooltip> 
+                      </p:outputPanel> 
+                    </p:column>  
+                    <p:column sortBy="#{item.servidor.pessoaFisica.nome}" sortable="true"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PROFISSIONAL}"/> 
+                      </f:facet>  
+                      <h:outputText id="pessoa_#{itemRowKeyVar}" value="#{(item.servidor.pessoaFisica.nome.length() &gt; 30) ? fn:substring(item.servidor.pessoaFisica.nome,0,30) : item.servidor.pessoaFisica.nome}"/>  
+                      <p:outputPanel rendered="#{item.servidor.pessoaFisica.nome.length() &gt; 30}" layout="inline"> 
+                        <h:outputText value="..."/>  
+                        <p:tooltip for="pessoa_#{itemRowKeyVar}" direction="bottom-left" style="width:20%;" layout="block"> 
+                          <h:outputText value="#{item.servidor.pessoaFisica.nome}"/> 
+                        </p:tooltip> 
+                      </p:outputPanel> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao style="float:right"> 
+          <p:outputPanel id="panelBotoes" layout="inline"> 
+            <mec:commandButton id="btVisualizar" rendered="#{mf:hasPermission(securityController, 'imprimirAnamneseEvolucaoPOL, imprimir')}" disabled="#{empty visualizarEvolucoesPOLController.listaEvolucoesSelecionadas}" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" oncomplete="PF('modalVisualizarEvolucoesWG').show();;" profile="view" ajax="true"> </mec:commandButton>  
+            <mec:commandButton id="btImprimir" rendered="#{mf:hasPermission(securityController, 'imprimirAnamneseEvolucaoPOL, imprimir')}" disabled="#{empty visualizarEvolucoesPOLController.listaEvolucoesSelecionadas}" value="#{messages.LABEL_IMPRIMIR}" oncomplete="PF('modalImprimirEvolucoesWG').show();;" profile="print" ajax="true"> </mec:commandButton>  
+            <mec:commandButton id="bt_voltar" profile="back" action="#{visualizarEvolucoesPOLController.getVoltarPara}" value="#{messages.LABEL_VOLTAR}"/> 
+          </p:outputPanel> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelModalImprimirEvolucoes" ajaxRendered="true" layout="inline"> 
+        <p:dialog id="modalImprimirEvolucoes" height="150" width="400" autosized="true" modal="true" resizable="false" widgetVar="modalImprimirEvolucoesWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_AVISO}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <h:outputText value="#{visualizarEvolucoesPOLController.getMensagemTotalEvolucoesSelecionadas()}"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalImprimirEvolucoes"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" actionListener="#{visualizarEvolucoesPOLController.visualizarImpressaoEvolucoes()}" action="#{visualizarEvolucoesPOLController.imprimirEvolucoes()}" id="bt_evolucaoImprimir" profile="ok"></mec:commandButton>  
+              <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_NAO}" onclick="PF('modalImprimirEvolucoesWG').hide();" profile="cancel"></mec:commandButton> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelModalVisualizarEvolucoes" ajaxRendered="true" layout="inline"> 
+        <p:dialog id="modalVisualizarEvolucoes" height="150" width="400" autosized="true" modal="true" resizable="false" widgetVar="modalVisualizarEvolucoesWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_AVISO}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <h:outputText value="#{visualizarEvolucoesPOLController.getMensagemTotalEvolucoesSelecionadas()}"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalVisualizarEvolucoes"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" action="#{visualizarEvolucoesPOLController.visualizarImpressaoEvolucoes()}" id="bt_evolucaoVisualizar" profile="ok"></mec:commandButton>  
+              <mec:commandButton id="bt_cancelarVisualizar" value="#{messages.LABEL_NAO}" onclick="PF('modalVisualizarEvolucoesWG').hide();" profile="cancel"></mec:commandButton> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition>
+</html>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition>
+  <p:outputPanel id="panelPrescricaoNpt" layout="inline" >
+    <aghu:panelGeral id="geralPrescricaoNpt" legend="#{messages.LABEL_PRESCRICAO_NPT}">
+        <aghu:linha> 
+          <mec:inputText label="#{messages.LABEL_DESC_FORMULA_NPT}" 
+              	value="#{cadastroPrescricaoNptController.fnpSeq} - #{cadastroPrescricaoNptController.descricaoFormula}" 
+              	size="70" 
+              	maxlength="70" 
+              	style="text-transform:uppercase" 
+              	required="true" 
+              	readonly="true" 
+            	id="formula"/>
+            <aghu:acao newLine="false"> 
+            	<mec:commandButton id="bt_selecionar_formula"
+                	value="#{messages.LABEL_SELECIONA_FORMULA_NPT}" 
+                	action="#{cadastroPrescricaoNptController.selecionarFormula}" 
+                	process="@this"
+                	ajax="true"/>
+             </aghu:acao>
+        </aghu:linha> 
+        
+      <aghu:linha> 
+        <ui:fragment> 
+            <p:outputPanel id="panelTabelaComposicoes" layout="inline"> 
+              <mec:serverDataTable id="tabelaComposicoes" 
+              	rendered="#{cadastroPrescricaoNptController.composicoes != null and (not empty cadastroPrescricaoNptController.composicoes)}"
+              	controller="#{cadastroPrescricaoNptController}" 
+              	selection="composicaoSelecionada" 
+              	list="#{cadastroPrescricaoNptController.composicoes}"> 
+                
+                <c:set var="composicao" value="#{item}"/>
+              	<p:ajax event="rowSelect"
+				update="@(#panelTabelaComponentes) @(#panelTabelaComposicoes) @(#corpoPagina)">
+					<f:setPropertyActionListener target="#{cadastroPrescricaoNptController.composicaoSelecionada}" value="#{composicao}" for="command"/>
+				</p:ajax>
+                <p:column style="width:30px; white-space:nowrap; !important;">
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COD_NPT}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{composicao.ticSeq}"/> 
+                </p:column>
+                 
+                <p:column style="width:75%; white-space:nowrap; !important;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COMP_NPT}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{composicao.composicaoDescricao}"/> 
+                </p:column>
+                
+                <p:column style="text-align:center; width:15px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_VELOCIDADE_NPT}"/> 
+                      </f:facet>
+
+  					<p:inputText id="velocidade" 
+ 							onfocus="trimDecimalPlace(this);"
+ 							onchange="trimDecimalPlace(this);"
+							value="#{composicao.velocidadeAdministracao}" 
+							disabled="#{cadastroPrescricaoNptController.isFormulaPadrao}"
+							size="11" maxlength="5">
+							<f:converter converterId="velocidadeNtpConverter"/> 
+							<pe:keyFilter preventPaste="true" regEx="/[\d\,]/"/>
+							<p:ajax event="blur" listener="#{cadastroPrescricaoNptController.popularNodo}" bypassUpdates="false" 
+							update="@(#panelTabelaComponentes) @(#panelTabelaComposicoes) @(#corpoPagina)"/>
+					</p:inputText>                     
+    
+                    </p:column>
+                    
+                    <p:column style="text-align:center; width:15px%;"> 
+	                  <f:facet name="header"> 
+	                    <h:outputText value="#{messages.LABEL_UNIDADE_NPT}"/> 
+	                  </f:facet>  
+	                  <h:outputText value="#{composicao.unidade}"/>
+	               </p:column>
+              </mec:serverDataTable> 
+              <br clear="none" />
+            </p:outputPanel>
+            <!-- Componentes -->
+            <p:outputPanel id="panelTabelaComponentes" layout="inline"> 
+              <mec:serverDataTable id="tabelaComponentes"  scrollHeight="500" rendered="#{cadastroPrescricaoNptController.componentes != null and (not empty cadastroPrescricaoNptController.componentes)}" controller="#{cadastroPrescricaoNptController}" list="#{cadastroPrescricaoNptController.componentes}"> 
+                <c:set var="item" value="#{item}"/>  	
+                <p:column style="width:5px; white-space:nowrap; !important;">
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COD_NPT}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.cnpMedMatCodigo}"/>
+                </p:column>
+                 
+                <p:column style="width:75%; white-space:nowrap; !important;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COMPONENTE_NPT}"/>
+                  </f:facet>  
+                  <h:outputText value="#{item.descricaoComponente}"/>
+                </p:column>
+                
+                <p:column style="text-align:center; width:5px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_QTD_PRESCRITA_NPT}"/> 
+                      </f:facet>
+								
+						<p:inputText id="qtdPrescrita" 
+ 							onfocus="trimDecimalPlace(this);"
+ 							onchange="trimDecimalPlace(this);"
+							value="#{item.qtdePrescrita}" 
+							disabled="#{cadastroPrescricaoNptController.isFormulaPadrao}"
+							size="14" maxlength="14">
+							<f:converter converterId="quantidadeNtpConverter"/> 
+							<pe:keyFilter preventPaste="true" regEx="/[\d\,]/"/>							
+							<p:ajax event="blur" listener="#{cadastroPrescricaoNptController.popularNodo}" bypassUpdates="false" 
+							update="@(#panelTabelaComponentes) @(#panelTabelaComposicoes) @(#corpoPagina)"/>
+						</p:inputText> 
+							
+					</p:column>
+                    
+                    <p:column style="text-align:center; width:10px;"> 
+	                  <f:facet name="header"> 
+	                    <h:outputText value="#{messages.LABEL_UNIDADE_NPT}"/> 
+	                  </f:facet>  
+	                  <h:outputText value="#{item.unidadeComponente}"/>
+	               </p:column>
+              </mec:serverDataTable> 
+            </p:outputPanel>
+        </ui:fragment> 
+      </aghu:linha>
+    </aghu:panelGeral>
+    </p:outputPanel> 
+  </ui:composition> 
+</html>

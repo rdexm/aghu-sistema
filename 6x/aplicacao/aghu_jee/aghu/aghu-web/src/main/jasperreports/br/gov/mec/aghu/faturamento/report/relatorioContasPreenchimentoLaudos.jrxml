@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="relatorioContasPreenchimentoLaudos" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="840" leftMargin="1" rightMargin="1" topMargin="1" bottomMargin="20">
+	<property name="ireport.zoom" value="1.5026296018031553"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="nomeHospital" class="java.lang.String"/>
+	<parameter name="dtUltimaPrevia" class="java.util.Date"/>
+	<parameter name="descUnf" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select
+	cth.seq as conta,
+	pac.nome as paciente,
+        pac.codigo as codPaciente,
+	pac.prontuario	as prontuario,
+	cth.phi_seq_realizado as phiRealizado,
+	iph.cod_tabela as ssmRealizado,
+	iphs.cod_tabela as ssmSolicitado,
+	cth.usuario_previa as usuario,
+	ain.dthr_alta_medica as dtAlta,
+	(case when (
+		    (case when cth.valor_utie is not null then cth.valor_utie else 0 end) +
+		    (case when cth.valor_uti is not null then cth.valor_uti else 0 end)
+		   ) = 0 then
+			      null
+			 else
+			      'LU'
+	  end
+	) as uti,
+
+	(case when
+		(case when cth.diarias_acompanhante is not null then cth.diarias_acompanhante else 0 end)
+		 = 0 then
+		      null
+		 else
+		      'AC'
+	  end
+	) as acomp,
+
+	(case when iphs.cod_tabela = iph.cod_tabela then
+							null
+						    else
+							'MP'
+	  end
+	) as mproced,
+
+	(case when
+		(case when cth.dias_permanencia_maior is not null then cth.dias_permanencia_maior else 0 end)
+		 = 0 then
+		      null
+		 else
+		      'PM'
+	  end
+	) as pmaior,
+
+	(case
+	    (case when cth.ind_codigo_exclusao_critica is not null then cast(cth.ind_codigo_exclusao_critica as INTEGER) else 0 end)
+	    when 0 then null
+	    when 1 then 'p. menor'
+	    when 2 then 'id menor'
+	    when 3 then 'id maior'
+	    else null
+	  end
+
+	) as excluCrit,
+
+	(case when
+		(case when cth.cth_seq is not null then cth.cth_seq else 0 end)
+		 = 0 then
+		      null
+		 else
+		      '***'
+	  end
+	) as des,
+
+        ain.unf_seq as unfSeq    ,
+        ain.QRT_NUMERO as nrQuarto    ,
+        ain.LTO_LTO_ID as leitoId
+from
+	agh.aip_pacientes pac,
+	agh.agh_atendimentos atd,
+	agh.ain_internacoes ain,
+	agh.fat_contas_internacao  coi,
+	agh.fat_itens_proced_hospitalar iphs,
+	agh.fat_conv_grupo_itens_proced cgis,
+	agh.fat_itens_proced_hospitalar iph,
+	agh.fat_conv_grupo_itens_proced cgi,
+	agh.fat_contas_hospitalares cth
+where
+	cth.data_previa between
+	      to_date('01/03/2011 00:00', 'dd/mm/yyyy hh24:mi')
+  	  and to_date('01/03/2011 23:59','dd/mm/yyyy hh24:mi')
+	and cth.ind_situacao in ('E', 'F')
+	and cth.seq = coi.cth_seq
+	and coi.int_seq = atd.int_seq
+	and coi.int_seq = ain.seq
+	and cgi.phi_seq = cth.phi_seq_realizado
+	and cgis.phi_seq = cth.phi_seq
+	and cth.csp_cnv_codigo = 1
+	and iph.seq	= cgi.iph_seq
+	and iph.pho_seq = cgi.iph_pho_seq
+	and cgi.cpg_cph_csp_cnv_codigo = 1
+	and cgi.cpg_cph_csp_seq = 1
+	and cgi.iph_pho_seq	= 1
+	and iphs.seq	= cgis.iph_seq
+	and iphs.pho_seq = cgis.iph_pho_seq
+	and cgis.cpg_cph_csp_cnv_codigo = 1
+	and cgis.cpg_cph_csp_seq = 1
+	and cgis.iph_pho_seq	= 1
+	and pac.codigo = ain.pac_codigo
+
+	and (
+		(case when cth.diarias_acompanhante is not null then cth.diarias_acompanhante else 0 end) <> 0
+
+	      or (case when iphs.cod_tabela = iph.cod_tabela then 0 else 1 end) <> 0
+
+	      or (case when cth.dias_permanencia_maior is not null then cth.dias_permanencia_maior else 0 end) <> 0
+
+	      or (case when cth.ind_codigo_exclusao_critica is not null then cast(cth.ind_codigo_exclusao_critica as INTEGER) else 0 end) <> 0
+
+	      or ( (case when VALOR_UTI is not null then VALOR_UTI else 0 end)  +
+		   (case when VALOR_UTIE is not null then VALOR_UTIE else 0 end)
+		 ) > 0
+
+	    )
+order by 2,7]]>
+	</queryString>
+	<field name="codPaciente" class="java.lang.Integer">
+		<fieldDescription><![CDATA[codPaciente]]></fieldDescription>
+	</field>
+	<field name="des" class="java.lang.String">
+		<fieldDescription><![CDATA[des]]></fieldDescription>
+	</field>
+	<field name="pMaior" class="java.lang.String">
+		<fieldDescription><![CDATA[pMaior]]></fieldDescription>
+	</field>
+	<field name="phiRealizado" class="java.lang.Integer">
+		<fieldDescription><![CDATA[phiRealizado]]></fieldDescription>
+	</field>
+	<field name="mProced" class="java.lang.String">
+		<fieldDescription><![CDATA[mProced]]></fieldDescription>
+	</field>
+	<field name="dtAlta" class="java.util.Date">
+		<fieldDescription><![CDATA[dtAlta]]></fieldDescription>
+	</field>
+	<field name="unfSeq" class="java.lang.Short">
+		<fieldDescription><![CDATA[unfSeq]]></fieldDescription>
+	</field>
+	<field name="acomp" class="java.lang.String">
+		<fieldDescription><![CDATA[acomp]]></fieldDescription>
+	</field>
+	<field name="usuario" class="java.lang.String">
+		<fieldDescription><![CDATA[usuario]]></fieldDescription>
+	</field>
+	<field name="uti" class="java.lang.String">
+		<fieldDescription><![CDATA[uti]]></fieldDescription>
+	</field>
+	<field name="prontuario" class="java.lang.Integer">
+		<fieldDescription><![CDATA[prontuario]]></fieldDescription>
+	</field>
+	<field name="ssmSolicitado" class="java.lang.Long">
+		<fieldDescription><![CDATA[ssmSolicitado]]></fieldDescription>
+	</field>
+	<field name="conta" class="java.lang.Integer">
+		<fieldDescription><![CDATA[conta]]></fieldDescription>
+	</field>
+	<field name="paciente" class="java.lang.String">
+		<fieldDescription><![CDATA[paciente]]></fieldDescription>
+	</field>
+	<field name="excluCrit" class="java.lang.String">
+		<fieldDescription><![CDATA[excluCrit]]></fieldDescription>
+	</field>
+	<field name="ssmRealizado" class="java.lang.Long">
+		<fieldDescription><![CDATA[ssmRealizado]]></fieldDescription>
+	</field>
+	<field name="leitoId" class="java.lang.String">
+		<fieldDescription><![CDATA[leitoId]]></fieldDescription>
+	</field>
+	<variable name="countContas" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[$F{conta}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<group name="cabecalho" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupHeader>
+			<band height="19">
+				<line>
+					<reportElement x="585" y="16" width="42" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="12" y="0" width="57" height="15"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Prontuário]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="585" y="0" width="42" height="15"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Conta]]></text>
+				</staticText>
+				<line>
+					<reportElement x="12" y="16" width="57" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="529" y="0" width="50" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Alta Méd]]></text>
+				</staticText>
+				<line>
+					<reportElement x="529" y="16" width="50" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="130" y="0" width="195" height="15"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Paciente]]></text>
+				</staticText>
+				<line>
+					<reportElement x="130" y="16" width="195" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="331" y="0" width="55" height="15"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Realizado]]></text>
+				</staticText>
+				<line>
+					<reportElement x="331" y="16" width="55" height="1"/>
+				</line>
+				<line>
+					<reportElement x="392" y="16" width="55" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="392" y="0" width="55" height="15"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Solicitado]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="453" y="0" width="70" height="15"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Usuário]]></text>
+				</staticText>
+				<line>
+					<reportElement x="453" y="16" width="70" height="1"/>
+				</line>
+				<line>
+					<reportElement x="633" y="16" width="21" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="633" y="0" width="21" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[UTI]]></text>
+				</staticText>
+				<line>
+					<reportElement x="660" y="16" width="21" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="660" y="0" width="21" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[AC]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="714" y="0" width="21" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[PM]]></text>
+				</staticText>
+				<line>
+					<reportElement x="714" y="16" width="21" height="1"/>
+				</line>
+				<line>
+					<reportElement x="687" y="16" width="21" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="687" y="0" width="21" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[MP]]></text>
+				</staticText>
+				<line>
+					<reportElement x="741" y="16" width="59" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="806" y="0" width="21" height="15"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[DES]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="741" y="0" width="59" height="15"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[EC]]></text>
+				</staticText>
+				<line>
+					<reportElement x="806" y="16" width="21" height="1"/>
+				</line>
+				<line>
+					<reportElement x="74" y="16" width="50" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="74" y="0" width="50" height="15"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Código]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="21">
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="585" y="1" width="42" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{countContas}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="585" y="0" width="42" height="1"/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="42" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="12" y="10" width="687" height="12"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="9" isBold="true" isItalic="false" isStrikeThrough="false" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{nomeHospital}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH:mm">
+				<reportElement x="699" y="10" width="127" height="12"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="12" y="37" width="816" height="1"/>
+			</line>
+			<staticText>
+				<reportElement x="12" y="23" width="265" height="12"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Contas p/ preenchimento de laudos últ prévia em:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="277" y="23" width="72" height="12"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{dtUltimaPrevia}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement x="551" y="23" width="275" height="12"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{descUnf} != null ? $P{descUnf} : "Todas Unidades"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="12">
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="585" y="0" width="42" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{conta}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="529" y="0" width="50" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dtAlta}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="12" y="0" width="57" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{prontuario}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="130" y="0" width="195" height="11"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{paciente}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="331" y="0" width="55" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ssmRealizado}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="392" y="0" width="55" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ssmSolicitado}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="453" y="0" width="70" height="11"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{usuario}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="633" y="0" width="21" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uti}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="660" y="0" width="21" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{acomp}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="687" y="0" width="21" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{mProced}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="714" y="0" width="21" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pMaior}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="741" y="0" width="59" height="11"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{excluCrit}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="806" y="0" width="21" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{des}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="74" y="0" width="50" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{codPaciente}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="16" splitType="Stretch">
+			<staticText>
+				<reportElement x="14" y="3" width="80" height="11"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[FATR_LAUD_CONTAS]]></text>
+			</staticText>
+			<line>
+				<reportElement x="14" y="0" width="814" height="1"/>
+			</line>
+			<textField>
+				<reportElement x="707" y="3" width="80" height="11"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Página: "+$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="787" y="3" width="40" height="11"/>
+				<textElement>
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" / " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="94" y="3" width="613" height="11"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="7" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Lu=Laudo de UTI AC=Diária de Acompanhante MP=Mudança de Procedimento PM=Permanência Maior EC=Exclusão de Crítica]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

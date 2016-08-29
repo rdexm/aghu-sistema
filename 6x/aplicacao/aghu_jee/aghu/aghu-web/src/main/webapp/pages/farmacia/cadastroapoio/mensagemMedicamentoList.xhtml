@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_MENSAGEM_MEDICAMENTO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{mensagemMedicamentoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_MENSAGEM_MEDICAMENTO}"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_CODIGO}" size="3" maxlength="3" title="#{messages.TITLE_CODIGO_MENSAGEM_MEDICAMENTO}" value="#{mensagemMedicamentoPaginatorController.filtroSeq}" id="filtroSeq" converter="#{javax.faces.Integer}"/>  
+            <mec:inputText size="100" maxlength="2000" style="text-transform:uppercase" label="#{messages.LABEL_DESCRICAO}" value="#{mensagemMedicamentoPaginatorController.filtroDescricao}" title="#{messages.TITLE_PESQUISA_DESCRICAO_MENSAGEM_MEDICAMENTO}" id="filtroDescricao"/>  
+            <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_COEXISTENTE}" value="#{mensagemMedicamentoPaginatorController.filtroCoexistente}" title="#{messages.TITLE_PESQUISA_COEXISTENTE_MENSAGEM_MEDICAMENTO}" id="filtroCoexistente"/>  
+            <mec:selectOneMenu id="filtroSituacao" label="#{messages.LABEL_IND_SITUACAO}" title="#{messages.TITLE_PESQUISA_SITUACAO_MENSAGEM_MEDICAMENTO}" enum="DominioSituacao" value="#{mensagemMedicamentoPaginatorController.filtroSituacao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{mensagemMedicamentoPaginatorController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{mensagemMedicamentoPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" rendered="#{mensagemMedicamentoPaginatorController.dataModel.pesquisaAtiva}" action="#{mensagemMedicamentoPaginatorController.iniciarInclusao}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="resultados"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaMensagensMedicamento" controller="#{mensagemMedicamentoPaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaMensagensMedicamento_link_editar" profile="edit" title="editar" action="#{mensagemMedicamentoPaginatorController.editar}"> 
+              <f:setPropertyActionListener for="command" target="#{mensagemMedicamentoPaginatorController.mensagemMedicamentoSelecionado}" value="#{_item}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaMensagensMedicamento_link_remover" profile="delete" title="excluir" action="#{mensagemMedicamentoPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{mensagemMedicamentoPaginatorController.mensagemMedicamentoSelecionado}" value="#{_item}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.seq}"/> 
+          </p:column>  
+          <p:column style="width: 400px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{mensagemMedicamentoPaginatorController.obtemDescricaoReduzida(_item.descricao)}" title="#{_item.descricao}"/>                                
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COEXISTENTE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.coexistente ? 'Sim' : 'Não'}"/> 
+          </p:column>  
+          <p:column style="width:10%; white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.situacao.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CRIADO_EM}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.criadoEm}" isDate="true"> 
+              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column style="text-align: center;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_GRUPOS_MEDICAMENTOS}"/> 
+            </f:facet>  
+            <mec:commandLink action="#{mensagemMedicamentoPaginatorController.exibeGruposMedicamentosMensagem(_item)}" oncomplete="PF('gruposMedicamentosMensagemWG').show();;" styleClass="icon-medicamento silk-icon" ajax="true" render="gruposMedicamentosMensagem"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:dialog id="gruposMedicamentosMensagem" width="600" height="300" modal="true" resizable="false" widgetVar="gruposMedicamentosMensagemWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_GRUPOS_MEDICAMENTOS}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <aghu:linha style="width: 575px;"> 
+            <h:outputText value="#{messages.LABEL_NENHUM_GRUPO_MEDICAMENTO_ENCONTRADO}" rendered="#{empty mensagemMedicamentoPaginatorController.gruposMedicamentosMensagem}"/>  
+            <mec:serverDataTable style="width:450px;" tableStyle="width:450px" rendered="#{not empty mensagemMedicamentoPaginatorController.gruposMedicamentosMensagem}" list="#{mensagemMedicamentoPaginatorController.gruposMedicamentosMensagem}" scrollable="true"> 
+              <c:set var="_item" value="#{item}"/>  
+              <p:column style="width:20px"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.grupoMedicamento.seq}"/> 
+              </p:column>  
+              <p:column style="width:100px"> 
+                <f:facet name="header" > 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.grupoMedicamento.descricao}"/> 
+              </p:column>  
+              <p:column style="width:20px"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_IND_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.situacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+        </aghu:linha> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

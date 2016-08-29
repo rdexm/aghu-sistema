@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>Pesquisar Indicadores :: AGHU - MEC</title>
+		<style xml:space="preserve">
+.rich-table-subheadercell {
+	white-space: normal;
+}
+.ui-tooltip-content {
+    border-style: solid;
+    border-width: 1px;
+    overflow: hidden;
+    padding: 5px 9px;
+    position: fixed;
+    text-align: left;
+    word-wrap: break-word;
+}
+
+</style>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{pesquisaIndicadoresController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{pesquisaIndicadoresController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formPesquisa">
+			<p:outputPanel id="campos" layout="inline"
+				styleClass="aghu-panel-geral">
+				<aghu:panelGeral legend="Indicadores Hospitalares Geral">
+					<p:outputPanel id="tipoInd" layout="inline">
+						<aghu:linha>
+							<mec:selectOneMenu id="tipoIndicador" enum="DominioTipoIndicador"
+								required="true" label="#{messages.LABEL_TIPO}"
+								value="#{pesquisaIndicadoresController.tipoIndicador}"
+								title="Campo para selecionar o tipo de indicador."
+								actionBean="#{pesquisaIndicadoresController}"
+								ajaxAction="limparCampos" noSelectionOption="true"
+								reRender="areaFunc,datas,grid" />
+						</aghu:linha>
+					</p:outputPanel>
+					<p:outputPanel id="datas" layout="inline">
+						<aghu:linha>
+							<mec:inputMesAno
+								rendered="#{pesquisaIndicadoresController.tipoIndicador != 'G'}"
+								value="#{pesquisaIndicadoresController.mes}"
+								label="#{messages.LABEL_IND_HOSP_MES_COMPETENCIA}"
+								title="#{messages.TITLE_IND_HOSP_MES_COMPETENCIA}"
+								required="true" id="dataRef" />
+							<mec:inputMesAno
+								rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G'}"
+								value="#{pesquisaIndicadoresController.mes}"
+								label="#{messages.LABEL_IND_HOSP_MES_COMPETENCIA} de"
+								title="#{messages.TITLE_IND_HOSP_MES_COMPETENCIA}"
+								required="true" id="dataRefDe" />
+							<mec:inputMesAno
+								rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G'}"
+								value="#{pesquisaIndicadoresController.mesFim}"
+								label="#{messages.LABEL_IND_HOSP_MES_COMPETENCIA} até"
+								title="#{messages.TITLE_IND_HOSP_MES_COMPETENCIA}"
+								id="dataRefAte" />
+						</aghu:linha>
+					</p:outputPanel>
+					<p:outputPanel id="areaFunc" layout="inline">
+						<p:outputPanel id="areaFunc2"
+							rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}"
+							layout="inline">
+							<aghu:linha>
+								<mec:suggestionBox label="#{messages.LABEL_AREA_FUNCIONAL}"
+									title="#{messages.LABEL_AREA_FUNCIONAL}" descricaoInput="seq"
+									descricaoLabel="descricaoIg" size="40" maxlength="50"
+									suggestionAction="pesquisarAreasFuncionais" id="suggestionArea"
+									controller="#{pesquisaIndicadoresController}"
+									value="#{pesquisaIndicadoresController.unidadeFuncional}">
+									<p:column>
+										<h:outputText value="#{item.seq}" />
+									</p:column>
+									<p:column>
+										<h:outputText value="#{item.descricaoIg}" />
+									</p:column>
+								</mec:suggestionBox>
+							</aghu:linha>
+						</p:outputPanel>
+					</p:outputPanel>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<mec:commandButton id="bt_pesquisar"
+						value="#{messages.LABEL_PESQUISAR}" block="true"
+						action="#{pesquisaIndicadoresController.pesquisar}"
+						profile="search" />
+					<mec:commandButton id="bt_limparPesquisa"
+						value="#{messages.LABEL_LIMPAR}" immediate="true"
+						action="#{pesquisaIndicadoresController.limparPesquisa()}"
+						styleClass="bt_cinza" profile="clear" />
+				</aghu:acao>
+			</p:outputPanel>
+		</h:form>
+		<h:form prependId="false" id="resultados">
+			<p:outputPanel id="gridDecorate" layout="inline">
+				<p:outputPanel id="grid2Decorate"
+					rendered="#{pesquisaIndicadoresController.exibirGrid}"
+					layout="inline">
+					<mec:serverDataTable list="#{pesquisaIndicadoresController.res}"
+						scrollable="true">
+						<c:set var="_item" value="#{item}" />
+						<p:column
+							rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G'}">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_IND_HOSP_MES_COMPETENCIA}" />
+							</f:facet>
+							<h:outputText value="#{_item.competenciaInternacaoString}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column
+							rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U' or pesquisaIndicadoresController.tipoIndicador == 'C' or pesquisaIndicadoresController.tipoIndicador == 'E'}">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_AREA_FUNCIONAL}"
+									rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+								<h:outputText value="#{messages.LABEL_CLINICA}"
+									rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+								<h:outputText value="#{messages.LABEL_ESPECIALIDADE}"
+									rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+							</f:facet>
+							<h:outputText value="#{_item.unidadeFuncional.getDescricaoIg()}"
+								rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+							<h:outputText value="#{_item.clinica.getDescricao()}"
+								rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+							<h:outputText
+								value="#{_item.especialidade.getNomeEspecialidade()}"
+								rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+						</p:column>
+						<p:column id="tx_ocupacao"
+							rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G' or pesquisaIndicadoresController.tipoIndicador == 'U'}">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="tx_ocupacao" atPosition="bottom center" 
+										showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText value="#{messages.LABEL_FORMULA_TX_OCUPACAO}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_TX_OCUPACAO}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.taxaOcupacao != null ? _item.taxaOcupacao : 0}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column id="tx_mortalidade" headerClass="rich-table-subheadercell">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="tx_mortalidade" atPosition="bottom center" 
+									showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText value="#{messages.LABEL_FORMULA_TX_MORTALIDADE}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G'}" />
+										<h:outputText
+											value="#{messages.LABEL_FORMULA_TX_MORTALIDADE_AREA_FUNCIONAL}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+										<h:outputText
+											value="#{messages.LABEL_FORMULA_TX_MORTALIDADE_CLINICA}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+										<h:outputText
+											value="#{messages.LABEL_FORMULA_TX_MORTALIDADE_ESPECIALIDADE}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_TX_MORTALIDADE}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G'}" />
+									<h:outputText
+										value="#{messages.LABEL_TX_MORTALIDADE_AREA_FUNCIONAL}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+									<h:outputText value="#{messages.LABEL_TX_MORTALIDADE_CLINICA}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+									<h:outputText
+										value="#{messages.LABEL_TX_MORTALIDADE_ESPECIALIDADE}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.taxaMortalidade != null ? _item.taxaMortalidade : 0}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column headerClass="rich-table-subheadercell" id="media_permanencia">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="media_permanencia" atPosition="bottom center" 
+									showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText
+											value="#{messages.LABEL_FORMULA_MEDIA_PERMANENCIA}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G'}" />
+										<h:outputText
+											value="#{messages.LABEL_FORMULA_MEDIA_PERMANENCIA_AREA_FUNCIONAL}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+										<h:outputText
+											value="#{messages.LABEL_FORMULA_MEDIA_PERMANENCIA_CLINICA}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+										<h:outputText
+											value="#{messages.LABEL_FORMULA_MEDIA_PERMANENCIA_ESPECIALIDADE}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_MEDIA_PERMANENCIA}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G'}" />
+									<h:outputText
+										value="#{messages.LABEL_MEDIA_PERMANENCIA_AREA_FUNCIONAL}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+									<h:outputText
+										value="#{messages.LABEL_MEDIA_PERMANENCIA_CLINICA}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+									<h:outputText
+										value="#{messages.LABEL_MEDIA_PERMANENCIA_ESPECIALIDADE}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.mediaPermanencia != null ? _item.mediaPermanencia : 0}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column id="paciente_dia">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="paciente_dia" atPosition="bottom center" 
+										showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText value="#{messages.TITLE_PACIENTE_DIA}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_PACIENTE_DIA}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.quantidadePaciente != null ? _item.quantidadePaciente : 0}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column id="qt_obito">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="qt_obito" atPosition="bottom center" 
+										showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText value="#{messages.TITLE_QT_OBITO}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_QT_OBITO}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.quantidadeObito != null ? _item.quantidadeObito : 0}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column id="leito_dia"
+							rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G' or pesquisaIndicadoresController.tipoIndicador == 'U'}">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="leito_dia" atPosition="bottom center" 
+										showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText value="#{messages.TITLE_LEITO_DIA}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_LEITO_DIA}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.leitoDia != null ? _item.leitoDia : 0}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column id="cap_instalada"
+							rendered="#{pesquisaIndicadoresController.tipoIndicador == 'G' or pesquisaIndicadoresController.tipoIndicador == 'U'}">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="cap_instalada" atPosition="bottom center" 
+										showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText value="#{messages.TITLE_CAP_INSTALADA}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_CAP_INSTALADA}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.capacidadeInstalada != null ? _item.capacidadeInstalada : 0}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column id="qt_saida">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="qt_saida" atPosition="bottom center" 
+										showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText value="#{messages.TITLE_QT_SAIDA}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_QT_SAIDA}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.totalSaidas != null ? _item.totalSaidas : 0}">
+								<f:convertNumber maxFractionDigits="2" />
+							</h:outputText>
+						</p:column>
+						<p:column id="qt_trans"
+							rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U' or pesquisaIndicadoresController.tipoIndicador == 'C' or pesquisaIndicadoresController.tipoIndicador == 'E'}">
+							<f:facet name="header">
+								<p:outputPanel layout="block">
+									<pe:tooltip for="qt_trans" atPosition="bottom center" 
+										showEffect="slideToggle" hideEffect="slideToggle" showDelay="0">
+										<h:outputText value="#{messages.TITLE_QT_TRANS_AREA_FUNC}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+										<h:outputText value="#{messages.TITLE_QT_TRANS_CLINICA}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+										<h:outputText value="#{messages.TITLE_QT_TRANS_ESPEC}"
+											rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+									</pe:tooltip>
+									<h:outputText value="#{messages.LABEL_QT_TRANS_AREA_FUNC}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+									<h:outputText value="#{messages.LABEL_QT_TRANS_CLINICA}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+									<h:outputText value="#{messages.LABEL_QT_TRANS_ESPEC}"
+										rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText
+								value="#{_item.quantidadeTransferenciaAreaFuncional != null ? _item.quantidadeTransferenciaAreaFuncional : 0}"
+								rendered="#{pesquisaIndicadoresController.tipoIndicador == 'U'}" />
+							<h:outputText
+								value="#{_item.quantidadeTransferenciaClinica != null ? _item.quantidadeTransferenciaClinica : 0}"
+								rendered="#{pesquisaIndicadoresController.tipoIndicador == 'C'}" />
+							<h:outputText
+								value="#{_item.quantidadeTransferenciaEspecialidade != null ? _item.quantidadeTransferenciaEspecialidade : 0}"
+								rendered="#{pesquisaIndicadoresController.tipoIndicador == 'E'}" />
+						</p:column>
+					</mec:serverDataTable>
+				</p:outputPanel>
+			</p:outputPanel>
+			<br clear="none" />
+			<br clear="none" />
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

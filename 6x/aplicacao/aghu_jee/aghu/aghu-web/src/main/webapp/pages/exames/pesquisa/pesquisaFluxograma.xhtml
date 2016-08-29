@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_FLUXOGRAMA}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaFluxogramaController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <pe:remoteCommand name="atualizarPanel" process="@this"> 
+          <pe:assignableParam name="var1" assignTo="#{pesquisaFluxogramaController.filtroAberto}"/> 
+        </pe:remoteCommand>  
+        <pe:remoteCommand name="atualizarPanelResult" process="@this"> 
+          <pe:assignableParam name="var1" assignTo="#{pesquisaFluxogramaController.resultAberto}"/> 
+        </pe:remoteCommand>  
+        <p:outputPanel id="mainPesquisa" layout="inline"> 
+           <p:accordionPanel id="togglePanelPesquisa" rendered="#{not pesquisaFluxogramaController.polPage}" style="margin: 5px 0px !important;" prependId="false" activeIndex="#{pesquisaFluxogramaController.openToggle}" > 
+             <p:ajax event="tabChange" immediate="true"  process="@this" listener="#{pesquisaFluxogramaController.colapsePanel}"/>  
+             <p:ajax event="tabClose" immediate="true"  process="@this" listener="#{pesquisaFluxogramaController.colapsePanel}"/>  
+            <p:tab title="#{messages.LABEL_CRITERIOS_DE_PESQUISA_FLUXOGRAMA}"> 
+              <aghu:panelGeral style="margin-top: 16px !important;" legend="#{messages.LABEL_FILTRO_DE_PESQUISA}"> 
+                <aghu:linha> 
+                  <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO_PAC}" title="#{messages.TITLE_PRONTUARIO_INTERNACAO}" value="#{pesquisaFluxogramaController.filtro.prontuarioPac}" size="11" maxlength="9" emptyStringToNullConverter="emptyStringToNullConverter" readonly="#{pesquisaFluxogramaController.inibeAlteracaoProntuario}" id="prontuarioPaciente" converter="#{prontuarioConverter}"/>  
+                  <mec:suggestionBox var="itemLeitoPac" itemValue="#{itemLeitoPac}" label="#{messages.LABEL_LEITO}" descricaoInput="leitoID" descricaoLabel="leitoID" suggestionAction="pesquisarLeito" title="Informe o leito para efetuar a pesquisa." readonly="#{pesquisaFluxogramaController.inibeAlteracaoProntuario}" id="leitoPac" controller="#{pesquisaFluxogramaController}" value="#{pesquisaFluxogramaController.filtro.leitoPac}"> 
+                    <p:column>#{itemLeitoPac.leitoID}</p:column> 
+                  </mec:suggestionBox>  
+                  <mec:inputNumero label="#{messages.LABEL_CONSULTA}" title="#{messages.TITLE_CONSULTA_PE}" maxlength="8" value="#{pesquisaFluxogramaController.filtro.consultaPac}" readonly="#{pesquisaFluxogramaController.inibeAlteracaoProntuario}" id="consulta"  thousandSeparator=""/>  
+                  <mec:suggestionBox var="itemSbEspecialidade" itemValue="#{itemSbEspecialidade}" label="#{messages.LABEL_ESPECIALIDADE_FLUXOGRAMA}" title="#{messages.TITLE_ESPECIALIDADE_FLUXOGRAMA}" suggestionAction="pesquisarEspecialidades" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" readonly="#{pesquisaFluxogramaController.inibeAlteracaoProntuario}" width="450" id="sbEspecialidade" controller="#{pesquisaFluxogramaController}" value="#{pesquisaFluxogramaController.filtro.especialidade}"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_SIGLA}</b> 
+                      </f:facet> #{itemSbEspecialidade.sigla}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_DESCRICAO}</b> 
+                      </f:facet> #{itemSbEspecialidade.nomeEspecialidade}
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </aghu:linha>  
+                <p:outputPanel layout="block" rendered="#{not empty pesquisaFluxogramaController.atendimento}"> 
+                  <aghu:linha> 
+                    <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" readonly="true" value="#{pesquisaFluxogramaController.atendimento.paciente.nome}" size="60" id="nomePaciente"/>  
+                    <mec:inputNumero label="#{messages.LABEL_IDADE}" readonly="true" size="10" value="#{pesquisaFluxogramaController.calculaIdadePacienteAnos()}" id="idade"/> 
+                  </aghu:linha> 
+                </p:outputPanel> 
+              </aghu:panelGeral> 
+            </p:tab> 
+          </p:accordionPanel> 
+        </p:outputPanel>  
+        <p:outputPanel id="botoes" layout="inline"> 
+          <aghu:acao> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" rendered="#{not pesquisaFluxogramaController.polPage}" disabled="#{pesquisaFluxogramaController.inibeAlteracaoProntuario}" action="#{pesquisaFluxogramaController.pesquisar}" render="panelMain" profile="search"/>  
+            <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" rendered="#{not pesquisaFluxogramaController.polPage}" disabled="#{pesquisaFluxogramaController.inibeAlteracaoProntuario}" action="#{pesquisaFluxogramaController.limparPesquisa}" render="panelMain,mainPesquisa" styleClass="bt_cinza" profile="clear"/>  
+            <mec:commandButton id="bt_visualiza_fluxograma" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" action="#{pesquisaFluxogramaController.print}" onclick="PF('loadDialogWG').show();" rendered="#{pesquisaFluxogramaController.isResultAberto()}" styleClass=" icon-see-print bt_cinza" profile="view"/>  
+            <mec:commandButton id="bt_imprime_fluxograma" value="#{messages.LABEL_IMPRIMIR}" rendered="#{pesquisaFluxogramaController.isResultAberto()}" disabled="#{not mf:hasPermission(securityController,'imprimirFluxogramaLaboratorial,pesquisar')}" action="#{pesquisaFluxogramaController.directPrint}" onclick="PF('loadDialogWG')" styleClass=" icon-print bt_cinza" profile="print" />  
+            <mec:commandButton value="#{messages.LABEL_CANCELAR_EXAMES}" action="#{pesquisaFluxogramaController.abrirCancelarExames}" rendered="#{not empty pesquisaFluxogramaController.soeSeq and pesquisaFluxogramaController.isResultAberto() and mf:hasPermission(securityController,'cancelarExamesResponsabilidadeSolicitante,pesquisar')}" styleClass="bt_cinza"> 
+              <f:setPropertyActionListener target="#{cancelarExamesResponsabilidadeSolicitanteController.soeSeq}" value="#{pesquisaFluxogramaController.soeSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{cancelarExamesResponsabilidadeSolicitanteController.voltarPara}" value="exames-pesquisaFluxograma" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{pesquisaFluxogramaController.voltar()}" rendered="#{pesquisaFluxogramaController.exibirBotaoVoltar}" styleClass=" alinha-direita bt_cinza" profile="back"/> 
+          </aghu:acao> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false"> 
+        <p:outputPanel id="panelMain" layout="inline"> 
+          <p:accordionPanel id="togglePanelResult" style="margin: 5px 0px !important;" rendered="#{not empty pesquisaFluxogramaController.dadosFluxograma}" prependId="false"> 
+            <p:tab title="#{messages.LABEL_FLUX_LABO} - #{pesquisaFluxogramaController.atendimento.paciente.nome}"> 
+              <fieldset style="margin-top: 15px;"> 
+                <mec:serverDataTable id="tblistaPacientes" list="#{pesquisaFluxogramaController.dadosFluxograma}" scrollable="true" scrollHeight="370"> 
+                  <c:set var="item" value="#{item}"/>    
+                  <p:column  style="width:80px; padding-left: 2px !important;"> 
+                  	<f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_EXAMES}"/> 
+                  	</f:facet>  
+                    <h:outputText value="#{item.nomeSumario}"/> 
+                  </p:column>  
+                  <c:forEach var="data" items="#{pesquisaFluxogramaController.datasExibicao}" varStatus="status">  
+                    	<p:column style="background-color:#{item != null ? pesquisaFluxogramaController.obterCorValor(item, data) : ''}"> 
+                  	<f:facet name="header"> 
+                         <h:outputText value="#{data}"> 
+                            <f:convertDateTime pattern="dd/MM HH:mm"/> 
+                         </h:outputText> 
+                  	</f:facet>  
+                      <h:outputText value="#{pesquisaFluxogramaController.getValorExameData(item, data).dataValor}" rendered="#{not pesquisaFluxogramaController.getValorExameData(item, data).possuiNotaAdicional}"/>  
+                      <mec:commandLink title="#{messages.LABEL_NOTA_ADICIONAL}" action="exames-resultadoNotaAdicional" rendered="#{pesquisaFluxogramaController.getValorExameData(item, data).possuiNotaAdicional}" styleClass=" silk-page-paste silk-icon"> 
+                        <f:setPropertyActionListener target="#{cadastroResultadosNotaAdicionalController.solicitacaoExameSeq}" value="#{pesquisaFluxogramaController.getValorExameData(item, data).soeSeq}" for="command"/>  
+                        <f:setPropertyActionListener target="#{cadastroResultadosNotaAdicionalController.itemSolicitacaoExameSeq}" value="#{pesquisaFluxogramaController.getValorExameData(item, data).iseSeqp}" for="command"/>  
+                        <f:setPropertyActionListener target="#{cadastroResultadosNotaAdicionalController.voltarPara}" value="exames-pesquisaFluxograma" for="command"/>  
+                      </mec:commandLink> 
+                    </p:column> 
+                  </c:forEach> 
+                </mec:serverDataTable> 
+              </fieldset> 
+            </p:tab> 
+          </p:accordionPanel> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaFluxogramaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="script">function sliderClick(sliderIndex) { setSliderPosAlta(sliderIndex); var tpArray = new Array(); tpArray[0] = "togglePanelPesquisa"; controlaSliderClick(sliderIndex, tpArray); }</ui:define> 
+  </ui:composition> 
+</html>

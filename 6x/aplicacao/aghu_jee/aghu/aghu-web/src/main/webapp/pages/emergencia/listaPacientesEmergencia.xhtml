@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PACIENTES_EMERGENCIA}</title>
+       <style xml:space="preserve">
+			.tbLegenda tr td {
+				background: url('../../resources/img/icons/bg_legenda.png') no-repeat
+				left center;
+				height: 21px;
+				padding: 0 1px 0 22px !important;
+			}
+			.spaces tr td {
+				padding-right: 5px !important;
+			}
+			td.agd-realizada {
+				background-color: #5cfff5 !important;
+			}			
+	</style> 
+    </ui:define>  
+    <ui:define name="metadata">
+      <f:metadata>
+        <f:viewAction action="#{listaPacientesEmergenciaPaginatorController.refreshPesquisar}"/>
+      </f:metadata>
+    </ui:define>
+    <ui:define name="body">
+    <p:outputPanel  id="paneljavaScript"> 
+      <script xml:space="preserve">
+	    	//<![CDATA[
+	    	    if('#{listaPacientesEmergenciaPaginatorController.integracaoAghWeb.urlAghWeb}'!= '') atender('#{listaPacientesEmergenciaPaginatorController.integracaoAghWeb.urlAghWeb}', '#{listaPacientesEmergenciaPaginatorController.integracaoAghWeb.parametros}', '#{listaPacientesEmergenciaPaginatorController.obterTokenUsuarioLogado()}', '#{listaPacientesEmergenciaPaginatorController.integracaoAghWeb.form}');
+	    	     
+	    		function atender(url, parametros, token, form) {
+	    	     	parametros += '+aghw_token=' + token;
+					abrirJanelaModal(url,{
+						parameters: {	
+							config: 'aghweb',
+							form: form,
+							otherparams: parametros
+						},
+						onClose: function() {
+						}
+					});
+				}
+        	// ]]>
+    	</script>  
+    	</p:outputPanel>
+      <mec:pageConfig controller="#{listaPacientesEmergenciaPaginatorController}" ignoreEnter="true"/>  
+      <ui:param name="jsExecutaSolicitarExamesAbaEmAtendimento" value="parent.tab.loadPage(window.name, '/aghu/pages/exames/solicitacao/solicitacaoExameCRUD.xhtml?atendimento=#{pacientesEmergenciaAbaEmAtendimentoController.ateSeq};matricula=#{pacientesEmergenciaAbaEmAtendimentoController.matricula};vinCodigo=#{pacientesEmergenciaAbaEmAtendimentoController.vinculo};voltarEmergencia=true;voltarPara=#{pacientesEmergenciaAbaEmAtendimentoController.getTelaOrigem()};abaOrigem=#{pacientesEmergenciaAbaEmAtendimentoController.getAbaOrigem()};pacCodigo=#{pacientesEmergenciaAbaEmAtendimentoController.pacCodigo};seqp=#{null};numeroConsulta=#{pacientesEmergenciaAbaEmAtendimentoController.numeroConsulta};paramCid=#{javax.enterprise.context.conversation.id};usuarioSolicitante=#{registrarGestacaoController.usuarioSolicitante}')"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PACIENTES_EMERGENCIA}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelUnidade" layout="inline"> 
+              <mec:suggestionBox id="unidade1" 
+              		label="#{messages.LABEL_UNIDADE_PAC_EMERG}" 
+              		title="#{messages.TITLE_UNIDADE_PAC_EMERG}" 
+              		descricaoInput="unfSeq" 
+              		descricaoLabel="descricao" 
+              		suggestionAction="pesquisarUnidadeFuncional" 
+              		posSelectionAction="posSelecionarUnidade" 
+              		posDeleteAction="posDeletarUnidade" 
+              		width="360" 
+              		controller="#{listaPacientesEmergenciaPaginatorController}" 
+              		value="#{listaPacientesEmergenciaPaginatorController.mamUnidAtendem}" 
+              		render="panelAbas"
+              		var="unidade"
+              		itemValue="#{unidade}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_UNID_CODIGO_PAC_EMERG}</b> 
+                  </f:facet> #{unidade.unfSeq}
+                </p:column>
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_UNID_DESCRICAO_PAC_EMERG}</b> 
+                  </f:facet> #{unidade.descricao}
+                </p:column>
+              </mec:suggestionBox>  
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha>
+	          <p:outputPanel id="panelAbas" layout="inline"> 
+	            <p:tabView id="tabPanelAbas" dynamic="true" activeIndex="#{listaPacientesEmergenciaPaginatorController.abaSelecionada}" prependId="false" style="float: left;">
+	           	 <p:ajax event="tabChange" listener="#{listaPacientesEmergenciaPaginatorController.tabChange}" update="@(#panelBotoesInferiores)" process="@this"/>
+	              <p:tab id="abaRecepcao" name="abaRecepcao" title="#{messages.LABEL_ABA_RECEPCAO_PAC_EMERG}"> 
+	                <ui:include src="/pages/emergencia/pacientesEmergenciaAbaRecepcao.xhtml"/> 
+	              </p:tab>  
+	              <p:tab id="abaAcolhimento" name="abaAcolhimento" disabled="#{!listaPacientesEmergenciaPaginatorController.permConsultarAcolhimento}" action="#{listaPacientesEmergenciaPaginatorController.pesquisarPacientesAcolhimento}" reRender="panelUnidade, panelBotoesInferiores" title="#{messages.LABEL_ABA_ACOLHIMENTO_PAC_EMERG}"> 
+	                <ui:include src="/pages/emergencia/pacientesEmergenciaAbaAcolhimento.xhtml"/> 
+	              </p:tab>
+	               
+	              <p:tab id="abaAguardando" name="abaAguardando" disabled="#{!listaPacientesEmergenciaPaginatorController.permListarPacientesAguardandoAtendimentoEmergencia}" action="#{listaPacientesEmergenciaPaginatorController.pesquisarPacientesAguardandoAtendimento}" reRender="panelUnidade, panelBotoesInferiores" title="#{messages.LABEL_ABA_AGUARDANDO_PAC_EMERG}"> 
+	                <ui:include src="/pages/emergencia/pacientesEmergenciaAbaAguardando.xhtml"/> 
+	              </p:tab>
+	                
+	              <p:tab id="abaEmAtendimento"
+	               name="abaEmAtendimento" 
+	               rendered="#{(listaPacientesEmergenciaPaginatorController.permEmergenciaObstetrica eq true and listaPacientesEmergenciaPaginatorController.permListarPacientesDoCentroObstetrico eq true) or listaPacientesEmergenciaPaginatorController.emergenciaCustom}" 
+	               action="#{pacientesEmergenciaAbaEmAtendimentoController.pesquisarPacientesEmAtendimento}" 
+	               reRender="panelUnidade, panelBotoesInferiores" title="#{messages.LABEL_ABA_EM_ATENDIMENTO_PAC_EMERG}">
+	                <ui:include src="/pages/emergencia/pacientesEmergenciaAbaEmAtendimento.xhtml"/> 
+	              </p:tab>  
+	              
+                  <p:tab id="abaAtendidos" name="abaAtendidos" disabled="#{!listaPacientesEmergenciaPaginatorController.permVisualizarPacientesAtendidos}" action="#{pacientesEmergenciaAbaAtendidosController.pesquisarPacientesAtendidos}" reRender="panelUnidade, panelBotoesInferiores" title="#{messages.LABEL_ABA_ATENDIDOS_PAC_EMERG}"> 
+	                <ui:include src="/pages/emergencia/pacientesEmergenciaAbaAtendidos.xhtml"/> 
+	              </p:tab> 
+	            </p:tabView> 
+	          </p:outputPanel>
+	      </aghu:linha> 
+          <p:outputPanel id="panelBotoesInferiores" layout="inline"> 
+            <aghu:acao> 
+                <mec:commandButton value="#{messages.LABEL_ATUALIZAR_PAC_EMERG}" id="bt_refresh" action="#{listaPacientesEmergenciaPaginatorController.refreshPesquisar}"
+               		style="background-image:url('../../resources/img/refresh.png') !important; background-repeat: no-repeat !important; background-position: 3px 2px !important; padding-left:15px" styleClass="bt_ok"></mec:commandButton>    
+              	<mec:commandButton id="bt_legenda" value="#{messages.LABEL_LEGENDA_PAC_EMERG_ACOLHIMENTO}" onclick="PF('modalLegendaGravidadeWG').show(); return false;" rendered="#{listaPacientesEmergenciaPaginatorController.abaSelecionada eq 1}"/>  
+              	<mec:commandButton id="bt_legendaAguardando" value="#{messages.LABEL_AGUARDANDO_EMERG_LEGENDA}" onclick="PF('modalAguardandoPacienteWG').show(); return false;" rendered="#{listaPacientesEmergenciaPaginatorController.abaSelecionada eq 2}"/>  
+              	<mec:commandButton id="bt_legendaEmAtendimento" value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO}" onclick="PF('modalLegendaEmAtendimentoWG').show(); return false;" rendered="#{listaPacientesEmergenciaPaginatorController.abaSelecionada eq 3}"/>  
+              	<mec:commandButton id="bt_legendaAtendidos" value="#{messages.LABEL_ABA_ATENDIDOS_LEGENDA}" onclick="PF('modalLegendaAtendidosWG').show(); return false;" rendered="#{listaPacientesEmergenciaPaginatorController.abaSelecionada eq 4}"/> 
+            </aghu:acao> 
+          </p:outputPanel>  
+          <!-- link para download automatico de relatorios - usado para implementacao de impressão no cliente -->  
+          <mec:commandLink id="downloadLinkRelatorio" action="#{sistemaImpressao.download}" immediate="true" rendered="#{sistemaImpressao.verificarDownloadRelatorio()}" style="display:none;"/> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <p:dialog id="modalLegendaGravidade" style="text-align:center;" height="300" width="340" closable="true" modal="true" resizable="false" widgetVar="modalLegendaGravidadeWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_ACOLHIMENTO}"/> 
+        </f:facet>  
+        <aghu:linha> 
+          <div style="text-align: -moz-center; margin: 15px auto 10px"> 
+            <aghu:panelGeral> 
+              <table class="tbLegenda spaces">
+              	<tr>
+					<td class="paciente-portador-gm" rowspan="1" colspan="1">
+						<h:outputText value="#{messages.LABEL_LEGENDA_GM_PAC_EMERG_ACOLHIMENTO}" />
+					</td>
+				</tr>
+				<tr>
+					<td class="paciente-transferido" rowspan="1" colspan="1">
+						<h:outputText value="#{messages.LABEL_LEGENDA_TRANSFERIDO_PAC_EMERG_ACOLHIMENTO}" />
+					</td>
+				</tr>
+              </table> 
+            </aghu:panelGeral> 
+          </div> 
+        </aghu:linha>  
+        <br clear="none"/> 
+      </p:dialog>  
+      <p:dialog id="modalAguardandoPaciente" 
+      		style="text-align:center;" 
+      		height="300" width="400" 
+      		autosized="true" 
+      		domElementAttachment="parent"
+      		modal="true" 
+      		resizable="false" 
+      		widgetVar="modalAguardandoPacienteWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_LEGENDA}"/> 
+        </f:facet>  
+        <aghu:linha> 
+          <div style="text-align: -moz-center; margin: 15px auto 10px"> 
+            <aghu:panelGeral> 
+              <table class="tbLegenda spaces">
+                <tr>
+                  <td class="paciente-portador-gm" rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.MODAL_AGUARDANDO_EMERG_LEGENDA}"/>
+                  </td>
+                </tr>
+              </table> 
+            </aghu:panelGeral> 
+          </div> 
+        </aghu:linha>  
+        <br clear="none"/> 
+      </p:dialog>  
+      <p:dialog id="modalLegendaEmAtendimento" 
+      		style="text-align:center;" 
+      		height="340" 
+      		width="450" 
+      		autosized="true" 
+      		domElementAttachment="parent" 
+      		modal="true" 
+      		resizable="false" 
+      		widgetVar="modalLegendaEmAtendimentoWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO}"/> 
+        </f:facet>  
+        <aghu:linha> 
+          <div style="text-align: -moz-center; margin: 15px auto 10px"> 
+            <aghu:panelGeral> 
+              <table width="380px" height="200" cellpadding="2" cellspacing="5">
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-incluir-gestacao silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_INCLUIR_GESTACAO}"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-imprimir-af silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_IMPRIMIR_ADMISSAO}"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-marcador-vermelho silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_VDRL}"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-paciente-projeto-pesquisa silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_EM_PROJETO_PESQUISA}"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-ficha-anestesia-concluida silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_ANESTESIA_VALIDADA}"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-ficha-anestesia-rascunho silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_RASCUNHO_FICHA}"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-ficha-anestesia-pendente silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_FICHA_PENDENTE}"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-assinatura-digital-pendente silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_PENDENCIA_ASSINATURA}"/>
+                  </td>
+                </tr>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-lista-atendimento-perinatologia silk-icon" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_LEGENDA_PAC_EMERG_EM_ATENDIMENTO_PACIENTE_MULTIRESISTENTE}"/>
+                  </td>
+                </tr>
+              </table> 
+            </aghu:panelGeral> 
+          </div> 
+        </aghu:linha>  
+        <br clear="none"/> 
+      </p:dialog>  
+      <p:dialog id="modalLegendaAtendidos" style="text-align:center;" height="300" width="450" autosized="true" domElementAttachment="parent" modal="true" resizable="false" widgetVar="modalLegendaAtendidosWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_ABA_ATENDIDOS_LEGENDA}"/> 
+         </f:facet> 
+        <aghu:linha> 
+          <div style="text-align: -moz-center; margin: 10px auto 10px"> 
+            <aghu:panelGeral> 
+              <table width="150px" cellpadding="2" cellspacing="5">
+                <tr>
+                  <td rowspan="1" colspan="1">
+                  	<h:form prependId="false">
+                    	<mec:commandLink styleClass="silk-icon silk-certificacao-digital" ajax="true"/>
+                    </h:form>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <h:outputText value="#{messages.LABEL_ABA_ATENDIDOS_LEGENDA_DESCRICAO}"/>
+                  </td>
+                </tr>
+              </table> 
+            </aghu:panelGeral> 
+          </div> 
+        </aghu:linha>  
+        <br clear="none"/> 
+      </p:dialog> 
+      
+       
+      <p:outputPanel id="panelResponsavelPaciente" layout="inline"> 
+        <p:dialog id="modalResponsavelPaciente" showWhenRendered="#{listaPacientesEmergenciaPaginatorController.exibirModalResponsavelPaciente}" height="150" width="480" autosized="true" domElementAttachment="parent" resizable="false" modal="true" widgetVar="modalResponsavelPacienteWG" closable="true"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.TITLE_MODAL_RESPONSAVEL_MENOR_CONTA}"/> 
+          </f:facet>  
+          <h:form prependId="false" id="formResponsavelPaciente">
+          	<aghu:linha> 
+	            <mec:inputText 
+	            	id="responsavel" 
+	            	maxlength="60" 
+	            	size="71" 
+	            	label="#{messages.LABEL_RESPONSAVEL_MENOR_CONTA}" 
+	            	title="#{messages.TITLE_RESPONSAVEL_MENOR_CONTA}" 
+	            	value="#{listaPacientesEmergenciaPaginatorController.nomeResponsavel}" 
+	            	style="text-transform:uppercase" 
+	            	required="#{listaPacientesEmergenciaPaginatorController.exibirModalResponsavelPaciente}"> 
+	              	<p:ajax event="change" process="@this"/> 
+	            </mec:inputText>
+            </aghu:linha>
+            <aghu:linha></aghu:linha>
+            <aghu:acao> 
+              <mec:commandButton 
+           			id="bt_gravar_modal_responsavel" 
+           			value="#{messages.LABEL_GRAVAR}" 
+           			action="#{listaPacientesEmergenciaPaginatorController.encaminharParaAcolhimento}" 
+           			oncomplete="PF('modalResponsavelPacienteWG').hide();" 
+           			profile="ok" ajax="true" 
+           			render="panelUnidade, tabPanelAbas, bt_refresh, bt_gravar_modal_responsavel" 
+           			process="@this"> 
+                	<f:setPropertyActionListener target="#{listaPacientesEmergenciaPaginatorController.validarExibirModalResponsavelPaciente}" value="false" for="command"/>  
+              </mec:commandButton>  
+              
+              <mec:commandButton
+              		id="bt_cancelar_modal_responsavel" 
+              		immediate="true" value="#{messages.LABEL_CANCELAR}" 
+              		oncomplete="PF('modalResponsavelPacienteWG').hide();" 
+              		profile="cancel" 
+              		ajax="true">
+              		<f:setPropertyActionListener target="#{listaPacientesEmergenciaPaginatorController.validarExibirModalResponsavelPaciente}" value="false" for="command"/>
+              </mec:commandButton> 
+            </aghu:acao>
+          </h:form> 
+        </p:dialog> 
+      </p:outputPanel>
+      
+        
+      <p:outputPanel id="panelModalAtendidos" layout="inline"> 
+        <p:dialog id="modalAtendidos" showWhenRendered="#{pacientesEmergenciaAbaAtendidosController.habilitaBotaoOkModal or pacientesEmergenciaAbaAtendidosController.habilitaBotaoSimNaoModal}" width="400" autosized="true" modal="true" resizable="false" widgetVar="modalAtendidosWG">#{pacientesEmergenciaAbaAtendidosController.mensagemModal} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalAtendidos"> 
+              <mec:commandButton id="bt_sim_modal" value="#{messages.LABEL_SIM}" rendered="#{pacientesEmergenciaAbaAtendidosController.habilitaBotaoSimNaoModal}" status="commonstatus" action="#{pacientesEmergenciaAbaAtendidosController.desbloqueioSumarioAlta}" profile="search"></mec:commandButton>  
+              <mec:commandButton id="bt_nao_modal" value="#{messages.LABEL_NAO}" rendered="#{pacientesEmergenciaAbaAtendidosController.habilitaBotaoSimNaoModal}" action="#{pacientesEmergenciaAbaAtendidosController.limpaModal}" immediate="true" oncomplete="PF('modalAtendidosWG').show();" profile="cancel" ajax="true" process="@this"></mec:commandButton>  
+              <mec:commandButton id="bt_ok_modal" value="#{messages.LABEL_OK}" rendered="#{pacientesEmergenciaAbaAtendidosController.habilitaBotaoOkModal}" status="commonstatus" action="#{pacientesEmergenciaAbaAtendidosController.desbloqueioSumarioAlta}" profile="search"></mec:commandButton> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelModalAutenticacaoSolicitarExames" layout="inline">
+			<p:dialog
+				id="modalAutenticacaoSolicitarExamesAbaEmAtendimento"
+				controller="#{pacientesEmergenciaAbaEmAtendimentoController}"
+				value="servidorIdVO"
+				nextAction="verificarPermissaoParaSolicitarExames"
+				reRender="Messages, panelModalAutenticacaoSolicitarExames"
+				rendered="#{pacientesEmergenciaAbaEmAtendimentoController.exibeModalAutenticacao}"
+				oncomplete="#{not facesContext.isValidationFailed() ? jsExecutaSolicitarExamesAbaEmAtendimento : ''}"
+				validarSenha="false"
+				widgetVar="modalAutenticacaoSolicitarExamesAbaEmAtendimentoWG" />
+		</p:outputPanel> 
+    </ui:define>
+  </ui:composition>
+</html>

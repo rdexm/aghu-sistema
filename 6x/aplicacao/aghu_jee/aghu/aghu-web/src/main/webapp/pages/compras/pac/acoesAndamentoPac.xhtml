@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PESQUISAR_FASES_SOLICITACAO_COMPRA} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{acoesAndamentoPacController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{acoesAndamentoPacController}" />
+		<p:outputPanel id="corpoPagina" layout="inline">
+			<h:form prependId="false">
+				<aghu:panelGeral legend="#{messages.TITLE_ACOES_PONTO_PARADA}">
+					<aghu:linha>
+						<mec:inputNumero id="nfPacId"
+							label="#{messages.LABEL_CODIGO_LICITACAO}"
+							title="#{messages.TITLE_CODIGO_LICITACAO}"
+							value="#{acoesAndamentoPacController.numeroPac}" size="10"
+							maxlength="7" required="true" readonly="true" />
+						<mec:inputText id="localizacaoAndamento"
+							label="#{messages.LABEL_LOCALIZACAO_ANDAMENTO_PAC}"
+							title="#{messages.LABEL_LOCALIZACAO_ANDAMENTO_PAC}"
+							value="#{acoesAndamentoPacController.localizacaoPac.descricao}"
+							maxlength="30" size="30" style="text-transform:uppercase"
+							readonly="true" />
+						<mec:inputText id="responsavelEncaminhamento"
+							label="#{messages.LABEL_RESPONSAVEL_ENCAMINHAMENTO_FSC}"
+							title="#{messages.LABEL_RESPONSAVEL_ENCAMINHAMENTO_FSC}"
+							value="#{acoesAndamentoPacController.responsavel}" maxlength="60"
+							size="60" style="text-transform:uppercase" readonly="true" />
+						<mec:inputText id="data_entrada"
+							label="#{messages.LABEL_DT_ENTRADA_ANDAMENTO_PAC}"
+							title="#{messages.LABEL_DT_ENTRADA_ANDAMENTO_PAC}"
+							datePattern="dd/MM/yyyy HH:mm"
+							value="#{acoesAndamentoPacController.dataEntrada}"
+							readonly="true" />
+						<mec:inputText id="data_saida"
+							label="#{messages.LABEL_DT_SAIDA_ANDAMENTO_PAC}"
+							title="#{messages.LABEL_DT_SAIDA_ANDAMENTO_PAC}"
+							datePattern="dd/MM/yyyy HH:mm"
+							value="#{acoesAndamentoPacController.dataSaida}" readonly="true" />
+					</aghu:linha>
+					<aghu:linha>
+						<p:outputPanel id="panelEdicao"
+							rendered="#{acoesAndamentoPacController.modoEdicao}"
+							layout="inline">
+								<mec:inputText id="textoAcao"
+									value="#{acoesAndamentoPacController.textoAcao}"
+									label="#{messages.LABEL_ACAO_PONTO_PARADA}"
+									title="#{messages.TITLE_ACAO_PONTO_PARADA}" maxlength="500"
+									size="60" removerCaratersEspeciais="false" required="true"
+									panelView="true" />
+								<mec:commandButton id="bt_adicionar"
+									style="vertical-align:-22px;"
+									action="#{acoesAndamentoPacController.atualizarAcao()}"
+									value="#{acoesAndamentoPacController.itemEmEdicao == null ? messages.LABEL_ADICIONAR : messages.LABEL_ALTERAR}"
+									ajax="true"
+									render="panelEdicao, panelTabela,panelNaoLocalizado,tblistaHistorico"
+									styleClass="bt_cinza" />
+								<mec:commandButton id="flux_cnc" style="vertical-align:-22px;"
+									immediate="true" eventsQueue="cancelQueue"
+									action="#{acoesAndamentoPacController.cancelarEdicao()}"
+									value="#{messages.LABEL_CNC_ED}"
+									rendered="#{acoesAndamentoPacController.itemEmEdicao == null ? false : true}"
+									styleClass="bt_cancel_edit bt_cinza" ajax="true"
+									render="panelEdicao, panelTabela" process="@this" />
+						</p:outputPanel>
+					</aghu:linha>
+				</aghu:panelGeral>
+				<p:outputPanel id="panelTabela" layout="inline">
+					<p:outputPanel id="paneltblistaHistorico"
+						rendered="#{not empty acoesAndamentoPacController.listHistoricoFases}"
+						layout="inline" styleClass="aghu-panel-geral">
+						<aghu:panelGeral legend="#{messages.TITLE_HISTORICO_APP}">
+							<aghu:linha>
+								<mec:serverDataTable id="tblistaHistorico"
+									list="#{acoesAndamentoPacController.listHistoricoFases}"
+									scrollable="false">
+									<c:set var="historico" value="#{item}" />
+									<p:column rendered="#{acoesAndamentoPacController.modoEdicao}"
+										style="height:28px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACAO}" />
+										</f:facet>
+										<mec:commandLink id="editLink"
+											action="#{acoesAndamentoPacController.editarAcao(historico)}"
+											title="#{messages.LABEL_EDITAR}" eventsQueue="changeQueue"
+											rendered="#{not acoesAndamentoPacController.itemEmEdicao.seq.equals(historico.seq) and acoesAndamentoPacController.seqPrimeiroRegistro.equals(historico.seq)}"
+											profile="edit" ajax="true"
+											render="panelEdicao, tblistaHistorico" process="@this" />
+										<mec:commandLink id="deleteButton"
+											rendered="#{acoesAndamentoPacController.seqPrimeiroRegistro.equals(historico.seq)}"
+											oncomplete="PF('modalConfirmacaoExclusaoItemWG').show();;"
+											styleClass="silk-icon silk-delete" ajax="true" render="panelModalExcluirItem"
+											process="@this">
+											<f:setPropertyActionListener
+												target="#{acoesAndamentoPacController.seqExclusao}"
+												value="#{historico.seq}" for="command" />
+										</mec:commandLink>
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_DATA_FSC}" />
+										</f:facet>
+										<h:outputText value="#{historico.dataAcao}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+										</h:outputText>
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_RESPONSAVEL_FSC}" />
+										</f:facet>
+										<h:outputText value="#{historico.servidor.pessoaFisica.nome}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACAO}" />
+										</f:facet>
+										<h:outputText
+											value="#{(historico.acao.length() &gt; 80) ? fn:substring(historico.acao,0,80) : historico.acao} #{(historico.acao.length() &gt; 80) ? '...' : ''}" />
+										<p:tooltip rendered="#{historico.acao.length() &gt; 80}"
+											style="width: 300px; word-wrap: break-word;"
+											direction="bottom-right" styleClass="tooltip" layout="block">
+											<h:outputText value="#{historico.acao}" />
+										</p:tooltip>
+									</p:column>
+								</mec:serverDataTable>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</p:outputPanel>
+				</p:outputPanel>
+				<br clear="none" />
+				
+				<aghu:acao>
+					<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+						action="#{acoesAndamentoPacController.voltar}" immediate="true"
+						ajax="true" styleClass="bt_cinza" profile="back" />
+				</aghu:acao>
+				
+			</h:form>
+			
+			<p:outputPanel id="panelModalExcluirItem" layout="inline">
+				<p:dialog id="modalConfirmacaoExclusaoItem" width="420" height="150"
+					modal="true" resizable="false"
+					widgetVar="modalConfirmacaoExclusaoItemWG">
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="#{messages.LABEL_EXCLUIR}" />
+						</h:panelGroup>
+					</f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+            		<br clear="none" />
+					<br clear="none" />
+					<br clear="none" />
+					<h:panelGroup>
+						<h:form prependId="false" id="formExclusaoItemModal">
+							<mec:commandButton value="#{messages.LABEL_SIM}"
+								id="bt_edsimitem"
+								action="#{acoesAndamentoPacController.removerAcao}"
+								oncomplete="PF('modalConfirmacaoExclusaoItemWG').hide();"
+								profile="search" />
+							<mec:commandButton id="bt_ednaoexcluiitem"
+								value="#{messages.LABEL_NAO}"
+								action="#{acoesAndamentoPacController.setMostraModalExclusaoItem(false)}"
+								oncomplete="PF('modalConfirmacaoExclusaoItemWG').hide();"
+								profile="cancel" ajax="true" />
+						</h:form>
+					</h:panelGroup>
+				</p:dialog>
+			</p:outputPanel>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

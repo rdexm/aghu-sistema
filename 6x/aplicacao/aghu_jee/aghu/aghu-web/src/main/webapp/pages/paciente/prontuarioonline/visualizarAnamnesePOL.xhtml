@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+xmlns:p="http://primefaces.org/ui" 
+xmlns:pe="http://primefaces.org/ui/extensions" 
+xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+xmlns:f="http://xmlns.jcp.org/jsf/core" 
+xmlns:h="http://xmlns.jcp.org/jsf/html" 
+xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+xmlns:mf="http://www.mec.gov.br/taglib">
+
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_VISUALIZAR_ANAMNESE} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{visualizarAnamnesePOLController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{visualizarAnamnesePOLController}" />
+      <ui:include src="/pages/prescricaomedica/anamneseevolucao/cabecalhoAnamneseEvolucao.xhtml"/>  
+      <h:form prependId="false" id="formVisualizarAnamnesePOL"> 
+        <aghu:panelGeral legend="#{messages.LABEL_MANTER_ANAMNESE_PACIENTE_ATENDIMENTO_ANAMNESE}"> 
+          <aghu:linha layout="block"> 
+            <mec:inputTextArea id="descricaoAnamnese" cols="133" rows="11" styleClass="maxlength_(12000)" readonly="true" value="#{visualizarAnamnesePOLController.anamnese.descricao}"/> 
+          </aghu:linha>  
+          <aghu:linha style="padding-top:5px; padding-bottom:10px;"> 
+            <h:outputText value="#{messages.LABEL_CONCLUIDO_POR}:" style="margin-left:5px;" styleClass="fontCabecalho"/>  
+            <h:outputText value="#{visualizarAnamnesePOLController.anamnese.servidor.pessoaFisica.nome}" style="margin-left:5px;" styleClass="fontCabecalhoBold"/>  
+            <h:outputText value="#{messages.LABEL_DATA_HORA}:" style="margin-left:15px;" styleClass="fontCabecalho"/>  
+            <h:outputText value="#{visualizarAnamnesePOLController.anamnese.dthrAlteracao}" style="margin-left:5px;" styleClass="fontCabecalhoBold">
+            	<f:convertDateTime pattern="dd/MM/yyy HH:mm"/> 
+            </h:outputText> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_NOTAS_ADICIONAIS}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelNotasAdicionais" layout="block"> 
+              <p:outputPanel id="panelSemNotasAdicionais" layout="block" styleClass="div-alerta" rendered="#{empty visualizarAnamnesePOLController.listaNotasAdicionais}"> 
+                <h:outputText value="#{messages.MENSAGEM_SEM_NOTAS_ADICIONAIS} "/> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelListaNotasAdicionais" rendered="#{not empty visualizarAnamnesePOLController.listaNotasAdicionais}" layout="inline"> 
+                <div style="max-height: 250px; overflow-y: auto;">  
+                  <mec:serverDataTable xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" id="listaNotasAdicionais" list="#{visualizarAnamnesePOLController.listaNotasAdicionais}" scrollable="true">  
+                    <c:set var="_item" value="#{item}"/>
+                    <p:column sortBy="#{_item.dthrCriacao}" sortable="true"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DATA_HORA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.dthrCriacao}">
+                      	 <f:convertDateTime pattern="dd/MM/yyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column id="descricao_#{itemRowKeyVar}" sortBy="#{_item.descricao}" sortable="true"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NOTA_ADICIONAL}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{(_item.descricao.length() &gt; 90) ? fn:substring(_item.descricao,0,90) : _item.descricao}"/>  
+                      <p:outputPanel rendered="#{_item.descricao.length() &gt; 90}" layout="inline"> 
+                        <h:outputText value="..."/>  
+                        <p:tooltip for="descricao_#{itemRowKeyVar}" direction="bottom-right" style="width:60%;" layout="block"> 
+                          <h:outputText value="#{_item.descricao}"/> 
+                        </p:tooltip> 
+                      </p:outputPanel> 
+                    </p:column>  
+                    <p:column sortBy="#{_item.servidor.pessoaFisica.nome}" sortable="true"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PROFISSIONAL}"/> 
+                      </f:facet>  
+                      <h:outputText id="pessoa_#{itemRowKeyVar}" value="#{(_item.servidor.pessoaFisica.nome.length() &gt; 30) ? fn:substring(_item.servidor.pessoaFisica.nome,0,30) : _item.servidor.pessoaFisica.nome}"/>  
+                      <p:outputPanel rendered="#{_item.servidor.pessoaFisica.nome.length() &gt; 30}" layout="inline"> 
+                        <h:outputText value="..."/>  
+                        <p:tooltip for="pessoa_#{itemRowKeyVar}" direction="bottom-left" style="width:20%;" layout="block"> 
+                          <h:outputText value="#{_item.servidor.pessoaFisica.nome}"/> 
+                        </p:tooltip> 
+                      </p:outputPanel> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </div> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao style="float:right">
+				<mec:commandButton id="bt_print_buttonView"
+					value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+					rendered="#{mf:hasPermission(securityController, 'imprimirAnamneseEvolucaoPOL, imprimir')}"
+					action="#{visualizarAnamnesePOLController.visualizarImpressaoAnamnese()}" profile="view"/>
+				<mec:commandButton id="bt_print_buttonPrint"
+					rendered="#{mf:hasPermission(securityController, 'imprimirAnamneseEvolucaoPOL, imprimir')}"
+					value="#{messages.LABEL_IMPRIMIR}"
+					action="#{visualizarAnamnesePOLController.imprimirAnamnese()}" profile="print"/>
+				<mec:commandButton id="bt_voltar" profile="back" action="#{visualizarAnamnesePOLController.getVoltarPara}" value="#{messages.LABEL_VOLTAR}"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition>
+</html>

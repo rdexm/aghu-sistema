@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head"><title>#{messages.LEGENDA_PENDENCIAS_ASSINATURA}</title></ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{listarPendenciasAssinaturaPaginatorController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+
+	<ui:define name="body">
+		<mec:pageConfig	controller="#{listarPendenciasAssinaturaPaginatorController}" />
+
+		<h:form prependId="false" id="formListaPendenciasAssinaturas">
+
+			<pe:remoteCommand name="exibeMensagemSucesso"
+				actionListener="#{listarPendenciasAssinaturaPaginatorController.exibirMensagemSucessoAssinatura}" />
+
+			<aghu:panelGeral legend="#{messages.LEGENDA_PENDENCIAS_ASSINATURA}"
+				id="panelGeral">
+				<aghu:linha>
+					<p:outputPanel id="painelVinculoMatriculaSamis"
+						rendered="#{mf:hasPermission(securityController,'samisAssinaturaDigital,pesquisarDocumentosPendentes')}"
+						layout="inline">
+						
+						<p:outputPanel id="divVinculo" layout="inline">
+							<mec:inputNumero
+								value="#{listarPendenciasAssinaturaPaginatorController.vinCodigo}"
+								label="#{messages.LABEL_VINCULO}" size="13" maxlength="7"
+								title="#{messages.LABEL_VINCULO}" readonly="true" id="vinCodigo" />
+						</p:outputPanel>
+						
+						<mec:suggestionBox
+							id="suggestionMatricula" 
+						    label="#{messages.LABEL_MATRICULA}"
+							title="#{messages.TITLE_MATRICULA_DOCUMENTOS_PACIENTE}"
+							descricaoInput="id.matricula" 
+							descricaoLabel="pessoaFisica.nome"
+							suggestionAction="pesquisarServidorComCertificacaoDigital"
+							posSelectionAction="selecionouServidor"
+							posDeleteAction="limparDadosServidor" 
+							required="true"
+							controller="#{listarPendenciasAssinaturaPaginatorController}"
+							value="#{listarPendenciasAssinaturaPaginatorController.responsavel}"
+							render="@form">
+							<p:column>
+								<h:outputText value="#{item.id.matricula}" />
+							</p:column>
+							<p:column>
+								<h:outputText value="#{item.pessoaFisica.nome}" />
+							</p:column>
+						</mec:suggestionBox>
+					</p:outputPanel>
+					
+					<p:outputPanel id="painelVinculoMatriculaAssinatura"
+						rendered="#{mf:hasPermission(securityController,'assinaturaDigital,alterarContextoProfissional') and not mf:hasPermission(securityController,'samisAssinaturaDigital,pesquisarDocumentosPendentes')}"
+						layout="inline">
+						<mec:inputNumero
+							value="#{listarPendenciasAssinaturaPaginatorController.responsavel.id.vinCodigo}"
+							label="#{messages.LABEL_VINCULO}" size="13" maxlength="7"
+							title="#{messages.LABEL_VINCULO}" disabled="true" readonly="true"
+							id="vinCodigoAlt" />
+						<mec:inputNumero
+							value="#{listarPendenciasAssinaturaPaginatorController.responsavel.id.matricula}"
+							label="#{messages.LABEL_MATRICULA}" size="15"
+							title="#{messages.TITLE_MATRICULA}" disabled="true"
+							readonly="true" id="matricula" />
+						<p:outputPanel style="float:left; margin-top: 22px">
+							<h:outputText
+								value="#{listarPendenciasAssinaturaPaginatorController.responsavel.pessoaFisica.nome}"
+								style="font-size:10px; font-weight:bold;" />
+						</p:outputPanel>
+					</p:outputPanel>
+				</aghu:linha>
+				<p:outputPanel id="painelRadioPendencias"
+					rendered="#{listarPendenciasAssinaturaPaginatorController.pacCodigo != null}"
+					layout="inline">
+					<aghu:linha>
+					
+						<mec:selectOneRadio
+							value="#{listarPendenciasAssinaturaPaginatorController.tipo}" id="tipo">
+							<f:selectItem itemLabel="Meus documentos do paciente" itemValue="1" />
+							<f:selectItem itemLabel="Meus documentos" itemValue="2" />
+							<f:selectItem itemLabel="Documentos do paciente" itemValue="3" />
+							
+							<p:ajax event="change" process="@this" update="@(#formListaPendenciasAssinaturas)" listener="#{listarPendenciasAssinaturaPaginatorController.pesquisar}" />
+						</mec:selectOneRadio>
+						
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<p:outputPanel id="painelPesquisaSamis"
+					rendered="#{mf:hasPermission(securityController,'samisAssinaturaDigital,pesquisarDocumentosPendentes')}"
+					layout="inline">
+					
+					<mec:commandButton 
+					    id="pesquisar"
+						value="#{messages.LABEL_PESQUISAR}"
+						action="#{listarPendenciasAssinaturaPaginatorController.pesquisarComDefinicaoDeTipo}"
+						profile="search"/>
+						
+					<mec:commandButton 
+						id="bt_limparPesquisa"
+						value="#{messages.LABEL_LIMPAR}" 
+						immediate="true"
+						action="#{listarPendenciasAssinaturaPaginatorController.limparCampos}"
+						styleClass="bt_cinza"
+						profile="clear"
+						render="@(#tab1)" />
+						
+				</p:outputPanel>
+				<p:outputPanel id="painelPesquisaAssinatura"
+					rendered="#{listarPendenciasAssinaturaPaginatorController.voltarPara != null}"
+					layout="inline">
+					<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+						immediate="true"
+						action="#{listarPendenciasAssinaturaPaginatorController.voltarPesquisa}"
+						styleClass=" bt_voltar bt_cinza" profile="back" />
+				</p:outputPanel>
+				<br clear="none" />
+			</aghu:acao>
+			
+			<pe:remoteCommand name="renderDocOriginal" immediate="true"
+				actionListener="#{listarPendenciasAssinaturaPaginatorController.getRenderPdf }"
+				process="@this" update="@form">
+				<pe:assignableParam name="param1"
+					assignTo="#{listarPendenciasAssinaturaPaginatorController.seqAghVersaoDocumento}" />
+			</pe:remoteCommand>
+			
+			<pe:remoteCommand name="disableDocOriginal" immediate="true"
+				update="@(#tabs)"
+				actionListener="#{listarPendenciasAssinaturaPaginatorController.limparDocumentoOriginal}" />
+				
+			<p:outputPanel id="painelAppletCertificacao"
+				rendered="#{listarPendenciasAssinaturaPaginatorController.dataModel.pesquisaAtiva}"
+				layout="inline" styleClass="aghu-panel-geral">
+
+				<aghu:panelGeral id="fieldApplet"
+					legend="      Certificação Digital     ">
+
+					<applet name="signApplet" id="signApplet"
+						codebase="#{request.contextPath}/applet"
+						code="br.ufrgs.hcpa.crypto.applet.MainApplet5"
+						archive="crypto-applet.jar" width="800" height="35">
+						<param name="SERVICE_URL" value="#{facesContext.externalContext.requestScheme}://#{facesContext.externalContext.requestServerName}:#{facesContext.externalContext.requestServerPort}#{facesContext.externalContext.requestContextPath}/rs/assinaturaDigital"/>
+						<param name="SERVICE_CLASS" value="br.gov.mec.aghu.crypto.RESTInvocations" />
+						<param name="WRITE_LAST_LINE" value="true" />
+						<param name="RELOAD_PAGE" value="true" />
+						<param name="RELOAD_PAGE_FUNCTION" value="reloadApplet" />
+						<param name="USUARIO_LOGADO" value="#{listarPendenciasAssinaturaPaginatorController.obterUserLogado()}" />
+						<param name="VINCODIGO_RESPONSAVEL"
+							value="#{listarPendenciasAssinaturaPaginatorController.responsavel.id.vinCodigo}" />
+						<param name="MATRICULA_RESPONSAVEL"
+							value="#{listarPendenciasAssinaturaPaginatorController.responsavel.id.matricula}" />
+					</applet>
+				</aghu:panelGeral>
+				<p:outputPanel id="panelTabs" rendered="#{listarPendenciasAssinaturaPaginatorController.responsavel!=null}">
+					
+					<p:tabView 
+						id="tabs" 
+						immediate="true"
+						prependId="false"
+						activeIndex="#{listarPendenciasAssinaturaPaginatorController.selectedTab}">
+						
+						<p:ajax event="tabChange" listener="#{listarPendenciasAssinaturaPaginatorController.onTabChange}" update="@form" />
+						
+						<p:tab id="tab1"
+							title="#{messages.LEGENDA_PENDENCIAS_ASSINATURA}">
+							
+							<aghu:panelGeral id="painelTabsListaPendencias"
+								legend="#{listarPendenciasAssinaturaPaginatorController.tituloVisao}">
+								
+								<mec:serverDataTable 
+									dataModel="dataModel"
+									id="tabelaListaPendentes"
+									value="#{listarPendenciasAssinaturaPaginatorController}"																		
+									controller="#{listarPendenciasAssinaturaPaginatorController}">
+									
+									<c:set var="_documento" value="#{item}" />
+									
+									<p:column headerCustomizado="true" width="50px">
+					                    <f:facet name="header">
+					                    
+					                        <h:selectBooleanCheckbox 
+					                        	id="checkBoxTodos" 
+					                        	value="#{listarPendenciasAssinaturaPaginatorController.clicouCheckboxTodos}">
+					                        	
+					                        	<p:ajax 
+					                        		event="click" 
+					                        		update="@(#panelTabs) @(#tabs) @(#panelInternoCheckBox)" 
+					                        		process="@this" 
+					                        		oncomplete="setTodos(#{listarPendenciasAssinaturaPaginatorController.clicouCheckboxTodos})"
+					                        		listener="#{listarPendenciasAssinaturaPaginatorController.selecionaTodos}"/>
+					                        	
+					                        </h:selectBooleanCheckbox>
+					                    </f:facet>
+					                    
+					                    <p:outputPanel id="panelInternoCheckBox" style="text-align:center" layout="block">
+						                    <h:selectBooleanCheckbox onchange="toggleItem(this, #{_documento.seq});"
+						                    			value="#{_documento.selecionado}">
+						                    </h:selectBooleanCheckbox>
+                    					</p:outputPanel>
+					                    
+					                </p:column>
+					                
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+										</f:facet>
+										<h:outputText value="#{_documento.prontuario}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_NOME}" />
+										</f:facet>
+										<h:outputText value="#{_documento.nome}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_DOCUMENTO}" />
+										</f:facet>
+										<h:outputText
+											value="#{_documento.documento.getDescricao()}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_SITUACAO}" />
+										</f:facet>
+										<h:outputText
+											value="#{_documento.situacao.getDescricao()}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_CRIADO_EM}" />
+										</f:facet>
+										<h:outputText value="#{_documento.criadoEm}">
+											<f:convertDateTime pattern="dd/MM/yy HH:mm:ss" />
+										</h:outputText>
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_RESPONSAVEL}" />
+										</f:facet>
+										<h:outputText value="#{_documento.responsavel}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ORIGINAL}" />
+										</f:facet>
+
+										<p:outputPanel
+											rendered="#{mf:hasPermission(securityController,'samisAssinaturaDigital,visualizarDocumentoOriginal')}"
+											layout="inline">
+
+										    <p:commandLink 
+										    	id="linkDocumentoOriginal"
+										    	onclick="renderDocOriginal(#{_documento.seq});"
+										    	title="#{messages.LABEL_TOOLTIP_DOCUMENTO_ORIGINAL}" 
+										    	update="@(#panelTabs)" 
+										    	styleClass=" silk-doc-digital-pendente silk-icon" >
+										    </p:commandLink>
+ 
+										</p:outputPanel>
+									</p:column>
+								</mec:serverDataTable>
+								<aghu:linha style="clear:both">
+									<br clear="none" />
+									<mec:commandButton id="assinaBtn" value="Assinar Documentos" styleClass="assinaBtnClass"
+										onclick="if (todos) {setSelecionados(#{listarPendenciasAssinaturaPaginatorController.listSeqDocsMarcados})}; assinaMarcados();" profile="ok" ajax="true"
+										render="@(#tab1)" />
+								</aghu:linha>
+							</aghu:panelGeral>
+						</p:tab>
+
+						<p:tab id="tab2"
+							rendered="#{not empty listarPendenciasAssinaturaPaginatorController.seqAghVersaoDocumento}"
+							title="#{messages.TITLE_DOCUMENTO_ORIGINAL}">
+							
+							<p:outputPanel layout="block" style="text-align:center"
+								id="panelReport">
+
+								<p:media id="media" align="middle" width="760" height="820"
+									player="pdf"
+									value="#{listarPendenciasAssinaturaPaginatorController.getRenderPdf()}"
+									cache="false">
+									<f:param name="cid"
+										value="#{javax.enterprise.context.conversation.id}" />
+								</p:media>
+
+							</p:outputPanel>
+						</p:tab>
+
+					</p:tabView>
+				</p:outputPanel>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+
+	<ui:define name="script">//<![CDATA[
+	
+		selecionados = {};
+		todos = false;
+		function setTodos(t){
+			if (t){
+				selecionados = {};
+			}
+			todos = !t;
+		}
+		function setSelecionados(docs){
+			for(var p in docs){
+				this.selecionados[docs[p]] = true;
+			}
+		}
+		
+		function toggleItem(e, i){
+				console.log(e.checked);console.log(i);
+				if (e.checked){
+					this.selecionados[i] = true;
+				} else {
+					delete selecionados[i];
+				}
+		}
+		
+		selecionarAba = function(idxAba) {
+				jQuery("#tabs").tabs({ deselectable: true });
+				jQuery("#tabs").tabs( "option", "selected", idxAba );
+			}
+	
+		// JS -> Applet: Habilita botÃ£o para assinatura se estiver logado
+		function observer(){
+			var isLoggedOn = false;
+			var btn = jq('button#assinaBtn:button')
+
+			try{
+				isLoggedOn = eval(document.signApplet.isLoggedOn());
+			} catch(e){
+				return;
+			}
+			var marcados = jQuery('input[type="checkbox"]:checked'); 
+			if (isLoggedOn && marcados.length>0){
+                  //habilita botao
+				  //console.log('habilita botao');
+                  btn.removeAttr("readonly")
+				  btn.prop('disabled', false);
+			} else {
+                 // desabilita botao
+				 //console.log('desabilita botao');
+                 btn.attr('readonly', 'readonly');
+                 btn.attr('disabled', 'disabled');
+	        }
+		}
+		setInterval('observer()',2000);
+		
+		// JS -> Applet: Assina docs marcados
+		function assinaMarcados(){
+			try {
+				verificaEstado();
+			} catch(e){
+				return;
+			}
+
+			// array de todos os checkbox marcados
+			
+			
+			
+			//var marcados = jQuery('input[type="checkbox"]:checked'); 
+			
+			var keys = "";
+			if (selecionados.length==0){
+				alert('Marque os documentos que deseja assinar.');
+				return;
+			}
+			location.href="#applet";
+			var count = 0;
+
+			for(var p in selecionados){
+				console.log("loop "+p);
+				keys += p;
+				keys += ",";
+			}
+
+			if (keys.lastIndexOf(',') > 0) {
+				keys=keys.substring(0,keys.lastIndexOf(',')) 
+			}
+
+			try {
+			  //var params = new java.lang.String(keys);
+ 			  console.log("keys="+keys);
+			  document.signApplet.sign(keys);
+		  	//  document.signApplet.sign(params);
+			} catch(e){
+				e.printStackTrace();
+				alert("Erro na assinatura de documentos. " 
+						+ "\n message:" + e.message 
+						+ "\n fileName:" + e.fileName
+						+ "\n lineNumber:" + e.lineNumber
+						+ "\n name:" + e.name
+						+ "\n stack:" + e.stack);
+				return;
+			}
+		
+
+				 
+			reloadApplet();
+		}
+
+		function verificaEstado(){
+			var isCardPresent = eval(document.signApplet.isCardPresent());
+			if (!isCardPresent){
+				alert("Insira um cartÃ£o.");
+				throw "SMART_CARD_STATE_FAIL";
+			}	
+			var isLoggedOn = eval(document.signApplet.isLoggedOn());
+			if (!isLoggedOn){
+				alert("Informe o PIN");
+				throw "SMART_CARD_STATE_FAIL";
+			}
+		}
+
+		checkBox = function(checked){
+			//alert("na funÃ§Ã£o checkbox");
+
+			if(checked == true){
+				//alert("na funÃ§Ã£o checkbox, true...");		                        
+				jQuery("input[type=checkbox]").each(function() {
+			    this.checked = true;
+					            });
+			} else {
+				//alert("na funÃ§Ã£o checkbox, false...");
+				jQuery("input[type=checkbox]").each(function() {
+			     this.checked = false;
+			     });
+			}
+			
+		}
+
+// ]]> reloadApplet = function () { var htmlApplet = jQuery('#fieldApplet').html(); jQuery('#fieldApplet').empty(); jQuery('#fieldApplet').append(htmlApplet); jQuery('applet#signApplet').focus(); };</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{cadastroOutrosAtestadosAmbulatorioController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<p:outputPanel id="panelOutros" layout="block">
+		<h:form prependId="false" id="formPrincipalOutrosAtestados">
+			<aghu:panelGeral>
+				<aghu:linha>
+					<mec:inputTextArea id="observacaoOutrosAtestados" rows="5" cols="110" label="#{messages.LABEL_DESCRICAO}" 
+						value="#{cadastroOutrosAtestadosAmbulatorioController.item.observacao}" required="true" maxlength="2000"/>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputNumero
+						value="#{cadastroOutrosAtestadosAmbulatorioController.item.nroVias}"
+						label="#{messages.LABEL_NRO_VIAS_OUTROS_ATESTADOS}" maxlength="2" required="true"
+						size="3" id="nroViasOutrosAtestados" />
+				</aghu:linha>
+				<aghu:linha>				
+					<aghu:acao newLine="false">
+						<mec:commandButton value="#{messages.LABEL_ADICIONAR}"
+							id="btAdicionarOutros"
+							action="#{cadastroOutrosAtestadosAmbulatorioController.adicionar}"
+							rendered="#{not cadastroOutrosAtestadosAmbulatorioController.emEdicao and mf:hasPermission(securityController,'realizarAtestadoOutrosAtestados,executar')}"
+							profile="add" ajax="true" process="@this @(#panelOutros)" render="formPrincipalOutrosAtestados" />
+						<mec:commandButton value="#{messages.LABEL_LIMPAR}"
+							id="btLimparCampos"
+							action="#{cadastroOutrosAtestadosAmbulatorioController.limpar}"
+							rendered="#{not cadastroOutrosAtestadosAmbulatorioController.emEdicao and mf:hasPermission(securityController,'realizarAtestadoOutrosAtestados,executar')}"
+							styleClass="bt_cinza" profile="clear" render="formPrincipalOutrosAtestados" 
+							immediate="true" process="@this" ajax="true"/>							
+						<mec:commandButton value="#{messages.LABEL_ALTERAR}"
+							id="btAlterarOutrosAtestados"
+							action="#{cadastroOutrosAtestadosAmbulatorioController.alterar}"
+							rendered="#{cadastroOutrosAtestadosAmbulatorioController.emEdicao and mf:hasPermission(securityController,'realizarAtestadoOutrosAtestados,executar')}"
+							profile="ok" ajax="true" process="@this @(#panelOutros)" render="formPrincipalOutrosAtestados" />
+						<mec:commandButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR_EDICAO}"
+							action="#{cadastroOutrosAtestadosAmbulatorioController.cancelar}"
+							rendered="#{cadastroOutrosAtestadosAmbulatorioController.emEdicao and mf:hasPermission(securityController,'realizarAtestadoOutrosAtestados,executar')}"
+							ajax="true" render="formPrincipalOutrosAtestados" profile="cancel" />
+					</aghu:acao>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:serverDataTable name="tabela"
+						list="#{cadastroOutrosAtestadosAmbulatorioController.listaAtestados}"
+						scrollable="true" controller="#{cadastroOutrosAtestadosAmbulatorioController}"
+						selection="selecao" selectionMode="single" rowKeyVar="index">
+						<c:set var="_item" value="#{item}" />
+
+						<p:ajax event="rowSelect"
+							listener="#{cadastroOutrosAtestadosAmbulatorioController.setItemAux(_item)}" />
+
+						<p:column headerText="#{messages.LABEL_ACAO}" style="width:30px; white-space:nowrap; !important;">
+							<mec:commandLink id="bt_editar_outros" profile="edit"
+								title="#{messages.LABEL_EDITAR}" action="#{cadastroOutrosAtestadosAmbulatorioController.editar}"
+								rendered="#{mf:hasPermission(securityController,'realizarAtestadoOutrosAtestados,executar') and !cadastroOutrosAtestadosAmbulatorioController.editandoRegistro(_item.seq)}" 
+								render="formPrincipalOutrosAtestados" 
+								ajax="true" process="@this">
+								<f:setPropertyActionListener target="#{cadastroOutrosAtestadosAmbulatorioController.atsSeq}" value="#{_item.seq}" for="command"/>
+							</mec:commandLink>
+							<mec:commandLink immediate="true" id="bt_excluir_outros"
+								title="#{messages.LABEL_EXCLUIR}"
+								action="#{cadastroOutrosAtestadosAmbulatorioController.remover}"
+								profile="delete" ajax="true"
+								render="formPrincipalOutrosAtestados" process="@this" 
+								rendered="#{mf:hasPermission(securityController,'realizarAtestadoOutrosAtestados,executar') and !cadastroOutrosAtestadosAmbulatorioController.editandoRegistro(_item.seq)}">
+								<f:setPropertyActionListener target="#{cadastroOutrosAtestadosAmbulatorioController.atsSeq}" value="#{_item.seq}" for="command"/>
+							</mec:commandLink>
+						</p:column>
+	
+						<p:column style="width:570px; white-space:nowrap; !important;">
+							<f:facet name="header" style="white-space:nowrap;">
+								<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+							</f:facet>
+							
+							<h:outputText id="observacao" value="#{(_item.observacao.length() &gt; 130) ? fn:substring(_item.observacao,0,130).concat('...') : _item.observacao}"/>
+              					<p:tooltip for="observacao" trackMouse="true" direction="bottom-right" styleClass="tooltip"
+									layout="block" rendered="#{_item.observacao.length() &gt; 130}" style="width:600px; word-wrap: break-word;">
+								<h:outputText value="#{_item.observacao}" />
+							</p:tooltip>
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:linha>
+			</aghu:panelGeral>
+		</h:form>
+		</p:outputPanel>
+</ui:composition>
+</html>

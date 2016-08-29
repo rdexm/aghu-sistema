@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Modal Justificativa de Laudos :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{modalJustificativaLaudosController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{modalJustificativaLaudosController}" ignoreEnter="true"/>  
+      <aghu:panelGeral> 
+        <aghu:linha> 
+          <h:form prependId="false" id="formCabecalho"> 
+            <p:outputPanel id="panelPaciente" layout="inline"> 
+              <mec:suggestionBox maxlength="8" numeric="true" label="#{messages.LABEL_PRONTUARIO}" descricaoInput="prontuario" descricaoLabel="nome" posDeleteAction="limparCampos" posSelectionAction="listarLaudos" suggestionAction="pesquisarPaciente" title="#{messages.TITLE_PRONTUARIO}" readonly="true" id="paciente" controller="#{modalJustificativaLaudosController}" value="#{modalJustificativaLaudosController.manterJustificativaLaudosController.paciente}"> 
+                <p:column>#{item.prontuario}</p:column>  
+                <p:column>#{item.nome}</p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </h:form> 
+        </aghu:linha> 
+      </aghu:panelGeral>  
+      <aghu:panelGeral legend="#{messages.LABEL_JUSTIFICATIVA_DE_LAUDOS}"> 
+        <h:form prependId="false" id="formGrid"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelLaudos" layout="inline"> 
+              <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{empty modalJustificativaLaudosController.manterJustificativaLaudosController.listaLaudos and not empty modalJustificativaLaudosController.manterJustificativaLaudosController.atendimento}"> 
+                <h:outputText value="#{messages.LABEL_NENHUM_LAUDO_ENCONTRADO}"/> 
+              </p:outputPanel>  
+              <p:outputPanel id="laudosTable" rendered="#{not empty modalJustificativaLaudosController.manterJustificativaLaudosController.listaLaudos}" layout="inline"> 
+                <p:outputPanel layout="block" style="width:100%; height:330px; overflow-y:auto;">
+                  <mec:serverDataTable onRowMouseOver="this.style.backgroundColor='#F1F1F1'"
+                                       onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'"
+                                       rendered="#{not empty modalJustificativaLaudosController.manterJustificativaLaudosController.listaLaudos}"
+                                       list="#{modalJustificativaLaudosController.manterJustificativaLaudosController.listaLaudos}"
+                                       scrollable="true">
+                    <c:set var="_laudo" value="#{item}"/>  
+                    <p:column width="20px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink title="#{messages.LABEL_EDITAR}"
+                                       action="#{modalJustificativaLaudosController.manterJustificativaLaudosController.editarJustificativaLaudo(_laudo)}"
+                                       oncomplete="PF('modalJustificativasWG').show();"
+                                       limitToList="true"
+                                       profile="edit"
+                                       ajax="true"
+                                       render="modalJustificativas"/>
+                    </p:column>  
+                    <p:column width="300px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_laudo.tipoLaudo.descricao}"/> 
+                    </p:column>  
+                    <p:column width="150px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DT_HR_INICIO_VALIDADE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_laudo.dthrInicioValidade}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column width="150px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DT_HR_FIM_VALIDADE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_laudo.dthrFimValidade}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column width="auto"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_JUSTIFICATIVA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_laudo.justificativaFormatada}" escape="false"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </h:form> 
+      </aghu:panelGeral>  
+      <aghu:acao> 
+        <h:form prependId="false" id="formBotoes"> 
+          <mec:commandButton id="bt_gravar_procedimento" value="#{messages.LABEL_CONTINUAR_CONCLUSAO_SUMARIO}" action="#{modalJustificativaLaudosController.continuarConclusaoSumario}" profile="ok"/>
+          <mec:commandButton id="bt_cancelar3" value="#{messages.LABEL_CANCELAR}" immediate="true" action="#{modalJustificativaLaudosController.voltar}" profile="cancel"/> 
+        </h:form> 
+      </aghu:acao>  
+      <p:outputPanel id="panel1" layout="inline"> 
+        <p:dialog id="modalJustificativas"
+                  width="600"
+                  height="#{not empty modalJustificativaLaudosController.manterJustificativaLaudosController.listaTextoPadraoLaudo ? 445 : 260}"
+                  modal="true"
+                  resizable="false"
+                  widgetVar="modalJustificativasWG">
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{modalJustificativaLaudosController.manterJustificativaLaudosController.laudoEmEdicao.tipoLaudo.descricao}"/>  
+              <h:outputText rendered="#{modalJustificativaLaudosController.manterJustificativaLaudosController.laudoEmEdicao.dthrInicioValidade != null}"
+                            value=" - "/>
+              <h:outputText value="#{modalJustificativaLaudosController.manterJustificativaLaudosController.laudoEmEdicao.dthrInicioValidade}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+              </h:outputText>  
+              <h:outputText rendered="#{modalJustificativaLaudosController.manterJustificativaLaudosController.laudoEmEdicao.dthrFimValidade != null}"
+                            value=" - "/>
+              <h:outputText value="#{modalJustificativaLaudosController.manterJustificativaLaudosController.laudoEmEdicao.dthrFimValidade}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+              </h:outputText> 
+            </h:panelGroup> 
+          </f:facet>  
+          <h:form prependId="false" id="formModal"> 
+            <p:outputPanel rendered="#{not empty modalJustificativaLaudosController.manterJustificativaLaudosController.listaTextoPadraoLaudo}"
+                           styleClass="aghu-panel-geral">
+              <aghu:panelGeral legend="#{messages.LABEL_TEXTOS_PADROES_DE_LAUDOS}"> 
+                <aghu:linha> 
+                  <p:outputPanel layout="block" style="width: 100%; height:100px; overflow-y:auto;"> 
+                    <mec:serverDataTable rendered="#{not empty modalJustificativaLaudosController.manterJustificativaLaudosController.listaTextoPadraoLaudo}"
+                                         id="richtable"
+                                         style="width:550px"
+                                         list="#{modalJustificativaLaudosController.manterJustificativaLaudosController.listaTextoPadraoLaudo}"
+                                         scrollable="true">
+                      <c:set var="_texto" value="#{item}"/>  
+                      <p:column width="10"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                        </f:facet>  
+                        <p:outputPanel layout="inline"> 
+                          <h:selectBooleanCheckbox name="marcador"
+                                                   id="marcador"
+                                                   value="#{modalJustificativaLaudosController.manterJustificativaLaudosController.textosPadraoSelecionados[_texto]}">
+                            <p:ajax event="click" bypassUpdates="false" process="@this"/> 
+                          </h:selectBooleanCheckbox> 
+                        </p:outputPanel> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_CONSULTORIA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_texto.descricao}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:commandButton name="btAdd" value="#{messages.LABEL_ADICIONAR}" action="#{modalJustificativaLaudosController.manterJustificativaLaudosController.adicionarTextosNaJustificativa}" profile="ok" ajax="true" render="panelTextArea" process="@this"/> 
+                </aghu:linha> 
+              </aghu:panelGeral> 
+            </p:outputPanel>  
+            <aghu:panelGeral legend="#{messages.LABEL_JUSTIFICATIVA}"> 
+              <aghu:linha> 
+                <p:outputPanel id="panelTextArea" layout="inline"> 
+                  <mec:inputTextArea cols="50"
+                                     rows="6"
+                                     id="motivo"
+                                     reRender="panelTextArea"
+                                     value="#{modalJustificativaLaudosController.manterJustificativaLaudosController.justificativaEmEdicao}"
+                                     maxlength="2000"
+                                     autoResize="false"/>
+                </p:outputPanel> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <h:panelGroup> 
+              <mec:commandButton id="bt_gravar_justif"
+                                 value="#{messages.LABEL_GRAVAR}"
+                                 action="#{modalJustificativaLaudosController.manterJustificativaLaudosController.gravar()}"
+                                 process="@form"
+                                 limitToList="true"
+                                 profile="ok"
+                                 ajax="true"
+                                 render="panelLaudos, laudosTable, panelExibirModal"/>
+              <mec:commandButton name="btOk" value="#{messages.LABEL_CANCELAR}" action="#{modalJustificativaLaudosController.manterJustificativaLaudosController.cancelarEdicao()}" profile="cancel" ajax="true" render="panelExibirModal"/> 
+            </h:panelGroup> 
+          </h:form> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelExibirModal" layout="inline"> 
+        <p:outputPanel rendered="#{modalJustificativaLaudosController.manterJustificativaLaudosController.hideModal}" layout="inline"> 
+          <script xml:space="preserve">
+					PF('modalJustificativasWG').hide();
+				</script> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

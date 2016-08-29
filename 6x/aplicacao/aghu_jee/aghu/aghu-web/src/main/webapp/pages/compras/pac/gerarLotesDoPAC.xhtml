@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_GERAR_LOTES_PAC00000']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title>        
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{gerarLotesDoPACController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>    
+    <ui:define name="body">      
+    <script>
+
+       function validaSaida(campo) {    	   
+    	   if(document.getElementById(campo.id).value.length >0){
+        	   
+    		  var flag = false;
+	          jQuery( "span" ).each(function( i ) {
+	        	  
+	        	   if (this.id.indexOf("numeroLoteGrid1") > 0){
+	            	   var valor = document.getElementById(this.id).innerHTML;
+	            	   if (valor == campo.value){
+	                	   flag = true;                	   
+		}
+	        		   
+            }
+	    	   });
+
+	    	   if (flag == false){
+	    		   setTimeout(function(){campo.focus()}, 10);
+	    		   PF('modalAlertaPACWG').show();
+        }
+    	 } 
+	   }
+
+       function limparTodosLotes() {
+    	  jQuery( "input" ).each(function( i ) {
+	        	 
+        	   if (this.id.indexOf("numeroLoteItensPAC") > 0){
+        		   document.getElementById(this.id).value = null;
+        	   }
+    		
+	       });	   
+
+    	   PF('modalExcluirLotesWG').hide();   
+       }
+	</script>   
+    <mec:pageConfig controller="#{gerarLotesDoPACController}"/>  
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formPesquisa"> 
+          <aghu:panelGeral legend="#{messages.TITLE_GERAR_LOTES_PAC}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="nroPac" label="#{messages.LABEL_GERAR_LOTES_PAC_NUMERO_PAC}" title="#{messages.TITLE_GERAR_LOTES_PAC_NUMERO_PAC}" value="#{gerarLotesDoPACController.nroPac}" required="true" size="9" maxlength="7"/>  
+              <mec:inputText id="modalidade" label="#{messages.LABEL_GERAR_LOTES_PAC_MODALIDADE}" value="#{gerarLotesDoPACController.modalidade}" style="text-transform:uppercase" size="60" maxlength="60" readonly="true"/>  
+              <mec:inputText id="descricao" label="#{messages.LABEL_GERAR_LOTES_PAC_DESCRICAO}" value="#{gerarLotesDoPACController.descricao}" size="60" maxlength="60" style="text-transform:uppercase" readonly="true"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputTextData id="dtEntrada" label="#{messages.LABEL_GERAR_LOTES_PAC_DT_GERACAO}" size="9" maxlength="17" value="#{gerarLotesDoPACController.dataGeracao}" readonly="true" tipo="data"/>  
+              <mec:inputText id="comprador" label="#{messages.LABEL_GERAR_LOTES_PAC_COMPRADOR}" value="#{gerarLotesDoPACController.comprador}" size="60" maxlength="60" style="text-transform:uppercase" readonly="true"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{gerarLotesDoPACController.pesquisar}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{gerarLotesDoPACController.limpar}" styleClass="bt_cinza" profile="clear"/>  
+            <p:outputPanel id="renderButtom" layout="inline"> 
+              <mec:commandButton value="#{messages.LABEL_GERAR_LOTE_CADA_ITEM}" id="bt_gerar_lote" onclick="if(#{gerarLotesDoPACController.verificarExisteLotes()}){ PF('modalConfirmaExcluirLotesWG').show();;}" action="#{gerarLotesDoPACController.gerarLotesSemExcluir}" render="panelGridDisp,renderButtom,panelGridItens,numeroLote" ajax="true" process="@this" styleClass="bt_cinza"/> 
+            </p:outputPanel> 
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false" id="formManterLotes"> 
+          <p:outputPanel id="panelListagemInsercao" rendered="#{gerarLotesDoPACController.pesquisou and gerarLotesDoPACController.verificarPesquisaPac()}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral id="fieldSetDisp" legend="#{messages.LABEL_GERAR_LOTES_LOTE_TITULO_LOTES}"> 
+              <p:outputPanel id="camposInsercaoLote" layout="inline"> 
+                <aghu:linha> 
+                  <mec:inputNumero id="numeroLote" label="#{messages.LABEL_GERAR_LOTES_LOTE_LOTE}" value="#{gerarLotesDoPACController.itemSelecionado.id.numero}" maxlength="3" required="true" size="3" readonly="true"/>  
+                  <mec:inputText id="descricaoLote" label="#{messages.LABEL_GERAR_LOTES_LOTE_DESCRICAO}" title="#{messages.TITLE_GERAR_LOTES_LOTE_DESCRICAO}" value="#{gerarLotesDoPACController.itemSelecionado.descricao}" size="60" maxlength="60" caixaAlta="false" required="true" removerCaratersEspeciais="false"/>  
+                  <aghu:acao newLine="false"> 
+                    <mec:commandButton id="bt_adicionar_disp" value="#{messages.LABEL_ADICIONAR}" rendered="#{gerarLotesDoPACController.modoEdicaoLote == false}" action="#{gerarLotesDoPACController.gravarLotes}" render="panelListagemInsercao,camposInsercaoLote, formManterLotes" profile="add" styleClass="bt_verde "/>  
+                    <mec:commandButton id="bt_alterar_disp" value="#{messages.LABEL_ALTERAR}" rendered="#{gerarLotesDoPACController.modoEdicaoLote == true}" action="#{gerarLotesDoPACController.gravarLotes}" render="panelListagemInsercao,camposInsercaoLote, formManterLotes" profile="ok"/>  
+                    <mec:commandButton id="bt_cancel_edit_disp" value="#{messages.LABEL_CANCELAR_EDICAO}" rendered="#{gerarLotesDoPACController.modoEdicaoLote == true}" action="#{gerarLotesDoPACController.cancelarEdicaoLote}" render="numeroLote,descricaoLote" styleClass="bt_cancel_edit bt_cinza"/> 
+                    <mec:commandButton id="bt_excluir_lotes" value="#{messages.LABEL_EXCLUIR_LOTES}" ajax="true" readonly="#{empty gerarLotesDoPACController.lotesSolicitacao}" onclick="PF('modalExcluirLotesWG').show();"  process="@this" render="bt_excluir_lotes"/>
+                  </aghu:acao> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <aghu:linha> 
+              <p:outputPanel id="panelGridDisp" layout="inline" styleClass="aghu-panel-geral"> 
+                <aghu:panelGeral id="fieldTabelaLote">
+                  <mec:serverDataTable id="lotesSolicitacao"  scrollHeight="105" 
+                     list="#{gerarLotesDoPACController.lotesSolicitacao}" scrollable="true"
+                     controller="#{gerarLotesDoPACController}" selection="loteSelecionado"> 
+
+                    
+                    <c:set var="item" value="#{item}"/>  
+                     <p:ajax event="rowSelect"
+                    		immediate="true"    
+                    		update="@(#panelGridItens)"                 		
+                    		listener="#{gerarLotesDoPACController.getSelecionarLote(item)}" 
+                    		process="@this"/>
+                    		
+                    <p:column styleClass="tdAcao" style="width:40px"> 
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink immediate="true" id="editarLotes" title="#{messages.LABEL_EDITAR}" action="#{gerarLotesDoPACController.editar(item)}" rendered="#{not gerarLotesDoPACController.modoEdicaoLote}" profile="edit" ajax="true" render="formManterLotes, tabelaLotes" process="@this"/>  
+                      <mec:commandLink id="excluirLote" title="#{messages.LABEL_EXCLUIR_LOTE}" immediate="true" rendered="#{not gerarLotesDoPACController.modoEdicaoLote}" action="#{gerarLotesDoPACController.verificarExclusao(item.id.lctNumero,item.id.numero)}" oncomplete="if(#{gerarLotesDoPACController.naoPossuiItensAssociados}){PF('modalConfirmacaoExclusaoWG').show();;} else finalizar();" profile="delete" ajax="true" render="formManterLotes, tabelaLotes" process="@this"/>  
+                      <pe:remoteCommand name="finalizar" actionListener="#{gerarLotesDoPACController.lancarExcecaoExclusao(item.id.lctNumero, item.id.numero)}" process="@this"/> 
+                    </p:column>  
+                    <p:column style="width:30px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_GERAR_LOTES_LOTE_LOTE}"/> 
+                      </f:facet>  
+                      <h:outputText id="numeroLoteGrid1" value="#{item.id.numero}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_GERAR_LOTES_LOTE_DESCRICAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable>                
+            </aghu:panelGeral> 
+          </p:outputPanel>  
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </p:outputPanel>  
+          </h:form> 
+          <h:form prependId="false" id="formManterItens"> 
+          <p:outputPanel id="panelGridItens" rendered="#{gerarLotesDoPACController.pesquisou and gerarLotesDoPACController.verificarPesquisaPac()}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral id="fieldItens" legend="#{messages.LABEL_GERAR_LOTES_ITENS_ITENS}"> 
+              <aghu:panelGeral> 
+                    <mec:serverDataTable id="itensLicitacao" scrollHeight="178"  list="#{gerarLotesDoPACController.itensLicitacao}" scrollable="true"> 
+                  <c:set var="itens" value="#{item}"/> 
+                  <p:column styleClass="tdAcao" style="width:40px"> 
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                          <mec:commandLink action="#{gerarLotesDoPACController.adicionarLotesSolicitacao(itens)}"  title="#{messages.LABEL_ADICIONAR} #{messages.LABEL_GERAR_LOTES_LOTE_LOTE}" styleClass=" silk-add silk-icon" ajax="true" render="panelGridDisp"/>  
+        
+                    </p:column>  
+                   
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''} width:60px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_AVISO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="avisoDep" onclick="return false" title="#{messages.MENSAGEM_GERAR_LOTES_MATERIAL_JA_POSSUI_VINCULO}" rendered="#{gerarLotesDoPACController.verificarDependenciasDoItem(itens.tipoFaseSolicitacao, itens.codigoMaterial, itens.numeroLote)}" styleClass=" silk-bullet-error silk-icon" ajax="true"/>  
+                    <mec:commandLink id="avisoParecerDesf" title="#{messages.MENSAGEM_GERAR_LOTES_ITEM_COM_PARECER}" onclick="return false" rendered="#{gerarLotesDoPACController.verificarParecerTecnico(itens.tipoFaseSolicitacao, itens.codigoMaterial)}" styleClass=" silk-bullet-error silk-icon" ajax="true"/>  
+                    <mec:commandLink id="avisoSemParecer" title="#{messages.MENSAGEM_GERAR_LOTES_ITEM_SEM_PARECER}" onclick="return false" rendered="#{gerarLotesDoPACController.verificarSemParecerTecnico(itens.tipoFaseSolicitacao, itens.codigoMaterial)}" styleClass=" silk-bullet-error silk-icon" ajax="true"/> 
+                
+                  </p:column>  
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''} width:40px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_LOTE}"/> 
+                    </f:facet>  
+                    <h:inputText  styleClass="numerico" id="numeroLoteItensPAC" value="#{itens.numeroLote}" size="3" maxlength="3" onblur="validaSaida(this);">
+                     <p:ajax event="blur" upadate="@(#numeroLoteItensPAC)" process="@this" global="false"/>
+                    </h:inputText>                    
+                       
+                                      
+                  </p:column>                  
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''} width:30px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_ITEM}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{itens.numeroItem}"/> 
+                  </p:column>  
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''} width:20px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_TIPO}" title="#{messages.TITLE_GERAR_LOTES_ITENS_TIPO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{itens.tipoFaseSolicitacao}"/>  
+                    <p:tooltip mode="client" rendered="#{not empty itens.tipoFaseSolicitacao}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{gerarLotesDoPACController.mostrarCompraServico(itens.tipoFaseSolicitacao)}"/>
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''} width:50px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_CODIGO}" title="#{messages.TITLE_GERAR_LOTES_ITENS_CODIGO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{itens.codigoMaterial}"/> 
+                  </p:column>  
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_MATERIAL_SERVICO}" title="#{messages.TITLE_GERAR_LOTES_ITENS_MATERIAL_SERVICO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{itens.nomeMaterial}"/> 
+                  </p:column>  
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''} width:50px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_UNID_MED}" title="#{messages.TITLE_GERAR_LOTES_ITENS_UNID_MED}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{itens.codigoUnidadeMedida}"/> 
+                  </p:column>  
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''}  width:50px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_QTD}" title="#{messages.TITLE_GERAR_LOTES_ITENS_QTD}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{itens.somaQtdeAprovada}"/> 
+                  </p:column>  
+                  <p:column style="#{gerarLotesDoPACController.pintarLinha(itens.numeroLote)==true ? 'background-color:#6495ED;':''}  width:50px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERAR_LOTES_ITENS_VALOR_UNITARIO}" title="#{messages.TITLE_GERAR_LOTES_ITENS_VALOR_UNITARIO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{itens.valorUnitario}"> 
+                      <f:convertNumber pattern="###,##0.00"/> 
+                    </h:outputText> 
+                  </p:column> 
+                </mec:serverDataTable> 
+   
+              
+              </aghu:panelGeral>  
+              <aghu:acao> 
+                <mec:commandButton id="bt_confirmar" value="#{messages.LABEL_GRAVAR}" action="#{gerarLotesDoPACController.gravar}" render="tabelaItens" profile="ok" ajax="true" immediate="true"/> 
+                <mec:commandButton value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{gerarLotesDoPACController.getVoltarParaUrl()}"  rendered="#{not empty gerarLotesDoPACController.voltarParaUrl}" styleClass="bt_voltar bt_cinza" profile="back"/> 
+   
+              </aghu:acao> 
+            </aghu:panelGeral> 
+          </p:outputPanel>         
+        </h:form>  
+          <p:outputPanel id="outter" layout="inline"> 
+            <script type="text/javascript" xml:space="preserve">
+					//<![CDATA[						
+						function validarFoco(id) {
+							if(#{gerarLotesDoPACController.validouLote}) {
+								document.getElementById(id.id).focus();
+							}
+						}
+					//]]>
+				</script> 
+          </p:outputPanel>  
+        <p:dialog id="modalConfirmaExcluirLotes" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmaExcluirLotesWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.MENSAGEM_GERAR_LOTE_ITEM_GERACAO_ABORTAR_GERACAO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_GERAR_LOTE_ITEM_JA_EXISTEM_LOTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalExclusaoLotes"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluirLotes" block="true" action="#{gerarLotesDoPACController.desfazerExcluirGerarLotes}" profile="search"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" action="#{gerarLotesDoPACController.cancelarGeracao()}" onclick="PF('modalConfirmaExcluirLotesWG').hide();" id="bt_cancelarExcluirLotes" profile="cancel" ajax="true" render="panelGridItens,numeroLote"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_EXCLUSAO_LOTE}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalExclusao"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir" block="true" action="#{gerarLotesDoPACController.excluirLote}" render="lotesSolicitacao" profile="search"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" id="bt_cancelarExcluir" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+        
+          <p:dialog id="modalAlertaPAC" width="400" height="70" modal="true" resizable="false" widgetVar="modalAlertaPACWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.MENSAGEM_PAC_ALERTA_MODAL}"/> 
+            </h:panelGroup> 
+          </f:facet> <b> #{messages.MENSAGEM_GERAR_LOTES_LOTE_NAO_ENCONTRADO} </b> 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+         
+        </p:dialog> 
+        
+      </p:outputPanel>       
+      
+       <p:dialog id="modalExcluirLotes" width="400" height="150" modal="true" resizable="false" widgetVar="modalExcluirLotesWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_EXCLUSAO_LOTES_PAC}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_EXCLUSAO_LOTES_PAC} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalExcluirLotes"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir_modal_lotes" block="true" action="#{gerarLotesDoPACController.excluirTodosLotes}"  ajax="true"   onclick="limparTodosLotes()" render="lotesSolicitacao" profile="search"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalExcluirLotesWG').hide();" id="bt_cancelarExcluir_modal_lotes" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

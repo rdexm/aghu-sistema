@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.GESTAO_CARTAS_RECOLETA} :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{gestaoCartasRecoletaPaginatorController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{gestaoCartasRecoletaPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.PESQUISA_CARTAS_RECOLETA}"> 
+          <aghu:linha> 
+            <mec:selectOneMenu id="situacao" label="#{messages.LABEL_PESQUISA_CARTAS_RECOLETA_SITUACAO}" title="#{messages.TITLE_PESQUISA_CARTAS_RECOLETA_SITUACAO}" noSelectionLabel="#{mf:getDefaultValue(noSelectionLabel,'Selecione')}" noSelectionOption="true" ajaxValidation="false" value="#{gestaoCartasRecoletaPaginatorController.situacao}" enum="DominioSituacaoCartaColeta"/>  
+            <mec:inputTextData id="m_dtInicio" direction="top-right" label="#{messages.LABEL_PESQUISA_CARTAS_RECOLETA_DT_INICIAL}" title="#{messages.TITLE_PESQUISA_CARTAS_RECOLETA_DT_INICIAL}" size="10" maxlength="10" horizontalOffset="90" verticalOffset="30" value="#{gestaoCartasRecoletaPaginatorController.dtInicio}" onkeypress="return LockTab(event);" tipo="data"/>  
+            <mec:inputTextData id="m_dtFim" direction="top-right" label="#{messages.LABEL_PESQUISA_CARTAS_RECOLETA_DT_FIM}" title="#{messages.TITLE_PESQUISA_CARTAS_RECOLETA_DT_FIM}" size="10" maxlength="10" horizontalOffset="90" verticalOffset="30" value="#{gestaoCartasRecoletaPaginatorController.dtFim}" onkeypress="return LockTab(event);" tipo="data"/>  
+            <mec:inputNumero id="m_solic" label="#{messages.LABEL_PESQUISA_CARTAS_RECOLETA_SOLICIT}" title="#{messages.TITLE_PESQUISA_CARTAS_RECOLETA_SOLICIT}" size="9" maxlength="9" value="#{gestaoCartasRecoletaPaginatorController.iseSoeSeq}"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="pacienteDecorate" layout="inline"> 
+              <mec:pesquisaPaciente id="pesqPaciente" valueChangeListener="#{gestaoCartasRecoletaPaginatorController.pesquisaPaciente}" value="#{gestaoCartasRecoletaPaginatorController.paciente}" render="pacienteDecorate"/>  
+              <br clear="none"/>  
+              <mec:commandButton id="botaoPesquisaFonetica" value="#{messages.LABEL_PESQUISA_FONETICA}" action="#{gestaoCartasRecoletaPaginatorController.redirecionarPesquisaFonetica}" styleClass=" bt_cinza icon-pesquisa-fonetica" ajax="true" process="@this"> 
+                <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="exames-gestaoCartasRecoletaList" for="command"/> 
+              </mec:commandButton> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{gestaoCartasRecoletaPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{gestaoCartasRecoletaPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelListagem" rendered="#{gestaoCartasRecoletaPaginatorController.dataModel.pesquisaAtiva}" layout="inline"> 
+        <h:form prependId="false" id="formGesCarts"> 
+          <aghu:panelGeral legend="#{messages.LISTA_CARTAS_RECOLETA}"> 
+            <mec:serverDataTable dataModel="dataModel" value="#{gestaoCartasRecoletaPaginatorController}" id="tabela" controller="#{gestaoCartasRecoletaPaginatorController}"> 
+              <c:set var="_item" value="#{item}"/>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <mec:commandLink id="edit_bt" title="#{messages.LABEL_EDITAR}" action="gestaoCartasRecoleta" profile="edit"> 
+                  <f:setPropertyActionListener target="#{gestaoCartasRecoletaController.iseSeqp}" value="#{_item.id.iseSeqp}" for="command"/>  
+                  <f:setPropertyActionListener target="#{gestaoCartasRecoletaController.iseSoeSeq}" value="#{_item.id.iseSoeSeq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{gestaoCartasRecoletaController.seqp}" value="#{_item.id.seqp}" for="command"/> 
+                </mec:commandLink>  
+                <mec:commandLink id="emit_bt" title="#{messages.LABEL_EMITIR_CARTA}" action="#{gestaoCartasRecoletaPaginatorController.emitirCarta(_item)}" rendered="#{mf:hasPermission(securityController,'emitirCartasRecoleta,executar')}" styleClass=" silk-printer silk-icon" ajax="true" render="panelListagem" process="@this"/>  
+                <mec:commandLink id="dtlh_bt" disabled="#{not mf:hasPermission(securityController,'detalharItemSolicitacao,pesquisar')}" title="#{messages.LABEL_DETALHAR_SOLICITACAO}" action="exames-detalharItemSolicitacaoExame" styleClass=" silk-page-copy silk-icon"> 
+                  <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.seqp}" value="#{_item.id.iseSeqp}" for="command"/>  
+                  <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.soeSeq}" value="#{_item.id.iseSoeSeq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.voltarPara}" value="exames-gestaoCartasRecoletaList" for="command"/>  
+                  <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.isHist}" value="false" for="command"/> 
+                </mec:commandLink>  
+                <mec:commandLink id="extr_bt" title="#{messages.LABEL_EXTRATO_CARTA}" rendered="#{mf:hasPermission(securityController,'visualizarExtratoDasCartas,pesquisar')}" action="#{gestaoCartasRecoletaPaginatorController.extratoCarta(_item)}" oncomplete="PF('modalExtratoWG').show();;" styleClass=" silk-table silk-icon" ajax="true" render="modalPanel" process="@this"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SOLICITACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.id.iseSoeSeq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ITEM}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.id.iseSeqp}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.solicitacaoExame.atendimento.prontuario}" rendered="#{_item.solicitacaoExame.atendimento != null}"/>  
+                <h:outputText value="#{_item.solicitacaoExame.atendimentoDiverso.prontuario}" rendered="#{_item.solicitacaoExame.atendimentoDiverso != null}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PACIENTE}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.solicitacaoExame.atendimento.paciente.nome}" rendered="#{_item.solicitacaoExame.atendimento != null}"/>  
+                <h:outputText value="#{_item.solicitacaoExame.atendimentoDiverso.aipPaciente.nome}" rendered="#{_item.solicitacaoExame.atendimentoDiverso != null}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_MODELO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.aelModeloCartas.seq}"/>  
+                <p:tooltip value="#{_item.aelModeloCartas.nome}" styleClass="tooltip" direction="bottom-right"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.situacao}"/>  
+                <p:tooltip value="#{_item.situacao.descricao}" styleClass="tooltip" direction="bottom-right"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DATA_EVENTO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.alteradoEm}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_MOTIVO_RETORNO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.motivoRetorno.seq}"/>  
+                <p:tooltip value="#{_item.motivoRetorno.descricao}" styleClass="tooltip" direction="bottom-right" rendered="#{_item.motivoRetorno != null}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:panelGeral> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:outputPanel id="modalPanel" layout="inline"> 
+        <p:dialog resizeable="false" id="modalExtrato" zindex="2" width="600" height="400" modal="true" resizable="false" widgetVar="modalExtratoWG" closable="true"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_EXTRATO_CARTAS}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <h:form prependId="false" id="formExtrato"> 
+            <mec:serverDataTable id="tabelaExtrato" list="#{gestaoCartasRecoletaPaginatorController.extrato}" scrollable="true"> 
+              <c:set var="_extrato" value="#{item}"/>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DATA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_extrato.dthrEvento}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_extrato.situacao.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SERVIDOR}"/> 
+                </f:facet>  
+                <h:outputText value="#{_extrato.servidor.pessoaFisica.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_RETORNO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_extrato.motivoRetorno.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </h:form> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

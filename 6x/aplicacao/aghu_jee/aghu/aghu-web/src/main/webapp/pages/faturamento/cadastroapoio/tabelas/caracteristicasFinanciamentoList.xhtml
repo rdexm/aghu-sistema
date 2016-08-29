@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_CARACTERISTICA_FINANCIAMENTO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>  
+      <style xml:space="preserve">
+			.checked {
+				background-image: url('../../../resources/img/icons/checked.png')
+					!important;
+				background-repeat: no-repeat;
+				background-position: center;
+			}
+		</style> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{fatCaracteristicasFinanciamentoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisar"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_CARACTERISTICA_FINANCIAMENTO}"> 
+          <aghu:linha> 
+          
+            <mec:inputText id="codigo" size="3" maxlength="3" 
+            label="#{messages.LABEL_CODIGO_CARACTERISTICA_FINANCIAMENTO}" 
+            title="#{messages.TITLE_CODIGO_CARACTERISTICA_FINANCIAMENTO}" 
+            style="text-transform: uppercase" value="#{fatCaracteristicasFinanciamentoPaginatorController.filtro.codigo}"/>  
+            
+            <mec:inputText id="pesqDescricao" size="50" maxlength="50" 
+            label="#{messages.LABEL_DESCRICAO_CARACTERISTICA_FINANCIAMENTO}" 
+            title="#{messages.TITLE_DESCRICAO_CARACTERISTICA_FINANCIAMENTO}" 
+            style="text-transform: uppercase" value="#{fatCaracteristicasFinanciamentoPaginatorController.filtro.descricao}"/>
+            
+            <mec:inputNumero id="seqSus" size="3" maxlength="2" 
+            label="#{messages.LABEL_COD_SUS_CARAC_FINAN}" 
+            title="#{messages.TITLE_COD_SUS_CARAC_FINAN}" 
+            value="#{fatCaracteristicasFinanciamentoPaginatorController.filtro.seqSus}"/>
+ 
+            <mec:selectOneMenu enum="DominioSituacao" id="pesqSituacao" size="9" value="#{fatCaracteristicasFinanciamentoPaginatorController.filtro.indSituacao}" label="#{messages.LABEL_SITUACAO_CARACTERISTICA_FINANCIAMENTO}" title="#{messages.TITLE_SITUACAO_CARACTERISTICA_FINANCIAMENTO}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" title="#{messages.LABEL_PESQUISAR}" action="#{fatCaracteristicasFinanciamentoPaginatorController.pesquisar}" profile="ok"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" title="#{messages.LABEL_LIMPAR}" action="#{fatCaracteristicasFinanciamentoPaginatorController.limparPesquisa}" render="formPesquisar, formResultado, btn_incluir" profile="clear" ajax="true" process="@this"></mec:commandButton>  
+          <mec:commandButton id="bt_incluir" value="#{messages.LABEL_NOVO}" title="#{messages.LABEL_NOVO}" rendered="#{fatCaracteristicasFinanciamentoPaginatorController.dataModel.pesquisaAtiva}" disabled="#{!mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}" action="#{fatCaracteristicasFinanciamentoPaginatorController.incluir}" profile="add"/>
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formResultado">
+        <h:panelGroup rendered="#{fatCaracteristicasFinanciamentoPaginatorController.dataModel.pesquisaAtiva}"> 
+          <aghu:panelGeral legend="#{messages.LABEL_RESULTADO_CARACTERISTICA_FINANCIAMENTO}"> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaCaracteristicas" controller="#{fatCaracteristicasFinanciamentoPaginatorController}"> 
+              <c:set var="_caracteristicaFinanciamento" value="#{item}"/>
+              <p:column style="width:10px !important;" rendered="#{mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <mec:commandLink action="#{fatCaracteristicasFinanciamentoPaginatorController.desativarCaracteristica(_caracteristicaFinanciamento)}" id="desativarCaract" title="#{messages.LABEL_SITUACAO_CAT_FIN_ATIVO}" rendered="#{_caracteristicaFinanciamento.indSituacao.descricao.equals('Ativo')}" styleClass="silk-activate silk-icon" ajax="true" render="formResultado" process="@this"/>  
+                <mec:commandLink action="#{fatCaracteristicasFinanciamentoPaginatorController.ativarCaracteristica(_caracteristicaFinanciamento)}" id="ativarCaract" title="#{messages.LABEL_SITUACAO_CAT_FIN_INATIVO}" rendered="#{_caracteristicaFinanciamento.indSituacao.descricao.equals('Inativo')}" styleClass="silk-deactivate silk-icon" ajax="true" render="formResultado" process="@this"/>
+              </p:column>  
+              <p:column style="width:200px !important;" sortBy="#{_caracteristicaFinanciamento.codigo}" sortAble="true"> 
+                <f:facet name="header">#{messages.LABEL_CODIGO_CARACTERISTICA_FINANCIAMENTO}</f:facet>  
+                <h:outputText value="#{_caracteristicaFinanciamento.codigo}"/> 
+              </p:column>
+              
+              <p:column style="width:200px !important;" sortBy="#{_caracteristicaFinanciamento.seqSus}" sortAble="true"> 
+                <f:facet name="header">#{messages.LABEL_COD_SUS_CARAC_FINAN}</f:facet>  
+                <h:outputText value="#{_caracteristicaFinanciamento.seqSus}"/> 
+              </p:column>  
+                
+              <p:column style="width:250px !important;" sortBy="#{_caracteristicaFinanciamento.descricao}" sortAble="true"> 
+                <f:facet name="header">#{messages.LABEL_DESCRICAO_CARACTERISTICA_FINANCIAMENTO}</f:facet>  
+                <h:outputText value="#{_caracteristicaFinanciamento.descricao}" escape="false"/> 
+              </p:column>  
+              <p:column style="width:210px !important;" sortBy="#{_caracteristicaFinanciamento.indSituacao}" sortAble="true"> 
+                <f:facet name="header">#{messages.LABEL_SITUACAO_CARACTERISTICA_FINANCIAMENTO}</f:facet>  
+                <h:outputText value="#{_caracteristicaFinanciamento.indSituacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:panelGeral> 
+        </h:panelGroup> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition>
+</html>

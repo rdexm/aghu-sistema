@@ -1,0 +1,753 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition>
+	<pe:remoteCommand name="selecionarConsulta" immediate="true" update="@(#panelAcao1) @(#panelAcao2) @(#dadosConsulta) @(#posicao)" actionListener="#{registrarConsultaCOController.selecionarConsulta}" process="@this" />
+	<aghu:panelGeral legend="#{messages.TITLE_REG_CONS_CO_CONSULTA}">
+	  <aghu:linha>
+		<p:outputPanel id="panelEdicaoConsulta" layout="inline">
+		  <mec:inputNumero id="idConsulta" 
+		  		label="#{messages.TITLE_REG_CONS_CO_CONSULTA_INPUT_NUMERO}" 
+		  		size="8" 
+		  		maxlength="8" 
+		  		value="#{registrarConsultaCOController.dadosEdicaoAnamnese.consulta.numero}"
+				readonly="#{registrarConsultaCOController.consultaEmEdicao or not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or registrarConsultaCOController.dadosEdicaoAnamnese.consulta != null}" />
+		  <mec:inputTextData id="idData" 
+		  		label="#{messages.LABEL_REG_CONS_CO_DATA}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_DATA}" 
+		  		value="#{registrarConsultaCOController.dadosEdicaoAnamnese.dthrConsulta}" 
+		  		requiredFake="#{registrarConsultaCOController.consultaEmEdicao}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}" 
+				tipo="datahora" />
+		  <mec:inputText id="idMotivo" 
+		  		label="#{messages.LABEL_REG_CONS_CO_MOT_CONST_HDA}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_MOT_CONST_HDA}" 
+		  		value="#{registrarConsultaCOController.dadosEdicaoAnamnese.motivo}" 
+		  		maxlength="4000" 
+		  		size="80" 
+		  		style="text-transform:uppercase" 
+		  		removerCaratersEspeciais="false"
+				required="false" 
+				emptyStringToNull="true" 
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}" />
+		  <mec:commandButton id="btAdicionarConsulta" 
+		  		style="margin-top:17px !important;" 
+		  		value="#{messages.LABEL_BOTAO_ADICIONAR_CONDUTA}" 
+		  		rendered="#{!registrarConsultaCOController.consultaEmEdicao}"
+				disabled="#{not mf:hasPermission(securityController,'registrarConsultaCO, executar') or not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or registrarConsultaCOController.dadosEdicaoAnamnese.consulta == null}"
+				render="panelEdicaoConsulta,panelListaConsultas,dadosConsulta,panelAcao1,panelAcao2"
+				action="#{registrarConsultaCOController.adicionarConsulta}" 
+				profile="add" 
+				ajax="true" 
+				process="@this,idConsulta,idData,idMotivo"/>
+		  <mec:commandButton id="btAlterarConsulta" 
+		  		style="margin-top:17px !important;" 
+		  		value="#{messages.LABEL_REG_CONS_CO_ALTERAR}" 
+		  		rendered="#{registrarConsultaCOController.consultaEmEdicao}"
+				disabled="#{not mf:hasPermission(securityController,'registrarConsultaCO, executar') or not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}"
+				action="#{registrarConsultaCOController.alterarConsulta}" 
+				render="panelEdicaoConsulta,panelListaConsultas,dadosConsulta,panelAcao1,panelAcao2"
+				profile="ok" 
+				ajax="true" 
+				process="@this,idConsulta,idData,idMotivo"/>
+		  <mec:commandButton id="btCancelarEdicaoConsulta" 
+		  		style="margin-top:17px !important;" 
+		  		value="#{messages.LABEL_REG_CONS_CO_CANCELAR_EDICAO}" 
+		  		immediate="true" 
+		  		ajax="true" 
+		  		rendered="#{registrarConsultaCOController.consultaEmEdicao}" 
+		  		disabled="#{registrarConsultaCOController.disabled}"
+		  		render="panelEdicaoConsulta,panelListaConsultas,dadosConsulta,panelAcao1,panelAcao2"
+				action="#{registrarConsultaCOController.cancelarEdicaoConsultas}" 
+				styleClass="bt_cancel_edit" />
+		</p:outputPanel>
+	  </aghu:linha>
+	  <aghu:linha>
+		<p:outputPanel id="panelListaConsultas" style="width: 100%; max-height:200px; overflow:auto;" layout="inline">
+		  <mec:serverDataTable id="idTableConsultas"
+		  		controller="#{registrarConsultaCOController}" 
+		  		list="#{registrarConsultaCOController.listConsultas}"
+		  		selection="itemAnamnese"
+		  		scrollable="true" 
+		  		scrollHeight="auto">
+			<c:set var="itemListConsultas" value="#{item}" />
+			<p:column headerText="Ações" rendered="#{registrarConsultaCOController.isPermiteAlterarAbaConsCO() and !registrarConsultaCOController.disabled and !registrarConsultaCOController.internacaoDisabled}">
+			  <mec:commandLink id="idLinkEditar" 
+			  		title="#{messages.LABEL_EDITAR}" 
+			  		action="#{registrarConsultaCOController.editarConsulta}" 
+			  		immediate="true" 
+			  		rendered="#{!registrarConsultaCOController.consultaEmEdicao}" 
+			  		profile="edit" 
+			  		ajax="true" 
+			  		render="panelListaConsultas, panelEdicaoConsulta" 
+			  		process="@this" >
+			  	<f:setPropertyActionListener target="#{registrarConsultaCOController.dadosEdicaoAnamnese}" value="#{itemListConsultas}" for="command"/>	
+			  </mec:commandLink>	
+			</p:column>
+			<p:ajax event="rowSelect" oncomplete="selecionarConsulta()" immediate="true" disabled="#{registrarConsultaCOController.disabled}">
+			  <f:setPropertyActionListener target="#{registrarConsultaCOController.itemAnamnese}" value="#{itemListConsultas}" for="command" />
+			</p:ajax>
+			<p:column  style="width: 100px;">
+			  <f:facet name="header">
+				<h:outputText value="#{messages.LABEL_REG_CONS_CO_HEADER_CONSULTA}" />
+			  </f:facet>
+			  <h:outputText value="#{itemListConsultas.id.conNumero}" />
+			</p:column>
+			<p:column style="white-space:nowrap;width: 100px;">
+			  <f:facet name="header">
+				<h:outputText value="#{messages.LABEL_REG_CONS_CO_HEADER_DATA}" />
+			  </f:facet>
+			  <h:outputText value="#{itemListConsultas.dthrConsulta}">
+				<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+			  </h:outputText>
+			</p:column>
+			<p:column>
+			  <f:facet name="header">
+				<h:outputText value="#{messages.LABEL_REG_CONS_CO_HEADER_MTV_CONS}" />
+			  </f:facet>
+			  <h:outputText value="#{itemListConsultas.motivo}" />
+			</p:column>
+		  </mec:serverDataTable>
+		</p:outputPanel>
+	  </aghu:linha>
+	</aghu:panelGeral>
+	<p:outputPanel id="dadosConsulta" layout="inline">
+	  <aghu:panelGeral legend="#{messages.TITLE_REG_CONS_CO_DADOS_CONSULTA}">
+		<aghu:panelGeral legend="#{messages.TITLE_REG_CONS_CO_COTROLE_DA_PAC}">
+		</aghu:panelGeral>
+		<aghu:linha>
+		  <mec:selectOneMenu id="idDinUterina" 
+		  		label="#{messages.LABEL_REG_CONS_CO_DIN_UTERINA}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_DIN_UTERINA}" 
+		  		value="#{registrarConsultaCOController.dinamicaUterina}" 
+		  		enum="DominioDinamicaUterina"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" update="@(#intDinUterina)" process="@this" listener="#{registrarConsultaCOController.obterReadDinUterina}" />
+		  </mec:selectOneMenu>
+		  <p:outputPanel id="intDinUterina" layout="inline">
+			<mec:selectOneMenu id="idIntensidadeDinUterina" 
+				label="#{messages.LABEL_REG_CONS_CO_INTENSIDADE}" 
+				title="#{messages.TITLE_REG_CONS_CO_INTENSIDADE}" 
+				value="#{registrarConsultaCOController.anamneseEfs.intensidadeDinUterina}" 
+				enum="DominioIntensidadeDinamicaUterina"
+				required="#{registrarConsultaCOController.dinamicaUterina ne null and !registrarConsultaCOController.readDinUterina}"
+				readonly="#{registrarConsultaCOController.dinamicaUterina eq null or registrarConsultaCOController.readDinUterina or not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" process="@this" />
+			</mec:selectOneMenu>
+		  </p:outputPanel>
+		  <mec:inputNumero id="idBCF" 
+		  		label="#{messages.LABEL_REG_CONS_CO_BCF}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_BCF}" 
+		  		size="4" 
+		  		maxlength="3" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.batimentoCardiacoFetal}" 
+		  		rendered="#{registrarConsultaCOController.permNrBfc1}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+		    <p:ajax event="change" update="@(#idBCF)" process="@this" />
+		  </mec:inputNumero>
+		  <mec:inputNumero id="idBCF2" 
+		  		label="#{messages.LABEL_REG_CONS_CO_BCF2}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_BCF2}" 
+		  		size="4" 
+		  		maxlength="3" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.batimentoCardiacoFetal2}" 
+		  		rendered="#{registrarConsultaCOController.permNrBfc2}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" update="@(#idBCF2)" process="@this"/>
+		  </mec:inputNumero>
+		  <mec:inputNumero id="idBCF3" 
+		  		label="#{messages.LABEL_REG_CONS_CO_BCF3}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_BCF3}" 
+		  		size="4" 
+		  		maxlength="3" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.batimentoCardiacoFetal3}" 
+		  		rendered="#{registrarConsultaCOController.permNrBfc3}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" update="@(#idBCF3)" process="@this" />
+		  </mec:inputNumero>
+		  <mec:inputNumero id="idBCF4" 
+		  		label="#{messages.LABEL_REG_CONS_CO_BCF4}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_BCF4}" 
+		  		size="4" 
+		  		maxlength="3" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.batimentoCardiacoFetal4}" 
+		  		rendered="#{registrarConsultaCOController.permNrBfc4}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" update="@(#idBCF4)" process="@this" />
+		  </mec:inputNumero>
+		  <mec:inputNumero id="idBCF5" 
+		  		label="#{messages.LABEL_REG_CONS_CO_BCF5}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_BCF5}" 
+		  		size="4" 
+		  		maxlength="3" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.batimentoCardiacoFetal5}" 
+		  		rendered="#{registrarConsultaCOController.permNrBfc5}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" update="@(#idBCF5)" process="@this" />
+		  </mec:inputNumero>
+		  <mec:inputNumero id="idBCF6" 
+		  		label="#{messages.LABEL_REG_CONS_CO_BCF6}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_BCF6}" 
+		  		size="4" 
+		  		maxlength="3" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.batimentoCardiacoFetal6}" 
+		  		rendered="#{registrarConsultaCOController.permNrBfc6}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" update="@(#idBCF6)" process="@this" />
+		  </mec:inputNumero>
+		  <mec:selectOneMenu id="idIndAcelTrans" 
+		  		label="#{messages.LABEL_REG_CONS_CO_ACEL_TRANS}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_ACEL_TRANS}" 
+		  		value="#{registrarConsultaCOController.indAcelTrans}" 
+		  		enum="DominioSimNao"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:selectOneMenu>
+		  <mec:inputNumero id="idAU" 
+		  		label="#{messages.LABEL_REG_CONS_CO_AU}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_AU}" 
+		  		size="3" 
+		  		maxlength="2" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.alturaUterina}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:inputNumero>
+		  <mec:selectOneMenu id="idSitFetal" 
+		  		label="#{messages.LABEL_REG_CONS_CO_SIT_FETAL}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_SIT_FETAL}" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.sitFetal}" 
+		  		enum="DominioSituacaoFetal"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:selectOneMenu>
+		  <mec:selectOneMenu id="idMovFetal" 
+		  		label="#{messages.LABEL_REG_CONS_CO_MOVFETAL}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_MOVFETAL}" 
+		  		value="#{registrarConsultaCOController.indMovFetal}" 
+		  		enum="DominioSimNao"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:selectOneMenu>
+		</aghu:linha>
+		<aghu:linha>
+		  <mec:inputText id="idExameEspecular" 
+		  		label="#{messages.LABEL_REG_CONS_CO_EXAME_ESPECULAR}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_EXAME_ESPECULAR}" 
+		  		size="50" 
+		  		maxlength="250" 
+		  		style="text-transform:uppercase" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.exameEspecular}"
+				removerCaratersEspeciais="false" 
+				emptyStringToNull="true" 
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:inputText>
+		  <mec:selectOneMenu id="idBolsa" 
+		  		label="#{messages.LABEL_REG_CONS_CO_BOLSA}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_BOLSA}" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.formaRuptura}" 
+		  		enum="DominioFormaRupturaBolsaRota"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:selectOneMenu>
+		  <mec:inputTextData id="idDataHoraRompimento" 
+		  		label="#{messages.LABEL_REG_CONS_CO_DATA_HORA}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_DATA_HORA}" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.dataHoraRompimento}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}" tipo="datahora">
+			<p:ajax event="change" process="@this" />
+		  </mec:inputTextData>
+		  <mec:selectOneMenu id="idIgnorado" 
+		  		label="#{messages.LABEL_REG_CONS_CO_IGNORADO}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_IGNORADO}" 
+		  		value="#{registrarConsultaCOController.indDthrIgnorada}" 
+		  		enum="DominioSimNao"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:selectOneMenu>
+		  <mec:selectOneMenu id="idLiqAmniotico" 
+		  		label="#{messages.LABEL_REG_CONS_CO_LIQ_AMNIOTICO}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_LIQ_AMNIOTICO}" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.liquidoAmniotico}" 
+		  		enum="DominioLiquidoAmniotico"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:selectOneMenu>
+		  <mec:selectBooleanCheckbox id="idindOdorFetido" 
+		  		label="#{messages.LABEL_REG_CONS_CO_ODOR_FETIDO}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_ODOR_FETIDO}" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.indOdorFetido}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:selectBooleanCheckbox>
+		</aghu:linha>
+		<aghu:panelGeral legend="#{messages.TITLE_REG_CONS_CO_TOQUE}">
+		  <aghu:linha>
+			<mec:selectOneMenu id="idCervice" 
+				label="#{messages.LABEL_REG_CONS_CO_CERVICE}" 
+				title="#{messages.TITLE_REG_CONS_CO_CERVICE}" 
+				value="#{registrarConsultaCOController.anamneseEfs.espessuraCervice}" 
+				enum="DominioEspessuraCervice"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" update="@(#posicao) @(#dadosConsulta)" process="@this" listener="#{registrarConsultaCOController.validarPosicaoObrigatorio}" />
+			</mec:selectOneMenu>
+			<p:outputPanel id="posicao" rendered="#{registrarConsultaCOController.posicaoObrigatorio and registrarConsultaCOController.anamneseEfs.espessuraCervice!=null}" layout="inline">
+			  <mec:selectOneMenu id="idPosicao" 
+			  		label="#{messages.LABEL_REG_CONS_CO_POSICAO}" 
+			  		title="#{messages.TITLE_REG_CONS_CO_POSICAO}" 
+			  		value="#{registrarConsultaCOController.anamneseEfs.posicaoCervice}" 
+			  		enum="DominioPosicaoCervice" 
+			  		required="true"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+				<p:ajax event="change" process="@this" />
+			  </mec:selectOneMenu>
+			</p:outputPanel>
+			<mec:inputText id="idApagamento" 
+				label="#{messages.LABEL_REG_CONS_CO_APAGAMENTO}" 
+				size="3" 
+				maxlength="3" 
+				style="text-transform:uppercase" 
+				value="#{registrarConsultaCOController.anamneseEfs.apagamento}" 
+				removerCaratersEspeciais="false" 
+				emptyStringToNull="true"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" process="@this" />
+			</mec:inputText>
+			<mec:inputNumero id="idDilatacao" 
+				label="#{messages.LABEL_REG_CONS_CO_DILATACAO}" 
+				title="#{messages.TITLE_REG_CONS_CO_DILATACAO}" 
+				size="3" 
+				maxlength="2" 
+				value="#{registrarConsultaCOController.anamneseEfs.dilatacao}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" process="@this" />
+			</mec:inputNumero>
+			<mec:selectOneMenu id="idApresentacao" 
+				label="#{messages.LABEL_REG_CONS_CO_APRESENTACAO}" 
+				title="#{messages.TITLE_REG_CONS_CO_APRESENTACAO}" 
+				value="#{registrarConsultaCOController.anamneseEfs.apresentacao}" 
+				enum="DominioApresentacao"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" process="@this" />
+			</mec:selectOneMenu>
+			<mec:selectOneMenu id="idPlanoDelee" 
+				label="#{messages.LABEL_REG_CONS_CO_PLANO_DELEE}" 
+				value="#{registrarConsultaCOController.planoDelee}" 
+				enum="DominioDelee"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" process="@this" />
+			</mec:selectOneMenu>
+		  </aghu:linha>
+		</aghu:panelGeral>
+		<aghu:panelGeral legend="#{messages.TITLE_REG_CONS_CO_AVALIACAO_PELVE}">
+		  <aghu:linha>
+			<mec:selectBooleanCheckbox id="idPromontorioAcessivel" 
+				label="#{messages.LABEL_REG_CONS_CO_PROMONTORIO_ACESSIVEL}" 
+				value="#{registrarConsultaCOController.anamneseEfs.indPromontorioAcessivel}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" process="@this" />
+			</mec:selectBooleanCheckbox>
+			<mec:selectBooleanCheckbox id="idIndEspCiaticaSaliente" label="#{messages.LABEL_REG_CONS_CO_ESP_CIATICAS_SALIENTE}" title="#{messages.TITLE_REG_CONS_CO_ESP_CIATICAS_SALIENTE}" value="#{registrarConsultaCOController.anamneseEfs.indEspCiaticaSaliente}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" process="@this" />
+			</mec:selectBooleanCheckbox>
+			<mec:selectBooleanCheckbox id="idIndSubPubicoMenor90" 
+				label="#{messages.LABEL_REG_CONS_CO_IND_SUBPUBICO_MENOR_90}" 
+				title="#{messages.TITLE_REG_CONS_CO_IND_SUBPUBICO_MENOR_90}" 
+				value="#{registrarConsultaCOController.anamneseEfs.indSubPubicoMenor90}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			  <p:ajax event="change" process="@this" />
+			</mec:selectBooleanCheckbox>
+		  </aghu:linha>
+		</aghu:panelGeral>
+		<aghu:linha>
+		  <mec:inputText id="idExameFisicoGeral" 
+		  		label="#{messages.LABEL_REG_CONS_CO_EXAME_FISICO_GERAL}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_EXAME_FISICO_GERAL}" 
+		  		maxlength="500" 
+		  		size="40" 
+		  		style="text-transform:uppercase" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.exFisicoGeral}"
+				removerCaratersEspeciais="false" 
+				emptyStringToNull="true" 
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:inputText>
+		  <mec:inputText id="idAuscultaCardiovascular" 
+		  		label="#{messages.LABEL_REG_CONS_CO_AUSCULTA_CARDIOVASCULAR}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_AUSCULTA_CARDIOVASCULAR}" 
+		  		maxlength="120" 
+		  		size="40" 
+		  		style="text-transform:uppercase" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.acv}"
+				removerCaratersEspeciais="false" 
+				emptyStringToNull="true" 
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:inputText>
+		  <mec:inputText id="idAuscultaRespiratoria" 
+		  		label="#{messages.LABEL_REG_CONS_CO_AUSCULTA_RESPIRATORIA}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_AUSCULTA_RESPIRATORIA}" 
+		  		maxlength="100" 
+		  		size="40" 
+		  		style="text-transform:uppercase" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.ar}"
+				removerCaratersEspeciais="false" 
+				emptyStringToNull="true" 
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:inputText>
+		  <mec:selectOneMenu id="idEdema" 
+		  		label="#{messages.LABEL_REG_CONS_CO_EDEMA}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_EDEMA}" 
+		  		value="#{registrarConsultaCOController.anamneseEfs.edema}" 
+		  		enum="DominioEdema"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+			<p:ajax event="change" process="@this" />
+		  </mec:selectOneMenu>
+		</aghu:linha>
+		<aghu:linha>
+		  <mec:suggestionBox id="idDiagnostico" 
+		  		label="#{messages.LABEL_REG_CONS_CO_DIAGNOSTICO}" 
+		  		title="#{messages.TITLE_REG_CONS_CO_DIAGNOSTICO}" 
+		  		descricaoInput="seq" 
+		  		descricaoLabel="descricao" 
+		  		suggestionAction="pesquisarDiagnosticoSuggestion" 
+		  		width="360"
+				posSelectionAction="posSelectionActionDiagnostico" 
+				posDeleteAction="posDeleteActioDiagnostico" 
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}"
+				controller="#{registrarConsultaCOController}" 
+				value="#{registrarConsultaCOController.diagnostico}" 
+				render="panelCid"
+				itemValue="#{itemDiagnosticoSuggestion}"
+				var="itemDiagnosticoSuggestion">
+			<p:column>
+			  <f:facet name="header">
+				<b>#{messages.TITLE_REG_CONS_CO_DIAGNOSTICO_COD}</b>
+			  </f:facet> #{itemDiagnosticoSuggestion.seq}
+           	</p:column>
+			<p:column>
+			  <f:facet name="header">
+				<b>#{messages.TITLE_REG_CONS_CO_DIAGNOSTICO_DESC}</b>
+			  </f:facet> #{itemDiagnosticoSuggestion.descricao}
+               </p:column>
+		  </mec:suggestionBox>
+		  <p:outputPanel id="panelCid" layout="inline">
+			<mec:suggestionBox id="idCID" 
+				label="#{messages.LABEL_REG_CONS_CO_CID}" 
+				title="#{messages.TITLE_REG_CONS_CO_CID}" 
+				descricaoInput="codigo" 
+				descricaoLabel="descricao" 
+				suggestionAction="pesquisarCIDSuggestion" 
+				width="360"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}" 
+				controller="#{registrarConsultaCOController}" 
+				value="#{registrarConsultaCOController.cidVO}"
+				itemValue="#{itemCIDSuggestion}"
+				var="itemCIDSuggestion">
+			  <p:column>
+				<f:facet name="header">
+				  <b>#{messages.TITLE_REG_CONS_CO_CID_SEQ}</b>
+				</f:facet> #{itemCIDSuggestion.codigo}
+                 </p:column>
+			  <p:column>
+				<f:facet name="header">
+				  <b>#{messages.TITLE_REG_CONS_CO_CID_DESC}</b>
+				</f:facet> #{itemCIDSuggestion.descricao}
+              </p:column>
+			</mec:suggestionBox>
+		  </p:outputPanel>
+		</aghu:linha>
+		<aghu:panelGeral legend="#{messages.TITLE_REG_CONS_CO_CONDUTAS}">
+		  <aghu:linha>
+			<p:outputPanel id="panelEdicaoConduta" layout="inline">
+			  <mec:suggestionBox id="idConduta" 
+			  		label="#{messages.LABEL_REG_CONS_CO_CONDUTA}" 
+			  		title="#{messages.TITLE_REG_CONS_CO_CONDUTA}" 
+			  		descricaoInput="seq" 
+			  		descricaoLabel="descricao" 
+			  		suggestionAction="pesquisarConduta" 
+			  		width="360"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or registrarConsultaCOController.condutaEmEdicao}" controller="#{registrarConsultaCOController}"
+					value="#{registrarConsultaCOController.conduta}"
+					itemValue="#{itemConduta}"
+					var="itemConduta">
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.TITLE_REG_CONS_CO_CONDUTA_SEQ}</b>
+				  </f:facet> #{itemConduta.seq}
+	              	</p:column>
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.TITLE_REG_CONS_CO_CONDUTA_DESC}</b>
+				  </f:facet> #{itemConduta.descricao}
+	              	</p:column>
+			  </mec:suggestionBox>
+			  <mec:inputText id="idComplemento" 
+			  		title="#{messages.TITLE_REG_CONS_CO_COMPLEMENTO}" 
+			  		label="#{messages.LABEL_REG_CONS_CO_COMPLEMENTO}" 
+			  		size="20" 
+			  		maxlength="2000" 
+			  		style="text-transform:uppercase" 
+			  		value="#{registrarConsultaCOController.planoIniciais.complemento}" 
+			  		removerCaratersEspeciais="false"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}">
+				<p:ajax event="change" process="@this" />
+			  </mec:inputText>
+			 
+			 <p:outputPanel id="panelAcoesConduta"  style="width:235px;float:left">
+				  <mec:commandButton id="btAdiconarConduta" 
+				  		style="margin-top:17px !important;" 
+				  		value="#{messages.LABEL_BOTAO_ADICIONAR_CONDUTA}" 
+				  		rendered="#{!registrarConsultaCOController.condutaEmEdicao}"
+						disabled="#{not mf:hasPermission(securityController,'registrarConsultaCO, executar') or not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}"
+						action="#{registrarConsultaCOController.adiconarCondutas}" 
+						render="panelEdicaoConduta, panelListaConduta" 
+						profile="add" 
+						ajax="true" 
+						process="@this,panelEdicaoConduta,panelListaConduta" />
+				  <mec:commandButton id="btEditarConduta" 
+				  		style="margin-top:17px !important;" 
+				  		value="#{messages.LABEL_REG_CONS_CO_ALTERAR}" 
+				  		rendered="#{registrarConsultaCOController.condutaEmEdicao}"
+						disabled="#{not mf:hasPermission(securityController,'registrarConsultaCO, executar') or not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}"
+						action="#{registrarConsultaCOController.adiconarCondutas}" 
+						render="panelEdicaoConduta, panelListaConduta" 
+						profile="ok" 
+						ajax="true" 
+						process="@this,panelEdicaoConduta,panelListaConduta"/>
+				  <mec:commandButton id="btCancelarEdicaoCondutas" 
+				  		style="margin-top:17px !important;" 
+				  		value="#{messages.LABEL_REG_CONS_CO_CANCELAR_EDICAO}" 
+				  		immediate="true" 
+				  		rendered="#{registrarConsultaCOController.condutaEmEdicao}" 
+				  		disabled="#{registrarConsultaCOController.disabled}"
+						action="#{registrarConsultaCOController.cancelarEdicaoCondutas}" 
+						render="panelEdicaoConduta, panelListaConduta" 
+						profile="cancel" 
+						ajax="true" 
+					process="@this,panelEdicaoConduta,panelListaConduta"/>
+				</p:outputPanel>
+				
+			</p:outputPanel>
+		  </aghu:linha>
+		  <aghu:linha>
+			<p:outputPanel id="panelListaConduta" layout="block" style="width: 100%; max-height:200px; overflow:auto;" rendered="#{not empty registrarConsultaCOController.listCondutas}">
+				<mec:serverDataTable id="idTableConduta"
+						controller="#{registrarConsultaCOController}" 
+						list="#{registrarConsultaCOController.listCondutas}" 
+						inputRadio="false" 
+						scrollable="true" 
+						scrollHeight="200px">
+				  <c:set var="_plano" value="#{item}" />
+				  <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false">
+				    <mec:commandLink id="idLinkEditar" 
+				    	title="#{messages.LABEL_EDITAR}" 
+				    	action="#{registrarConsultaCOController.editarCondutas(_plano)}" 
+				    	rendered="#{!registrarConsultaCOController.condutaEmEdicao}"
+						disabled="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or not registrarConsultaCOController.isHabilitaExclusao() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}" 
+						profile="edit" 
+						ajax="true"
+						render="panelEdicaoConduta, panelListaConduta" 
+						process="@this" />
+					<mec:commandLink id="idLinkExcluir" 
+						title="#{messages.LABEL_EXCLUIR}" 
+						onclick="PF('panelModalExcluirCondutasWG').show();;" 
+						rendered="#{!registrarConsultaCOController.condutaEmEdicao}"
+						disabled="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}" 
+						profile="delete" 
+						ajax="true" 
+						process="@this">
+					  <f:setPropertyActionListener target="#{registrarConsultaCOController.planoIniciaisExclusao}" value="#{_plano}" for="command" />
+					</mec:commandLink>
+				  </p:column>
+				  <p:column>
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_REG_CONS_CO_CONDUTA}" />
+					</f:facet>
+					<h:outputText value="#{_plano.conduta.descricao}" />
+				  </p:column>
+				  <p:column>
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_REG_CONS_CO_COMPLEMENTO}" />
+					</f:facet>
+					<h:outputText value="#{_plano.complemento}" />
+				  </p:column>
+				</mec:serverDataTable>
+			  </p:outputPanel>
+			</aghu:linha>
+		  </aghu:panelGeral>
+		<aghu:linha>
+		  <mec:inputTextArea id="idObservacao" 
+				maxlength="2000" 
+				cols="180" 
+				rows="15" 
+				style="width: 99%; height: 50px;resize: none" 
+				label="#{messages.LABEL_REG_CONS_CO_DISG_SEC_OBS}" 
+				title="#{messages.TITLE_REG_CONS_CO_DISG_SEC_OBS}" 
+				value="#{registrarConsultaCOController.anamneseEfs.observacao}"
+				removerCaratersEspeciais="false" 
+				emptyStringToNull="true" 
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}" 
+				styleClass="maxlength_(2000)" />
+	    </aghu:linha>
+	  </aghu:panelGeral>
+	</p:outputPanel>
+	<p:outputPanel>
+	  <aghu:acao>
+		<p:outputPanel id="panelAcao1">
+			<mec:commandButton id="bt_imprimir_previa" 
+				value="#{messages.LABEL_REG_CONS_CO_IMP_PREVIA}" 
+				action="#{registrarConsultaCOController.imprimirPrevia}"
+				disabled="#{not mf:hasPermission(securityController,'imprimirConsultaPreviaEmergenciaObstetrica, executar') or registrarConsultaCOController.disabled}" 
+				ajax="true" 
+				process="@this" 
+				render="Messages,panelAcao1,panelAcao2" />
+			<mec:commandButton id="bt_solicitar_exame" 
+				value="#{messages.LABEL_REG_CONS_CO_SOLIC_EXAMES}" 
+				action="#{registrarConsultaCOAcoesController.solicitarExame}"
+				disabled="#{registrarConsultaCOAcoesController.moduloAgendamentoExameAtivo()}" 
+				ajax="true" 
+				process="@this" 
+				render="Messages,panelModalAutenticacaoSolicitarExamesAbaConsultaSO,panelAcao1,panelAcao2" />
+			<mec:commandButton id="bt_consultar_exame" 
+				value="#{messages.LABEL_REG_CONS_CO_CONSUL_EXAMES}" 
+				disabled="true" 
+				action="#{registrarConsultaCOController}" />
+			<mec:commandButton id="bt_ingressar_so" 
+				value="#{messages.LABEL_REG_CONS_CO_INGRESSAR_SO}" 
+				disabled="#{registrarConsultaCOController.disabled}" 
+				action="#{registrarConsultaCOController.ingressarPacienteSO}" 
+				ajax="true" 
+				process="@this" />		
+			<mec:commandButton id="bt_prescrever" 
+				value="#{messages.LABEL_REG_CONS_CO_PRESCREVER}" 
+				action="#{registrarConsultaCOController.abrirModalPrescricao}" 
+				disabled="#{!registrarConsultaCOController.habilitarPrescricao()}" 
+				ajax="true" 
+				process="@this"
+				render="panelModalAutenticacaoPrescreverAbaConsultaCO">
+			</mec:commandButton>			
+			<mec:commandButton id="bt_finalizar_consulta" 
+				value="#{messages.LABEL_REG_CONS_CO_FINALIZAR_CONSULTA}" 
+				disabled="#{registrarConsultaCOController.itemAnamnese.consulta == null or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}"
+				action="#{registrarConsultaCOController.gravarFinalizarConsulta}" 
+				ajax="true" 
+				process="@this" 
+				render="panelModalAutenticacaoFinalizarConsulta,panelAcao1,panelAcao2" />
+			<mec:commandButton id="bt_internar" 
+				value="#{messages.LABEL_REG_CONS_CO_INTERNAR}" 
+				action="#{registrarConsultaCOController.realizarInternacao}"
+				disabled="#{registrarConsultaCOController.itemAnamnese == null or not registrarConsultaCOController.isHabilitaInternar() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled}" 
+				ajax="true" 
+				process="@this"
+				render="Messages,modalPanelTipoGravidez,modalPanelSolicitarExames, modalSolicitarExames, panelModalAutenticacaoAposVerificarConduta" />
+			<mec:commandButton id="bt_liberar_paciente" value="#{messages.LABEL_REG_CONS_CO_LIBERAR_PAC}" disabled="true" action="#{registrarConsultaCOController}" />
+	    </p:outputPanel>
+	  </aghu:acao>
+	  <aghu:acao>
+	    <p:outputPanel id="panelAcao2">
+		  <mec:commandButton id="id_bt_gravar" 
+				value="#{messages.LABEL_GRAVAR}" 
+				disabled="#{not mf:hasPermission(securityController,'registrarConsultaCO, executar') or not registrarConsultaCOController.isPermiteAlterarAbaConsCO() or registrarConsultaCOController.disabled}"
+				action="#{registrarConsultaCOController.gravarConsultaCO}" 
+				profile="ok" 
+				ajax="true"
+				process="@this,idPosicao"
+				render="panelEdicaoConsulta,panelListaConsultas,dadosConsulta,panelAcao1,panelAcao2"/>
+		  <mec:commandButton id="id_bt_desbloqueio" 
+				ajax="true" 
+				process="@this" 
+				value="#{registrarConsultaCOController.isNotasAdicionais() ? messages.LABEL_REG_CONS_CO_NOTAS_ADICIONAIS : messages.LABEL_REG_CONS_CO_DESBLOQUEIO}"
+				disabled="#{not registrarConsultaCOController.permDesbloquearConsultaCO or not registrarConsultaCOController.isHabilitaDesbloqueio() or registrarConsultaCOController.disabled}" 
+				action="#{registrarConsultaCOAcoesController.desbloquearConsultaCO}" />
+		  <mec:commandButton id="bt_atestados" 
+				value="#{messages.LABEL_REG_CONS_CO_ATESTADOS}" 
+				disabled="true" 
+				action="#{registrarConsultaCOController}" />
+		  <mec:commandButton id="bt_receitas" 
+				value="#{messages.LABEL_REG_CONS_CO_RECEITAS}" 
+				disabled="true" 
+				action="#{registrarConsultaCOController}" />
+			<mec:commandButton id="bt_termos_consentimento"
+				value="#{messages.LABEL_REG_CONS_CO_TERMOS_CONSE}"
+				disabled="#{not mf:hasPermission(securityController,'registrarConsultaCO, executar')}"
+				action="#{registrarConsultaCOController.redirecionarTermosConsentimento}"
+				ajax="true" process="@this"/>
+		  <mec:commandButton id="bt_laudo_aih" 
+				value="#{messages.LABEL_REG_CONS_CO_LAUDO_AIH}" 
+				disabled="true" 
+				action="#{registrarConsultaCOController}" />
+	    </p:outputPanel>
+	  </aghu:acao>
+	</p:outputPanel>
+	<ui:include src="/pages/perinatologia/modalDadosPendentesAbaConsultaCO.xhtml" />
+	<p:dialog id="panelModalExcluirCondutas" 
+			width="400" 
+			height="150" 
+			autosized="false" 
+			domElementAttachment="parent" 
+			resizeable="false" 
+			modal="true" 
+			resizable="false" 
+			widgetVar="panelModalExcluirCondutasWG">
+	  <f:facet name="header">
+		<h:outputText value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+	  </f:facet>
+	  <br clear="none" /> #{messages.MSG_REG_CONS_CO_EXCLUSAO_CONDUTA} #{registrarConsultaCOController.planoIniciaisExclusao.conduta.descricao} ?
+      <br clear="none" />
+	  <br clear="none" />
+	  <br clear="none" />
+	  <aghu:acao>
+		<mec:commandButton value="#{messages.CASCA_LABEL_SIM}" 
+			oncomplete="PF('panelModalExcluirCondutasWG').hide();" 
+			action="#{registrarConsultaCOController.excluirConduta}" 
+			render="panelEdicaoConduta, panelListaConduta" 
+			profile="ok" />
+		<mec:commandButton value="#{messages.CASCA_LABEL_NAO}" 
+			onclick="PF('panelModalExcluirCondutasWG').hide();return false;" 
+			profile="cancel" 
+			ajax="true" />
+	  </aghu:acao>
+	</p:dialog>
+	<p:outputPanel id="modalPanelTipoGravidez" layout="inline">
+	  <p:dialog id="modalTipoGravidez" 
+	  		width="400" 
+	  		height="150" 
+	  		autosized="false" 
+	  		domElementAttachment="parent" 
+	  		resizeable="false" 
+	  		modal="true" 
+	  		resizable="false" 
+	  		widgetVar="modalTipoGravidezWG">
+		<f:facet name="header">
+		  <h:outputText value="#{messages.MENSAGEM_INFORMATIVA}" />
+		</f:facet>
+		<f:facet name="controls">
+		  <h:panelGroup>
+		    <h:form name="formModalTipoGravidez">
+		   	  <mec:commandLink action="#{registrarConsultaCOController.verificarExameVDRLnaoSolicitado}" 
+			  		immediate="true"
+					ajax="true" render="Messages,modalPanelSolicitarExames,panelModalAutenticacaoAposVerificarConduta" process="@this">
+			    <h:graphicImage value="/resources/img/close.png" 
+			    	styleClass="hidelink" 
+			    	id="hidelinkModalTipoGravidez" />
+			  </mec:commandLink>
+			</h:form>
+		  </h:panelGroup>
+		</f:facet>
+		<br clear="none" /> #{messages.MCO_00744} 
+        <br clear="none" />
+		<br clear="none" />
+		<br clear="none" />
+		<aghu:acao>
+		  <mec:commandButton id="bt_ok_modal" 
+		  		value="#{messages.LABEL_OK}" 
+		  		action="#{registrarConsultaCOController.verificarExameVDRLnaoSolicitado}"
+				ajax="true" 
+				render="Messages,modalPanelSolicitarExames,panelModalAutenticacaoAposVerificarConduta" />
+		</aghu:acao>
+	  </p:dialog>
+    </p:outputPanel>
+  </ui:composition>
+</html>

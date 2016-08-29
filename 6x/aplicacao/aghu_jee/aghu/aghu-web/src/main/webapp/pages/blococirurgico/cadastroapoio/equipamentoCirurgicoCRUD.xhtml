@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{equipamentoCirurgicoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{equipamentoCirurgicoController}" ignoreEnter="true"/>  
+      <p:outputPanel id="panelTodos" layout="inline"> 
+        <h:form prependId="false" id="formEquipamentoCirurgicoCrud"> 
+          
+          <aghu:panelGeral legend="#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS_CADASTRO}"> 
+            <aghu:linha> 
+            
+              <mec:inputNumero 
+              		label="#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS_CODIGO}" size="8" readonly="true" 
+              		rendered="#{equipamentoCirurgicoController.emEdicao}" value="#{equipamentoCirurgicoController.equipamentoCirurgico.seq}" id="codigo">
+              </mec:inputNumero>  
+              
+              <mec:inputText id="descricao" label="#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS_DESCRICAO}" title="#{messages.TITLE_EQUIPAMENTOS_CIRURGICOS_DESCRICAO}" 
+              		style="text-transform:uppercase" size="50" maxlength="100" value="#{equipamentoCirurgicoController.equipamentoCirurgico.descricao}" required="true">
+              </mec:inputText>  
+              
+              <mec:selectBooleanCheckbox label="#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS_SITUACAO}" title="#{messages.TITLE_EQUIPAMENTOS_CIRURGICOS_SITUACAO}" 
+              		value="#{equipamentoCirurgicoController.situacaoCheck}"  id="ativo"> 
+              		 <p:ajax event="change" update="@(#codigo),@(#descricao),@(#observacao)" process="@this" />
+              </mec:selectBooleanCheckbox> 
+
+            </aghu:linha>  
+            <aghu:linha style="margin-top: 16px !important;"> 
+              		<mec:inputTextArea id="observacao" label="#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS_MOTIVO_INATIVACAO}" 
+              			title="#{messages.TITLE_EQUIPAMENTOS_CIRURGICOS_MOTIVO_INATIVACAO}" cols="100" rows="4" size="125" 
+              			readonly="#{equipamentoCirurgicoController.situacaoCheck}" value="#{equipamentoCirurgicoController.equipamentoCirurgico.motivoInat}" 
+              			removerCaratersEspeciais="false" maxlength="120">
+              		</mec:inputTextArea> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" 
+            		requestDelay="2000" ajaxSingle="true" action="#{equipamentoCirurgicoController.confirmar}" 
+            		render="panelCamposEdicao,panelListaItens" profile="ok"/>  
+            <mec:backButton id="bt_voltar" immediate="true"  
+            		action="#{equipamentoCirurgicoController.voltar}"/> 
+          </aghu:acao>
+		</h:form>  
+        <p:outputPanel rendered="#{equipamentoCirurgicoController.emEdicao}" layout="inline"> 
+          <h:form prependId="false" id="formQuantidadeEquipamentosUnidade"> 
+            <aghu:panelGeral legend="#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS_POR_UNIDADE}"> 
+              <p:outputPanel id="panelCamposEdicao" layout="inline"> 
+                <aghu:linha> 
+                  <mec:suggestionBox id="unidadeFuncional" label="#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS_POR_UNIDADE_UNIDADE_FUNCIONAL}" 
+                  		title="#{messages.TITLE_EQUIPAMENTOS_CIRURGICOS_POR_UNIDADE_UNIDADE_FUNCIONAL}" descricaoInput="seq" descricaoLabel="descricao" 
+                  		readonly="#{equipamentoCirurgicoController.emEdicaoItem or !equipamentoCirurgicoController.situacaoCheck}" suggestionAction="pesquisarUnidadeFuncional" 
+                  		width="820" required="true" controller="#{equipamentoCirurgicoController}" value="#{equipamentoCirurgicoController.equipamentoCirurgicoPorUnid.aghUnidadesFuncionais}"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_SEQ}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{item.seq}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_DESCRICAO}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{item.descricao}"/> 
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <mec:inputNumero label="#{messages.LABEL_EQUIPAMENTOS_CIRURGICOS_POR_UNIDADE_QUANTIDADE}" title="#{messages.TITLE_EQUIPAMENTOS_CIRURGICOS_POR_UNIDADE_QUANTIDADE}" size="6" maxlength="2" readonly="#{!equipamentoCirurgicoController.situacaoCheck}" value="#{equipamentoCirurgicoController.equipamentoCirurgicoPorUnid.quantidade}" required="true" id="quantidade"/>  
+                  <div id="panelBtAdicionar" style="float:left; margin-top:18px;"> 
+                    <mec:commandButton id="bt_confirmar" value="#{messages.LABEL_GRAVAR}" rendered="#{!equipamentoCirurgicoController.emEdicaoItem}" 
+                    		disabled="#{!equipamentoCirurgicoController.situacaoCheck}" action="#{equipamentoCirurgicoController.confirmarItem}" 
+                    		render="panelCamposEdicao" profile="ok"/>  
+                    		
+                    <mec:commandButton value="#{messages.LABEL_ALTERAR}" name="btAlterarItem" rendered="#{equipamentoCirurgicoController.emEdicaoItem}" block="true" 
+                    		action="#{equipamentoCirurgicoController.confirmarItem}" render="panelCamposEdicao" profile="ok"/>  
+                    
+                    <mec:commandButton name="btCancelarEdicao" rendered="#{equipamentoCirurgicoController.emEdicaoItem}" 
+                    		action="#{equipamentoCirurgicoController.cancelarEdicao}" reRender="panelCamposEdicao" value="#{messages.LABEL_CANCELAR_EDICAO}" 
+                    		styleClass="bt_cancel_edit  bt_cinza"/> 
+                  </div> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelListaItens" layout="block"> 
+                <aghu:linha> 
+                  <p:outputPanel layout="block" style="height:200px; overflow-y:scroll;" rendered="#{not empty equipamentoCirurgicoController.equipamentoCirgPorUnidList}"> 
+                    <mec:serverDataTable id="tabelaPacUnidadeFuncionais" rendered="#{not empty equipamentoCirurgicoController.equipamentoCirgPorUnidList}" 
+                    	list="#{equipamentoCirurgicoController.equipamentoCirgPorUnidList}" scrollable="true" > 
+                      <c:set var="_item" value="#{item}"/>  
+                      <p:column style="width:5%;white-space:nowrap;"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                        </f:facet>  
+                        <mec:commandLink action="#{equipamentoCirurgicoController.editar}" rendered="#{equipamentoCirurgicoController.situacaoCheck}" 
+                        	title="#{messages.LABEL_EDITAR}" profile="edit" ajax="true" render="panelCamposEdicao,panelListaItens" process="@this"> 
+                          <f:setPropertyActionListener value="#{_item}" target="#{equipamentoCirurgicoController.equipamentoCirurgicoPorUnid}" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink title="#{messages.LABEL_EXCLUIR}" 
+                        	rendered="#{equipamentoCirurgicoController.situacaoCheck}" 
+                        	action="#{equipamentoCirurgicoController.excluir(_item)}" 
+                        	profile="delete" ajax="true" 
+                        	render="panelCamposEdicao, tabelaPacUnidadeFuncionais, panelListaItens" process="@this"> 
+                        </mec:commandLink> 
+                      </p:column>  
+                      <p:column style="width:80%; white-space:nowrap;"> 
+                        <f:facet name="header" style="white-space:nowrap;"> 
+                          <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.aghUnidadesFuncionais.seq}"/> - 
+                        <h:outputText value="#{_item.aghUnidadesFuncionais.descricao}"/> 
+                      </p:column>  
+                      <p:column style="width:10%; white-space:nowrap;"> 
+                        <f:facet name="header" style="white-space:nowrap;"> 
+                          <h:outputText value="#{messages.LABEL_QUANTIDADE}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.quantidade}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </aghu:panelGeral> 
+          </h:form> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+      <p:dialog onshow="aghu.system.style.rich_modal();" id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO_EQUIPAMENTOS_CIRURGICOS_POR_UNIDADE}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <mec:commandButton id="bt_excluir" value="#{messages.LABEL_SIM}" block="true" action="#{equipamentoCirurgicoController.excluir}" profile="search"/>  
+            <mec:commandButton id="bt_cancelarExcluir" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

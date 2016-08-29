@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Lista de pacientes internados</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{listarPacientesRegistroControleController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{listarPacientesRegistroControleController}"/>  
+      <h:form prependId="false" id="formListaPacientes"> 
+        <aghu:panelGeral legend="#{messages.LEGENDA_LISTA_PACIENTES}"> 
+          <aghu:linha> 
+              <mec:serverDataTable id="listaPacientes" list="#{listarPacientesRegistroControleController.lista}"  scrollHeight="400"  scrollable="true"> 
+                <c:set var="_listaPacientes" value="#{item}"/>  
+                <p:column width="5%"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                  </f:facet>  
+                  <mec:commandLink action="#{listarPacientesRegistroControleController.realizarChamada('controlepaciente-manterRegistros')}" title="#{messages.LABEL_TOOLTIP_MANTER_CONTROLE}" styleClass=" silk-controles-paciente-adicionar silk-icon" ajax="true" process="@this"> 
+                    <f:setPropertyActionListener target="#{manterControlesPacienteController.atendimentoSeq}" value="#{_listaPacientes.atdSeq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{listarPacientesRegistroControleController.atdSeq}" value="#{_listaPacientes.atdSeq}" for="command"/> 
+                  </mec:commandLink>  
+                  <mec:commandLink action="#{listarPacientesRegistroControleController.realizarChamada('controlepaciente-visualizarRegistros')}" title="#{messages.LABEL_TOOLTIP_VISUALIZAR_CONTROLE}" styleClass=" silk-controles-paciente-visualizar silk-icon" ajax="true" process="@this"> 
+                    <f:setPropertyActionListener target="#{registrosPacienteController.codigoPaciente}" value="#{_listaPacientes.pacCodigo}" for="command"/>  
+                    <f:setPropertyActionListener target="#{registrosPacienteController.voltarPara}" value="controlepaciente-listarPacientesInternados" for="command"/> 
+                  </mec:commandLink>  
+                  <mec:commandLink action="#{listarPacientesRegistroControleController.realizarChamada('controlepaciente-checagemEletronica')}" rendered="#{!_listaPacientes.disableIconeChecagem}" title="#{messages.LABEL_TOOLTIP_CHECAGEM}" styleClass=" silk-checagem-eletronica silk-icon" ajax="true" process="@this"> 
+                    <f:setPropertyActionListener target="#{registrosPacienteController.codigoPaciente}" value="#{_listaPacientes.pacCodigo}" for="command"/>  
+                    <f:setPropertyActionListener target="#{registrosPacienteController.atdSeq}" value="#{_listaPacientes.atdSeq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{registrosPacienteController.voltarPara}" value="controlepaciente-listarPacientesInternados" for="command"/> 
+                  </mec:commandLink>  
+                  <mec:commandLink action="#{listarPacientesRegistroControleController.realizarChamada('controlepaciente-visualizarPrescMedica')}" rendered="true" title="#{messages.LABEL_TOOLTIP_VISUALIZAR_PRESC_MEDICA}" styleClass=" silk-prescricao-menu silk-icon" ajax="true" process="@this"> 
+                    <f:setPropertyActionListener target="#{selecionarPrescricaoConsultarController.codigoPaciente}" value="#{_listaPacientes.pacCodigo}" for="command"/>  
+                    <f:setPropertyActionListener target="#{selecionarPrescricaoConsultarController.voltarPara}" value="controlepaciente-listarPacientesInternados" for="command"/> 
+                 	<f:setPropertyActionListener target="#{selecionarPrescricaoConsultarController.atdSeq}" value="#{_listaPacientes.atdSeq}" for="command"/>
+                  </mec:commandLink>  
+                  <mec:commandLink action="#{listarPacientesRegistroControleController.realizarChamada('controlepaciente-visualizarPrescEnfermagem')}" rendered="true" title="#{messages.LABEL_TOOLTIP_VISUALIZAR_PRESC_ENFERMAGEM}" styleClass=" silk-prescricao-enf-menu silk-icon" ajax="true" process="@this">
+					<f:setPropertyActionListener target="#{selecionarPrescricaoEnfermagemController.prontuario}" value="#{_listaPacientes.prontuario}" for="command" />
+					<f:setPropertyActionListener target="#{selecionarPrescricaoEnfermagemController.cameFrom}" 	value="controlepaciente-listarPacientesInternados" for="command" />
+				</mec:commandLink> 
+                </p:column>  
+                <p:column style="padding:0px; width:5%; #{_listaPacientes.pacienteNotifGMR and _listaPacientes.sumarioAlta ?'background-color:#00FFFF':''}" sortable="true" sortBy="#{_listaPacientes.descricaoLocalizacao}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LOCAL}"/> 
+                  </f:facet> 
+                  <p:outputPanel  id="descricaoLocalizacao"  style="padding: 4px 10px;" layout="block">
+                  	<h:outputText  value="#{_listaPacientes.descricaoLocalizacao}"/> 
+                  </p:outputPanel> 
+                  <p:tooltip rendered="#{_listaPacientes.pacienteNotifGMR}" styleClass="tooltip" trackMouse="true" for="descricaoLocalizacao"> 
+                    <h:outputText value="#{messages.LABEL_TOOLTIP_GMR}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column style="padding:0px; width:30%; #{_listaPacientes.sumarioAlta == true?'background-color:#FFFF99':''} #{_listaPacientes.pacienteNotifGMR and not _listaPacientes.sumarioAlta ?'background-color:#00FFFF':''}" sortable="true" sortBy="#{_listaPacientes.nome}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="nome" style="padding: 4px 10px;" layout="block">
+                  	<h:outputText value="#{_listaPacientes.nome}"/>  
+                  </p:outputPanel>
+                  <p:tooltip rendered="#{_listaPacientes.sumarioAlta}" styleClass="tooltip" trackMouse="true" for="nome"> 
+                    <h:outputText value="#{messages.LABEL_TOOLTIP_SUMARIO_ALTA_VALIDADO}"/> 
+                  </p:tooltip>  
+                  <p:tooltip rendered="#{_listaPacientes.pacienteNotifGMR and not _listaPacientes.sumarioAlta}" styleClass="tooltip" trackMouse="true" for="nome"> 
+                    <h:outputText value="#{messages.LABEL_TOOLTIP_GMR}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column width="3%" style="text-align:center;" sortable="true" sortBy="#{_listaPacientes.idade}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_IDADE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_listaPacientes.idade}"/> 
+                </p:column>  
+                <p:column width="5%" style="text-align:center;" sortable="true" sortBy="#{_listaPacientes.prontuario}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_listaPacientes.prontuario}"/> 
+                </p:column>  
+                <p:column width="5%" sortable="true" sortBy="#{_listaPacientes.dataInicioAtendimento}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DATA_ATENDIMENTO_CONTROLE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_listaPacientes.dataInicioAtendimento}"> 
+                    <f:convertDateTime pattern="dd/MM/yy HH:mm"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column width="8%" sortable="true" sortBy="#{_listaPacientes.especialidade}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ESPECIALIDADE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_listaPacientes.especialidade}"/> 
+                </p:column>  
+                <p:column  width="3%" style="padding:0px;text-align:center;" sortable="true" sortBy="#{_listaPacientes.sinalizadorUlceraPressao}">
+                  <p:outputPanel id="image"  style="padding: 4px 10px;" layout="block">
+                  	<h:graphicImage styleClass="silk-icon #{messages['ICONE_'.concat(_listaPacientes.sinalizadorUlceraPressao.name())]}" rendered="#{_listaPacientes.sinalizadorUlceraPressao != null}"/>  
+                  </p:outputPanel>
+                  <p:tooltip  rendered="#{_listaPacientes.sinalizadorUlceraPressao != null}" styleClass="tooltip" trackMouse="true" for="image" > 
+                    <h:outputText value="#{messages['LABEL_TOOLTIP_'.concat(_listaPacientes.sinalizadorUlceraPressao.name())]}" />
+                  </p:tooltip> 
+                </p:column> 
+              </mec:serverDataTable> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="configurarLista" value="#{messages.LABEL_CONFIGURAR_LISTA}" action="#{listarPacientesRegistroControleController.configurarLista}" styleClass="bt_cinza"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	  xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	  xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	  xmlns:p="http://primefaces.org/ui" 
+	  xmlns:pe="http://primefaces.org/ui/extensions" 
+	  xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	  xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	  xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	  xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	  xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition > 
+
+  	<aghu:panelGeral>  
+  		<mec:serverDataTable id="resultListAb1"
+							dataModel="dataModel"
+  							selection="consultaSelecionada" 	
+  							controller="#{pesquisarPacientesAgendadosController}" ajax="true" 
+  							render="@(#botoesAcao)" scrollHeight="#{pesquisarPacientesAgendadosController.percPanel}">         
+        
+          <p:column style="text-align:center;#{pesquisarPacientesAgendadosController.consultaSelecionada eq item?'background-color:PapayaWhip;':''} width: 50px" sortBy="#{item.controledthrChegada}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_CHEGOU}"/> 
+            </f:facet>  
+            
+            <p:selectBooleanCheckbox value="#{item.chegou}" rendered="#{not item.chegou and item.origem ne 'S' and mf:hasPermission(securityController,'avisoChegadaPaciente,avisarChegadaPaciente') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled') and not item.chegou and item.origem ne 'S'}" style="border:0px;vertical-align:middle;" ignoreDupResponses="true" disabled="#{mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}" onchange="PF('loadDialogWG').show();">
+				<p:ajax event="change"
+					onstart="saveScrollPosition();"
+					oncomplete="if(#{pesquisarPacientesAgendadosController.exibirModalInformarChaveSisreg}){PF('modalInformarChaveSisregWG').show();}; "
+					update="@(#resultListAb1) @(#resultListAb2) @(#panelModalInformarChaveSisreg)"
+					process="@this @(#hdnScrollPos)"
+					async="false" 
+					listener="#{pesquisarPacientesAgendadosController.verificaConsultaInformarCodigoCentral(item)}" />
+			</p:selectBooleanCheckbox>  
+            
+            <p:selectBooleanCheckbox value="#{item.chegou}" rendered="#{not item.chegou and item.origem eq 'S' and mf:hasPermission(securityController,'avisoChegadaPaciente,avisarChegadaPaciente') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled') and not item.chegou and item.origem eq 'S'}" style="border:0px;vertical-align:middle;" disabled="#{mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}" onchange="PF('loadDialogWG').show();">
+				<p:ajax event="change"
+					onstart="saveScrollPosition();"
+					oncomplete="PF('modalInformarChaveSisregWG').show(); "
+					update="@(#panelModalInformarChaveSisreg)" 
+					process="@this @(#hdnScrollPos)"
+					async="false" 
+					listener="#{pesquisarPacientesAgendadosController.verificarChegouSisreg(item)}" />
+			</p:selectBooleanCheckbox>  
+            
+            <p:selectBooleanCheckbox value="#{item.chegou}" rendered="#{item.chegou and mf:hasPermission(securityController,'avisoChegadaPaciente,avisarChegadaPaciente') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled') and item.chegou}" style="border:0px;vertical-align:middle;" disabled="#{mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}" >
+				<p:ajax event="change"
+					onstart="saveScrollPosition();"
+					oncomplete="PF('modalDesmarcacaoWG').show();" 
+					update="@(#txtMsg)" 
+					process="@this @(#hdnScrollPos)"
+					listener="#{pesquisarPacientesAgendadosController.selecionarConsulta(item)}" />
+			</p:selectBooleanCheckbox> 
+          
+          </p:column>
+            
+          <p:column sortBy="#{item.dtConsulta}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width: 25px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_HORA_CONS}"/> 
+            </f:facet>
+            <p:outputPanel id="horaConsulta" layout="block">
+	            <h:outputText value="#{item.dtConsulta}"> 
+	              <f:convertDateTime pattern="HH:mm"/> 
+	            </h:outputText> 
+            </p:outputPanel>
+            <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="horaConsulta">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>
+          </p:column> 
+           
+          <p:column sortBy="#{item.pacienteNome}" sortable="true" style="width:200px;#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)}" > 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PACIENTE}"/> 
+            </f:facet>  
+            <h:outputText style="#{(item.pacienteNroCartaoSaude == null)?'font-weight:bold':''}" id="colunaPaciente" value="#{item.pacienteNome}" title="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_VER_DETALHES}"/>  
+            <p:tooltip for="colunaPaciente" id="ttpColunaPaciente" styleClass="tooltip">
+              #{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_GRADE}: #{item.gradeSeq} 
+              <br clear="none"/> #{messages.LABEL_MANTER_GRADE_AGENDAMENTO_EQUIPE}: #{item.gradeEquipeNome} 
+              <br clear="none"/> #{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PROFISSIONAL}: #{pesquisarPacientesAgendadosController.buscaCons(item)} 
+              <br clear="none"/> #{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_CONVENIO}: #{item.convenioSaudeDescricao} - #{item.convenioDescricao} 
+              <br clear="none"/>  
+              <b>#{(item.pacienteNroCartaoSaude == null)?(messages.MSG_CARTAO_SAUDE):''}</b> 
+              <b>#{(item.pacienteNotifGMR)?pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+            </p:tooltip> 
+          </p:column>  
+          
+          <p:column sortBy="#{item.pacienteDtNasc}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width: 35px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_IDADE}"/> 
+            </f:facet>  
+            <p:outputPanel id="idade" layout="block">
+            	<h:outputText value="#{item.idade}"/> 
+            </p:outputPanel>
+             <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="idade">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>	
+          </p:column>  
+          
+          <p:column sortBy="#{item.prontuario}" sortable="true" style="#{pesquisarPacientesAgendadosController.buscarEstiloCampoProntuario(item)} width: 65px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PRONTUARIO}"/> 
+            </f:facet> 
+            <p:outputPanel id="prontuario" layout="block"> 
+            	<h:outputText value="#{item.prontuario}" title="#{pesquisarPacientesAgendadosController.verificarProntuarioVirtual(item.prontuario)}"/> 
+          	</p:outputPanel>
+          	<p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="prontuario">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>	
+          </p:column>  
+          
+          <p:column sortBy="#{item.numero}" sortable="true" style="width:50px;background-color:#{item.condicaoCorExibica};"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_CONSULTA}"/> 
+            </f:facet>  
+            
+            <p:outputPanel id="colunaNumero" layout="block"> 
+            	<h:outputText value="#{item.numero}" title="#{item.condicaoDescricao}"/> 
+            </p:outputPanel>
+          	<p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="colunaNumero">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>	
+          </p:column>  
+          
+          <p:column sortBy="#{item.controledthrChegada}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width: 50px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_CHEGADA}"/> 
+            </f:facet>  
+            <p:outputPanel id="dataChegada" layout="block"> 
+	            <h:outputText value="#{item.controledthrChegada}" rendered="#{item.controleSituacaoAtendimentoAgendado == false}"> 
+	              <f:convertDateTime pattern="HH:mm"/> 
+	            </h:outputText> 
+            </p:outputPanel>
+           <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="dataChegada">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>	
+          </p:column>
+            
+          <p:column sortBy="#{item.gradeEspSigla}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width: 45px;"> 
+          	<f:facet name="header">
+				<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_ESPECIALIDADE_AGENDA}" />
+			</f:facet>
+			<p:outputPanel id="id_especialidadeId" layout="block"> 
+				<h:outputText value="#{item.gradeEspSigla}" title="#{item.gradeEspNome}" />		
+			</p:outputPanel>	
+			<p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="id_especialidadeId">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>
+          </p:column>  
+          
+          <p:column sortBy="#{item.gradeUnidIdsala}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width:30px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{pesquisarPacientesAgendadosController.labelSala}"/> 
+            </f:facet> 
+            <p:outputPanel id="i_salaAb1" layout="block">  
+            	<h:outputText value="#{item.gradeUnidIdsala}"/>
+           	</p:outputPanel> 
+            <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="i_salaAb1">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>
+          </p:column>  
+          
+          <p:column sortBy="#{item.retornoSeq}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width:60px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COLUNA_SITUACAO_ATENDIMENTO}"/> 
+            </f:facet>  
+           	<p:outputPanel id="i_retAb1" layout="block" style="float:left;margin-right:45px;">  
+            	<h:outputText id="retornoSeqOutput" value="#{item.retornoSeq}" />
+            	<p:tooltip style="word-wrap: break-word;" for="retornoSeqOutput">
+					<h:outputText value="#{item.retornoDescricao}"/>
+			</p:tooltip>  
+            	<mec:commandLink id="bt_alterarRetornoConsulta"
+            		rendered="#{mf:hasPermission(securityController,'selecionaRetornoPaciente,selecionarRetornoPaciente')}" action="#{pesquisarPacientesAgendadosController.carregarAtributosModalRetornoConsulta()}" oncomplete="PF('modalAlterarRetornoConsultaWG').show();" 
+            		style="position:relative; margin:0px 0px -5px 10px;" styleClass=" silk-arrow-refresh silk-icon" ajax="true" render="descricaoConsulta, modalAlterarRetornoConsultaPanel, botoesRetornoConsulta" process="@this"> 
+              		<f:setPropertyActionListener value="#{item}" target="#{pesquisarPacientesAgendadosController.consultaSelecionadaRetorno}" for="command"/> 
+            	</mec:commandLink>
+           	</p:outputPanel> 
+             <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="i_retAb1">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>
+			
+          </p:column>  
+          
+          <p:column  style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width:20px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PROC}"/> 
+            </f:facet> 
+            <p:outputPanel id="panelManterProcedimentosConsulta" layout="block"> 
+            	<mec:commandLink id="bt_manterProcedimentosConsulta" title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_PROCEDIMENTOS_CONSULTA}" action="#{pesquisarPacientesAgendadosController.carregarAtributosModalProcedimentos()}" rendered="#{mf:hasPermission(securityController,'inserirProcedimentosConsulta,adicionar')}" oncomplete="PF('modalProcedimentosConsultaWG').show();" styleClass=" silk-table silk-icon" ajax="true" render="modalProcedimentosConsulta" process="@this"> 
+              		<f:setPropertyActionListener value="#{item}" target="#{pesquisarPacientesAgendadosController.consultaSelecionada}" for="command"/> 
+            	</mec:commandLink>  
+            </p:outputPanel>
+             <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="panelManterProcedimentosConsulta">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip> 
+          </p:column>  
+          
+          <p:column  style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width:25px"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_EXCED}"/> 
+            </f:facet>  
+            <p:outputPanel id="panelAgendadosExcedente" layout="block">
+	             <h:graphicImage title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_EXCEDENTE}" value="/resources/img/icons/consulta_excedente.png" style="border:0px" rendered="#{item.excedeProgramacao and mf:hasPermission(securityController,'informaCodCentral,informarCodCentral')}"/>  
+	            <h:graphicImage title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_SISREG}" value="/resources/img/icons/sisreg.png" style="border:0px" rendered="#{item.origem eq 'S' and mf:hasPermission(securityController,'informaCodCentral,informarCodCentral') and mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}"/>  
+
+ 		<mec:commandLink 
+				action="#{pesquisarPacientesAgendadosController.editarCodCentralSisreg()}" 
+				title="#{messages.LABEL_SISREG}" 
+				disabled="#{mf:hasPermission(securityController,'paciente,somenteLeitura')}"
+				rendered="#{item.origem eq 'S' and mf:hasPermission(securityController,'informaCodCentral, informarCodCentral')}" 
+				oncomplete="PF('modalInformarChaveSisregWG').show();"
+				ajax="true"
+				render="modalInformarChaveSisreg" process="@this" >                 
+				<h:graphicImage title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_SISREG}" value="/resources/img/icons/sisreg.png" style="border:0px"/>  
+				<f:setPropertyActionListener value="#{item}" target="#{pesquisarPacientesAgendadosController.consultaSelecionada}" for="command"/>
+		</mec:commandLink>
+		 
+            </p:outputPanel>
+            <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="panelManterProcedimentosConsulta">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>  
+			<p:tooltip id="ttPanelAgendadosExcedente2" styleClass="tooltip" for="panelAgendadosExcedente" rendered="#{item.origem eq 'S' and mf:hasPermission(securityController,'informaCodCentral,informarCodCentral') and mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}">
+				<h:outputText value="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_SISREG}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+			<p:tooltip id="ttPanelAgendadosExcedente3" styleClass="tooltip" for="panelAgendadosExcedente" rendered="#{item.origem eq 'S' and mf:hasPermission(securityController,'informaCodCentral,informarCodCentral')}">
+				<h:outputText value="#{messages.LABEL_SISREG}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+			<p:tooltip id="ttPanelAgendadosExcedente4" styleClass="tooltip" for="panelAgendadosExcedente" rendered="#{item.origem eq 'S' and mf:hasPermission(securityController,'informaCodCentral,informarCodCentral')}">
+				<h:outputText value="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_SISREG}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+          </p:column>  
+          
+          <p:column style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width: 15px;"> 
+            <p:outputPanel id="panelLocalizarPaciente" layout="block">
+	            <mec:commandLink action="#{pesquisarPacientesAgendadosController.localizaPaciente(item)}" rendered="#{not empty item.controleSituacaoAtendimentoAgendado and not item.controleSituacaoAtendimentoAgendado}" ajax="true" render="resultTab, botoesAcao" process="@this"> 
+	              <h:graphicImage title="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_LOCALIZAR_PACIENTE}" value="/resources/img/icons/find.png" style="border:0px"/> 
+	            </mec:commandLink> 
+            </p:outputPanel>
+            <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="panelLocalizarPaciente">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>  
+          </p:column> 
+          
+          <p:column style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)} width: 25px;">
+          	<f:facet name="header">
+          		<h:outputText value="#{messages.LABEL_APAC}" />
+          	</f:facet>
+			<p:outputPanel id="panelAPAC" layout="block">
+			<mec:commandLink
+				rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'T' and pesquisarPacientesAgendadosController.verificarEspecialidadeApacPorPaciente(item)}"
+				action="#{pesquisarPacientesAgendadosController.gerarImpressoes(item)}"
+				onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+				ajax="true" process="@this"
+				render="selectSolicitacao, selectControleFrequencia,formImpressaoRelatorio">
+				<h:graphicImage
+					value="/resources/img/icons/bola_vermelha.png" style="border:0px" />
+			</mec:commandLink>
+			
+			<mec:commandLink
+				rendered="#{item.indicaImagem eq 'I' and item.tipoSinalizacao eq 'T' and pesquisarPacientesAgendadosController.verificarEspecialidadeApacPorPaciente(item)}"
+				action="#{pesquisarPacientesAgendadosController.gerarImpressoes(item)}"
+				onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+				ajax="true" process="@this"
+				render="selectSolicitacao, selectControleFrequencia,formImpressaoRelatorio">
+				<h:graphicImage
+					value="/resources/img/icons/impressora_vermelha.png" style="border:0px" />
+			</mec:commandLink>
+
+			<mec:commandLink
+				rendered="#{item.indicaImagem eq 'I' and item.tipoSinalizacao eq 'O' and pesquisarPacientesAgendadosController.verificarEspecialidadeApacPorPaciente(item)}"
+				action="#{pesquisarPacientesAgendadosController.gerarImpressoes(item)}"
+				onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+				ajax="true" process="@this"
+				render="selectSolicitacao, selectControleFrequencia,formImpressaoRelatorio">
+				<h:graphicImage
+					value="/resources/img/icons/impressora_verde.png"
+					style="border:0px" />
+			</mec:commandLink>
+
+			<mec:commandLink
+				rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'O' and pesquisarPacientesAgendadosController.verificarEspecialidadeApacPorPaciente(item)}"
+				action="#{pesquisarPacientesAgendadosController.gerarImpressoes(item)}"
+				onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+				ajax="true" process="@this"
+				render="selectSolicitacao, selectControleFrequencia,formImpressaoRelatorio">
+				<h:graphicImage
+					value="/resources/img/icons/bola_verde.png" style="border:0px" />
+			</mec:commandLink>
+
+			<mec:commandLink 
+				rendered="#{item.indicaImagem eq 'I' and item.tipoSinalizacao eq 'F' and pesquisarPacientesAgendadosController.verificarEspecialidadeApacPorPaciente(item)}"
+				action="#{pesquisarPacientesAgendadosController.gerarImpressoes(item)}"
+				onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+				ajax="true" process="@this"
+				render="selectSolicitacao, selectControleFrequencia,formImpressaoRelatorio">
+				<h:graphicImage
+					value="/resources/img/icons/impressora_azul.png"
+					style="bordr:0px" />
+			</mec:commandLink>
+
+			<mec:commandLink 
+				rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'F' and pesquisarPacientesAgendadosController.verificarEspecialidadeApacPorPaciente(item)}"
+				action="#{pesquisarPacientesAgendadosController.gerarImpressoes(item)}"
+				onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+				ajax="true" process="@this"
+				render="selectSolicitacao, selectControleFrequencia,formImpressaoRelatorio">
+				<h:graphicImage
+					value="/resources/img/icons/bola_azul.png" style="border:0px" />
+			</mec:commandLink>
+
+			<mec:commandLink
+				rendered="#{item.indicaImagem eq 'I' and item.tipoSinalizacao eq 'P' and pesquisarPacientesAgendadosController.verificarEspecialidadeApacPorPaciente(item)}"
+				action="#{pesquisarPacientesAgendadosController.gerarImpressoes(item)}"
+				onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+				ajax="true" process="@this"
+				render="selectSolicitacao, selectControleFrequencia,formImpressaoRelatorio">
+				<h:graphicImage 
+					value="/resources/img/icons/impressora_amarela.png"
+					style="bordr:0px" />
+			</mec:commandLink>
+
+			<mec:commandLink
+				rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'P' and pesquisarPacientesAgendadosController.verificarEspecialidadeApacPorPaciente(item)}"
+				action="#{pesquisarPacientesAgendadosController.gerarImpressoes(item)}"
+				onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+				ajax="true" process="@this"
+				render="selectSolicitacao, selectControleFrequencia,formImpressaoRelatorio">
+				<h:graphicImage 
+					value="/resources/img/icons/bola_amarela.png"  
+					style="border:0px" />
+			</mec:commandLink>
+					
+			</p:outputPanel>
+			<p:tooltip id="ttPanelAPAC" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'T' and item.controleFrequencia eq 'TR'}">					
+				<h:outputText value="#{messages.TITLE_IMPRIMIR_CONTROLE}" /><br clear="none"/>			
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip> 
+			<p:tooltip id="ttPanelAPAC1" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'T' and !(item.controleFrequencia eq 'TR')}">					
+				<h:outputText value="#{messages.TITLE_IMPRIMIR_CONTROLE_LAUDO_ACOMPANHAMENTO}" /><br clear="none"/>			
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip> 
+			<p:tooltip id="ttPanelAPAC2" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'I' and item.tipoSinalizacao eq 'T'}">
+				<h:outputText value="#{messages.TITLE_REIMPRIMIR_CONTROLE_LAUDO_ACOMPANHAMENTO}" /><br clear="none"/>			
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip> 
+			<p:tooltip id="ttPanelAPAC3" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'I' and item.tipoSinalizacao eq 'O' and item.title != null}">
+				<h:outputText value="#{item.title}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+			<p:tooltip id="ttPanelAPAC4" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'O' and item.title != null}">
+				<h:outputText value="#{item.title}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+			<p:tooltip id="ttPanelAPAC5" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'I' and item.tipoSinalizacao eq 'F'}">
+				<h:outputText value="#{messages.TITLE_REIMPRIMIR_CONTROLE_LAUDO_FOTOCOAGULACAO}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+			<p:tooltip id="ttPanelAPAC6" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'F'}">
+				<h:outputText value="#{messages.TITLE_IMPRIMIR_CONTROLE_LAUDO_FOTOCOAGULACAO}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+			<p:tooltip id="ttPanelAPAC7" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'I' and item.tipoSinalizacao eq 'P'}">
+				<h:outputText value="#{messages.TITLE_REIMPRIMIR_CONTROLE_LAUDO_ACOMPANHAMENTO_PRE_TRANSPLANTE}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+			<p:tooltip id="ttPanelAPAC8" styleClass="tooltip" for="panelAPAC" rendered="#{item.indicaImagem eq 'C' and item.tipoSinalizacao eq 'P'}">
+				<h:outputText value="#{messages.TITLE_IMPRIMIR_CONTROLE_LAUDO_ACOMPANHAMENTO_PRE_TRANSPLANTE}"  /><br clear="none"/>
+				<b>#{item.pacienteNotifGMR ? pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>
+			</p:tooltip>
+		</p:column>
+		
+		<p:column style="width: 35px;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_SAMIS}" />
+				</f:facet>
+			  <mec:commandLink
+	           	rendered="#{mf:hasPermission(securityController,'imprimeRelatorioAgendasAmbulatorio,imprimirRelatorioAgendas')}" 
+	           	styleClass="silk-icon silk-solicitar-prontuario" title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_SOLICITAR_SAMIS}"
+	           	action="#{pesquisarPacientesAgendadosController.gerarMovimentacaoProntuario(item)}" ajax="true">
+	           </mec:commandLink>
+       	  </p:column>
+          
+        <p:column sortable="true" style="width:35px;">
+         	 <f:facet name="header"> 
+              	<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_ACOES}"/> 
+            </f:facet> 
+            
+            <mec:commandLink id="lk_consultaGrade" action="#{pesquisarPacientesAgendadosController.redirecionarPesquisaConsultasGrade(item)}" title="#{messages.LABEL_CONSULTAS_POR_GRADE}" rendered="#{mf:hasPermission(securityController,'/ambulatorio/gradeagendamento/pesquisarConsultasGrade.xhtml,render')}" disabled="#{mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}"
+            				  block="true" styleClass="silk-horario-manter silk-icon" >
+            	<f:setPropertyActionListener for="command" target="#{pesquisaConsultasGradePaginatorController.voltaPara}" value="ambulatorio-pesquisarPacientesAgendados" />
+            </mec:commandLink> 
+				
+              <mec:commandLink 
+             			title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_EDITAR_CADASTRO}"
+              			action="#{cadastrarPacienteController.editarDadosPaciente}"  
+              			ajax="true" 
+              			styleClass=" silk-cadastrodepacientes silk-icon"> 
+             			<f:setPropertyActionListener 
+						target="#{cadastrarPacienteController.consultaSelecionada}" value="#{item}" for="command"/> 
+              </mec:commandLink> 
+ 
+             <mec:commandLink 
+            	  title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_IMPRIMIR_PULSEIRA}" action="#{impressaoPulseiraController.imprimePulseira}" onclick="PF('loadDialogWG').hide();" styleClass=" silk-ico-pulseira silk-icon" ajax="true"  disabled="#{mf:hasPermission(securityController,'paciente,somenteLeitura')}"> 
+	              <f:setPropertyActionListener target="#{impressaoPulseiraController.aipPacCodigo}" value="#{item.pacienteCodigo}" for="command"/>  
+	        </mec:commandLink> 
+                   
+          </p:column>  
+          
+        </mec:serverDataTable>
+		<mec:commandButton id="hiddenButton" style="visibility: hidden;" onclick= "atestado('#{cadastrarPacienteController.urlBaseWebForms}', '#{cadastrarPacienteController.consultaSelecionada.pacienteCodigo}', '#{cadastrarPacienteController.obterTokenUsuarioLogado()}', 
+																							'#{cadastrarPacienteController.pConNumero}', '#{cadastrarPacienteController.vAtdSeq}', '#{cadastrarPacienteController.vDthrMvto}', '#{cadastrarPacienteController.vEspSeq}', '#{cadastrarPacienteController.vEspPai}', '#{cadastrarPacienteController.pUso}', '#{cadastrarPacienteController.banco}'		); return false;"	
+             			bypassUpdates="true"  ajax="true" render="resultTab" process="@this" />
+
+    </aghu:panelGeral>   
+    
+	<script>
+		function atestado(url, pacienteCodigo, token, pConNumero, vAtdSeq, vDthrMvto, vEspSeq, vEspPai, pUso, banco)
+	 	{ 
+			var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+P_CON_NUMERO=' + pConNumero + '+P_ATD_SEQ=' + vAtdSeq + '+P_DTHR_MVTO=' + vDthrMvto + '+P_ESP_SEQ=' + vEspSeq + '+P_ESP_PAI=' + vEspPai + '+P_USO=' + pUso;
+		 	if (pacienteCodigo != null) 
+			 {
+			 		abrirJanelaModal(url,{
+				 		parameters: { 
+					 	config: 'aghweb',
+					 	form: 'mamf_atu_atestados.fmx',
+					 	otherparams: otherParams
+					 	},
+					 	onClose: function() 
+					 	{
+						 } 
+					 }); 
+			 } 
+		}
+ 	</script>
+ 	
+</ui:composition> 
+</html>

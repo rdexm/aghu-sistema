@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_ALMOX_TRANS}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisarAlmoxarifadoTransferenciaPaginatorController}"/>  
+      <h:form prependId="false" id="parametrosPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_MANTER_ALMOX_TRANS}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="sbAlmoxOrigem" label="#{messages.LABEL_ALMOXARIFADO_ORIGEM}" title="#{messages.TITLE_ALMOXARIFADO_ORIGEM_TRANSF_NAO_EFETIVADAS}" suggestionAction="pesquisarAlmoxarifados" descricaoInput="seq" descricaoLabel="descricao" maxlength="20" controller="#{pesquisarAlmoxarifadoTransferenciaPaginatorController}" value="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.almoxOrigem}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox id="sbAlmoxDestino" label="#{messages.LABEL_ALMOXARIFADO_DESTINO}" title="#{messages.TITLE_ALMOXARIFADO_DESTINO_TRANSF_NAO_EFETIVADAS}" suggestionAction="pesquisarAlmoxarifados" descricaoInput="seq" descricaoLabel="descricao" maxlength="20" controller="#{pesquisarAlmoxarifadoTransferenciaPaginatorController}" value="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.almoxDestino}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu id="ativoInativo" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_ALMOXARIFADO_TRANSF_SITUACAO}" value="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.indSituacao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limparCampos" value="#{messages.LABEL_LIMPAR}" block="true" action="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton id="bt_novo" rendered="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.dataModel.pesquisaAtiva}" value="#{messages.LABEL_NOVO}" block="true" action="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.inserirNovo}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="resultConsultaEstoqueAlmoxarifado"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaAlmoxarifados" value="#{pesquisarAlmoxarifadoTransferenciaPaginatorController}" title="#{messages.TITLE_ACAO}" controller="#{pesquisarAlmoxarifadoTransferenciaPaginatorController}"> 
+          <c:set var="_transf" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaAlmoxarifados_link_remover" profile="delete" title="excluir" action="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.parametroSelecionado}" value="#{_transf}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="ativarDesativar" title="#{(_transf.situacao.isAtivo()) ? messages.LABEL_INATIVAR : messages.LABEL_ATIVAR}" action="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.defineAlmox(_transf)}" oncomplete="PF('modalConfirmarWG').show();;" styleClass=" #{(_transf.situacao.isAtivo()) ? 'silk-activate' : 'silk-deactivate'} silk-icon" ajax="true" process="@this"/> 
+          </p:column>  
+          <p:column style="white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ALMOXARIFADO_ORIGEM}"/> 
+            </f:facet>  
+            <h:outputText value="#{_transf.almoxarifadoOrigem.seq}"/> - 
+            <h:outputText value="#{_transf.almoxarifadoOrigem.descricao}"/> 
+          </p:column>  
+          <p:column style="white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ALMOXARIFADO_DESTINO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_transf.almoxarifadoDestino.seq}"/> - 
+            <h:outputText value="#{_transf.almoxarifadoDestino.descricao}"/> 
+          </p:column>  
+          <p:column style="white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_transf.situacao.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:outputPanel id="panelModalConfirmar" layout="inline"> 
+        <p:dialog id="modalConfirmar" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmarWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CONFIRMAR}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_CONFIRMACAO_SITUACAO_ALMOX_TRANS} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalConfirmar" name="formModalConfirmar"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_mudastatus" action="#{pesquisarAlmoxarifadoTransferenciaPaginatorController.mudaStatus}" profile="search"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmarWG').hide();; return false;" id="bt_cancelar_modal" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

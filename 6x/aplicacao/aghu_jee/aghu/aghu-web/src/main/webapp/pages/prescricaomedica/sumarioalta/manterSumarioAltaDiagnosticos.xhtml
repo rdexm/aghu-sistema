@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition> 
+    <h:form prependId="false" id="formDiagnosticos"> 
+      <aghu:panelGeral legend="#{messages.LABEL_DIAGNOSTICOS} - #{manterSumarioAltaController.prontuarioFormatado} - #{manterSumarioAltaController.altaSumario.nome}"> 
+        <p:accordionPanel id="togglePanelMotivosInternacao" prependId="false"> 
+          <p:tab id="tabDiag_0" title="Motivos da Internação (Preenchimento obrigatório)">
+            <p:outputPanel id="panelMotivosInternacao" layout="block"> 
+              <p:outputPanel rendered="#{manterSumarioAltaController.mostrarPanelComboMotivo}" layout="inline"> 
+                <aghu:linha>     
+                  <mec:selectOneMenu title="#{messages.TITLE_UNIDADE_DOSE}"	
+	                  	itemLabel="descricao" 
+	                 	value="#{manterSumarioAltaController.itemMotivosInternacaoSelecionado}" 
+	                 	items="#{manterSumarioAltaController.motivosInternacaoVO.listaCombo}"
+	                 	id="unidade">
+			        <p:ajax event="change" process="@this"
+			        	update="@(#panelMotivosInternacao) @(#panelOutrosMotivosInternacao) @(#tabelaMotivosInternacaoDecorate)" 
+			        	listener="#{manterSumarioAltaController.moverDiagItemSelecionadoComboParaGrid(0)}">                    	
+			        </p:ajax>  
+	   	          </mec:selectOneMenu>
+	   	          <aghu:acao newLine="false">
+                    <mec:commandButton id="btOutroMotivo" 
+                    	action="#{manterSumarioAltaController.acaoOutrosMotivos}" 
+                    	value="#{messages.LABEL_SELECIONE_OUTRO}" 
+                    	ajax="true" 
+                    	render="panelOutrosMotivosInternacao, panelMotivosInternacaoBotoes"
+                    	process="@this" 
+                    	styleClass="bt_cinza">
+                    	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{0}" for="command"/>
+                    </mec:commandButton> 
+                  </aghu:acao> 
+                </aghu:linha> 
+              </p:outputPanel>
+              <p:outputPanel id="panelOutrosMotivosInternacao" 
+              			layout="inline"> 
+	            <p:outputPanel id="panelOutrosMotivosInt" 
+	            		layout="inline" 
+	            		rendered="#{empty manterSumarioAltaController.motivosInternacaoVO.listaCombo or manterSumarioAltaController.itemMotivosInternacaoSelecionado.emEdicao or manterSumarioAltaController.mostrarPanelOutrosMotivos}"> 
+	              <aghu:linha> 
+	                <mec:suggestionBox id="cidMotivoInternacao" 
+	                	label="#{messages.LABEL_CIDS}" 
+	                  	title="Selecione um Cid." 
+	                  	converter="#{aghCidConverter}" 
+	                  	descricaoInput="codigo" 
+	                  	descricaoLabel="descricao" 
+	                  	suggestionAction="pesquisarCids" 
+	                  	width="350" 
+	                  	maxlength="45" 
+	                  	descricaoLimite="500"
+	                  	readonly="#{manterSumarioAltaController.motivosInternacaoVO.itemEmEdicao.emEdicao}" 
+	                  	controller="#{manterSumarioAltaController}" 
+	                  	value="#{manterSumarioAltaController.motivosInternacaoVO.cidSuggestion}"
+	                  	var="itemMotivo" itemValue="#{itemMotivo}"> 
+	                    <p:column>(#{itemMotivo.codigo}) #{itemMotivo.descricao} </p:column> 
+	                </mec:suggestionBox>  
+	                <aghu:acao newLine="false"> 
+	                  <mec:commandButton id="btPesquisaMotivoPrincipalPorCapitulo"  
+		                  	value="#{messages.LABEL_POR_CAPITULO}" 
+		                  	action="#{manterSumarioAltaController.pesquisarCidCapitulo}" 
+		                  	disabled="#{manterSumarioAltaController.motivosInternacaoVO.itemEmEdicao.emEdicao}" 
+		                  	immediate="true" 
+		                  	profile="search"> 
+	                    <f:setPropertyActionListener target="#{pesquisaCidController.fromPageManterSumarioAlta}" value="#{manterSumarioAltaController.altanListaOrigem != 'OBITO'}" for="command"/>  
+	                    <f:setPropertyActionListener target="#{pesquisaCidController.fromPageManterSumarioObito}" value="#{manterSumarioAltaController.altanListaOrigem == 'OBITO'}" for="command"/>  
+	                    <f:setPropertyActionListener target="#{pesquisaCidController.codigoPaciente}" value="#{manterSumarioAltaController.pacCodigo}" for="command"/>  
+	                    <f:setPropertyActionListener target="#{pesquisaCidController.limpar}" value="true" for="command"/> 
+	                  </mec:commandButton> 
+	                </aghu:acao> 
+	              </aghu:linha>  
+	              <aghu:linha> 
+	                <mec:inputText id="complementoMotivoPrincipal" 
+	                	label="Complemento" 
+	                  	value="#{manterSumarioAltaController.motivosInternacaoVO.complementoCidSuggestion}" 
+	                  	title="Digite a descrição do Complemento do Motivo da Internação" 
+	                  	size="45" maxlength="45">
+	                  	<p:ajax event="change" process="@this"/>
+	                 </mec:inputText> 
+	              </aghu:linha> 
+	            </p:outputPanel>  
+              </p:outputPanel>
+	          <p:outputPanel id="panelMotivosInternacaoBotoes" layout="inline" >
+	          	  <aghu:acao>
+			          <mec:commandButton id="btGravarMotivoPrincipal" 
+			            	rendered="#{(manterSumarioAltaController.motivosInternacaoVO.itemEmEdicao.emEdicao or empty manterSumarioAltaController.motivosInternacaoVO.listaCombo or manterSumarioAltaController.mostrarPanelOutrosMotivos) and not manterSumarioAltaController.motivosInternacaoVO.itemEmEdicao.emEdicao}" 
+			            	action="#{manterSumarioAltaController.gravarDiagItemEmEdicao}" 
+			               	value="#{messages.LABEL_GRAVAR}" 
+			               	profile="ok"
+			               	style="float: left !important; margin: 2px 0px 6px !important;" 
+			               	ajax="true"
+			               	process="@this @(#complementoMotivoPrincipal)" 
+			               	render="panelMotivosInternacao, panelOutrosMotivosInternacao">
+			                <f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{0}" for="command"/>
+			          </mec:commandButton>			                 
+			          <mec:commandButton id="btAtualizarMotivoPrincipal" 
+			               	rendered="#{manterSumarioAltaController.motivosInternacaoVO.itemEmEdicao.emEdicao}" 
+			               	action="#{manterSumarioAltaController.atualizarDiagItemEmEdicao}" 
+			               	value="#{messages.LABEL_ALTERAR}" 
+			               	profile="ok"
+			               	style="float: left !important; margin: 2px 0px 6px !important;" 
+			               	process="@this @(#complementoMotivoPrincipal)" 
+			               	ajax="true" 
+			               	render="panelMotivosInternacao">
+			               	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{0}" for="command"/>
+			          </mec:commandButton>  
+			          <mec:commandButton id="btCancelarMotivoPrincipal" 
+			               	rendered="#{manterSumarioAltaController.motivosInternacaoVO.itemEmEdicao.emEdicao}" 
+			               	action="#{manterSumarioAltaController.cancelarItemEmEdicao}" 
+			               	value="#{messages.LABEL_CANCELAR}" 
+			               	profile="cancel"
+			               	style="float: left !important; margin: 2px 10px 6px !important;"
+			               	process="@this" 
+			               	ajax="true" 
+			               	render="panelMotivosInternacao">
+			               	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{0}" for="command"/>
+			          </mec:commandButton>
+		           </aghu:acao>
+              </p:outputPanel> 
+              <p:outputPanel>
+	            <aghu:linha> 
+	              <mec:serverDataTable id="tabelaMotivosInternacaoDecorate" 
+	              		style="border-top: 0 none !important" 
+	                 	list="#{manterSumarioAltaController.motivosInternacaoVO.listaGrid}" 
+	                 	scrollable="true" 
+	                 	scrollHeight="100" 
+	                 	controller="manterSumarioAltaController"> 
+	                <c:set var="itemMotivosInternacao" value="#{item}"/>
+	                  <p:column style="#{itemMotivosInternacao.emEdicao ? 'background-color:#EEE8AA;' : ''}width:60px;"> 
+	                    <f:facet name="header"> 
+	   	                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+	       	           	</f:facet>            
+	                    <mec:commandLink title="#{messages.LABEL_EDITAR}" 
+	                    	action="#{manterSumarioAltaController.editarItemDiagnostico}" 
+	                     	rendered="#{not itemMotivosInternacao.emEdicao}" 
+	                     	profile="edit" 
+	                     	ajax="true" 
+	                     	process="@this"
+	                     	render="panelMotivosInternacao, panelMotivosInternacaoBotoes">
+	                      <f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{0}" for="command"/>
+	                      <f:setPropertyActionListener target="#{manterSumarioAltaController.itemMotivosInternacaoSelecionado}" value="#{itemMotivosInternacao}" for="command"/>
+	               	  	</mec:commandLink>  
+	                    <mec:commandLink rendered="#{itemMotivosInternacao.emEdicao}" 
+	                    	styleClass=" silk-blank silk-icon" 
+	                     	ajax="true"/>  
+	                    <mec:commandLink title="#{messages.LABEL_EXCLUIR}" 
+	                    	action="#{manterSumarioAltaController.excluirDiagItemGrid}" 
+	                     	profile="delete" 
+	                     	ajax="true" 
+	                     	process="@this"
+	                     	render="panelMotivosInternacao, panelMotivosInternacaoBotoes">
+                     	  <f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{0}" for="command"/>
+	                      <f:setPropertyActionListener target="#{manterSumarioAltaController.itemMotivosInternacaoSelecionado}" value="#{itemMotivosInternacao}" for="command"/>
+	                    </mec:commandLink>  
+	                  </p:column>  
+	                  <p:column width="auto" style="#{itemMotivosInternacao.emEdicao ? 'background-color:#EEE8AA' : ''}">
+	                    <f:facet name="header"> 
+	   	                  <h:outputText value="#{messages.LABEL_CIDS}"/> 
+	       	          	</f:facet>
+	                    <h:outputText value="#{itemMotivosInternacao.descricao}"/> 
+	                  </p:column> 
+	                </mec:serverDataTable> 
+	              </aghu:linha>
+	            </p:outputPanel>
+            </p:outputPanel>
+          </p:tab> 
+          </p:accordionPanel>
+          <p:accordionPanel id="togglePanelDiagnosticosPrincipal" prependId="false">
+	          <p:tab id="tabDiag_1" title="Diagnóstico Principal na Alta (Preenchimento obrigatório)"> 
+	            <p:outputPanel id="panelDiagnosticoPrincipal" layout="block"> 
+	              <p:outputPanel rendered="#{manterSumarioAltaController.mostrarPanelComboDiagnostico}" layout="inline"> 
+	                <aghu:linha> 
+	                  <mec:selectOneMenu title="#{messages.TITLE_UNIDADE_DOSE}"	
+		                  	itemLabel="descricao" 
+		                 	value="#{manterSumarioAltaController.itemDiagnosticoPrincipalSelecionado}" 
+		                 	items="#{manterSumarioAltaController.diagnosticoPrincipalVO.listaCombo}"
+		                 	id="selectDiagnosticoPrincipal">
+				        <p:ajax event="change" process="@this"
+				        	update="@(#panelDiagnosticoPrincipal) @(#panelOutrosDiagnosticos) @(#tabelaDiagnosticoPrincipalDecorate)" 
+				        	listener="#{manterSumarioAltaController.moverDiagItemSelecionadoComboParaGrid(1)}"> 
+				        </p:ajax>  
+		   	          </mec:selectOneMenu>
+	                  <aghu:acao newLine="false"> 
+	                    <mec:commandButton id="btOutroDiagnostico" 
+	                    	action="#{manterSumarioAltaController.acaoOutrosDiagnosticos}" 
+	                    	value="#{messages.LABEL_SELECIONE_OUTRO}" 
+	                    	ajax="true" 
+	                    	render="panelOutrosDiagnosticos, panelDiagnosticoPrincipalBotoes" 
+	                    	process="@this" 
+	                    	styleClass="bt_cinza">
+	                    	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{1}" for="command"/>
+	                    </mec:commandButton> 
+	                  </aghu:acao> 
+	                </aghu:linha> 
+	              </p:outputPanel>
+	              <p:outputPanel id="panelOutrosDiagnosticos" 
+		            		layout="inline">  
+		            <p:outputPanel id="panelOutrosDiag" 
+		            		layout="inline" 
+		            		rendered="#{empty manterSumarioAltaController.diagnosticoPrincipalVO.listaCombo or manterSumarioAltaController.itemDiagnosticoPrincipalSelecionado.emEdicao or manterSumarioAltaController.mostrarPanelOutrosDiagnosticos}"> 
+		              <aghu:linha> 	                
+		                <mec:suggestionBox id="cidDiagnosticoPrincipal" 
+		                	label="#{messages.LABEL_CIDS}" 
+		                  	title="Selecione um Cid." 
+		                  	converter="#{aghCidConverter}" 
+		                  	descricaoInput="codigo" 
+		                  	descricaoLabel="descricao" 
+		                  	suggestionAction="pesquisarCids" 
+		                  	width="350" 
+		                  	maxlength="45"
+		                  	descricaoLimite="500" 
+		                  	readonly="#{manterSumarioAltaController.diagnosticoPrincipalVO.itemEmEdicao.emEdicao}" 
+		                  	controller="#{manterSumarioAltaController}" 
+		                  	value="#{manterSumarioAltaController.diagnosticoPrincipalVO.cidSuggestion}"
+		                  	var="itemDiagPrincipal" itemValue="#{itemDiagPrincipal}"> 
+		                    <p:column>#{itemDiagPrincipal.descricao} (#{itemDiagPrincipal.codigo})</p:column> 
+		                </mec:suggestionBox>
+		                <aghu:acao newLine="false"> 
+		                  <mec:commandButton id="btPesquisaDiagnosticoPrincipalPorCapitulo" 
+		                  		value="#{messages.LABEL_POR_CAPITULO}" 
+		                    	action="#{manterSumarioAltaController.pesquisarCidCapitulo}" 
+		                    	disabled="#{manterSumarioAltaController.diagnosticoPrincipalVO.itemEmEdicao.emEdicao}" 
+		                    	immediate="true" 
+		                    	profile="search"> 
+		                    <f:setPropertyActionListener target="#{pesquisaCidController.fromPageManterSumarioAlta}" value="#{manterSumarioAltaController.altanListaOrigem != 'OBITO'}" for="command"/>  
+		                    <f:setPropertyActionListener target="#{pesquisaCidController.fromPageManterSumarioObito}" value="#{manterSumarioAltaController.altanListaOrigem == 'OBITO'}" for="command"/>  
+		                    <f:setPropertyActionListener target="#{pesquisaCidController.codigoPaciente}" value="#{manterSumarioAltaController.pacCodigo}" for="command"/>  
+		                    <f:setPropertyActionListener target="#{pesquisaCidController.limpar}" value="true" for="command"/> 
+		                  </mec:commandButton> 
+		                </aghu:acao> 
+		              </aghu:linha> 
+		              <aghu:linha id="linhaSuggestionDiagnosticoPrincipal"> 
+		                <mec:inputText id="complementoDiagnosticoPrincipal" 
+		                		label="Complemento" 
+		                  	value="#{manterSumarioAltaController.diagnosticoPrincipalVO.complementoCidSuggestion}" 
+		                  	title="Digite a descrição do complemento do Diagnóstico Principal" size="45" maxlength="45">
+		                  	<p:ajax event="change" process="@this"/>
+	                 	</mec:inputText>  
+		              </aghu:linha>  
+		            </p:outputPanel>
+	              </p:outputPanel>    
+		          <p:outputPanel id="panelDiagnosticoPrincipalBotoes" layout="inline">  
+	              	  <aghu:acao>
+		              	<mec:commandButton id="btGravarDiagnosticoPrincipal"
+		              		rendered="#{(manterSumarioAltaController.diagnosticoPrincipalVO.itemEmEdicao.emEdicao or empty manterSumarioAltaController.diagnosticoPrincipalVO.listaCombo or manterSumarioAltaController.mostrarPanelOutrosDiagnosticos) and not manterSumarioAltaController.diagnosticoPrincipalVO.itemEmEdicao.emEdicao}" 
+		                	action="#{manterSumarioAltaController.gravarDiagItemEmEdicao}" 
+		                	value="#{messages.LABEL_GRAVAR}" 
+		                	profile="ok"
+		                	style="float: left !important; margin: 2px 0px 6px !important;"
+		                	ajax="true" 
+		                	process="@this"
+		                	render="panelDiagnosticoPrincipal">
+		                	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{1}" for="command"/>
+		                </mec:commandButton>  
+		                <mec:commandButton id="btAtualizarDiagnosticoPrincipal" 
+		                	rendered="#{manterSumarioAltaController.diagnosticoPrincipalVO.itemEmEdicao.emEdicao}" 
+		                	action="#{manterSumarioAltaController.atualizarDiagItemEmEdicao}" 
+		                	value="#{messages.LABEL_ALTERAR}" 
+		                	profile="ok" 
+		                	style="float: left !important; margin: 2px 0px 6px !important;" 
+		                	ajax="true" 
+		                	process="@this @(#complementoDiagnosticoPrincipal)"
+		                	render="panelDiagnosticoPrincipal">
+		                	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{1}" for="command"/>
+		                </mec:commandButton>  
+		                <mec:commandButton id="btCancelarDiagnosticoPrincipal" 
+		                	rendered="#{manterSumarioAltaController.diagnosticoPrincipalVO.itemEmEdicao.emEdicao}" 
+		                	action="#{manterSumarioAltaController.cancelarItemEmEdicao}" 
+		                	value="#{messages.LABEL_CANCELAR}" 
+		                	profile="cancel"
+		                	style="float: left !important; margin: 2px 10px 6px !important;"
+		                	ajax="true" 
+		                	process="@this @(#complementoDiagnosticoPrincipal)"
+		                	render="panelDiagnosticoPrincipal">
+		                	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{1}" for="command"/>
+		               	</mec:commandButton>
+		              </aghu:acao> 
+	              </p:outputPanel> 
+	              <p:outputPanel> 
+	                <aghu:linha>
+	                  <mec:serverDataTable id="tabelaDiagnosticoPrincipalDecorate" 
+	                  		style="border-top: 0 none !important" 
+	                  		list="#{manterSumarioAltaController.diagnosticoPrincipalVO.listaGrid}"
+	                  		scrollable="true" 
+		                 	scrollHeight="100" 
+		                 	controller="manterSumarioAltaController"> 
+	                    <c:set var="itemDiagnosticoPrincipal" value="#{item}"/>  
+	                    <p:column style="#{itemDiagnosticoPrincipal.emEdicao ? 'background-color:#EEE8AA;' : ''}width:60px;">
+	                      <f:facet name="header"> 
+	    	                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+	        	          </f:facet>      
+	                      <mec:commandLink title="#{messages.LABEL_EDITAR}" 
+	                      		action="#{manterSumarioAltaController.editarItemDiagnostico}" 
+	                      		rendered="#{not itemDiagnosticoPrincipal.emEdicao}" 
+	                      		profile="edit" 
+	                      		ajax="true" 
+	                      		process="@this"
+	                      		render="panelDiagnosticoPrincipal, panelDiagnosticoPrincipalBotoes">
+	                      		<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{1}" for="command"/>
+		                     	<f:setPropertyActionListener target="#{manterSumarioAltaController.itemDiagnosticoPrincipalSelecionado}" value="#{itemDiagnosticoPrincipal}" for="command"/>
+		                  </mec:commandLink>  
+	                      <mec:commandLink rendered="#{itemDiagnosticoPrincipal.emEdicao}" 
+	                      		styleClass=" silk-blank silk-icon" 
+	                      		ajax="true"/>  
+	                      <mec:commandLink title="#{messages.LABEL_EXCLUIR}" 
+	                      		action="#{manterSumarioAltaController.excluirDiagItemGrid}" 
+	                      		profile="delete" 
+	                      		ajax="true" 
+	                      		process="@this"
+	                      		render="panelDiagnosticoPrincipal, panelDiagnosticoPrincipalBotoes">
+	                      		<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{1}" for="command"/>
+		                     	<f:setPropertyActionListener target="#{manterSumarioAltaController.itemDiagnosticoPrincipalSelecionado}" value="#{itemDiagnosticoPrincipal}" for="command"/>
+		                  </mec:commandLink> 
+	                    </p:column>  
+	                    <p:column width="auto" style="#{itemDiagnosticoPrincipal.emEdicao ? 'background-color:#EEE8AA' : ''}">
+	                      <f:facet name="header"> 
+	    	                <h:outputText value="#{messages.LABEL_CIDS}"/> 
+	        	          </f:facet> 
+	                      <h:outputText value="#{itemDiagnosticoPrincipal.descricao}"/> 
+	                    </p:column> 
+	                  </mec:serverDataTable> 
+		            </aghu:linha>  
+		          </p:outputPanel>
+	            </p:outputPanel>
+	          </p:tab>
+	      </p:accordionPanel>
+	      <p:accordionPanel id="togglePanelDiagnosticosSecundarios" prependId="false"> 
+	          <p:tab id="tabDiag_2" title="Diagnósticos Secundários"> 
+	            <p:outputPanel id="panelDiagnosticosSecundarios" layout="block"> 
+	              <p:outputPanel rendered="#{manterSumarioAltaController.mostrarPanelComboDiagSecundario}" layout="inline"> 
+	                <aghu:linha>
+	                  <mec:selectOneMenu title="#{messages.TITLE_UNIDADE_DOSE}"	
+		                  	itemLabel="descricao" 
+		                 	value="#{manterSumarioAltaController.itemDiagnosticoSecundarioSelecionado}" 
+		                 	items="#{manterSumarioAltaController.diagnosticosSecundariosVO.listaCombo}"
+		                 	id="selectDiagnosticosSecundarios">
+				        <p:ajax event="change" process="@this"
+				        	update="@(#panelDiagnosticosSecundarios) @(#panelOutrosDiagSecundarios) @(#tabelaDiagnosticosSecundariosDecorate)" 
+				        	listener="#{manterSumarioAltaController.moverDiagItemSelecionadoComboParaGrid(2)}"> 
+				        </p:ajax>  
+		   	          </mec:selectOneMenu>
+	                  <aghu:acao newLine="false"> 
+	                    <mec:commandButton id="btOutroDiagSecundario" 
+	                    		action="#{manterSumarioAltaController.acaoOutrosDiagSecundarios}" 
+	                    		value="#{messages.LABEL_SELECIONE_OUTRO}" 
+	                    		ajax="true" 
+	                    		render="panelOutrosDiagSecundarios, panelDiagnosticosSecundariosBotoes" 
+	                    		process="@this" 
+	                    		styleClass="bt_cinza">
+	                    		<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{2}" for="command"/>
+	                    </mec:commandButton> 
+	                  </aghu:acao> 
+	                </aghu:linha> 
+	              </p:outputPanel>
+	              <p:outputPanel id="panelOutrosDiagSecundarios" 
+		            		layout="inline"> 
+		            <p:outputPanel id="panelOutrosDiagSec" 
+		            		layout="inline" 
+		            		rendered="#{empty manterSumarioAltaController.diagnosticosSecundariosVO.listaCombo or manterSumarioAltaController.itemDiagnosticoSecundarioSelecionado.emEdicao or manterSumarioAltaController.mostrarPanelOutrosDiagSecundarios}"> 
+		              <aghu:linha> 
+		              	<mec:suggestionBox id="cidDiagnosticosSecundarios" 
+		                	label="#{messages.LABEL_CIDS}" 
+		                  	title="Selecione um Cid." 
+		                  	converter="#{aghCidConverter}" 
+		                  	descricaoInput="codigo" 
+		                  	descricaoLabel="descricao" 
+		                  	suggestionAction="pesquisarCids" 
+		                  	width="350" 
+		                  	maxlength="45" 
+		                  	descricaoLimite="500"
+		                  	readonly="#{manterSumarioAltaController.diagnosticosSecundariosVO.itemEmEdicao.emEdicao}" 
+		                  	controller="#{manterSumarioAltaController}" 
+		                  	value="#{manterSumarioAltaController.diagnosticosSecundariosVO.cidSuggestion}"
+		                  	var="itemDiagSec" itemValue="#{itemDiagSec}"> 
+		                    <p:column>#{itemDiagSec.descricao} (#{itemDiagSec.codigo})</p:column> 
+		                </mec:suggestionBox>
+		                <aghu:acao newLine="false"> 
+		                  <mec:commandButton id="btPesquisaDiagnosticosSecundariosPorCapitulo" 
+		                  		value="#{messages.LABEL_POR_CAPITULO}" 
+		                    	action="#{manterSumarioAltaController.pesquisarCidCapitulo}" 
+		                    	disabled="#{manterSumarioAltaController.diagnosticosSecundariosVO.itemEmEdicao.emEdicao}" 
+		                    	immediate="true" 
+		                    	profile="search"> 
+		                    <f:setPropertyActionListener target="#{pesquisaCidController.fromPageManterSumarioAlta}" value="#{manterSumarioAltaController.altanListaOrigem != 'OBITO'}" for="command"/>  
+		                    <f:setPropertyActionListener target="#{pesquisaCidController.fromPageManterSumarioObito}" value="#{manterSumarioAltaController.altanListaOrigem == 'OBITO'}" for="command"/>  
+		                    <f:setPropertyActionListener target="#{pesquisaCidController.codigoPaciente}" value="#{manterSumarioAltaController.pacCodigo}" for="command"/>  
+		                    <f:setPropertyActionListener target="#{pesquisaCidController.limpar}" value="true" for="command"/> 
+		                  </mec:commandButton> 
+		                </aghu:acao> 
+		              </aghu:linha>
+		              <aghu:linha> 
+		                <mec:inputText id="complementoDiagnosticosSecundarios" 
+		                	label="Complemento" 
+		                  	value="#{manterSumarioAltaController.diagnosticosSecundariosVO.complementoCidSuggestion}" 
+		                  	title="Digite a descrição do complemento do Diagnóstico Secundário" 
+		                  	size="45" maxlength="45">
+		                  	<p:ajax event="change" process="@this"/>
+	                 	</mec:inputText>  
+		              </aghu:linha> 
+		            </p:outputPanel>
+	              </p:outputPanel>
+	              <p:outputPanel id="panelDiagnosticosSecundariosBotoes" layout="inline"> 
+	              	  <aghu:acao>
+	 		            <mec:commandButton id="btGravarDiagnosticosSecundarios" 
+			            	rendered="#{(manterSumarioAltaController.diagnosticosSecundariosVO.itemEmEdicao.emEdicao or empty manterSumarioAltaController.diagnosticosSecundariosVO.listaCombo or manterSumarioAltaController.mostrarPanelOutrosDiagSecundarios) and not manterSumarioAltaController.diagnosticosSecundariosVO.itemEmEdicao.emEdicao}" 
+			              	action="#{manterSumarioAltaController.gravarDiagItemEmEdicao}" 
+			              	value="#{messages.LABEL_GRAVAR}" 
+			              	profile="ok" 
+			              	style="float: left !important; margin: 2px 0px 6px !important;"
+			              	ajax="true" 
+			              	process="@this"
+			              	render="panelDiagnosticosSecundarios">
+			              <f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{2}" for="command"/>
+			            </mec:commandButton>
+			            <mec:commandButton id="btAtualizarDiagnosticosSecundarios" 
+			              	rendered="#{manterSumarioAltaController.diagnosticosSecundariosVO.itemEmEdicao.emEdicao}" 
+			              	action="#{manterSumarioAltaController.atualizarDiagItemEmEdicao}" 
+			              	value="#{messages.LABEL_ALTERAR}" 
+			              	profile="ok" 
+			              	style="float: left !important; margin: 2px 0px 6px !important;" 
+			              	ajax="true" 
+			              	process="@this @(#complementoDiagnosticosSecundarios)"
+			              	render="panelDiagnosticosSecundarios">
+			              <f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{2}" for="command"/>
+			            </mec:commandButton>  
+			            <mec:commandButton id="btCancelarDiagnosticosSecundarios" 
+			              	rendered="#{manterSumarioAltaController.diagnosticosSecundariosVO.itemEmEdicao.emEdicao}" 
+			              	action="#{manterSumarioAltaController.cancelarItemEmEdicao}" 
+			              	value="#{messages.LABEL_CANCELAR}" 
+			              	profile="cancel"
+			              	style="float: left !important; margin: 2px 10px 6px !important;"
+			              	process="@this" 
+			              	ajax="true" 
+			              	render="panelDiagnosticosSecundarios, panelOutrosDiagSecundarios">
+			              <f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{2}" for="command"/>  
+			            </mec:commandButton> 
+			          </aghu:acao> 
+	              </p:outputPanel>
+	              <p:outputPanel>              
+	                <aghu:linha>
+	                  <mec:serverDataTable id="tabelaDiagnosticosSecundariosDecorate" 
+	               			style="border-top: 0 none !important" 
+	                		list="#{manterSumarioAltaController.diagnosticosSecundariosVO.listaGrid}"
+	                		scrollable="true" 
+	                		scrollHeight="100" 
+	                		controller="manterSumarioAltaController"> 
+	                    <c:set var="itemDiagnosticosSecundarios" value="#{item}"/>  
+	                    <p:column style="#{itemDiagnosticosSecundarios.emEdicao ? 'background-color:#EEE8AA;' : ''}width:60px;">
+	                      <f:facet name="header"> 
+	  	                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+	      	              </f:facet> 
+	                      <mec:commandLink title="#{messages.LABEL_EDITAR}" 
+	                    		action="#{manterSumarioAltaController.editarItemDiagnostico}" 
+	                    		rendered="#{not itemDiagnosticosSecundarios.emEdicao}" 
+	                    		profile="edit" 
+	                    		ajax="true" 
+	                    		process="@this"
+	                    		render="panelDiagnosticosSecundarios, panelDiagnosticosSecundariosBotoes">
+	                    	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{2}" for="command"/>
+	                 	    <f:setPropertyActionListener target="#{manterSumarioAltaController.itemDiagnosticoSecundarioSelecionado}" value="#{itemDiagnosticosSecundarios}" for="command"/>
+	                      </mec:commandLink>	                    
+	                      <mec:commandLink rendered="#{itemDiagnosticosSecundarios.emEdicao}" 
+	                    		styleClass=" silk-blank silk-icon" ajax="true"/>  
+	                      <mec:commandLink title="#{messages.LABEL_EXCLUIR}" 
+	                    	 	action="#{manterSumarioAltaController.excluirDiagItemGrid}" 
+	                    		profile="delete" 
+	                    		ajax="true" 
+	                    		process="@this"
+	                    		render="panelDiagnosticosSecundarios, panelDiagnosticosSecundariosBotoes">
+	                    	<f:setPropertyActionListener target="#{manterSumarioAltaController.currentSliderDiagnosticos}" value="#{2}" for="command"/>
+	                 	    <f:setPropertyActionListener target="#{manterSumarioAltaController.itemDiagnosticoSecundarioSelecionado}" value="#{itemDiagnosticosSecundarios}" for="command"/>
+	                      </mec:commandLink> 
+	                    </p:column>  
+	                    <p:column width="auto" style="#{itemDiagnosticosSecundarios.emEdicao ? 'background-color:#EEE8AA' : ''}">
+	                      <f:facet name="header"> 
+	     	                <h:outputText value="#{messages.LABEL_CIDS}"/> 
+	      	              </f:facet> 
+	                      <h:outputText value="#{itemDiagnosticosSecundarios.descricao}"/> 
+	                    </p:column> 
+	                  </mec:serverDataTable> 
+	                </aghu:linha>
+	              </p:outputPanel>
+	            </p:outputPanel> 
+	          </p:tab>
+	     </p:accordionPanel>        
+      </aghu:panelGeral>
+    </h:form> 
+  </ui:composition> 
+</html>

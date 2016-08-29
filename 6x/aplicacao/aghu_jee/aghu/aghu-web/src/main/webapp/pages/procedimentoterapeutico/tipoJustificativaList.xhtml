@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title></title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{manterTipoJustificativaListPaginatorController.inicializar}"/>
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{manterTipoJustificativaListPaginatorController}" />
+		<h:form prependId="false" id="pesquisaTipojustificativa">
+			<aghu:panelGeral legend="#{messages.TITLE_TIPO_JUSTIFICATIVA}">
+				<aghu:linha>
+					<mec:selectOneMenu id="tipoJustificativa_tipoSessao" itemsType="entity" itemLabel="descricao" items="#{manterTipoJustificativaListPaginatorController.obterListaTipoSessao()}"
+						label="#{messages.LABEL_TIPO_JUSTIFICATIVA_TIPO_SESSAO}"
+						value="#{manterTipoJustificativaListPaginatorController.selecionadoMptTipoSessao}"
+						style="width:440px !important">
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+					<mec:suggestionBox var="row" itemValue="#{row}"
+						id="tipoJustificativa_tipoJustificativa" cache="false"
+						label="#{messages.LABEL_TIPO_JUSTIFICATIVA_TPJ}"
+						suggestionAction="listarMptTipoJustificativa"
+						descricaoInput="seq" descricaoLabel="descricao"
+						descricaoLimite="60" maxlength="100" width="40px" height="300px"
+						controller="#{manterTipoJustificativaListPaginatorController}"
+						size="70"
+						value="#{manterTipoJustificativaListPaginatorController.indJustificativa}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{row.seq}
+		       			 </p:column>
+		       			 <p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_SIGLA}</b>
+							</f:facet> #{row.sigla}
+		       			 </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_TIPO_JUSTIFICATIVA_DESCRICAO}</b>
+							</f:facet> #{row.descricao}
+		       			 </p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText
+						label="#{messages.LABEL_TIPO_JUSTIFICATIVA_DESCRICAO}"
+						value="#{manterTipoJustificativaListPaginatorController.descricao}" size="85"
+						id="tipoJustificativaDescricao" style="text-transform:uppercase"
+						maxlength="60" />
+					<mec:selectOneMenu id="tipoJustificativaSitucao" enum="DominioSituacao"
+						label="#{messages.LABEL_TIPO_JUSTIFICATIVA_SITUACAO}"
+						value="#{manterTipoJustificativaListPaginatorController.indSituacao}"
+						style="width:200px !important">
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_TIPO_JUSTIFICATIVA_PESQUISAR}"
+					action="#{manterTipoJustificativaListPaginatorController.pesquisar}"
+					profile="search" render=" tabelaResultado" />
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_TIPO_JUSTIFICATIVA_LIMPAR}"
+					action="#{manterTipoJustificativaListPaginatorController.limpar}"
+					immediate="true" process="@this" profile="clear"/>
+				<mec:commandButton id="bt_novo" value="#{messages.LABEL_TIPO_JUSTIFICATIVA_ADICIONAR}"
+					action="#{manterTipoJustificativaListPaginatorController.gravar}" profile="add" disabled="#{not mf:hasPermission(securityController, 'manterTiposJustificativa,executar')}"
+					rendered="#{manterTipoJustificativaListPaginatorController.dataModel.pesquisaAtiva}" />
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formLista">
+			<aghu:panelGeral legend="#{messages.TITLE_TIPO_JUSTIFICATIVA_GRID}" id="tabelaResultado"
+				rendered="#{manterTipoJustificativaListPaginatorController.dataModel.pesquisaAtiva}">
+				<mec:serverDataTable id="lista" dataModel="dataModel"
+					selection="parametroSelecionado"
+					controller="#{manterTipoJustificativaListPaginatorController}">
+					<c:set var="_item" value="#{item}" />
+					<p:column width="5%" style="text-align: center" headerText="Ação"
+						exportable="false">
+						<mec:commandLink id="tipoJustificativaEditar" profile="edit"
+							title="Editar"
+							action="#{manterTipoJustificativaListPaginatorController.editar}">
+							<f:setPropertyActionListener for="command"
+								target="#{manterTipoJustificativaCRUDController.edicaoAtiva}"
+								value="#{true}" />
+							<f:setPropertyActionListener
+								target="#{manterTipoJustificativaCRUDController.justificativaVO}"
+								value="#{_item}" for="command" />
+						</mec:commandLink>
+						<mec:commandLink id="tipoJustificativaExcluir" title="Excluir" profile="delete"
+							action="#{manterTipoJustificativaListPaginatorController.excluir(_item)}"
+							styleClass="silk-icon silk-delete">
+						</mec:commandLink>
+					</p:column>
+					<p:column width="20%" style="text-align: left">
+						<f:facet name="header">
+							<h:outputText id="tipo_sessao"
+								value="#{messages.LABEL_TIPO_JUSTIFICATIVA_TIPO_SESSAO}" />
+						</f:facet>
+						<h:outputText value="#{_item.descTipoSes}" />
+					</p:column>
+					<p:column style="text-align: left"  width="15%">
+						<h:outputText id="tipo_justificativa_descricao"
+							value="#{_item.descTipoJus}" />
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_TIPO_JUSTIFICATIVA_TPJ}" />
+						</f:facet>
+					</p:column>
+					<p:column width="55%" style="text-align: left">
+						<f:facet name="header">
+							<h:outputText id="justificativa_descricao"
+								value="#{messages.LABEL_TIPO_JUSTIFICATIVA_DESCRICAO}" />
+						</f:facet>
+						<h:outputText value="#{_item.descricaoJus}" />
+					</p:column>
+					<p:column width="5%" style="text-align: left">
+						<f:facet name="header">
+							<h:outputText id="justificativa_situacao"
+								value="#{messages.LABEL_TIPO_JUSTIFICATIVA_SITUACAO}" />
+						</f:facet>
+						<h:outputText value="#{_item.indSituacao.getDescricao()}" />
+					</p:column>
+				</mec:serverDataTable>
+			</aghu:panelGeral>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head"> 
+      <title>#{messages.LABEL_CADASTRAR_PLANEJAMENTO_PACIENTE_AGENDA}</title>
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cadastroPlanejamentoPacienteAgendaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroPlanejamentoPacienteAgendaController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formPlanejamentoPacienteAgenda"> 
+        <pe:remoteCommand name="carregarNecessidadeAPCongelado" update="@(#panelTabelaSolicEsp)" actionListener="#{cadastroPlanejamentoPacienteAgendaSolicitacaoEspecialController.carregarNecessidadeAPCongelado()}" process="@this"/>  
+        <p:accordionPanel id="filtroToggle" style="width:100%;" styleClass="uniqueClassName" prependId="false" widgetVar="wFiltroToggle" activeIndex="#{cadastroPlanejamentoPacienteAgendaController.abaAberta}"> 
+            <p:ajax event="tabChange" immediate="true" process="@this" listener="#{cadastroPlanejamentoPacienteAgendaController.collapseTogglePesquisa}"/>  
+          	<p:ajax event="tabClose" immediate="true" process="@this" listener="#{cadastroPlanejamentoPacienteAgendaController.collapseTogglePesquisa}"/>  
+            <p:tab title="#{messages.LABEL_INCLUIR_PLANEJAMENTO}" > 
+            <aghu:panelGeral> 
+              <aghu:linha> 
+                <p:outputPanel id="panelPaciente" layout="inline"> 
+                  <mec:pesquisaPaciente id="pesqPaciente" label="#{messages.LABEL_NOME_PACIENTE_PLANEJAMENTO_PACIENTE_AGENDA}" valueChangeListener="#{cadastroPlanejamentoPacienteAgendaController.pesquisaPaciente}" value="#{cadastroPlanejamentoPacienteAgendaController.paciente}" update="@(#modalAgendamentos)" render="panelModal,  panelLeito" required="true" readonly="#{!cadastroPlanejamentoPacienteAgendaController.isInclusao or cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}"/>
+                  <br clear="none"/>  
+                  <mec:commandButton id="pesquisaFonetica" value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" readonly="#{!cadastroPlanejamentoPacienteAgendaController.isInclusao or cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" action="#{cadastroPlanejamentoPacienteAgendaController.redirecionarPesquisaFonetica}" styleClass="bt_cinza icon-pesquisa-fonetica" profile="search"> 
+                    <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="blococirurgico-planejamentoPacienteAgendaCRUD" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="false" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" value="false" for="command"/> 
+                  </mec:commandButton> 
+                </p:outputPanel> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <p:outputPanel id="panelLeito" layout="inline"> 
+                  <mec:suggestionBox id="suggestionLeito" label="#{messages.LABEL_LEITO_PLANEJAMENTO_PACIENTE_AGENDA}" title="#{messages.TITLE_LEITO_PLANEJAMENTO_PACIENTE_AGENDA}" width="500" descricaoInput="leitoID" descricaoLabel="leitoID" posSelectionAction="carregarPaciente" suggestionAction="pesquisarLeito" readonly="#{!cadastroPlanejamentoPacienteAgendaController.isInclusao or cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" controller="#{cadastroPlanejamentoPacienteAgendaController}" value="#{cadastroPlanejamentoPacienteAgendaController.leito}" render="panelPaciente">  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_LEITO}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.leitoID}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PRONTUARIO}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.internacao.paciente.prontuario}
+                    </p:column>  
+                    <p:column style="width:90px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO_PACIENTE_LEITO}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.internacao.pacCodigo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.internacao.paciente.nome}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                </p:outputPanel> 
+              </aghu:linha>  
+              <p:outputPanel id="panelGeral" layout="inline"> 
+                <aghu:linha> 
+                  <mec:suggestionBox width="500" id="suggestionEspecialidade" readonly="#{not empty cadastroPlanejamentoPacienteAgendaController.seqEspecialidade}" label="#{messages.LABEL_ESPECIALIDADE_EQUIPE_AGENDAMENTO}" title="#{messages.TITLE_ESPECIALIDADE_EQUIPE_AGENDAMENTO}" descricaoLimite="45" suggestionAction="getPesquisarEspecialidadeParaEquipe" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" required="true" controller="#{cadastroPlanejamentoPacienteAgendaController}" value="#{cadastroPlanejamentoPacienteAgendaController.especialidadeEquipe}" render="suggestionProcedimentoPrincipal"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_NOME_ESPECIALIDADE}</b> 
+                      </f:facet> #{item.nomeEspecialidade}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <mec:suggestionBox id="suggestionProcedimentoPrincipal" 
+                  					 label="#{messages.LABEL_PROCEDIMENTO_PRINCIPAL_PLANEJAMENTO_PACIENTE_AGENDA}" 
+                  					 title="#{messages.TITLE_PROCEDIMENTO_PRINCIPAL_PLANEJAMENTO_PACIENTE_AGENDA}" 
+                  					 width="500" 
+                  					 descricaoInput="id.pciSeq"
+                  					 descricaoLabel="descricao" 
+                  					 posSelectionAction="executarONS" 
+                  					 posDeleteAction="executarLimparProcPrincipal" 
+                  					 suggestionAction="pesquisarProcedimento" 
+                  					 readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5 or empty cadastroPlanejamentoPacienteAgendaController.especialidadeEquipe or cadastroPlanejamentoPacienteAgendaOPMESController.desabilitaProcedimentoSus or cadastroPlanejamentoPacienteAgendaOPMESController.procedimentoEmEscala}" 
+                  					 required="true" 
+                  					 controller="#{cadastroPlanejamentoPacienteAgendaController}" 
+                  					 value="#{cadastroPlanejamentoPacienteAgendaController.procedimento}" 
+                  					 render="ladoCirurgia, panelProcEqui, tempoPrevOcupSala, regimeProcedSus, infoTabs, procedSus"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PROCEDIMENTO_PRINCIPAL}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.descricao}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_TEMPO_MINIMO}" style="font-weight: bold;"/> 
+                      </f:facet> #{cadastroPlanejamentoPacienteAgendaController.getTempoProcedimentoFormatado(item)}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_REGIME_PROCED_SUS}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.regimeProcedSus.descricao}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <mec:inputNumero id="quantidade" label="#{messages.LABEL_QUANTIDADE_PLANEJAMENTO_PACIENTE_AGENDA}" title="#{messages.TITLE_QUANTIDADE_PLANEJAMENTO_PACIENTE_AGENDA}" readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.qtdeProc}" size="4" maxlength="3"> 
+                    <p:ajax event="change" process="@this"/> 
+                  </mec:inputNumero> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <p:outputPanel id="panelProcEqui" layout="inline"> 
+                  	 <mec:selectOneMenu id="procEquipe" 
+						title="#{messages.TITLE_PROCEDIMENTO_EQUIPE_PLANEJAMENTO_PACIENTE_AGENDA}" 
+              			label="#{messages.LABEL_PROCEDIMENTO_EQUIPE_PLANEJAMENTO_PACIENTE_AGENDA}"
+           				items="#{cadastroPlanejamentoPacienteAgendaController.pesquisarProcedimentosEquipe()}"
+						value="#{cadastroPlanejamentoPacienteAgendaController.mbcProcPorEquipe}"
+						itemLabel="descricaoProcedimento"				
+						disabled="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}">
+						<p:ajax event="change" render="suggestionProcedimentoPrincipal" update="@(#ladoCirurgia) @(#procEquipe) @(#suggestionProcedimentoPrincipal) @(#regimeProcedSus) @(#tempoPrevOcupSala)" process="@this" listener="#{cadastroPlanejamentoPacienteAgendaController.setarProcedPrincipPorProcedEquipe()}"/> 
+					</mec:selectOneMenu>
+                  </p:outputPanel>  
+                  <p:outputPanel id="ladoCirg" layout="inline"> 
+                    <mec:selectOneMenu id="ladoCirurgia" label="#{messages.LABEL_LADO_CIRURGIA_PLANEJAMENTO_PACIENTE_AGENDA}" title="#{messages.TITLE_LADO_CIRURGIA_PLANEJAMENTO_PACIENTE_AGENDA}" ajaxSingle="true" enum="DominioLadoCirurgiaAgendas" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.ladoCirurgia}" readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyLadoCirurgia or cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" required="#{not cadastroPlanejamentoPacienteAgendaController.readOnlyLadoCirurgia}"> 
+                      <p:ajax event="change" process="@this"/> 
+                    </mec:selectOneMenu> 
+                  </p:outputPanel>
+                  <p:outputPanel id="procedSus" layout="inline">
+                  	<mec:suggestionBox id="suggestionProcedimentoSus" 
+                  		label="#{messages.LABEL_PROCEDIMENTO_SUS}"
+						title="#{messages.TITLE_PROCEDIMENTO_SUS2}"
+                  		width="600" 
+                  		descricaoInput="codTabela" 
+                  		descricaoLabel="descricao" 
+                  		posSelectionAction="setValidaRequisicaoEscala"
+						posDeleteAction="setValidaRequisicaoEscalaAlteracao"
+                  		suggestionAction="pesquisarProcedimentoSus" 
+                  		controller="#{cadastroPlanejamentoPacienteAgendaOPMESController}" 
+                  		value="#{cadastroPlanejamentoPacienteAgendaOPMESController.procedimentoSus}" 
+                  		render="orteseProtese, formPlanejamentoPacienteAgenda, infoTabs"
+						rendered="#{not empty cadastroPlanejamentoPacienteAgendaController.procedimento and cadastroPlanejamentoPacienteAgendaOPMESController.renderizaProcedimentoSus}"
+						readonly="#{empty cadastroPlanejamentoPacienteAgendaController.procedimento or cadastroPlanejamentoPacienteAgendaOPMESController.desabilitaProcedimentoSus or cadastroPlanejamentoPacienteAgendaOPMESController.procedimentoEmEscala}" > 
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_PROCEDIMENTO_SUS}" style="font-weight: bold;" />
+							</f:facet>
+							#{item.codTabela} - #{item.descricao}
+						</p:column> 
+                  	</mec:suggestionBox>  
+                  </p:outputPanel>
+                </aghu:linha>  
+                <aghu:linha>
+                  <mec:inputTextData id="dtInicio" label="#{messages.LABEL_DATA_AGENDA_PLANEJAMENTO_PACIENTE_AGENDA}" size="10" maxlength="10" readonly="true" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.dtAgenda}" tipo="data"/>  
+                  <mec:inputText id="tempoPrevOcupSala" label="#{messages.LABEL_TEMPO_PREV_OCUP_PLANEJAMENTO_PACIENTE_AGENDA}" size="5" maxlength="5" title="#{messages.TITLE_TEMPO_PREV_OCUP_PLANEJAMENTO_PACIENTE_AGENDA}" readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" required="true" datePattern="HH:mm" dateType="time" incluirMascaraHora="true" removerCaratersEspeciais="true" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.tempoSala}"> 
+                    <p:ajax event="change" process="@this" update="@(#panelGeral)" listener="#{cadastroPlanejamentoPacienteAgendaController.executarON3}"/> 
+                  </mec:inputText>  
+                  <mec:selectOneMenu id="regimeProcedSus" label="#{messages.LABEL_REGIME_SUS_PLANEJAMENTO_PACIENTE_AGENDA}" title="#{messages.TITLE_REGIME_SUS_PLANEJAMENTO_PACIENTE_AGENDA}" readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.regime}" enum="DominioRegimeProcedimentoCirurgicoSus" required="true" ajax="true"> 
+                    <p:ajax event="change" update="@(#panelGeral)" process="@this" listener="#{cadastroPlanejamentoPacienteAgendaController.executarON4()}"/> 
+                  </mec:selectOneMenu> 
+                </aghu:linha>
+               
+                <aghu:linha> 
+                  <mec:inputTextArea id="comentarios" label="#{messages.LABEL_COMENTARIO_ESPECIAL_PLANEJAMENTO_PACIENTE_AGENDA}" title="#{cadastroPlanejamentoPacienteAgendaController.getHelpComentario()}" size="125" disabled="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" cols="100" rows="4" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.comentario}" removerCaratersEspeciais="false" maxlength="500"> 
+                    <p:ajax event="change" process="@this"/> 
+                  </mec:inputTextArea>
+                </aghu:linha>  
+                <aghu:linha>
+                	<mec:selectBooleanCheckbox id="APCongelacao" label="#{messages.LABEL_AP_CONGELACAO_PLANEJAMENTO_PACIENTE_AGENDA}" title="#{messages.TITLE_AP_CONGELACAO_PLANEJAMENTO_PACIENTE_AGENDA}" value="#{cadastroPlanejamentoPacienteAgendaController.apCongelacao}" onchange="carregarNecessidadeAPCongelado();" readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" rendered="#{cadastroPlanejamentoPacienteAgendaController.exibeCheckApCongelacao}"/>  
+                  	<mec:selectBooleanCheckbox id="prioridade" label="#{messages.LABEL_PRIORIDADE_PLANEJAMENTO_PACIENTE_AGENDA}" title="#{messages.TITLE_PRIORIDADE_PLANEJAMENTO_PACIENTE_AGENDA}" readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.indPrioridade}">
+                    	<p:ajax event="change" update="@(#justificativa)" process="@this" listener="#{cadastroPlanejamentoPacienteAgendaController.limparJustificativa}"/> 
+                  	</mec:selectBooleanCheckbox>  
+                  	<mec:inputTextArea id="justificativa" cols="100" rows="4" label="#{messages.LABEL_JUSTIFICATIVA_PLANEJAMENTO_PACIENTE_AGENDA}" title="#{messages.TITLE_JUSTIFICATIVA_PLANEJAMENTO_PACIENTE_AGENDA}" required="true" disabled="#{not cadastroPlanejamentoPacienteAgendaController.agenda.indPrioridade or cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5}" size="125" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.justifPrioridade}" removerCaratersEspeciais="false" maxlength="240"> 
+                    	<p:ajax event="change" process="@this"/> 
+                  	</mec:inputTextArea> 
+                </aghu:linha>
+              </p:outputPanel>  
+              <aghu:linha/> 
+            </aghu:panelGeral>
+            </p:tab> 
+        </p:accordionPanel>    
+        <p:tabView id="infoTabs" immediate="true" dynamic="true" activeIndex="#{cadastroPlanejamentoPacienteAgendaController.selectedTab}" prependId="false">
+        	<p:ajax event="tabChange" listener="#{cadastroPlanejamentoPacienteAgendaController.tabChange}" /> 
+          <p:tab name="aba1" id="aba1" rendered="#{cadastroPlanejamentoPacienteAgendaController.exibeAbaAnestesia}" title="#{messages.LABEL_PLANEJAMENTO_PACIENTE_AGENDA_ABA1_ANESTESIA}"> 
+            <ui:include src="/pages/blococirurgico/portalplanejamento/planejamentoPacienteAgendaCRUDAba1.xhtml"/> 
+          </p:tab>  
+          <p:tab name="aba2" id="aba2" rendered="#{cadastroPlanejamentoPacienteAgendaController.exibeAbaOutrosProcedimentos}" title="#{messages.LABEL_PLANEJAMENTO_PACIENTE_AGENDA_ABA2_OUTROS_PROCEDIMENTOS}"> 
+            <ui:include src="/pages/blococirurgico/portalplanejamento/planejamentoPacienteAgendaCRUDAba2.xhtml"/> 
+          </p:tab>  
+          <p:tab name="diagnostico" id="diagnostico" rendered="#{cadastroPlanejamentoPacienteAgendaController.exibeAbaDiagnosticos}" title="#{messages.LABEL_PLANEJAMENTO_PACIENTE_AGENDA_ABA_DIAGNOSTICO}"> 
+            <ui:include src="/pages/blococirurgico/portalplanejamento/planejamentoPacienteAgendaCRUDDiagnostico.xhtml"/> 
+          </p:tab>  
+          <p:tab name="reservaHemoterapica" id="reservaHemoterapica" rendered="#{cadastroPlanejamentoPacienteAgendaController.exibeAbaReservaHemoterapica}" title="#{messages.LABEL_PLANEJAMENTO_PACIENTE_AGENDA_ABA_RESERVA_HEMOTERAPICA}"> 
+            <ui:include src="/pages/blococirurgico/portalplanejamento/planejamentoPacienteAgendaCRUDHemoterapia.xhtml"/> 
+          </p:tab>  
+          <p:tab name="solicEsp" id="solicEsp" rendered="#{cadastroPlanejamentoPacienteAgendaController.exibeAbaSolicitacoesEspeciais}" title="#{messages.LABEL_PLANEJAMENTO_PACIENTE_SOLICITACOES_ESPECIAIS}"> 
+            <ui:include src="/pages/blococirurgico/portalplanejamento/planejamentoPacienteAgendaCRUDSolicitacaoEspecial.xhtml"/> 
+          </p:tab>  
+          <p:tab name="orteseProtese" id="orteseProtese" rendered="false" disabled="#{empty cadastroPlanejamentoPacienteAgendaOPMESController.procedimentoSus}" title="#{messages.LABEL_PLANEJAMENTO_PACIENTE_AGENDA_ABA6_ORTESE_PROTESE}"> 
+            <ui:include src="/pages/blococirurgico/portalplanejamento/planejamentoPacienteAgendaCRUDOPMES.xhtml"/> 
+          </p:tab>  
+ 
+          
+        </p:tabView>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_confirmar" value="#{messages.LABEL_GRAVAR}" readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5 and cadastroPlanejamentoPacienteAgendaController.habilitarBotaoGravar}" disabled="#{cadastroPlanejamentoPacienteAgendaController.readOnlyCamposPorON5 and cadastroPlanejamentoPacienteAgendaController.habilitarBotaoGravar}" action="#{cadastroPlanejamentoPacienteAgendaController.gravar}" profile="ok"/>  
+          <mec:commandButton id="bt_mostrarHistoricoAgenda" value="#{messages.LABEL_HISTORICO_AGENDA}" oncomplete="PF('modalHistoricoAgendaWG').show();$('body').css('overflow','hidden');" action="#{historicoAgendaController.informarHistoricoAgenda(cadastroPlanejamentoPacienteAgendaController.agdSeq)}" readonly="#{cadastroPlanejamentoPacienteAgendaController.readOnlyBotaoHistoricoAgenda}" immediate="true" style="background-image:url('../../../resources/img/historico.png') !important; background-repeat: no-repeat !important; background-position: 3px 2px !important; width:100px !important; text-align:right !important;" styleClass="bt_ok" ajax="true" render="modalHistoricoAgenda" process="@this"/>  
+          <mec:backButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR}" immediate="true" forceDialog="#{cadastroPlanejamentoPacienteAgendaAba1Controller.modificouAnestesia or cadastroPlanejamentoPacienteAgendaSolicitacaoEspecialController.modificouSolicEspecial}" action="#{cadastroPlanejamentoPacienteAgendaController.cancelar}" rendered="#{!cadastroPlanejamentoPacienteAgendaController.renderBotaoVoltar}"/> 
+          <mec:commandButton id="bt_cancelar2" value="#{messages.LABEL_CANCELAR}" immediate="true" forceDialog="#{cadastroPlanejamentoPacienteAgendaAba1Controller.modificouAnestesia or cadastroPlanejamentoPacienteAgendaSolicitacaoEspecialController.modificouSolicEspecial}" action="#{cadastroPlanejamentoPacienteAgendaController.cancelar}" rendered="#{cadastroPlanejamentoPacienteAgendaController.renderBotaoVoltar}" profile="cancel"/>
+		  
+		  <input type="hidden" id="seqAgenda" value="#{cadastroPlanejamentoPacienteAgendaController.agenda.seq}" />
+        </aghu:acao> 
+      </h:form>
+      <p:outputPanel id="panelModal">  
+	      <p:dialog id="modalAgendamentos" width="400" height="130" resizable="false" widgetVar="modalAgendamentosWG"> 
+	        <f:facet name="header"> 
+	          <h:panelGroup> 
+	            <h:outputText id="textoModal" value="#{messages.LABEL_AGENDAMENTO}"/> 
+	          </h:panelGroup> 
+	        </f:facet>  
+	        <h:outputText id="textoModal1" rendered="#{cadastroPlanejamentoPacienteAgendaController.obterSizeListAgendas() gt 1}" value="Paciente possui #{cadastroPlanejamentoPacienteAgendaController.obterSizeListAgendas()} cirurgias na Lista de Espera/Lista de Cancelados. Deseja cancelar esta inclusão e reagendar através da Lista?"/>  
+	        <h:outputText id="textoModal2" rendered="#{cadastroPlanejamentoPacienteAgendaController.obterSizeListAgendas() eq 1}" value="Paciente possui uma cirurgia na #{cadastroPlanejamentoPacienteAgendaController.buscaListaCirurgia()}. Deseja agendar esta cirurgia ja existente?"/>  
+	        <br clear="none"/>  
+	        <br clear="none"/>  
+	        <br clear="none"/>  
+	        <h:panelGroup> 
+		    	<h:form prependId="false" id="formModalAgendamentos"> 
+		            <mec:commandButton id="botaoSim1" rendered="#{cadastroPlanejamentoPacienteAgendaController.obterSizeListAgendas() gt 1}" value="#{messages.LABEL_SIM}" action="#{cadastroPlanejamentoPacienteAgendaController.confirmarMultiplosAgendamentos}" onclick="PF('modalAgendamentosWG').hide();" profile="ok" ajax="true"/>  
+		            <mec:commandButton id="botaoSim2" rendered="#{cadastroPlanejamentoPacienteAgendaController.obterSizeListAgendas() eq 1}" value="#{messages.LABEL_SIM}" action="#{cadastroPlanejamentoPacienteAgendaController.modalApenasUmAgendamentoSim}" onclick="PF('modalAgendamentosWG').hide();" profile="ok" ajax="true" render="formPlanejamentoPacienteAgenda"/>  
+		            <mec:commandButton id="botaoNao" value="#{messages.LABEL_NAO}" onclick="PF('modalAgendamentosWG').hide();" profile="cancel" ajax="true" immediate="true"/> 
+		         </h:form> 
+		  	</h:panelGroup>
+	      </p:dialog>
+	     </p:outputPanel>  
+      <h:form prependId="false"> 
+        <p:outputPanel layout="inline"> 
+          <ui:decorate template="/pages/blococirurgico/portalplanejamento/modalHistoricoAgenda.xhtml"/> 
+        </p:outputPanel> 
+      </h:form> 
+      
+    <p:outputPanel id="outMateriaisNovos" layout="inline"> 
+      <p:dialog id="modalMateriaisNovos" width="480" height="190" modal="true" resizable="false" widgetVar="modalMateriaisNovosWG"> 
+        <h:form prependId="false" id="formModalMatNovos"> 
+	        <f:facet name="header" id="headerModalMateriaisNovos"> 
+	          <h:panelGroup id="panelHeaderGroupModalMateriaisNovos"> 
+	            <h:outputText value="#{messages.LABEL_SOLICITACAO_MATERIAL_NOVO}" id="textLabelMateriaisNovos"/> 
+	          </h:panelGroup> 
+	        </f:facet>
+	        <aghu:linha> 
+	          <p:outputPanel id="outtextAreaMateriaisNovos" layout="inline"> 
+	            <mec:inputTextArea id="textAreaMateriaisNovos" 
+	            		rows="4" 
+	            		style="width: 445px;" 
+	            		label="#{messages.LABEL_MATERIAIS_NOVOS}" 
+	            		size="125" 
+	            		required="#{cadastroPlanejamentoPacienteAgendaOPMESController.materialNovoObrigatorio}" 
+	            		value="#{cadastroPlanejamentoPacienteAgendaOPMESController.materiaisNovos}" 
+	            		removerCaratersEspeciais="false" 
+	            		maxlength="1000"> 
+	              <p:ajax event="change" process="@this"/> 
+	            </mec:inputTextArea> 
+	          </p:outputPanel> 
+	        </aghu:linha>  
+	        <aghu:linha> 
+	          <mec:commandButton id="btGravarMaterialNovo" 
+	          		value="#{messages.LABEL_GRAVAR}" 
+	          		action="#{cadastroPlanejamentoPacienteAgendaOPMESController.gravarMaterialNovo}" 
+	          		profile="add" ajax="true"
+	          		render="tabelaListagemOpmes,outtextAreaMateriaisNovos, panelExibirModal, panelMateriais, outCampos,textAreaIncompatibilidade"  />  
+	          <mec:commandButton id="btCancelarMaterialNovo" 
+	          		immediate="true" 
+	          		oncomplete="PF('modalMateriaisNovosWG').hide();" 
+	          		action="#{cadastroPlanejamentoPacienteAgendaOPMESController.cancelarMaterialNovo}" 
+	          		value="#{messages.LABEL_CANCELAR}" 
+	          		profile="cancel" 
+	          		ajax="true" 
+	          		render="outMateriaisNovos" 
+	          		process="@this" /> 
+	        </aghu:linha>
+        </h:form> 
+      </p:dialog> 
+    </p:outputPanel>
+    
+    <p:outputPanel id="outMateriais" layout="inline"> 
+      <p:dialog id="modalMateriais" width="540" height="190" modal="true" resizable="false" widgetVar="modalMateriaisWG"> 
+        <h:form prependId="false" id="formModalOutMateriais"> 
+	        <f:facet name="header" id="headerModalMateriais"> 
+	          <h:panelGroup id="panelHeaderGroupModalMateriais"> 
+	            <h:outputText value="#{messages.LABEL_BTN_OUTROS_MATERIAIS_NOVOS}" id="textLabelMateriais"/> 
+	          </h:panelGroup> 
+	        </f:facet>  
+	        <p:outputPanel id="panelMateriais" layout="inline"> 
+	            <mec:suggestionBox id="suggestionMaterialOpmes" 
+		            label="#{messages.LABEL_MATERIAL}" 
+		            title="#{messages.TITLE_PLANEJAMENTO_PACIENTE_AGENDA_OPMES_MATERIAL}" 
+		            width="300"
+		            descricaoLimite="15" 
+		            required="true" 
+		            descricaoInput="matCodigo" 
+		            descricaoLabel="matNome" 
+		            suggestionAction="pesquisarMateriaisOrteseseProteses" 
+		            controller="#{cadastroPlanejamentoPacienteAgendaOPMESController}" 
+		            value="#{cadastroPlanejamentoPacienteAgendaOPMESController.materialSuggestion}"> 
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_SCO_MATERIAL_CODIGO}" style="font-weight: bold;"/> 
+	                </f:facet> #{item.matCodigo}
+	              </p:column>  
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_SCO_MATERIAL_DESCRICAO}" style="font-weight: bold;"/> 
+	                </f:facet> #{item.matNome}
+	              </p:column> 
+	               <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_SCO_MATERIAL_MARCA}" style="font-weight: bold;"/> 
+	                </f:facet> #{item.matMarca}
+	              </p:column> 
+	              <p:column style="width:17%;" > 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_VALOR_LICITADO_OPM}" style="font-weight: bold;"/> 
+	                </f:facet>
+	                	<h:outputText value="#{item.iafValorUnit}" style="text-align:right;float:right;">
+	                		<f:convertNumber pattern="#,##0.00"/>
+	                	</h:outputText> 
+	              </p:column> 
+	            </mec:suggestionBox>  
+	            <mec:inputNumero id="qtdeSolicitada" required="true" readonly="false" label="#{messages.LABEL_QTDE_SOLICITADA}" style="text-align:right;" title="#{messages.TITLE_QTDE_SOLICITADA_OPMES}" size="3" maxlength="3" value="#{cadastroPlanejamentoPacienteAgendaOPMESController.qtdeSolicitada}"> 
+	              <p:ajax event="change" process="@this"/> 
+	            </mec:inputNumero> 
+	          </p:outputPanel>  
+	          <aghu:linha style="margin-top:70px;"> 
+	            <mec:commandButton id="bt_adicionar_opmes_out" 
+	            	value="#{messages.LABEL_ADICIONAR}" 
+	            	action="#{cadastroPlanejamentoPacienteAgendaOPMESController.adicionar}" 
+	            	profile="add" ajax="true"
+	            	render="tabelaListagemOpmes,panelMateriais, outCampos,textAreaIncompatibilidade" 
+	            	disabled="#{cadastroPlanejamentoPacienteAgendaOPMESController.desabilitaProcedimentoSus or cadastroPlanejamentoPacienteAgendaOPMESController.procedimentoEmEscala}"/> 
+	          	<mec:commandButton id="bt_cancelar_opmes_out" 
+	          		immediate="true" 
+	          		oncomplete="PF('modalMateriaisWG').hide();" 
+	          		action="#{cadastroPlanejamentoPacienteAgendaOPMESController.setOutrosMateriais}" 
+	          		value="#{messages.LABEL_CANCELAR}" 
+	          		profile="cancel" 
+	          		ajax="true" 
+	          		render="outMateriais, outCampos" 
+	          		process="@this"/> 
+	          </aghu:linha>
+          </h:form>
+      </p:dialog> 
+    </p:outputPanel> 
+      
+
+    <p:outputPanel id="outJustificativa" layout="inline"> 
+      <p:dialog id="modalJustificativa" width="500" height="400"  modal="true" resizable="false" widgetVar="modalJustificativaWG"> 
+        <h:form prependId="false" id="formModalJust"> 
+        <f:facet name="header" id="headerModalJustificativa"> 
+          <h:panelGroup id="panelHeaderGroupModalJustificativa"> 
+            <h:outputText value="#{messages.TITLE_JUSTIFICATIVA_MODAL}" id="textLabelJustificativa"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <aghu:linha> 
+          <p:outputPanel id="outtextAreaJustificativa" layout="inline"> 
+            <mec:inputTextArea id="textAreaJustificativa" 
+            					rows="7" 
+            					style="width: 445px;" 
+            					label="#{messages.LABEL_JUSTIFICATIVA}" 
+            					size="125" 
+            					required="true" 
+            					value="#{cadastroPlanejamentoPacienteAgendaOPMESController.requisicaoOpmes.justificativaRequisicaoOpme}" 
+            					removerCaratersEspeciais="false" 
+            					maxlength="1000"> 
+            </mec:inputTextArea> 
+          </p:outputPanel> 
+        </aghu:linha>
+        <aghu:linha> 
+        	<p:outputPanel id="outtextAreaJustificativa2" layout="inline"> 
+        		<mec:inputTextArea id="textAreaJustificativa2" 
+        						   rows="7" 
+        						   style="width: 445px;" 
+        						   label="#{messages.LABEL_INCOMPATIBILIDADES_ENCONTRADAS}" 
+        						   size="125" 
+        						   rendered="#{not empty cadastroPlanejamentoPacienteAgendaOPMESController.incompatibilidadesEncontrada}"
+        						   value="#{cadastroPlanejamentoPacienteAgendaOPMESController.incompatibilidadesEncontrada}"
+        						   removerCaratersEspeciais="false" 
+        						   maxlength="1000"/> 
+        	</p:outputPanel>	
+        </aghu:linha>  
+        <aghu:linha> 
+          <mec:commandButton id="btGravaJustificativa" 
+          					 value="#{messages.LABEL_GRAVAR}" 
+          					 ajax="true"
+          					 action="#{cadastroPlanejamentoPacienteAgendaOPMESController.gravarJustificativa}" 
+          					 profile="ok" 
+          					 render="tabelaListagemOpmes"/>  
+          <mec:commandButton id="btCancelarJustificativa" 
+          					 value="#{messages.LABEL_CANCELAR}" 
+          					 process="@this" 
+          					 oncomplete="PF('modalJustificativaWG').hide();"
+          					 action="#{cadastroPlanejamentoPacienteAgendaOPMESController.cancelarJustificativa}" 
+          					 profile="cancel" ajax="true" /> 
+        </aghu:linha>
+        </h:form> 
+      </p:dialog> 
+    </p:outputPanel>  
+    <p:outputPanel id="outObservacao" layout="inline"> 
+      <p:dialog id="modalObservacao" width="480" height="190" showWhenRendered="#{cadastroPlanejamentoPacienteAgendaOPMESController.abreObservacao}" modal="true" resizable="false" widgetVar="modalObservacaoWG"> 
+        <h:form prependId="false" id="formModalObs"> 
+	        <f:facet name="header" id="headerModalObservacao"> 
+	          <h:panelGroup id="panelHeaderGroupModalObservacao"> 
+	            <h:outputText value="#{messages.TITLE_OBSERVACAO_MODAL}" id="textLabelObservacao"/> 
+	          </h:panelGroup> 
+	        </f:facet>  
+	        <aghu:linha> 
+	          <p:outputPanel id="outtextAreaObservacao" layout="inline"> 
+	            <mec:inputTextArea id="textAreaObservacao" rows="4" style="width: 445px;" label="#{messages.LABEL_OBSERVACAO}" size="125" requiredFake="true" value="#{cadastroPlanejamentoPacienteAgendaOPMESController.requisicaoOpmes.observacaoOpme}" removerCaratersEspeciais="false" maxlength="1000"> 
+	              <p:ajax event="change" process="@this"/> 
+	            </mec:inputTextArea> 
+	          </p:outputPanel> 
+	        </aghu:linha>  
+	        <aghu:linha> 
+	          <mec:commandButton id="btGravaObservacaoa" value="#{messages.LABEL_GRAVAR}" process="@this" action="#{cadastroPlanejamentoPacienteAgendaOPMESController.setConfirmaObservacao}" oncomplete="PF('modalObservacaoWG').hide();" profile="search" ajax="true" render="tabelaListagemOpmes, outObservacao"/>  
+	          <mec:commandButton id="btCancelarObservacao" process="@this" action="#{cadastroPlanejamentoPacienteAgendaOPMESController.setCancelarObservacao}"  oncomplete="PF('modalObservacaoWG').hide();" value="#{messages.LABEL_CANCELAR}" profile="cancel" ajax="true" render="tabelaListagemOpmes, outObservacao"/> 
+        </aghu:linha> 
+        </h:form>
+      </p:dialog> 
+    </p:outputPanel>  
+    <p:outputPanel id="outModalExcluirItemRequisicao" layout="inline"> 
+      <p:dialog id="modalExcluirItemRequisicao" showWhenRendered="#{cadastroPlanejamentoPacienteAgendaOPMESController.modalExclusao}" width="450" height="150" modal="true" resizable="false" widgetVar="modalExcluirItemRequisicaoWG"> 
+        <h:form prependId="false" id="formModalExcluir"> 
+	        <f:facet name="header"> 
+	          <c:if xmlns:c="http://java.sun.com/jstl/core" test="#{cadastroPlanejamentoPacienteAgendaOPMESController.voExcluir.itensRequisicaoOpmes.requerido eq 'NOV'}">  
+	            <h:outputText value="#{messages.LABEL_EXCLUIR_NOVO_MATERIAL}"/> 
+	          </c:if>  
+	          <c:if xmlns:c="http://java.sun.com/jstl/core" test="#{cadastroPlanejamentoPacienteAgendaOPMESController.voExcluir.itensRequisicaoOpmes.requerido eq 'ADC'}">  
+	            <h:outputText value="#{messages.LABEL_EXCLUIR_MATERIAL_ADICIONADO}"/> 
+	          </c:if> 
+	        </f:facet> #{messages.TITLE_CONFIRMA_EXCLUSAO_ITEM_REQUISICAO} 
+	        <br clear="none"/>  
+	        <br clear="none"/>  
+	        <br clear="none"/>  
+	        <h:panelGroup>
+						<mec:commandButton id="excluir"
+							action="#{cadastroPlanejamentoPacienteAgendaOPMESController.excluir}"
+							oncomplete="PF('modalExcluirItemRequisicaoWG').hide();"
+							value="#{messages.LABEL_SIM}" profile="ok" ajax="true"
+							render="tabelaListagemOpmes, outModalExcluirItemRequisicao, outCampos"
+							process="@this">
+						</mec:commandButton>
+						<mec:commandButton id="cancelarExclusao"
+							value="#{messages.LABEL_NAO}"
+							action="#{cadastroPlanejamentoPacienteAgendaOPMESController.setCancelarExclusao}"
+							oncomplete="PF('modalExcluirItemRequisicaoWG').hide();"
+							profile="cancel" ajax="true" process="@this">
+						</mec:commandButton>
+					</h:panelGroup>
+        </h:form> 
+      </p:dialog> 
+    </p:outputPanel>  
+    <p:outputPanel id="outModalCancelarRequisicao" layout="inline"> 
+      <p:dialog id="modalCancelarRequisicao" showWhenRendered="#{cadastroPlanejamentoPacienteAgendaOPMESController.abreConfirmacaoCancelamento}" width="450" height="120" modal="true" resizable="false" widgetVar="modalCancelarRequisicaoWG"> 
+        <h:form prependId="false" id="formModalCancelar"> 
+	        <f:facet name="header"> 
+	          <h:outputText value="#{messages.LABEL_ATENCAO}"/> 
+	        </f:facet>  
+	        <h:outputText value="#{messages.MSG_ATENCAO_REQUISICAO}" />
+	         <br clear="none"/>
+	         <br clear="none"/>   
+	        <h:outputText value="#{messages.MSG_CANCELAMENTO_REQUISICAO}" /> 
+	        <br clear="none"/>  
+	        <br clear="none"/>  
+	        <br clear="none"/>  
+	        <h:panelGroup> 
+	          <mec:commandButton id="cancelarRequisicao" action="#{cadastroPlanejamentoPacienteAgendaOPMESController.setCancelarRequisicao}" 
+	          		value="#{messages.LABEL_CONFIRMA_CANCELAMENTO_REQUISICAO}" 
+	          		profile="ok" 
+	          		render="tabelaListagemOpmes, outModalCancelarRequisicao, outCampos, outJustificativa, outObservacao" />  
+	          <mec:commandButton id="cancelarcancelarRequisicao" value="#{messages.LABEL_CANCELAR_CANCELAMENTO_REQUISICAO}" 
+	          		action="#{cadastroPlanejamentoPacienteAgendaOPMESController.setCancelarCancelarRequisicao}" 
+	          		oncomplete="PF('modalCancelarRequisicaoWG').hide();" 
+	          		profile="cancel" 
+	          		ajax="true" 
+	          		process="@this"/> 
+	        </h:panelGroup>
+        </h:form>  
+      </p:dialog> 
+    </p:outputPanel> 
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisa Exames</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaExameHistoricoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaExameHistoricoController}"/>  
+      <h:form prependId="false" id="formPesquisaExameHistorico"> 
+        <p:outputPanel id="panelMain" layout="inline"> 
+          <p:outputPanel id="panelPac" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.LABEL_PESQUISA_POR_PACIENTE}"> 
+              <aghu:panelGeral legend="#{messages.LABEL_PACIENTE}"> 
+                <aghu:linha> 
+                  <mec:inputText id="prontuario" label="#{messages.LABEL_PRONTUARIO}" value="#{pesquisaExameHistoricoController.paciente.prontuario}" size="22" readonly="true" styleclass="suggestion_input"/>  
+                  <mec:inputText id="codPaciente" label="#{messages.LABEL_COD_PACIENTE}" value="#{pesquisaExameHistoricoController.paciente.codigo}" size="22" readonly="true" styleclass="suggestion_input"/>  
+                  <mec:inputText id="nomePaciente" label="#{messages.LABEL_NOME_PACIENTE}" value="#{pesquisaExameHistoricoController.paciente.nome}" size="70" readonly="true" styleclass="suggestion_input"/>  
+                  <mec:inputText id="consultaPaciente" label="#{messages.LABEL_CONSULTA_PACIENTE}" value="" size="22" readonly="true" styleclass="suggestion_input"/> 
+                </aghu:linha> 
+              </aghu:panelGeral>  
+              <table width="100%"> 
+                <tr> 
+                  <td width="95%" rowspan="1" colspan="1"> 
+                    <aghu:panelGeral legend="#{messages.LABEL_EXAMES_SOLICITADOS_PAC}"> 
+                      <aghu:linha> 
+                        <p:outputPanel id="panelExames" layout="block"> 
+                          <p:outputPanel layout="block" style="width: 100%; height:450px; overflow:auto;"> 
+                            <mec:serverDataTable id="tblistaExames" list="#{pesquisaExameHistoricoController.listaResultadoPesquisa}" scrollable="true"> 
+                              <c:set var="item" value="#{item}"/>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                                </f:facet>  
+                                <h:selectBooleanCheckbox name="marcador" id="marcador" value="#{item.verResultado}" title="Exibir Resultados"> 
+                                  <p:ajax event="click" update="@(#tabelaAcao) @(#tblistaExames)" process="@this" listener="#{pesquisaExameHistoricoController.selecionaItemExame(item.codigoSoe, item.iseSeq)}"/> 
+                                </h:selectBooleanCheckbox>  
+                                <p:outputPanel id="panelDownload" rendered="#{item.isExisteDocAnexado()}" layout="inline"> 
+                                  <mec:commandLink id="btDownload" name="btDownload" title="#{messages.LABEL_DOWNLOAD_ARQUIVO_LAUDO}" action="paciente-visualizacaoResultadoExame" styleClass=" silk-attach silk-icon"> 
+                                    <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSoeSeq}" value="#{item.codigoSoe}" for="command"/>  
+                                    <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSeqp}" value="#{item.iseSeq}" for="command"/>  
+                                    <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.voltarPara}" value="voltaPesquisaExamesHistorico" for="command"/> 
+                                  </mec:commandLink> 
+                                </p:outputPanel> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.LABEL_DTHR_PROG}" action="#{pesquisaExameHistoricoController.ordenar('dtHrProgramada')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.dtHrProgramada}"> 
+                                  <f:convertDateTime pattern="dd/MM/yy HH:mm"/> 
+                                </h:outputText> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.LABEL_SOLICITACAO}" action="#{pesquisaExameHistoricoController.ordenar('codigoSoe')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.codigoSoe}"/> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.LABEL_ITEM}" action="#{pesquisaExameHistoricoController.ordenar('iseSeq')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.iseSeq}"/> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.LABEL_EXAME}" action="#{pesquisaExameHistoricoController.ordenar('exame')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.exame}"/> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.SITUACAO_EXAME}" action="#{pesquisaExameHistoricoController.ordenar('situacaoItem')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.situacaoItem}"/> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.LABEL_DATA}" action="#{pesquisaExameHistoricoController.ordenar('dtHrEvento')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.dtHrEvento}"> 
+                                  <f:convertDateTime pattern="dd/MM/yy HH:mm"/> 
+                                </h:outputText> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.LABEL_ORIGEM}" action="#{pesquisaExameHistoricoController.ordenar('origemAtendimento')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.origemAtendimento.descricao}"/> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.LABEL_TIPO}" action="#{pesquisaExameHistoricoController.ordenar('tipoColeta')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.tipoColeta}"/> 
+                              </p:column>  
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <mec:commandLink immediate="true" value="#{messages.LABEL_ETI}" action="#{pesquisaExameHistoricoController.ordenar('etiologia')}" ajax="true" render="panelExames"/> 
+                                </f:facet>  
+                                <h:outputText value="#{item.etiologia}"/> 
+                              </p:column> 
+                            </mec:serverDataTable> 
+                          </p:outputPanel> 
+                        </p:outputPanel> 
+                      </aghu:linha> 
+                    </aghu:panelGeral> 
+                  </td>  
+                  <td width="1%" rowspan="1" colspan="1"/>  
+                  <td width="4%" align="center" style="vertical-align: top; padding-top: 21px;" rowspan="1" colspan="1"> 
+                    <p:outputPanel id="tabelaAcao" layout="inline"> 
+                      <div class="menu-direita" style="width:150px !important"> 
+                        <div> 
+                          <mec:commandButton value="#{messages.LABEL_RESULTADOS}" action="#{pesquisaExameHistoricoController.verResultados()}" id="resultados" style="width: 98%" disabled="#{empty pesquisaExameHistoricoController.solicitacoes}" styleClass="bt_cinza"/> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton value="#{messages.LABEL_IMAGENS}" id="imagens" disabled="#{empty pesquisaExameHistoricoController.getUrlImpax()}" rendered="#{mf:hasPermission(securityController,'verImagensExames,pesquisar')}" style="width: 98%" onclick="window.open('#{pesquisaExameHistoricoController.getUrlImpax()}', 'IMPAX');return false" styleClass="bt_cinza"/> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton id="reimpLaudoPaciente" disabled="#{empty pesquisaExameHistoricoController.solicitacoes or not mf:hasPermission(securityController,'pesquisarRespostaQuestionario,pesquisar')}" style="width: 98%" value="#{messages.LABEL_BTN_QUESTIONARIOS}" action="#{pesquisaExameHistoricoController.redirecionarRespostaQuestionario()}" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{respostaQuestionarioController.seqp}" value="#{pesquisaExameHistoricoController.iseSeqSelecionado}" for="command"/>  
+                            <f:setPropertyActionListener target="#{respostaQuestionarioController.soeSeq}" value="#{pesquisaExameHistoricoController.codigoSoeSelecionado}" for="command"/>  
+                            <f:setPropertyActionListener target="#{respostaQuestionarioController.voltarPara}" value="exames-pesquisaExamesHistorico" for="command"/>  
+                            <f:setPropertyActionListener target="#{respostaQuestionarioController.isHist}" value="true" for="command"/> 
+                          </mec:commandButton> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton value="#{messages.LABEL_DET_EXAMES}" id="detalharExames" disabled="#{empty pesquisaExameHistoricoController.solicitacoes or not mf:hasPermission(securityController,'detalharItemSolicitacao,pesquisar')}" action="#{pesquisaExameHistoricoController.detalhesExames()}" style="width: 98%" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.soeSeq}" value="#{pesquisaExameHistoricoController.codigoSoeSelecionado}" for="command"/>  
+                            <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.seqp}" value="#{pesquisaExameHistoricoController.iseSeqSelecionado}" for="command"/>  
+                            <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.voltarPara}" value="exames-pesquisaExamesHistorico" for="command"/>  
+                            <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.currentTabIndex}" value="1" for="command"/>  
+                            <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.isHist}" value="true" for="command"/>  
+                            <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.origemPOL}" value="true" for="command"/> 
+                          </mec:commandButton> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton id="fluxograma" disabled="#{empty pesquisaExameHistoricoController.solicitacoes or not mf:hasPermission(securityController,'verFluxograma,pesquisar')}" value="#{messages.LABEL_FLUXO}" title="#{messages.LABEL_FLUXO}" style="width: 98%" action="exames-pesquisaFluxograma" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{pesquisaFluxogramaController.prontuario}" value="#{pesquisaExameHistoricoController.nodoPol.prontuario}" for="command"/>  
+                            <f:setPropertyActionListener target="#{pesquisaFluxogramaController.historico}" value="true" for="command"/>  
+                            <f:setPropertyActionListener target="#{pesquisaFluxogramaController.voltarPara}" value="exames-pesquisaExamesHistorico" for="command"/> 
+                          </mec:commandButton> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton disabled="true" style="width: 98%" id="regiao" value="#{messages.LABEL_REG_SANG}" styleClass="bt_cinza"/> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton disabled="true" style="width: 98%" id="cancelar" value="#{messages.LABEL_CANCEL_EXA}" styleClass="bt_cinza"/> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton disabled="true" style="width: 98%" id="etiologia" value="#{messages.LABEL_ETIOLOGIA}" styleClass="bt_cinza"/> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton disabled="#{(!pesquisaExameHistoricoController.habilitarBotaoQuestoesSismama() and !pesquisaExameHistoricoController.habilitarBotaoQuestoesSismamaBiopsia())  or (not mf:hasPermission(securityController,'verificaQuestoesSismama,pesquisar') and not mf:hasPermission(securityController,'verificarQuestoesSismamaAPBio,exibir'))}" action="#{pesquisaExameHistoricoController.verificarQuestoesSismama()}" rendered="#{(pesquisaExameHistoricoController.habilitarBotaoQuestoesSismamaBiopsia() or pesquisaExameHistoricoController.habilitarBotaoQuestoesSismama()) or (!pesquisaExameHistoricoController.habilitarBotaoQuestoesSismamaBiopsia() and !pesquisaExameHistoricoController.habilitarBotaoQuestoesSismama())}" style="width: 98%" id="sismama" value="#{messages.LABEL_QUEST_SISMAMA}" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{verificaQuestoesSismamaController.iseSoeSeq}" value="#{pesquisaExameHistoricoController.codigoSoeSelecionado}" for="command"/>  
+                            <f:setPropertyActionListener target="#{verificaQuestoesSismamaController.iseSeqp}" value="#{pesquisaExameHistoricoController.iseSeqSelecionado}" for="command"/>  
+                            <f:setPropertyActionListener target="#{verificaQuestoesSismamaController.iseSeqp}" value="#{pesquisaExameHistoricoController.iseSeqSelecionado}" for="command"/>  
+                            <f:setPropertyActionListener target="#{verificaQuestoesSismamaController.voltarPara}" value="exames-pesquisaExamesHistorico" for="command"/> 
+                          </mec:commandButton> 
+                        </div> 
+                      </div> 
+                    </p:outputPanel> 
+                  </td> 
+                </tr> 
+              </table> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{pesquisaExameHistoricoController.voltar}" rendered="#{pesquisaExameHistoricoController.exibirBotaoVoltar}" styleClass="bt_cinza" profile="back"/> 
+        </aghu:linha> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

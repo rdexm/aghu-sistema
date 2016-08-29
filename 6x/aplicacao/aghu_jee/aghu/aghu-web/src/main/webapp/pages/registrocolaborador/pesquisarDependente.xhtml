@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisar Dependentes</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{dependentePaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{dependentePaginatorController}"/>  
+      <p:outputPanel id="panelGeral" layout="inline"> 
+        <h:form prependId="false" id="formPesquisar"> 
+          <aghu:panelGeral legend="#{messages.LEGENDA_PESQUISAR_DEPENDENTES}"> 
+            <aghu:linha> 
+              <mec:inputNumero label="#{messages.LABEL_VINCULO}" title="#{messages.TITLE_PESQUISA_VINCULO}" maxlength="3" size="10" id="vinculoServidor" value="#{dependentePaginatorController.serVinCodigo}" readonly="#{dependenteController.servidor.vinculo != null}"/>  
+              <mec:suggestionBox id="servidor" styleClassField="frm_obrigatorio" label="#{messages.LABEL_MATRICULA}" title="#{messages.TITLE_PESQUISA_MATRICULA}" descricaoInput="id.matricula" size="10" maxlength="45" width="500" descricaoLabel="pessoaFisica.nome" readonly="#{dependentePaginatorController.pesquisaAutomatica}" suggestionAction="buscarServidor" posSelectionAction="atualizaVinculo" posDeleteAction="atualizaVinculo" controller="#{dependentePaginatorController}" value="#{dependentePaginatorController.servidor}" render="panelGeral"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VINCULO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.id.vinCodigo}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MATRICULA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.id.matricula}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.pessoaFisica.nome}"/> 
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox id="suggestionPessoa" label="#{messages.LABEL_PESSOA}" title="#{messages.TITLE_PESSOA}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="buscarPessoaFisica" width="500" readonly="#{dependentePaginatorController.pesquisaAutomatica}" controller="#{dependentePaginatorController}" value="#{dependentePaginatorController.pessoaSuggestion}" render="panelGeral"> 
+                <p:column>#{item.codigo}</p:column>  
+                <p:column>#{item.nome}</p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" disabled="#{dependentePaginatorController.voltarPara != null}" action="#{dependentePaginatorController.pesquisar}" render="panelBtnIniciar" profile="search" styleClass="bt_verde "/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" action="#{dependentePaginatorController.limpar}" disabled="#{dependentePaginatorController.voltarPara != null}" styleClass="bt_cinza" profile="clear"/>  
+            <p:outputPanel rendered="#{dependentePaginatorController.dataModel.pesquisaAtiva}" id="panelBtnIniciar" layout="inline"> 
+              <mec:commandButton id="iniciar" value="#{messages.LABEL_NOVO}" block="true" rendered="#{(dependentePaginatorController.servidor.indSituacao.ativo or dependentePaginatorController.servidor.indSituacao.programado) and dependentePaginatorController.servidorPermiteDependentes}" action="#{dependentePaginatorController.inserir}" profile="add"> 
+                <f:setPropertyActionListener target="#{dependenteController.servidor}" value="#{dependentePaginatorController.servidor}" for="command"/> 
+              </mec:commandButton> 
+            </p:outputPanel>  
+            <mec:commandButton value="#{messages.LABEL_VOLTAR}" action="#{dependentePaginatorController.voltar}" rendered="#{dependentePaginatorController.voltarPara != null}" styleClass="bt_vermelho icon-back bt_cinza" profile="back"/> 
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false" id="resultados"> 
+          <mec:serverDataTable dataModel="dataModel" id="tabelaDependenteServidor" controller="#{dependentePaginatorController}"> 
+            <c:set var="dependenteServidor" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false" width="70px;"> 
+              <mec:commandLink id="tabelaDependenteServidor_link_editar" profile="edit" title="editar" action="#{dependentePaginatorController.editar}"> 
+                <f:setPropertyActionListener target="#{dependenteController.dependente}" value="#{dependenteServidor}" for="command"/>  
+                <f:setPropertyActionListener target="#{dependenteController.servidor}" value="#{dependentePaginatorController.servidor}" for="command"/>  
+                <f:setPropertyActionListener target="#{dependenteController.editando}" value="#{true}" for="command"/>  
+                <f:setPropertyActionListener for="command" target="#{dependentePaginatorController.dependente}" value="#{dependenteServidor}"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="tabelaDependenteServidor_link_remover" profile="delete" title="excluir" action="#{dependentePaginatorController.excluir}"> 
+                <f:setPropertyActionListener for="command" target="#{dependentePaginatorController.dependente}" value="#{dependenteServidor}"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column width="50px;"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+              </f:facet>  
+              <h:outputText value="#{dependenteServidor.id.codigo}"/> 
+            </p:column>  
+            <p:column width="100px;"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRAU_PARENTESCO}"/> 
+              </f:facet>  
+              <h:outputText value="#{dependenteServidor.grauParentesco.descricao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_NOME}"/> 
+              </f:facet>  
+              <h:outputText value="#{dependenteServidor.nome}"/> 
+            </p:column>  
+            <p:column width="100px;"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_COD_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{dependenteServidor.paciente.codigo}"/> 
+            </p:column>  
+            <p:column width="100px;"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DT_NASCIMENTO}"/> 
+              </f:facet>  
+              <h:outputText value="#{dependenteServidor.dtNascimento}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column width="70px;">  
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SEXO}"/> 
+              </f:facet>  
+              <h:outputText value="#{dependenteServidor.sexo.descricao}"/> 
+            </p:column>  
+            <p:column width="50px;"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{dependenteServidor.indSituacao.descricao}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

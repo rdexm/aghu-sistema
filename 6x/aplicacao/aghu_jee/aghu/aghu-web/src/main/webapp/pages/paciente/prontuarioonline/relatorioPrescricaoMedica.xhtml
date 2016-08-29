@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_SUMARIO_PRESCRICAO}</title>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{consultarInternacoesPOLController}" />
+		<h:form prependId="false" id="form_relatorisPrescricaoMedica">
+			<pe:remoteCommand name="init" update="outputPanelBtImprimir, bt_imprimir" />
+			<aghu:panelGeral id="ffdl_informacoes" legend="#{messages.TITLE_SUMARIO_PRESCRICAO}">
+				<p:tabView id="atenderTab" dynamic="true" activeIndex="#{consultarInternacoesPOLController.idxSelecionado}" prependId="false">
+					<c:forEach  items="#{consultarInternacoesPOLController.listQuinzenaPrescricaoMedicaSelecionados}" var="_vopms">
+						<p:tab id="tab#{_vopms.idx}" name="#{_vopms.idx}">
+							<f:facet name="title">
+								<h:outputText value="#{_vopms.dthrInicio}">
+									<f:convertDateTime pattern="dd/MM/yy" />
+								</h:outputText>
+								<h:outputText value=" - " />
+								<h:outputText value="#{_vopms.dthrFim}">
+									<f:convertDateTime pattern="dd/MM/yy" />
+								</h:outputText>
+							</f:facet>  
+			                <p:media id="media-#{_vopms.idx}" align="middle" width="98%" height="400px;" reRenderAfterComplete="media-#{_vopms.idx}"
+								     player="pdf" value="#{consultarInternacoesPOLController.renderPdf}" cache="false">
+								<f:param name="cid" value="#{javax.enterprise.context.conversation.id}" />
+							</p:media>
+							<div align="center">
+								<h:outputText value="#{messages.MENSAGEM_RELATORIO_NAO_DISPONIVEL}" rendered="#{empty _vopms.pdfFile}" />
+							</div>
+						</p:tab>
+					</c:forEach>
+				</p:tabView>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<p:outputPanel id="outputPanelBtImprimir" layout="inline">
+					<mec:commandButton id="bt_imprimir"
+						value="#{messages.LABEL_IMPRIMIR}"
+						action="#{consultarInternacoesPOLController.directPrint}"
+						disabled="#{!consultarInternacoesPOLController.permiteImpressao}"
+						 profile="print" ajax="true" />
+				</p:outputPanel>
+				<mec:commandButton value="#{messages.LABEL_VOLTAR}"
+					action="#{consultarInternacoesPOLController.voltaRelatorioSumario}"
+					styleClass="bt_voltar bt_cinza" profile="back" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

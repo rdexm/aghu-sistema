@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_RETORNO_CONSULTA_TITULO_TELA_CONSULTA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterRetornoConsultaPaginatorController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterRetornoConsultaPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_RETORNO_CONSULTA_TITULO_TELA_CONSULTA}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="codigo" value="#{manterRetornoConsultaPaginatorController.filtroConsulta.seq}" label="#{messages.LABEL_GENERICO_CODIGO}" title="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_CODIGO_HELP}" maxlength="3" size="3" style="text-transform:uppercase"/>  
+            <mec:inputText id="descricao" size="50" maxlength="25" label="#{messages.LABEL_GENERICO_DESCRICAO}" title="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_DESCRICAO_HELP}" value="#{manterRetornoConsultaPaginatorController.filtroConsulta.descricao}" style="text-transform:uppercase"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_SITUACAO}" title="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_SITUACAO_HELP}" id="situacao" enum="DominioSituacao" value="#{manterRetornoConsultaPaginatorController.filtroConsulta.situacao}"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_ABSENTEISMO}" title="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_ABSENTEISMO_HELP}" id="absenteismo" enum="DominioIndAbsenteismo" value="#{manterRetornoConsultaPaginatorController.filtroConsulta.absenteismo}"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_AUSENTE}" title="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_AUSENTE_HELP}" id="ausencia" enum="DominioSimNao" value="#{manterRetornoConsultaPaginatorController.filtroConsulta.dominioSimNao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_GENERICO_BOTAO_PESQUISAR}" id="bt_pesquisar" action="#{manterRetornoConsultaPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_GENERICO_BOTAO_LIMPAR}" action="#{manterRetornoConsultaPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_GENERICO_BOTAO_NOVO}" rendered="#{manterRetornoConsultaPaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'manterRetornoConsulta,alterar')}" action="#{manterRetornoConsultaPaginatorController.inserir}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="resultado"> 
+        <p:outputPanel id="panelResultado" layout="inline"> 
+          <aghu:linha> 
+            <mec:serverDataTable dataModel="dataModel" removeModalMsg="#{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO}" id="tabelaConsultas" value="#{manterRetornoConsultaPaginatorController}" controller="#{manterRetornoConsultaPaginatorController}"> 
+              <c:set var="_retorno" value="#{item}"/>  
+              <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                <mec:commandLink id="tabelaConsultas_link_editar" profile="edit" title="editar" action="#{manterRetornoConsultaPaginatorController.editar}"> 
+                  <f:setPropertyActionListener target="#{manterRetornoConsultaController.retornoConsulta}" value="#{_retorno}" for="command"/>  
+                  <f:setPropertyActionListener for="command" target="#{manterRetornoConsultaPaginatorController.selecionado}" value="#{_retorno}"/> 
+                </mec:commandLink>  
+                <mec:commandLink id="tabelaConsultas_link_remover" profile="delete" title="excluir" action="#{manterRetornoConsultaPaginatorController.excluir}"> 
+                  <f:setPropertyActionListener for="command" target="#{manterRetornoConsultaPaginatorController.selecionado}" value="#{_retorno}"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column block="true" sortBy="#{item[seq]}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GENERICO_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_retorno.seq}"/> 
+              </p:column>  
+              <p:column block="true" sortBy="#{item[descricao]}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GENERICO_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_retorno.descricao}"/> 
+              </p:column>  
+              <p:column block="true" sortBy="#{item[situacao]}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GENERICO_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_retorno.situacao  == 'A' ? 'Ativo' : 'Inativo'}"/> 
+              </p:column>  
+              <p:column block="true" sortBy="#{item[absenteismo]}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_ABSENTEISMO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_retorno.absenteismo.descricao}"/> 
+              </p:column>  
+              <p:column block="true" sortBy="#{item[faturaSus]}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_FATURA_SUS}"/> 
+                </f:facet>  
+                <h:outputText value="#{_retorno.faturaSus ? 'Sim' : 'Não'}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header" serverOrder="ausenteAmbu" block="true"> 
+                  <h:outputText value="#{messages.LABEL_RETORNO_CONSULTA_CAMPO_AUSENTE}"/> 
+                </f:facet>  
+                <h:outputText value="#{_retorno.ausenteAmbu ? 'Sim' : 'Não'}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

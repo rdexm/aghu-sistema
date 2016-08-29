@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController}" ignoreEnter="true" />
+		<h:form prependId="false" id="formPrincipal">
+
+			<!-- Cabeçalho padrão -->
+			<ui:include src="cabecalhoPrescreverItem.xhtml" />
+
+			<aghu:panelGeral legend="#{messages.TITLE_MPMF_JUST_UR_MICROB}">
+
+				<aghu:panelGeral legend="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_MEDICAMENTOS}">
+					<aghu:linha>
+						<mec:serverDataTable name="tabelaMedicamentos" list="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.listaMedicamentos}" scrollable="true" rowKeyVar="index" scrollHeight="102" controller="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController}"
+							selection="selecao" selectionMode="single">
+							<c:set var="_item" value="#{item}" />
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_NOME}" />
+								</f:facet>
+								<h:outputText value="#{_item.descricaoEdit}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_DOSE}" />
+								</f:facet>
+								<h:outputText value="#{_item.doseEdit}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_APRAZAMENTO}" />
+								</f:facet>
+								<h:outputText value="#{_item.freqEdit}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_VIA}" />
+								</f:facet>
+								<h:outputText id="colunaVia" value="#{_item.vadSigla}" />
+								<p:tooltip for="colunaVia" style="word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block">
+									<h:outputText value="#{_item.vadDescricao}" />
+								</p:tooltip>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_DURACAO}" />
+								</f:facet>
+								<pe:inputNumber id="duracao#{index}" value="#{_item.duracaoTratSolicitado}" maxlength="3" decimalPlaces="0" maxValue="#{mf:gerarMaxValue(3, 0)}" size="10" showLabel="false" required="true" requiredMessage="O campo duração é obrigatório."
+									readonly="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+									<p:ajax event="change" eventsQueue="storeQueue" process="@this" />
+								</pe:inputNumber>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_USO}" />
+								</f:facet>
+								<p:selectOneMenu id="uso#{index}" value="#{_item.usoMdtoAntimicrobia}" required="true" requiredMessage="O campo Uso é obrigatório." onkeydown="enterInSelectField(event, '#{stopEnter}');" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" style="width: 130px;"
+									disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+									<f:converter converterId="dominioConverter" />
+									<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+									<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioTipoUsoMdtoAntimicrobia')}" />
+								</p:selectOneMenu>
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:linha>
+				</aghu:panelGeral>
+				<aghu:panelGeral legend="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_JUSTIFICATIVA}">
+					<aghu:linha>
+						<mec:inputTextArea id="infeccaoTratar" rows="5" cols="100" required="true" maxlength="120" size="500" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_INFECCAO_TRATAR}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_INFECCAO_TRATAR}"
+							value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.infeccaoTratar}" readonly="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}" />
+
+						<mec:selectBooleanCheckbox id="orientacao" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_ORIENTACAO}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_ORIENTACAO}" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.orientacaoAvaliador}"
+							readonly="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}" />
+					</aghu:linha>
+
+					<aghu:linha>
+						<mec:inputTextArea id="tratAntimicrobAnt" required="true" rows="5" cols="100" maxlength="500" size="500" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_TRAT_ANTI_ANTERIORES}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_TRAT_ANTI_ANTERIORES}"
+							value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.tratAntimicrobAnt}" readonly="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}" />
+					</aghu:linha>
+
+					<aghu:linha>
+						<mec:inputTextArea id="justificativa" rows="5" cols="100" required="true" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_JUST_ESC_ESQ_ATUAL}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_JUST_ESC_ESQ_ATUAL}"
+							value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.justificativa}" maxlength="500" size="500" readonly="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}" />
+					</aghu:linha>
+
+					<aghu:linha>
+						<mec:field id="fieldInternacaoPrevia" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_INTERNACAO_PREVIA}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_INTERNACAO_PREVIA}" required="true">
+							<p:selectOneMenu id="internacaoPrevia" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.internacaoPrevia}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_INTERNACAO_PREVIA}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioInternacaoPrevia')}" />
+							</p:selectOneMenu>
+						</mec:field>
+						
+						<mec:field id="fieldInicioInfeccao" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_INICIO_INFECCAO}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_INICIO_INFECCAO}" required="true">
+							<p:selectOneMenu id="inicioInfeccao" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.inicioInfeccao}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_INICIO_INFECCAO}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioInicioInfeccao')}" />
+							</p:selectOneMenu>
+						</mec:field>
+						
+						<mec:field id="filendInfecRelProcedInvasivo" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_PROCED_INVASIVO}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_PROCED_INVASIVO}" required="true">
+							<p:selectOneMenu id="infecRelProcedInvasivo" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.infecRelProcedInvasivo}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_PROCED_INVASIVO}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioInfecProcInvasivo')}" />
+							</p:selectOneMenu>
+						</mec:field>
+						
+						<mec:field id="fieldSondaVesicalDemora" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_SONDA_VESICAL_DEMORA}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_SONDA_VESICAL_DEMORA}" required="true">
+							<p:selectOneMenu id="sondaVesicalDemora" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.sondaVesicalDemora}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_SONDA_VESICAL_DEMORA}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+							</p:selectOneMenu>
+						</mec:field>
+					</aghu:linha>
+
+					<aghu:linha>
+						<mec:field id="codigoConvenio" required="true"
+							label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_PESO_ESTIMADO}"
+							title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_PESO_ESTIMADO}">
+							<pe:inputNumber id="pesoEstimadoInput"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_PESO_ESTIMADO}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.pesoEstimado}"
+								size="8" minValue="000.1" maxValue="999" decimalPlaces="3" styleClass="mascara(decimal)"
+								readonly="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq != null}" />
+							<span style="margin-right: 5px">#{messages.LABEL_JUSTIF_KG}</span>
+						</mec:field>
+
+						<mec:field id="fieldPacImunodeprimido" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_IMUNOSSUPRESSAO}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_IMUNOSSUPRESSAO}" required="true">
+							<p:selectOneMenu id="pacImunodeprimido" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.pacImunodeprimido}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_IMUNOSSUPRESSAO}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+							</p:selectOneMenu>
+						</mec:field>
+						
+						<mec:field id="fieldInsufHepatica" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_INSUFICIENCIA_HEPATICA}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_INSUFICIENCIA_HEPATICA}" required="true">
+							<p:selectOneMenu id="insufHepatica" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.insufHepatica}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_INSUFICIENCIA_HEPATICA}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+							</p:selectOneMenu>
+						</mec:field>
+						
+						<mec:field id="fieldFuncaoRenal" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_FUNCAO_RENAL_COMPROMETIDA}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_FUNCAO_RENAL_COMPROMETIDA}" required="true">
+							<p:selectOneMenu id="funcaoRenal" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.funcaoRenal}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_FUNCAO_RENAL_COMPROMETIDA}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+							</p:selectOneMenu>
+						</mec:field>
+						
+						<mec:field id="fieldGestacao" required="true" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_GESTACAO}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_GESTACAO}">
+							<p:selectOneMenu id="gestacao" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.gestacao}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_GESTACAO}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+										styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null or !cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.habilitaGestacao}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+							</p:selectOneMenu>
+						</mec:field>
+						
+						<mec:field id="fieldCondutaBaseProtAssist" label="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_PROTOCOLO_ASSISTENCIA}" title="#{messages.TITLE_JUSTIF_MED_USO_RESTRITO_ANTI_PROTOCOLO_ASSISTENCIA}" required="true">
+							<p:selectOneMenu id="condutaBaseProtAssist" value="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.condutaBaseProtAssist}" style="width:250px !important;" onkeydown="enterInSelectField(event, '#{stopEnter}');"
+								required="true" requiredMessage="#{messages.LABEL_JUSTIF_MED_USO_RESTRITO_ANTI_PROTOCOLO_ASSISTENCIA}#{messages.MESSAGE_JUSTIF_MED_CAMPO_OBRIGATORIO}"
+								styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.justificativaUsoMdto.seq  != null}">
+								<f:converter converterId="dominioConverter" />
+								<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+								<f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+							</p:selectOneMenu>
+						</mec:field>
+					</aghu:linha>
+				</aghu:panelGeral>
+
+			</aghu:panelGeral>
+
+			<aghu:acao>
+			
+				<!-- Botão Posterior -->
+				<mec:commandButton id="bt_posterior" value="#{messages.LABEL_GRAVAR}" block="true" action="#{cadastroJustificativaMedicamentoUsoRestritoAntimicrobianoController.avancar}" profile="ok"/>
+				
+				
+				<!-- Botão Cancelar -->
+				<mec:commandButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR}" styleClass="alinha-direita" action="#{prescreverItemController.cancelar}" immediate="true" profile="cancel" block="true" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

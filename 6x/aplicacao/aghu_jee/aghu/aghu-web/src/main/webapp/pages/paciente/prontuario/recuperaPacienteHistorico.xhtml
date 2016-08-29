@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_RECUPERA_PACIENTE_HISTORICO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{historicoPacienteRecuperaExcluidosPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR}"> 
+          <aghu:linha> 
+            <mec:inputTextProntuario size="8" value="#{historicoPacienteRecuperaExcluidosPaginatorController.historicoPaciente.prontuario}" label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO_PACIENTE}" id="prontuario"/>  
+            <mec:inputNumero maxlength="8" size="8" value="#{historicoPacienteRecuperaExcluidosPaginatorController.historicoPaciente.codigo}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO}" id="codigo"/>  
+            <mec:inputText maxlength="50" size="50" style="text-transform:uppercase" value="#{historicoPacienteRecuperaExcluidosPaginatorController.historicoPaciente.nome}" label="#{messages.LABEL_NOME}" title="#{messages.TITLE_NOME_PACIENTE_SEM_ACENTO}" id="nome"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" disabled="#{not mf:hasPermission(securityController, 'historicoPaciente,pesquisar')}" action="#{historicoPacienteRecuperaExcluidosPaginatorController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" action="#{historicoPacienteRecuperaExcluidosPaginatorController.limpar}" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formHistoricoPacientes"> 
+        <mec:serverDataTable id="tabelaHistoricoPacientes" dataModel="dataModel" title="#{messages.TITLE_HISTORICO_PACIENTES_EXCLUIDOS_ENCONTRADOS}" rendered="#{historicoPacienteRecuperaExcluidosPaginatorController.dataModel.pesquisaAtiva}" controller="#{historicoPacienteRecuperaExcluidosPaginatorController}"> 
+          <c:set var="_histPac" value="#{item}"/>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink title="#{messages.LABEL_RECUPERAR}" onclick="recuperar(#{_histPac.codigo});" oncomplete="PF('modalConfirmacaoRecuperarWG').show();;" rendered="#{mf:hasPermission(securityController, 'paciente,pesquisar')}" styleClass=" silk-arrow-redo silk-icon" ajax="true"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_histPac.prontuario}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_histPac.codigo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PACIENTE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_histPac.nome}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME_MAE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_histPac.nomeMae}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_NASCIMENTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_histPac.dtNascimento}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy" type="date"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_histPac.prntAtivo}"/> 
+          </p:column> 
+        </mec:serverDataTable>  
+        <p:outputPanel id="panelOperacaoConluida" layout="inline"> 
+          <p:outputPanel rendered="#{cidadePaginatorController.operacaoConcluida}" layout="inline"> 
+            <script xml:space="preserve">PF('modalConfirmacaoRecuperarWG').hide();</script> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form> 
+        <pe:remoteCommand name="recuperar" process="@this"> 
+          <pe:assignableParam name="param1" assignTo="#{historicoPacienteRecuperaExcluidosPaginatorController.codigoPaciente}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoRecuperar" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoRecuperarWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_RECUPERAR}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_RECUPERAR} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalRecuperar"> 
+            <mec:commandButton id="btRecuperar" value="#{messages.LABEL_RECUPERAR}" action="#{historicoPacienteRecuperaExcluidosPaginatorController.recuperar}" disabled="#{not mf:hasPermission(securityController, 'paciente,pesquisar')}" profile="search"/>  
+            <mec:commandButton id="btCancelar" value="#{messages.LABEL_CANCELAR}" action="#{historicoPacienteRecuperaExcluidosPaginatorController.cancelarModal}" onclick="PF('modalConfirmacaoRecuperarWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_ACESSO_FORNECEDOR} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+		<style type="text/css" xml:space="preserve"> 
+			.ui-datatable tbody td{
+				border-style: none; 
+				padding: 0px;
+			 }
+	   </style> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroAcessoFornecedorPaginatorController}"/>  
+      <h:form id="formPesquisa" prependId="false"> 
+        <aghu:panelGeral legend="#{messages.LEGEND_CADASTRO_ACESSO_FORNECEDOR}"> 
+          <aghu:linha> 
+            <mec:suggestionBox var="fornecedor" itemValue="#{fornecedor}" id="fornecedor" label="#{messages.LABEL_FORNECEDOR}" title="#{messages.TITLE_FORNECEDOR_LIST_ACESSO}" suggestionAction="pesquisarFornecedores" descricaoInput="numero" descricaoLabel="razaoSocial" width="650" controller="#{cadastroAcessoFornecedorPaginatorController}" value="#{cadastroAcessoFornecedorPaginatorController.fornecedor}"> 
+              <p:column> 
+                <f:facet name="header"> 
+				 <h:outputText value="#{messages.LABEL_FORNECEDOR_NUMERO}" style="font-weight: bold;"/> 
+                </f:facet> #{fornecedor.numero}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+				<h:outputText value="#{messages.LABEL_FORNECEDOR_CNPJ}" style="font-weight: bold;"/> 
+                </f:facet> #{fornecedor.cgc}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+				<h:outputText value="#{messages.LABEL_FORNECEDOR_RAZAO_SOCIAL}" style="font-weight: bold;"/> 
+                </f:facet> #{fornecedor.razaoSocial}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{cadastroAcessoFornecedorPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" action="#{cadastroAcessoFornecedorPaginatorController.limpar}" value="#{messages.LABEL_LIMPAR}" immediate="true" profile="clear"/>  
+          <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" disabled="#{not mf:hasPermission(securityController,'cadastrarAcessoFornecedor,manterAcessoFornecedor')}" rendered="#{cadastroAcessoFornecedorPaginatorController.ativo}" action="#{cadastroAcessoFornecedorPaginatorController.novo}" profile="add"> 
+            <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.seq}" value="#{null}" for="command"/>  
+            <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.novo}" value="#{true}" for="command"/>  
+            <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.voltarParaUrl}" value="cadastrarAcessoFornecedorList" for="command"/> 
+          </mec:commandButton> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form id="formListagem" prependId="false"> 
+        <p:outputPanel id="painelAcessoFornecedores" rendered="#{cadastroAcessoFornecedorPaginatorController.ativo}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LEGEND_ACESSO_PROGRAMACAO_ENTREGRA}"> 
+			<aghu:column type="table">
+				<mec:serverDataTable dataModel="dataModel" id="tabelaAcessoFornecedor" value="#{cadastroAcessoFornecedorPaginatorController}" rendered="#{cadastroAcessoFornecedorPaginatorController.ativo}" rowKeyVar="row" controller="#{cadastroAcessoFornecedorPaginatorController}"
+					selection="selecionado"> 
+				  <c:set var="acessoFornecedor" value="#{item}"/>
+ 				  <p:ajax event="rowSelect" process="@this" partialSubmit="true" update="@(#tabelaAcao)" listener="#{cadastroAcessoFornecedorPaginatorController.selecionarAcessoFornecedor()}"/>  
+				  <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+					<mec:commandLink id="bt_visualizar" title="#{messages.LABEL_VISUALIZAR}" action="#{cadastroAcessoFornecedorPaginatorController.redirecionarCadastrarAcessoFornecedorCRUD}" rendered="#{mf:hasPermission(securityController,'consultarAcessoFornecedor,consultarAcessoFornecedor') and !mf:hasPermission(securityController,'cadastrarAcessoFornecedor,manterAcessoFornecedor')}" styleClass=" silk-zoom silk-icon"> 
+					  <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.seq}" value="#{acessoFornecedor.seq}" for="command"/>  
+					  <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.visualizar}" value="#{true}" for="command"/>  
+					  <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.novo}" value="#{false}" for="command"/>  
+					  <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.voltarParaUrl}" value="cadastrarAcessoFornecedorList" for="command"/> 
+					</mec:commandLink>
+					<mec:commandLink id="bt_editar" title="#{messages.LABEL_EDITAR}" action="#{cadastroAcessoFornecedorPaginatorController.redirecionarCadastrarAcessoFornecedorCRUD}" rendered="#{mf:hasPermission(securityController,'cadastrarAcessoFornecedor,manterAcessoFornecedor') and mf:hasPermission(securityController,'consultarAcessoFornecedor,consultarAcessoFornecedor')}" profile="edit" > 
+					  <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.seq}" value="#{acessoFornecedor.seq}" for="command"/>  
+					  <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.visualizar}" value="#{false}" for="command"/>  
+					  <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.novo}" value="#{false}" for="command"/>  
+					  <f:setPropertyActionListener target="#{cadastroAcessoFornecedorController.voltarParaUrl}" value="cadastrarAcessoFornecedorList" for="command"/> 
+					</mec:commandLink> 
+				  </p:column>  
+				  <p:column> 
+					<f:facet name="header"> 
+					  <h:outputText value="#{messages.LABEL_FORNECEDOR}"/> 
+					</f:facet>  
+					<p:outputPanel id="panelFornecedor" layout="block">  
+						<h:outputText value="#{acessoFornecedor.scoFornecedor.numero} - #{acessoFornecedor.scoFornecedor.razaoSocial}"/>  
+					</p:outputPanel>
+					<p:tooltip for="panelFornecedor" trackMouse="true" rendered="#{not empty acessoFornecedor.scoFornecedor.cgc}"> 
+					  <h:outputText value="#{acessoFornecedor.scoFornecedor.cgc == null ? acessoFornecedor.scoFornecedor.cpf : acessoFornecedor.scoFornecedor.cgc}"/> 
+					</p:tooltip> 
+				  </p:column>   
+				  <p:column> 
+					<f:facet name="header"> 
+					  <h:outputText value="#{messages.LABEL_DATA_GERACAO_ACESSO_FORNECEDOR}"/> 
+					</f:facet>  
+					<h:outputText value="#{acessoFornecedor.dtGeracao}"> 
+					  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+					</h:outputText> 
+				  </p:column>  
+				  <p:column> 
+					<f:facet name="header"> 
+					  <h:outputText value="#{messages.LABEL_DATA_ENVIO_SENHA_ACESSO_FORNECEDOR}"/> 
+					</f:facet>  
+					<h:outputText value="#{acessoFornecedor.dtEnvioSenha}"> 
+					  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+					</h:outputText> 
+				  </p:column>  
+				  <p:column> 
+					<f:facet name="header"> 
+					  <h:outputText value="#{messages.LABEL_DATA_ENVIO_CONTATOS_ACESSO_FORNECEDOR}"/> 
+					</f:facet>  
+					<h:outputText value="#{acessoFornecedor.dtEnvioContato}"> 
+					  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+					</h:outputText> 
+				  </p:column>  
+				  <p:column style="background-color:#{acessoFornecedor.color}"> 
+					<f:facet name="header"> 
+					  <h:outputText value="#{messages.LABEL_PENDENCIA}"/> 
+					</f:facet>  
+					<h:outputText value="#{acessoFornecedor.pendencia}"/> 
+				  </p:column> 
+				</mec:serverDataTable> 
+			</aghu:column>
+			<aghu:column type="button">
+			   <p:outputPanel id="tabelaAcao" rendered="#{cadastroAcessoFornecedorPaginatorController.ativo}" layout="inline"> 
+				  <mec:commandButton id="bt_contato" style="width: 96%" value="#{messages.LABEL_CONTATOS}" action="#{cadastroAcessoFornecedorPaginatorController.cadastrarContato}" disabled="#{empty cadastroAcessoFornecedorPaginatorController.seq or (mf:hasPermission(securityController,'consultarAcessoFornecedor,consultarAcessoFornecedor') and !mf:hasPermission(securityController,'cadastrarAcessoFornecedor,manterAcessoFornecedor'))}" styleClass="bt_cinza"> 
+					<f:setPropertyActionListener target="#{cadastroContatoFornecedorController.voltarParaUrl}" value="compras-cadastrarAcessoFornecedorList" for="command"/>  
+					<f:setPropertyActionListener target="#{cadastroContatoFornecedorController.numeroFrn}" value="#{cadastroAcessoFornecedorPaginatorController.acessoFornecedor.scoFornecedor.numero}" for="command"/> 
+				  </mec:commandButton> 
+				  <mec:commandButton id="bt_enviar_emails" style="width: 96%" value="#{messages.LABEL_ENVIAR_EMAIL_CONTATOS}" action="#{cadastroAcessoFornecedorPaginatorController.enviarEmailContatos}" disabled="#{empty cadastroAcessoFornecedorPaginatorController.seq or (mf:hasPermission(securityController,'consultarAcessoFornecedor,consultarAcessoFornecedor') and !mf:hasPermission(securityController,'cadastrarAcessoFornecedor,manterAcessoFornecedor'))}" styleClass="bt_cinza"/> 
+				  <mec:commandButton id="bt_enviar_senha" style="width: 96%" value="#{messages.LABEL_ENVIAR_EMAIL_SENHA}" action="#{cadastroAcessoFornecedorPaginatorController.enviarEmailSenha}" disabled="#{empty cadastroAcessoFornecedorPaginatorController.seq or (mf:hasPermission(securityController,'consultarAcessoFornecedor,consultarAcessoFornecedor') and !mf:hasPermission(securityController,'cadastrarAcessoFornecedor,manterAcessoFornecedor'))}" styleClass="bt_cinza"/> 
+				  <mec:commandButton id="bt_imprimir_senha" style="width: 96%" value="#{messages.LABEL_IMPRIMIR_SENHA}" action="#{cadastroAcessoFornecedorPaginatorController.imprimir}" disabled="#{empty cadastroAcessoFornecedorPaginatorController.seq or !mf:hasPermission(securityController,'imprimirSenhaFornecProgEntregas,imprimirSenhaFornecProgEntregas')}" styleClass="bt_cinza"> 
+					<f:setPropertyActionListener target="#{imprimirAcessoFornecedorController.voltarPara}" value="cadastrarAcessoFornecedorList" for="command"/> 
+				  </mec:commandButton> 
+				</p:outputPanel> 
+			</aghu:column>
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

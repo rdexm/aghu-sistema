@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.TITLE_LISTAR_CONSULTORIAS} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{pesquisarConsultoriasInternacaoController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{pesquisarConsultoriasInternacaoController}" />
+		<h:form prependId="false" id="formPesquisar">
+			<aghu:panelGeral
+				legend="#{messages.LABEL_PESQUISAR_CONSULTORIAS_INTERNACAO}">
+				<p:outputPanel id="panelPesquisa" layout="inline">
+					<aghu:linha>
+						<mec:suggestionBox required="true" var="row" itemValue="#{row}"
+							id="sbEspecialidade"
+							label="#{messages.LABEL_ESPECIALIDADE_CONSULTORIAS_INTERNACAO}"
+							suggestionAction="pesquisarEspecialidadesPorNomeOuSigla"
+							descricaoInput="sigla" descricaoLabel="nomeEspecialidade"
+							maxlength="60" width="500"
+							controller="#{pesquisarConsultoriasInternacaoController}"
+							value="#{pesquisarConsultoriasInternacaoController.especialidade}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_SIGLA}</b>
+								</f:facet> #{row.sigla}
+			        </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{row.nomeEspecialidade}
+			        </p:column>
+						</mec:suggestionBox>
+
+						<mec:suggestionBox var="row" itemValue="#{row}"
+							id="sbUnidadeFuncional"
+							label="#{messages.LABEL_UNIDADE_FUNCIONAL_CONSULTORIAS_INTERNACAO}"
+							suggestionAction="pesquisarUnidFuncionalPorCaracteristica"
+							descricaoInput="seq" descricaoLabel="andarAlaDescricao"
+							maxlength="60" width="500"
+							controller="#{pesquisarConsultoriasInternacaoController}"
+							value="#{pesquisarConsultoriasInternacaoController.unidadeFuncional}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_ANDAR_ALA_DESCR_CONSULTORIAS_INTERNACAO}</b>
+								</f:facet> #{row.andarAlaDescricao}
+			        </p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+
+					<aghu:linha>
+						<mec:selectOneMenu id="tipo"
+							label="#{messages.LABEL_TIPO_CONSULTORIAS_INTERNACAO}"
+							title="#{messages.TITLE_TIPO_CONSULTORIAS_INTERNACAO}"
+							enum="DominioTipoSolicitacaoConsultoria" style="width:170px;"
+							value="#{pesquisarConsultoriasInternacaoController.tipo}" />
+
+						<mec:selectOneMenu id="urgencia"
+							label="#{messages.LABEL_URGENCIA_CONSULTORIAS_INTERNACAO}"
+							title="#{messages.TITLE_URGENCIA_CONSULTORIAS_INTERNACAO}"
+							enum="DominioSimNao" style="width:90px;"
+							value="#{pesquisarConsultoriasInternacaoController.urgencia}" />
+
+						<mec:selectOneMenu id="situacao"
+							label="#{messages.LABEL_SITUACAO_CONSULTORIAS_INTERNACAO}"
+							enum="DominioSituacaoConsultoria" style="width:210px;"
+							value="#{pesquisarConsultoriasInternacaoController.situacao}" />
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					disabled="#{not mf:hasPermission(securityController, 'realizarConsultoriaInternacao,pesquisar')}"
+					action="#{pesquisarConsultoriasInternacaoController.pesquisar}"
+					profile="search" />
+
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar"
+					action="#{pesquisarConsultoriasInternacaoController.limparCampos}"
+					ajax="true" process="@this"
+					render="formPesquisar, panelResultados, tabelaAcao" profile="clear" />
+			</aghu:acao>
+
+			<p:outputPanel id="panelResultados"
+				rendered="#{not empty pesquisarConsultoriasInternacaoController.listaConsultoriasInternacao}">
+				<aghu:panelGeral
+					legend="#{messages.TITLE_LISTA_CONSULTORIAS_LISTAR_CONSULTORIAS}">
+					<aghu:column type="table" style="width: 100%-180px">
+						<mec:serverDataTable id="tabelaConsultoriasInternacao"
+							scrollable="true" scrollHeight="246"
+							rowKey="#{_consultoria.seqAux}"
+							controller="#{pesquisarConsultoriasInternacaoController}"
+							selection="itemSelecionado"
+							list="#{pesquisarConsultoriasInternacaoController.listaConsultoriasInternacao}">
+							<c:set var="_consultoria" value="#{item}" />
+							<p:ajax event="rowSelect"
+								update="@(#tabelaAcao) @(#tabelaConsultoriasInternacao)"
+								listener="#{pesquisarConsultoriasInternacaoController.selecionarItem}">
+								<f:setPropertyActionListener
+									target="#{pesquisarConsultoriasInternacaoController.itemSelecionado}"
+									value="#{_consultoria}" for="command" />
+							</p:ajax>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''}; width:5%;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_PRONTUARIO_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.prontuario}" />
+							</p:column>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''};">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_NOME_PACIENTE_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.nome}" />
+							</p:column>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''}; width:5%;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_CONVENIO_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.convenio}" />
+							</p:column>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''}; width:15%;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_LOCALIZACAO_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.localPac}" />
+							</p:column>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''}; width:7%;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_DT_SOLICITACAO_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.dthrSolicitada}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</p:column>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''}; width:6%;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_DT_AVALIACAO_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.dthrResposta}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</p:column>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''}; width:7%;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_TIPO_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.tipo.descricao}" />
+							</p:column>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''}; width:5%;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_URGENTE_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.indUrgencia.descricao}" />
+							</p:column>
+
+							<p:column
+								style="#{_consultoria.indGmr ? 'background-color:#00FFFF;' : ''}; width:8%;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_SITUACAO_CONSULTORIAS_INTERNACAO}" />
+								</f:facet>
+								<h:outputText value="#{_consultoria.indConcluida.descricao}" />
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:column>
+					<aghu:column type="button">
+						<p:outputPanel id="tabelaAcao"
+							rendered="#{not empty pesquisarConsultoriasInternacaoController.listaConsultoriasInternacao}">
+							<mec:commandButton id="bt_dados_solicitacao"
+								value="#{messages.LABEL_DADOS_SOLICITACAO_CONSULTORIAS_INTERNACAO}"
+								block="true"
+								action="#{pesquisarConsultoriasInternacaoController.redirecionarVisualizarSolicitacao}"
+								disabled="#{not mf:hasPermission(securityController, 'realizarConsultoriaInternacao,pesquisar')}">
+								<f:setPropertyActionListener
+									target="#{visualizaDadosSolicitacaoConsultoriaController.atdSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.atdSeq}"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{visualizaDadosSolicitacaoConsultoriaController.scnSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.seq}"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{visualizaDadosSolicitacaoConsultoriaController.habilitarBotaoResponder}"
+									value="false" for="command" />
+								<f:setPropertyActionListener
+									target="#{visualizaDadosSolicitacaoConsultoriaController.voltarPara}"
+									value="pesquisarConsultoriasInternacao" for="command" />
+							</mec:commandButton>
+							<mec:commandButton id="bt_imprimir_solicitacao"
+								value="#{messages.LABEL_IMPRIMIR_SOLICITACAO_CONSULTORIAS_INTERNACAO}"
+								action="#{relatorioConsultoriaController.directPrint}"
+								block="true">
+								<f:setPropertyActionListener
+									target="#{relatorioConsultoriaController.tipoImpressao}"
+									value="IMPRESSAO" for="command" />
+								<f:setPropertyActionListener
+									target="#{relatorioConsultoriaController.atdSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.atdSeq}"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{relatorioConsultoriaController.scnSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.seq}"
+									for="command" />
+							</mec:commandButton>
+							<mec:commandButton id="bt_diagnostico"
+								value="#{messages.LABEL_DIAGNOSTICO_CONSULTORIAS_INTERNACAO}"
+								action="prescricaomedica-manterDiagnosticosPaciente"
+								block="true">
+								<f:setPropertyActionListener
+									target="#{diagnosticosPacienteController.atendimentoSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.atdSeq}"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{diagnosticosPacienteController.voltarPara}"
+									value="prescricaomedica-pesquisarConsultoriasInternacao"
+									for="command" />
+							</mec:commandButton>
+							<mec:commandButton id="bt_incluir_lista_pac"
+								disabled="#{not mf:hasPermission(securityController, 'realizarConsultoriaInternacao,manter') or not mf:hasPermission(securityController, 'realizarConsultoriaAmbulatorio,manter')}"
+								action="#{pesquisarConsultoriasInternacaoController.incluirListaPacientes}"
+								value="#{messages.LABEL_INCLUIR_LISTA_PAC_CONSULTORIAS_INTERNACAO}">
+							</mec:commandButton>
+							<mec:commandButton id="bt_responder"
+								action="#{pesquisarConsultoriasInternacaoController.responderConsultoria}"
+								value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.indConcluida == 'A'
+											? messages.LABEL_ACOMPANHAMENTO_CONSULTORIAS_INTERNACAO : messages.LABEL_RESPONDER_CONSULTORIAS_INTERNACAO}"
+								immediate="true">
+								<f:setPropertyActionListener
+									target="#{cadastroRespostasConsultoriaController.scnAtdSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.atdSeq}"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{cadastroRespostasConsultoriaController.scnSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.seq}"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{cadastroRespostasConsultoriaController.voltarPara}"
+									value="prescricaomedica-pesquisarConsultoriasInternacao"
+									for="command" />
+							</mec:commandButton>
+							<mec:commandButton id="bt_ver_respostas"
+								value="#{messages.LABEL_VER_RESPOSTAS_CONSULTORIAS_INTERNACAO}"
+								disabled="#{not mf:hasPermission(securityController, 'realizarConsultoriaInternacao,pesquisar') and pesquisarConsultoriasInternacaoController.itemSelecionado == null}"
+								block="true"
+								action="#{pesquisarConsultoriasInternacaoController.redirecionarConsultarRespostas}">
+								<f:setPropertyActionListener for="command"
+									target="#{consultaRespostasConsultoriaController.atdSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.atdSeq}" />
+								<f:setPropertyActionListener for="command"
+									target="#{consultaRespostasConsultoriaController.listaConsultaRet}"
+									value="false" />
+								<f:setPropertyActionListener for="command"
+									target="#{consultaRespostasConsultoriaController.scnSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.seq}" />
+								<f:setPropertyActionListener for="command"
+									target="#{consultaRespostasConsultoriaController.voltarPara}"
+									value="pesquisarConsultoriasInternacao" />
+							</mec:commandButton>
+							<mec:commandButton id="bt_imprimir_resposta"
+								value="#{messages.LABEL_IMPRIMIR_RESPOSTA_CONSULTORIAS_INTERNACAO}"
+								disabled="#{not mf:hasPermission(securityController, 'realizarConsultoriaInternacao,pesquisar') and pesquisarConsultoriasInternacaoController.itemSelecionado == null}"
+								action="#{relatorioRetornoConsultoriaController.directPrint}"
+								block="true">
+								<f:setPropertyActionListener for="command"
+									target="#{relatorioRetornoConsultoriaController.atdSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.atdSeq}" />
+								<f:setPropertyActionListener for="command"
+									target="#{relatorioRetornoConsultoriaController.scnSeq}"
+									value="#{pesquisarConsultoriasInternacaoController.itemSelecionado.seq}" />
+							</mec:commandButton>
+						</p:outputPanel>
+					</aghu:column>
+				</aghu:panelGeral>
+			</p:outputPanel>
+
+
+			<aghu:linha>
+				<aghu:acao>
+					<mec:commandButton id="bt_print_buttonView"
+						value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+						rendered="#{not empty pesquisarConsultoriasInternacaoController.listaConsultoriasInternacao}"
+						profile="view"
+						action="#{pesquisarConsultoriasInternacaoController.visualizarRelatorio}">
+						<f:setPropertyActionListener for="command"
+							target="#{relatorioListaConsultoriaController.colecao}"
+							value="#{pesquisarConsultoriasInternacaoController.listaConsultoriasInternacao}" />
+					</mec:commandButton>
+
+					<mec:commandButton id="bt_print_buttonPrint"
+						value="#{messages.LABEL_IMPRIMIR}"
+						rendered="#{not empty pesquisarConsultoriasInternacaoController.listaConsultoriasInternacao}"
+						profile="print"
+						action="#{relatorioListaConsultoriaController.directPrint}">
+						<f:setPropertyActionListener for="command"
+							target="#{relatorioListaConsultoriaController.colecao}"
+							value="#{pesquisarConsultoriasInternacaoController.listaConsultoriasInternacao}" />
+					</mec:commandButton>
+					<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+						profile="back"
+						rendered="#{pesquisarConsultoriasInternacaoController.voltarListaPacientes}"
+						action="#{pesquisarConsultoriasInternacaoController.redirecionarListaPacientesInternados}">
+						<f:setPropertyActionListener
+							target="#{listaPacientesInternadosController.pesquisar}"
+							value="false" for="command" />
+					</mec:commandButton>
+				</aghu:acao>
+			</aghu:linha>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

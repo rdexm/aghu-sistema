@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_MANTER_PROCEDIMENTO_AMBULATORIAL} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterProcedimentoAmbulatorialPaginatorController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterProcedimentoAmbulatorialPaginatorController}" ignoreEnter="true"/>  
+      <p:outputPanel id="formularioPesquisa" layout="inline"> 
+        <h:form prependId="false" id="formPesquisa"> 
+          <aghu:panelGeral legend="#{messages.LABEL_MANTER_PROCEDIMENTO_AMBULATORIAL}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="seq" size="13" maxlength="13" label="#{messages.LABEL_SEQ_AMBULATORIO}" value="#{manterProcedimentoAmbulatorialPaginatorController.procedimentoAmbSeq}"/>  
+              <mec:suggestionBox id="competencia" label="#{messages.LABEL_COMPETENCIA}" title="#{messages.TITLE_COMPETENCIA_PROC_AMB}" descricaoInput="mesAno" size="10" maxlength="10" width="450" descricaoLabel="competencia" required="true" suggestionAction="pesquisarCompetencias" controller="#{manterProcedimentoAmbulatorialPaginatorController}" value="#{manterProcedimentoAmbulatorialPaginatorController.competencia}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_COMPETENCIA}</b> 
+                  </f:facet> #{item.mesAno}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DT_INICIAL_CONSULTAS_GRADE_AGENDAMENTO}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{item.id.dtHrInicio}"> 
+                    <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DT_FINAL_CONSULTAS_GRADE_AGENDAMENTO}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{item.dtHrFim}"> 
+                    <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm"/> 
+                  </h:outputText> 
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO_PROC_AMB}" title="#{messages.TITLE_SITUACAO_PROC_AMB}" required="true" value="#{manterProcedimentoAmbulatorialPaginatorController.situacao}" enum="DominioSituacaoProcedimentoAmbulatorio"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="pacientePanel" layout="inline"> 
+                <mec:inputTextProntuario id="prontuarioEdicao" label="#{messages.LABEL_PRONTUARIO_FAT}" title="#{messages.TITLE_PRONTUARIO_PROC_AMB}" value="#{manterProcedimentoAmbulatorialPaginatorController.pacProntuario}"> 
+                  <p:ajax event="change" actionListener="#{manterProcedimentoAmbulatorialPaginatorController.obterPacientePorProntuario}" update="@(#pacientePanel)" process="@this"/> 
+                </mec:inputTextProntuario>  
+                <mec:inputNumero id="pacCodigoEdicao" label="#{messages.LABEL_CODIGO_PACIENTE_FAT}" title="#{messages.TITLE_COD_PAC_PROC_AMB}" value="#{manterProcedimentoAmbulatorialPaginatorController.pacCodigo}" size="10" maxlength="9"> 
+                  <p:ajax event="change" actionListener="#{manterProcedimentoAmbulatorialPaginatorController.obterPacientePorCodigo}" update="@(#pacientePanel)" process="@this"/> 
+                </mec:inputNumero>  
+                <mec:inputText id="pacNomeLoaded1" size="79" maxlength="50" label="#{messages.LABEL_NOME_PACIENTE_FAT}" readonly="true" value="#{manterProcedimentoAmbulatorialPaginatorController.paciente.nome}"/>  
+                <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" action="#{manterProcedimentoAmbulatorialPaginatorController.redirecionarPesquisaFonetica}" styleClass="bt_float  icon-pesquisa-fonetica bt_cinza" ajax="true"> 
+                  <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="faturamento-manterProcedimentoAmbulatorialList" for="command"/>  
+                  <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+                </mec:commandButton> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:selectOneMenu id="origem" label="#{messages.LABEL_ORIGEM}" value="#{manterProcedimentoAmbulatorialPaginatorController.origem}" enum="DominioOrigemProcedimentoAmbulatorialRealizado"/>  
+              <mec:inputNumero id="codigoConvenio" label="#{messages.LABEL_COD_CONVENIO_FAT}" title="#{messages.TITLE_LABEL_CODIGO_CONVENIO_PESQ}" size="10" maxlength="3" readonly="#{manterProcedimentoAmbulatorialPaginatorController.convenioSaudePlano ne null}" value="#{manterProcedimentoAmbulatorialPaginatorController.convenioId}"> 
+                <p:ajax event="blur" bypassUpdates="false" process="@this"/> 
+              </mec:inputNumero>  
+              <mec:inputNumero id="fieldCodigoPlano" required="false" label="#{messages.LABEL_COD_PLANO_FAT}" title="#{messages.TITLE_LABEL_CODIGO_PLANO_PESQ}" size="8" maxlength="2" styleClass="numerico" readonly="#{manterProcedimentoAmbulatorialPaginatorController.convenioSaudePlano ne null}" value="#{manterProcedimentoAmbulatorialPaginatorController.planoId}"> 
+                <p:ajax event="change" bypassUpdates="false" update="@(#codigoConvenio) @(#fieldCodigoPlano) @(#input_fieldCodigoPlano) @(#suggestion_plano)" process="@this" listener="#{manterProcedimentoAmbulatorialPaginatorController.escolherPlanoConvenio}"/> 
+              </mec:inputNumero>  
+              <mec:suggestionBox id="suggestion_plano" label="#{messages.LABEL_CONVENIO_PLANO}" title="#{messages.TITLE_LABEL_CONVENIO_PLANOS_PACIENTES_ADMITIDOS}" width="800" size="116" maxlength="40" converter="#{fatConvenioSaudePlanoConverter}" descricaoInput="descricaoPlanoConvenio" suggestionAction="pesquisarConvenioSaudePlanos" posSelectionAction="atribuirPlano" posDeleteAction="atribuirPlano" controller="#{manterProcedimentoAmbulatorialPaginatorController}" value="#{manterProcedimentoAmbulatorialPaginatorController.convenioSaudePlano}" render="codigoConvenio, fieldCodigoPlano, input_fieldCodigoPlano}"> 
+                <p:column>#{item.convenioSaude.descricao} - #{item.descricao}</p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox id="procedimento" label="#{messages.LABEL_SSM_REALIZADO}" title="#{messages.TITLE_PROC_HOSP_PROC_AMB}" descricaoInput="id.codTabela" descricaoLabel="seqDescricao" suggestionAction="listarAssociacaoProcedimentoPorPhiSeqCodSusOuDescricao" width="900" controller="#{manterProcedimentoAmbulatorialPaginatorController}" value="#{manterProcedimentoAmbulatorialPaginatorController.procedimento}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO_PHI_ITEM}</b> 
+                  </f:facet> #{item.id.phiSeq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO_PHI_ITEM}</b> 
+                  </f:facet> #{item.id.phiDescricao}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO_TABELA_PHI_ITEM}</b> 
+                  </f:facet> #{item.codigoTabelaDescricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox id="unidadeFuncionalSuggestion" label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_UNIDADE_FUNCIONAL}" width="550" suggestionAction="pesquisarUnidadeFuncional" converter="#{aghUnidadesFuncionaisPorAndarAlaDescricaoAtivasInativasConverter}" descricaoInput="seq" descricaoLabel="andarAlaDescricao" controller="#{manterProcedimentoAmbulatorialPaginatorController}" value="#{manterProcedimentoAmbulatorialPaginatorController.unidadeFuncional}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_UNIDADE}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_ANDAR}</b> 
+                  </f:facet> #{item.andar}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{LABEL_ALA}</b> 
+                  </f:facet> #{item.indAla}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <div style="width: 100%;"> 
+                <div id="left" style="float: left; width: 12%;"> 
+                  <aghu:panelGeral style="margin-left: 4px !important; margin-right: 4px !important; height: 77px;" legend="#{messages.LABEL_CONSULTA}"> 
+                    <table cellspacing="2" cellpadding="2" border="0"> 
+                      <tr> 
+                        <td> 
+                          <mec:inputNumero label="#{messages.LABEL_NUMERO}" title="#{messages.TITLE_CONSULTA_PROC_AMB}" size="10" maxlength="8" value="#{manterProcedimentoAmbulatorialPaginatorController.conNumero}" id="conNumero"/> 
+                        </td> 
+                      </tr> 
+                    </table> 
+                  </aghu:panelGeral> 
+                </div>  
+                <div id="center" style="float: left; margin-left: 1px; width: 28%;"> 
+                  <aghu:panelGeral style="height: 77px;" legend="#{messages.LABEL_EXAME}"> 
+                    <table cellspacing="2" cellpadding="2" border="0"> 
+                      <tr> 
+                        <td> 
+                          <mec:inputNumero label="#{messages.LABEL_SOLIC_EXAME}" title="#{messages.TITLE_SOL_EXAME_PROC_AMB}" size="10" maxlength="8" value="#{manterProcedimentoAmbulatorialPaginatorController.soeSeq}" id="soeSeq"/> 
+                        </td>  
+                        <td> 
+                          <mec:inputNumero label="#{messages.LABEL_ITEM_EXAME}" title="#{messages.TITLE_ITEM_SOL_EXAME_PROC_AMB}" size="10" maxlength="3" value="#{manterProcedimentoAmbulatorialPaginatorController.seqp}" id="seqp"/> 
+                        </td> 
+                      </tr> 
+                    </table> 
+                  </aghu:panelGeral> 
+                </div>  
+                <div id="right" style="float: right; margin-left: 1px; width: 59%;"> 
+                  <aghu:panelGeral style="height: 77px;" legend="#{messages.LABEL_CIRURGIA}"> 
+                    <table cellspacing="2" cellpadding="2" border="0"> 
+                      <tr> 
+                        <td> 
+                          <mec:inputNumero label="#{messages.LABEL_NUMERO}" title="#{messages.TITLE_CIRURGIA_PROC_AMB}" size="10" maxlength="8" value="#{manterProcedimentoAmbulatorialPaginatorController.grcSeq}" id="grcSeq"/> 
+                        </td>  
+                        <td> 
+                          <mec:inputNumero label="#{messages.LABEL_PROC_CIRURGICO}" title="#{messages.TITLE_PROC_CIR_PROC_AMB}" size="10" maxlength="5" value="#{manterProcedimentoAmbulatorialPaginatorController.eprPciSeq}" id="eprPciSeq"/> 
+                        </td>  
+                        <td> 
+                          <mec:inputNumero label="#{messages.LABEL_ESPECIALIDADE}" title="#{messages.TITLE_ESPECIALIDADE_PROC_AMB}" maxlength="4" size="10" value="#{manterProcedimentoAmbulatorialPaginatorController.eprEspSeq}" id="eprEspSeq"/> 
+                        </td> 
+                      </tr> 
+                    </table> 
+                  </aghu:panelGeral> 
+                </div> 
+              </div> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton block="true" value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{manterProcedimentoAmbulatorialPaginatorController.pesquisar}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{manterProcedimentoAmbulatorialPaginatorController.limpar}" profile="clear"/>  
+            <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_iniciarInclusao" action="#{manterProcedimentoAmbulatorialPaginatorController.novo()}" immediate="true" rendered="#{manterProcedimentoAmbulatorialPaginatorController.dataModel.pesquisaAtiva}" profile="add" ajax="true"/>  
+           
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" title="#{messages.LABEL_VOLTAR}" immediate="true" 
+          		rendered="#{manterProcedimentoAmbulatorialPaginatorController.voltarParaTela ne null}" action="#{manterProcedimentoAmbulatorialPaginatorController.voltar}"
+          		 profile="back" ajax="true"/> 
+           
+          </aghu:acao> 
+        </h:form>  
+        <h:panelGroup rendered="#{manterProcedimentoAmbulatorialPaginatorController.dataModel.pesquisaAtiva}"> 
+          <h:form prependId="false" id="formProcedimentos"> 
+            <p:outputPanel layout="block" style="width:99%;margin-left:4px !important; margin-right:4px !important;"> 
+              <mec:serverDataTable mantemFoco="true" dataModel="dataModel" rendered="#{manterProcedimentoAmbulatorialPaginatorController.dataModel.pesquisaAtiva}" id="procedimentos" controller="#{manterProcedimentoAmbulatorialPaginatorController}"> 
+                <c:set var="_procedimentos" value="#{item}"/>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink action="#{manterProcedimentoAmbulatorialPaginatorController.editar(_procedimentos.seq)}" profile="edit"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SIGLA_COD_SUS}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_procedimentos.codTabela}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PHI}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_procedimentos.phiSeqProced}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_procedimentos.descricaoProced}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                  </f:facet>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_procedimentos.prontuario != null}"> 
+                    <h:outputText value="#{_procedimentos.pacCodigo}"/>  
+                    <h:outputText value=" - "/>  
+                    <h:outputText value="#{_procedimentos.pacNome}"/> 
+                  </p:tooltip>  
+                  <h:outputText value="#{_procedimentos.prontuario}"> 
+                    <f:converter converterId="prontuarioConverter"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DT_REALIZADO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_procedimentos.dthrRealizado}"> 
+                    <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_QTD}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_procedimentos.quantidade}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA}"/> 
+                  </f:facet>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_procedimentos.conNumero != null}"> 
+                    <h:outputText value="#{_procedimentos.phiSeqConsulta}"/>  
+                    <h:outputText value=" - "/>  
+                    <h:outputText value="#{_procedimentos.descricaoConsulta}"/> 
+                  </p:tooltip>  
+                  <h:outputText value="#{_procedimentos.conNumero}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SOLIC_EXAME}"/> 
+                  </f:facet>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_procedimentos.seqMaterial != null}"> 
+                    <h:outputText value="#{_procedimentos.sigla}"/>  
+                    <h:outputText value=" - "/>  
+                    <h:outputText value="#{_procedimentos.descricaoExame}"/>  
+                    <h:outputText value=" - "/>  
+                    <h:outputText value="#{_procedimentos.seqMaterial}"/> 
+                  </p:tooltip>  
+                  <h:outputText value="#{_procedimentos.soeSeq}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CIRURGIA}"/> 
+                  </f:facet>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_procedimentos.seqCirurgia != null}"> 
+                    <h:outputText value="#{_procedimentos.descricaoProcCir}"/> 
+                  </p:tooltip>  
+                  <h:outputText value="#{_procedimentos.seqCirurgia}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_UN_FC}"/> 
+                  </f:facet>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_procedimentos.seqUF != null}"> 
+                    <h:outputText value="#{_procedimentos.descricaoUF}"/> 
+                  </p:tooltip>  
+                  <h:outputText value="#{_procedimentos.seqUF}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ORIGEM_GRID}"/> 
+                  </f:facet>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_procedimentos.indOrigem != null}"> 
+                    <h:outputText value="#{_procedimentos.indOrigem.descricao}"/> 
+                  </p:tooltip>  
+                  <h:outputText value="#{_procedimentos.indOrigem}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SIT_GRID}"/> 
+                  </f:facet>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_procedimentos.situacao != null}"> 
+                    <h:outputText value="#{_procedimentos.situacao.descricao}"/> 
+                  </p:tooltip>  
+                  <h:outputText value="#{_procedimentos.situacao.codigo}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </p:outputPanel> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:component
+	xmlns		= "http://www.w3.org/1999/xhtml"
+	xmlns:ui	= "http://java.sun.com/jsf/facelets"
+	xmlns:h		= "http://java.sun.com/jsf/html"
+	xmlns:c		= "http://java.sun.com/jstl/core"
+	xmlns:s		= "http://jboss.com/products/seam/taglib"
+	xmlns:a  	= "http://richfaces.org/a4j"
+	xmlns:mec	= "http://www.mec.gov.br/components"
+	xmlns:f		= "http://java.sun.com/jsf/core"
+	xmlns:rich  = "http://richfaces.org/rich"
+	rendered="#{mec:getDefaultValue(rendered,true)}">
+
+	<!-- 
+		TODO: Atributo required="true" do inputText foi removido pois não era possível invocar a action quando o valor estava nulo.
+		Solução paleativa foi manter o required para o mec:field e OBRIGAR que o desenvolvedor implemente a validação do campo required antes de submeter. 
+		Tal recomendação sempre existiu pois existe a ideia que o a GUI possa ser trocada, logo não podemos deixar validação de campos obrigatórios apenas na GUI.
+	-->
+
+	<mec:field name="#{name}" required="#{required}" fieldStyle="#{fieldStyle}" label="#{label}" styleClassField = "#{styleClassField}" posicaoLabel="#{mec:getDefaultValue(posicaoLabel,'acima')}" >                
+    	<a:outputPanel id="#{id}" styleClass="sbox-search" layout="block"> 
+	    	<span class="labelbreak" style="clear:both; display:block"/>	            	                             
+				<h:inputText	
+					id="#{name}" 
+					style="#{mec:getDefaultValue(style,'')}"
+					styleClass="#{mec:getDefaultValue(styleClass,'suggestion_input')}"
+					maxlength="#{mec:getDefaultValue(maxlength,5)}" 
+					size="#{size}"
+					converter="#{converter}"
+					value="#{valueToId}" 
+					requiredMessage="Valor é obrigatório."
+					alt="Para pesquisar pressione Shift+Enter ou clique no ícone ao lado"
+					title="Campo: #{label}, para pesquisar pressione Shift+Enter ou clique no ícone ao lado"
+					onkeypress="if (event.keyCode == 13) if (event.shiftKey) {this.blur(); Richfaces.showModalPanel('#{for}'); return false;} else {return true;}"
+					readonly="#{readonly}"
+					disabled="#{readonly}"
+					>
+
+ 					<c:if test="#{not empty action}">
+			            <a:support event="onblur" 
+			            	reRender="#{id}Desc, #{name} ,#{onBlurReRender}"
+		          			actionListener="#{mbean[action]}" 
+		                    limitToList="true" 		                   
+		                    ajaxSingle="#{mec:getDefaultValue(ajaxSingle, true)}" />  
+		                              
+                    </c:if>    
+		                
+		            <c:if test="#{empty action}">
+			            <a:support 
+			            	event="onblur" 
+			            	reRender="#{id}Desc, #{name}, #{onBlurReRender}"
+		                    limitToList="true" 		                    
+		                    ajaxSingle="#{mec:getDefaultValue(ajaxSingle, true)}" />
+	                </c:if>
+	            </h:inputText>
+	            
+	            <rich:message for="#{name}" />
+            	<!-- Foi colocado o immediate="true" pois estava ocorrendo problema de validacao ao exibir a lov -->
+            	<!-- Foi alterado a imagem da LOV para diferenciar da imagem usada pela SB  -->
+	            <a:commandLink id="#{id}link" immediate="true"     
+	            	title="Clique aqui para pesquisar."	
+	            	>
+	   				<h:graphicImage value="/img/magnifierLOV.png" style="vertical-align: middle;"
+	   				rendered="#{mec:getDefaultValue(!readonly, true)}">     				                                                 
+						<rich:componentControl 
+							name="rcontrole" 
+							for="#{for}" 
+							attachTo="#{id}link" 
+							operation="show" 
+							event="onclick"
+							
+							/>
+					</h:graphicImage>
+	       		</a:commandLink>
+					<b>
+					<h:outputText style="font-size:11px;"
+						id="#{id}Desc" 
+	               		value="#{not empty valueToDesc ? valueToDesc : (valueToId != null and valueToDesc == null ? '' : mec:getDefaultValue(descricaoNaoSelecionado,''))}">
+						<c:if test="#{not empty converterToDesc}">
+							<f:converter converterId="#{converterToDesc}" />
+						</c:if>
+	            	</h:outputText>
+	         		</b>
+		</a:outputPanel>
+	</mec:field>
+</ui:component>

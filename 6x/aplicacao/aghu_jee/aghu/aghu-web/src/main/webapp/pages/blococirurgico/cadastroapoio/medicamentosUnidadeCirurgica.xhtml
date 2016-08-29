@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQ_MEDICAMENTOS_UNID_CIRURG} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{medicamentosUnidadeCirurgicaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{medicamentosUnidadeCirurgicaController}"/>  
+      <p:outputPanel id="panelTodo" layout="inline"> 
+        <h:form prependId="false" id="formPesqResultados"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PESQ_MEDICAMENTOS_UNID_CIRURG}"> 
+            <aghu:linha> 
+              <mec:suggestionBox id="sbUnidadeBusca" width="450" maxlength="10" label="#{messages.LABEL_UNIDADE_CIRURGICA}" title="#{messages.TITLE_UNIDADE_CIRURGIA}" required="true" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="listarUnidades" posSelectionAction="pesquisar" posDeleteAction="limparPesquisa" onkeypress="return disableEnterKey(event);" controller="#{medicamentosUnidadeCirurgicaController}" value="#{medicamentosUnidadeCirurgicaController.pdtMedicUsual.aghUnidadesFuncionais}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <p:outputPanel rendered="#{medicamentosUnidadeCirurgicaController.pesquisou}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_MEDICAMENTOS_UNIDADE_CIRURGICA}"> 
+            <h:form prependId="false" id="formCadastroMedicamentos"> 
+              <p:outputPanel rendered="#{mf:hasPermission(securityController,'manterMedicamentoUnidadeCirg,atualizar')}" id="panelGravarMedicamento" layout="inline"> 
+                <aghu:linha> 
+                  <mec:suggestionBox id="medicamento" label="#{messages.LABEL_MEDICAMENTO}" title="#{messages.TITLE_MEDICAMENTO_UNID_CIRURG}" descricaoInput="matCodigo" descricaoLabel="descricao" suggestionAction="pesquisarMedicamentosAtivos" posSelectionAction="editar" posDeleteAction="limparEdicao" maxlength="10" width="700" controller="#{medicamentosUnidadeCirurgicaController}" value="#{medicamentosUnidadeCirurgicaController.pdtMedicUsual.afaMedicamento}" render="bt_adicionar, panel_adicionar"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.matCodigo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.descricao}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CONCENTRACAO}" style="font-weight: bold;"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.concentracao}" styleClass="mask_dose_medicamento"> 
+                        <f:converter converterId="bigDecimalDoseConverter"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_UNIDADE}" style="font-weight: bold;"/> 
+                      </f:facet> #{item.mpmUnidadeMedidaMedicas.descricao}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <aghu:acao newLine="false"> 
+                  	<p:outputPanel id="panel_adicionar">
+	                    <mec:commandButton id="bt_adicionar" value="#{messages.LABEL_ADICIONAR}" disabled="#{!medicamentosUnidadeCirurgicaController.emEdicao or !mf:hasPermission(securityController,'manterMedicamentoUnidadeCirg,atualizar')}" action="#{medicamentosUnidadeCirurgicaController.gravar}" profile="add"/> 
+                  	</p:outputPanel>
+                  </aghu:acao> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </h:form>  
+            <aghu:linha> 
+              <h:form prependId="false" id="formListaMedicamentos"> 
+                <p:outputPanel id="tabelaMedicamentos" layout="inline"> 
+                  <mec:serverDataTable id="tTabelaMedicamentos" scrollHeight="260" list="#{medicamentosUnidadeCirurgicaController.listaMedicamentosUsuais}" scrollable="true"> 
+                    <c:set var="_medicamentosUsuais" value="#{item}"/>  
+                    <p:column styleClass="tdAcao" rendered="#{mf:hasPermission(securityController,'manterMedicamentoUnidadeCirg,atualizar')}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink action="#{medicamentosUnidadeCirurgicaController.excluir}" id="excluirMedicamentos" title="#{messages.LABEL_EXCLUIR}" profile="delete" ajax="true" render="tabelaMedicamentos" process="@this"> 
+                        <f:setPropertyActionListener value="#{_medicamentosUsuais}" target="#{medicamentosUnidadeCirurgicaController.pdtMedicUsualDelecao}" for="command"/> 
+                      </mec:commandLink> 
+                    </p:column>  
+                    <p:column id="codigo"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_medicamentosUsuais.afaMedicamento.matCodigo}"/> 
+                    </p:column>  
+                    <p:column id="descricao"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_medicamentosUsuais.afaMedicamento.descricao}"/> 
+                    </p:column>  
+                    <p:column id="concentracao"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CONCENTRACAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_medicamentosUsuais.afaMedicamento.concentracao}" styleClass="mask_dose_medicamento"> 
+                        <f:converter converterId="bigDecimalDoseConverter"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column id="unidadeMedida"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_medicamentosUsuais.afaMedicamento.mpmUnidadeMedidaMedicas.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </p:outputPanel> 
+              </h:form> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

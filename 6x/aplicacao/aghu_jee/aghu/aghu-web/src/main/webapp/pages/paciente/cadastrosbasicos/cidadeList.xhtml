@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PESQUISA_CIDADES} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+
+
+	<ui:define name="body">
+		<mec:pageConfig controller="#{cidadePaginatorController}" />
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_CIDADES}">
+				<aghu:linha>
+					<mec:inputNumero maxlength="5" size="10"
+						value="#{cidadePaginatorController.aipCidades.codigo}"
+						label="#{messages.LABEL_CODIGO}"
+						title="#{messages.TITLE_LIST_CODIGO}" id="codigo" />
+					<mec:inputNumero maxlength="8" size="10"
+						value="#{cidadePaginatorController.aipCidades.codIbge}"
+						label="#{messages.LABEL_CODIGO_IBGE}"
+						title="#{messages.TITLE_LIST_CODIGO_IBGE}" id="codigoIbge" />
+
+					<mec:inputText maxlength="40" size="60"
+						style="text-transform:uppercase"
+						value="#{cidadePaginatorController.aipCidades.nome}"
+						label="#{messages.LABEL_NOME}" title="#{messages.TITLE_LIST_NOME}"
+						id="nome" />
+
+					<mec:selectOneMenu enum="DominioSituacao"
+						label="#{messages.LABEL_ATIVO}"
+						value="#{cidadePaginatorController.aipCidades.indSituacao}"
+						title="#{messages.TITLE_LIST_ATIVO}" id="ativoInativo" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputTextCEP
+						value="#{cidadePaginatorController.aipCidades.cep}"
+						label="#{messages.LABEL_CEP_INICIAL}"
+						title="#{messages.TITLE_LIST_CEP_INICIAL}" id="cepInicial" />
+					<mec:inputTextCEP
+						value="#{cidadePaginatorController.aipCidades.cepFinal}"
+						label="#{messages.LABEL_CEP_FINAL}"
+						title="#{messages.TITLE_LIST_CEP_FINAL}" id="cepFinal" />
+						
+					<mec:suggestionBox label="#{messages.LABEL_UF}"
+						title="Selecione a Unidade da Federação referente ao município para efetuar a pesquisa por este campo."
+						descricaoInput="sigla" descricaoLabel="nome"
+						suggestionAction="pesquisarUFs" id="naturalidade_uf"
+						controller="#{cidadePaginatorController}"
+						value="#{cidadePaginatorController.aipCidades.aipUf}">
+						<p:column>#{item.nome}</p:column>
+						<p:column>#{item.sigla}</p:column>
+					</mec:suggestionBox>
+					
+					<mec:selectOneMenu enum="DominioSimNao"
+						value="#{cidadePaginatorController.cadastraLogradourosPesquisaCidade}"
+						label="#{messages.LABEL_CADASTRA_LOGRADOURO}"
+						title="#{messages.TITLE_LIST_CADASTRA_LOGRADOURO}"
+						id="cadastraLogradouro" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}" permission="cidade,pesquisar"
+					action="#{cidadePaginatorController.pesquisar}" profile="search" />
+				<mec:commandButton id="bt_limparPesquisa"
+					value="#{messages.LABEL_LIMPAR}"
+					action="#{cidadePaginatorController.limpar}" profile="clear" />
+				<mec:commandButton value="#{messages.LABEL_NOVO}"
+					action="#{cidadePaginatorController.redirecionaIncluirCidade}"
+					rendered="#{cidadePaginatorController.dataModel.pesquisaAtiva}"
+					disabled="#{not mf:hasPermission(securityController, 'cidade,alterar')}"
+					profile="add" />
+				<mec:commandButton id="bt_voltar_uf"
+					value="#{messages.LABEL_VOLTAR_UF}"
+					action="#{cidadePaginatorController.redirecionarListarUF}"
+					rendered="#{cidadePaginatorController.voltarUF}"
+					styleClass="bt_cinza" profile="back"/>
+			</aghu:acao>
+			<mec:serverDataTable dataModel="dataModel" id="tabelaCidades"
+				controller="#{cidadePaginatorController}">
+				<c:set var="_cidade" value="#{item}" />
+				<p:column headerText="Ações" styleClass="first-column auto-adjust"
+					exportable="false">
+					<mec:commandLink id="tabelaCidades_link_editar" profile="edit"
+						title="editar"
+						action="#{cidadePaginatorController.prepararEdicao}"
+						permission="cidade,alterar">
+						<f:setPropertyActionListener
+							target="#{cidadeController.aipCidades}" value="#{_cidade}"
+							for="command" />
+						<f:setPropertyActionListener for="command"
+							target="#{cidadePaginatorController.cidadeSelecionado}"
+							value="#{_cidade}" />
+					</mec:commandLink>
+					<mec:commandLink id="tabelaCidades_link_remover" profile="delete"
+						title="excluir" action="#{cidadePaginatorController.excluir}"
+						permission="cidade,alterar">
+						<f:setPropertyActionListener for="command"
+							target="#{cidadePaginatorController.cidadeSelecionado}"
+							value="#{_cidade}" />
+					</mec:commandLink>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CODIGO}" />
+					</f:facet>
+					<h:outputText value="#{_cidade.codigo}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CODIGO_IBGE}" />
+					</f:facet>
+					<h:outputText value="#{_cidade.codIbge}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_NOME}" />
+					</f:facet>
+					<h:outputText value="#{_cidade.nome}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CEP_INICIAL}" />
+					</f:facet>
+					<h:outputText value="#{_cidade.cep}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CEP_FINAL}" />
+					</f:facet>
+					<h:outputText value="#{_cidade.cepFinal}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_ESTADO}" />
+					</f:facet>
+					<h:outputText value="#{_cidade.aipUf.sigla}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_ATIVO}" />
+					</f:facet>
+					<h:outputText value="#{_cidade.indSituacao.descricao}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CADASTRA_LOGRADOURO}" />
+					</f:facet>
+					<h:outputText value="#{_cidade.indLogradouroFormat}" />
+				</p:column>
+			</mec:serverDataTable>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+	
+	</ui:define>
+	<ui:define name="metadata">
+	    <f:metadata>
+	        <f:viewAction action="#{relatorioTransplanteTmoController.iniciar()}"/>
+	    </f:metadata>
+	</ui:define>  
+	<ui:define name="body">
+		<style>
+			.ui-datalist {
+				display:inline-block;
+			}
+			.ui-datalist div{
+				border: none 0px transparent;
+			}
+			#pnlListaSituacao{
+				margin-top:25px;
+				height: 80px; 
+				width: 200px; 
+				overflow-x: none; 
+				overflow-y:auto;
+				background-color: #fff !important;
+				background-image: none !important;
+			}
+			#pnlListaSituacao div{
+				background-color: #fff !important;
+				background-image: none !important;
+			}
+			.ui-datalist-data{
+				margin-left: -30px !important;
+			}
+			.ui-selectcheckboxmenu label.ui-selectcheckboxmenu-label,
+			.ui-selectcheckboxmenu label.ui-state-error, 
+			.ui-selectcheckboxmenu label.ui-selectcheckboxmenu-label:hover {
+				background: none repeat scroll 0 0 transparent;
+				border: none !important;
+				box-shadow: none !important;
+				padding: 0 !important;
+				margin: 0 30px 0 0!important;
+				color: #000 !important;
+				font-weight: normal !important;
+			}
+			.ui-widget-header .ui-chkbox{
+				visibility: hidden;
+			}
+			.ui-selectcheckboxmenu-filter-container{
+				width:85%;
+			}
+			.ui-selectcheckboxmenu-filter-container .ui-inputtext{
+				width:97%;
+			}
+		</style>
+		<mec:pageConfig controller="#{relatorioTransplanteTmoController}" ignoreEnter="true"/>
+		<h:form prependId="false" id="formRelatorioTransplantesOrgaosSituacao">
+			<aghu:panelGeral legend="#{messages.LABEL_RELATORIO_SITUACAO_PACIENTES_LISTA_TRANSPLANTES_TMO_RTTS}" id="panelPesquisa">
+				<aghu:linha style="margin-top:10px;">
+					<aghu:panelGeral legend="#{messages.LABEL_DADOS_PACIENTE_RSPTO}">
+						<mec:pesquisaPaciente id="pesqPaciente"	valueChangeListener="#{relatorioTransplanteTmoController.pesquisaPaciente}"
+							value="#{relatorioTransplanteTmoController.aipPacientes}" render="formPrincipal" readonly="false" />
+						<br clear="none" />
+						<mec:commandButton id="btPesqPaciente" value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" readonly="false" 
+							action="#{relatorioTransplanteTmoController.redirecionarPesquisaFonetica()}" styleClass="bt_cinza icon-pesquisa-fonetica" profile="search">
+							<f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="#{relatorioTransplanteTmoController.voltar()}" for="command" />
+							<f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="false" for="command" />
+							<f:setPropertyActionListener target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" value="false" for="command" />
+							<f:setPropertyActionListener target="#{pesquisaPacienteController.exibirBotaoIncluirPacienteCirurgico}" value="false" for="command" />
+							<f:param name="cid" value="#{javax.enterprise.context.conversation.id}" />
+						</mec:commandButton>
+						<br /><br />
+					</aghu:panelGeral>
+				</aghu:linha>
+				<aghu:linha style="margin-top:10px;">
+					<aghu:panelGeral legend="#{messages.LABEL_PERIODO_NA_LISTA_RTTS}">
+						<mec:inputTextData id="dtInicial" label="#{messages.LABEL_DATA_INICIAL_RSPTO}" title="#{messages.TITLE_DATA_INICIAL_RSPTO}"
+							value="#{relatorioTransplanteTmoController.dataInicial}" size="10" maxlength="10" tipo="data" 
+							onkeypress="formatar( this, '99/99/9999', event)" />
+						<mec:inputTextData id="dtFinal"	label="#{messages.LABEL_DATA_FINAL_RSPTO}" title="#{messages.TITLE_DATA_FINAL_RSPTO}"
+							value="#{relatorioTransplanteTmoController.dataFinal}" size="10" maxlength="10" tipo="data" 
+							onkeypress="formatar( this, '99/99/9999', event)" />
+						<br /><br /><br /><br />
+					</aghu:panelGeral>
+				</aghu:linha>
+				<aghu:linha style="margin-top:10px;">
+					<p:outputPanel style="margin-left:10px;">
+						<mec:selectOneMenu id="comboBoxTmo" enum="DominioSituacaoTmo" label="#{messages.LABEL_TIPO_TMO_RTTS}"
+							title="#{messages.TITLE_TIPO_TMO_RTTS}" value="#{relatorioTransplanteTmoController.dominioSituacaoTmo}"
+							style="width:120px !important" required="#{param['validarRequired']}" requiredFake="true">
+							<p:ajax event="change" update="@(#pnlTipoAlogenico) @(#lblSituacao) @(#pnlListaSituacao)"/>
+						</mec:selectOneMenu>
+					</p:outputPanel>
+					<p:outputPanel id="pnlTipoAlogenico" style="margin-left:200px;" >
+						<mec:selectOneMenu id="comboTipoAlogenico" enum="DominioTipoAlogenico" label="#{messages.LABEL_TIPO_TMO_ALOGENICO_RTTS}" title="#{messages.TITLE_TIPO_TMO_ALOGENICO_RTTS}"
+							value="#{relatorioTransplanteTmoController.dominioTipoAlogenico}" style="width:120px !important" disabled="#{relatorioTransplanteTmoController.desabilitarTipoAlogenico}">
+						</mec:selectOneMenu>
+					</p:outputPanel>
+					<p:outputPanel style="margin-left:400px;">
+						<mec:selectOneMenu id="comboBoxOrdenacao" enum="DominioOrdenacRelatorioSitPacTmo" noSelectionOption="false"
+							label="#{messages.LABEL_ORDENACAO_RSPTO}" title="#{messages.TITLE_ORDENACAO_RSPTO}" 
+							value="#{relatorioTransplanteTmoController.ordenacao}" style="width:120px !important" >
+						</mec:selectOneMenu>
+					</p:outputPanel>
+				</aghu:linha>
+				<aghu:linha style="margin-top:10px; margin-left:10px;">
+					<mec:field id="lblSituacao" label="#{messages.LABEL_SITUACAO_RSPTO}" title="#{messages.TITLE_SITUACAO_RSPTO}">
+						<ui:remove>
+							<!-- Comments -->
+							- Esse componente do selectCheckBoxMenu necessita de uma série de alterações de estilo para se adequar ao padrão do projeto (ver css na página).
+							- Um outro ponto de atenção é a quantidade de itens que o mesmo irá apresentar. Caso tenha cerca de 1000 itens, necessitará aumentar parâmetro do JSF
+							   ou remover o check do header para impedir que marque todos, pois ocorre um erro ao submeter essa quantidade de itens. 
+							   (aqui foi removido o check do header e incluída uma validação para a quantidade limite)   
+						</ui:remove>							
+				        <p:selectCheckboxMenu id="selecSituacao" label="Selecione" value="#{relatorioTransplanteTmoController.listaDominioSituacaoTransplanteSelecionados}" filter="false" showHeader="true" 
+				        	panelStyle="width:200px" style="margin-top:5px;" styleClass="ui-selectonemenu ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all">
+							<f:selectItems value="#{relatorioTransplanteTmoController.listaDominioSituacaoTransplante}" var="sit" 
+								itemLabel="#{sit.retornarDescricaoCompleta()}" itemValue="#{esp}" />
+							<p:ajax event="change" update="@(#pnlListaSituacao)"  process="@this" />
+							<p:ajax event="toggleSelect" update="@(#pnlListaSituacao)"  process="@this"/>
+							<f:converter converterId="baseEntityConverter" />
+						</p:selectCheckboxMenu>
+						<br /><br /><br /><br /><br />
+					</mec:field>
+					<p:outputPanel id="pnlListaSituacao" styleClass="ui-widget-content ui-corner-all" >
+						<p:dataList value="#{relatorioTransplanteTmoController.listaDominioSituacaoTransplanteSelecionados}" var="sit"
+						emptyMessage="">
+				            #{sit.retornarDescricaoCompleta()}
+				        </p:dataList>    									
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<br />
+			<aghu:acao>
+				<mec:commandButton id="btVisulalizarImpressao" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RSPTO}"
+					action="#{relatorioTransplanteTmoController.visualizarImpressao}" profile="view"	onclick="PF('loadDialogWG').show()" >
+					<f:param name="validarRequired" value="true"/>
+				</mec:commandButton>
+				<mec:commandButton id="btImprimir" value="#{messages.LABEL_IMPRIMIR_RSPTO}" action="#{relatorioTransplanteTmoController.directPrint}"
+					profile="print"	onclick="PF('loadDialogWG').show()" >
+					<f:param name="validarRequired" value="true"/>
+				</mec:commandButton>
+				<mec:commandButton id="btDownloadCSV" value="#{messages.LABEL_DOWNLOAD_RSPTO}" action="#{relatorioTransplanteTmoController.gerarCSV}"
+					profile="download-csv">
+					<f:param name="validarRequired" value="true"/>
+				</mec:commandButton>
+				<mec:commandButton id="btLimpar" value="#{messages.LABEL_LIMPAR_RSPTO}" action="#{relatorioTransplanteTmoController.limpar}"
+					render="panelPesquisa" ajax="true" process="@this" profile="clear" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

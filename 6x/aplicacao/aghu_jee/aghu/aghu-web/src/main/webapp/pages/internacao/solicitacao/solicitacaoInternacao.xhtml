@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>Solicitar Internação :: AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{solicitacaoInternacaoController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{solicitacaoInternacaoController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral legend="Solicitar Internação">
+				<p:outputPanel id="campos" layout="inline">
+					<aghu:linha>
+						<mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}"
+							size="9" maxlength="8" readonly="true"
+							title="#{messages.TITLE_PRONTUARIO_INTERNACAO}"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.paciente.prontuario}"
+							id="prontuario" />
+						<mec:inputText label="#{messages.LABEL_PACIENTE}" size="80"
+							title="#{messages.TITLE_NOME}" readonly="true"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.paciente.nome}"
+							style="text-transform:uppercase" id="nome" />
+						<mec:inputNumero label="#{messages.LABEL_CODIGO}"
+							readonly="#{solicitacaoInternacaoController.solicitacaoInternacao.paciente!=null}"
+							size="9" maxlength="8" title="#{messages.TITLE_CODIGO}"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.paciente.codigo}"
+							id="codigo" />
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputText label="#{messages.LABEL_NOME_MAE}" size="80"
+							readonly="true" title="#{messages.TITLE_NOME_MAE}"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.paciente.nomeMae}"
+							style="text-transform:uppercase" id="nomeMae" />
+						<mec:inputTextData label="#{messages.LABEL_DATA_NASCIMENTO}"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.paciente.dtNascimento}"
+							title="#{messages.TITLE_DATA_NASCIMENTO}" readonly="true"
+							id="dataNascimento" tipo="data" />
+						<mec:inputText label="#{messages.LABEL_SEXO}" size="8"
+							maxlength="2" title="#{messages.TITLE_SEXO}" readonly="true"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.paciente.sexoBiologico}"
+							style="text-transform:uppercase" id="sexo" />
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputNumero label="#{messages.CODIGO_CONVENIO}" size="3"
+							title="#{messages.TITLE_CODIGO_CONVENIO_INT}" maxlength="3"
+							readonly="#{not empty solicitacaoInternacaoController.convenioSaudePlano}"
+							value="#{solicitacaoInternacaoController.convenioId}"
+							id="codigoConvenio">
+							<p:ajax event="blur" bypassUpdates="false" process="@this" />
+						</mec:inputNumero>
+						<mec:field name="codigoPlano" required="false"
+							label="#{messages.CODIGO_PLANO}"
+							title="#{messages.TITLE_LABEL_CODIGO_PLANO_INT}">
+							<p:inputText name="codigoPlanoInput" id="codigoPlanoInput"
+								size="2" styleClass="numerico"
+								readonly="#{not empty solicitacaoInternacaoController.convenioSaudePlano}"
+								disabled="#{not empty solicitacaoInternacaoController.convenioSaudePlano}"
+								maxlength="2" value="#{solicitacaoInternacaoController.planoId}">
+								<p:ajax event="change" bypassUpdates="false"
+									update="@(#codigoConvenio) @(#codigoPlano) @(#codigoPlanoInput) @(#panelPlanoConvenio)"
+									process="@this"
+									listener="#{solicitacaoInternacaoController.escolherPlanoConvenio()}" />
+							</p:inputText>
+						</mec:field>
+						<p:outputPanel id="panelPlanoConvenio" layout="inline">
+							<mec:suggestionBox label="#{messages.LABEL_CONVENIO_PLANO}"
+								title="#{messages.TITLE_LABEL_CONVENIO_PLANO_INT}" width="400"
+								size="50" maxlength="50"
+								converter="#{fatConvenioSolInternacaoConverter}"
+								descricaoInput="descricao"
+								descricaoLabel="descricaoPlanoConvenio"
+								suggestionAction="pesquisarConvenioSaudePlanos"
+								posSelectionAction="atribuirPlano"
+								posDeleteAction="atribuirPlano" required="true"
+								id="planoConvenio"
+								controller="#{solicitacaoInternacaoController}"
+								value="#{solicitacaoInternacaoController.convenioSaudePlano}"
+								render="codigoConvenio,codigoPlano}">
+								<p:column>#{item.convenioSaude.descricao} - #{item.descricao}</p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox width="400"
+							label="#{messages.LABEL_ESPECIALIDADE}" required="true"
+							title="#{messages.TITLE_LABEL_ESPECIALIDADE_INT}"
+							converter="#{aghEspecialidadesSolicitacaoInternacaoConverter}"
+							descricaoInput="sigla" descricaoLabel="nomeEspecialidade"
+							suggestionAction="pesquisarEspecialidade" id="especialidade"
+							controller="#{solicitacaoInternacaoController}"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.especialidade}"
+							render="crm">
+							<p:column>#{item.sigla}</p:column>
+							<p:column>#{item.nomeEspecialidade}</p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox label="#{messages.LABEL_CRM}" required="true"
+							title="#{messages.TITLE_LABEL_CRM_SOL_INT}"
+							converter="#{espCrmVOConverter}" descricaoInput="nroRegConselho"
+							descricaoLabel="nomeMedico" suggestionAction="pesquisarMedico"
+							id="crm" controller="#{solicitacaoInternacaoController}"
+							value="#{solicitacaoInternacaoController.espCrmVO}">
+							<p:column>#{item.nroRegConselho}</p:column>
+							<p:column>#{item.nomeMedico}</p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+					<aghu:linha>
+						<aghu:linha>
+							<mec:suggestionBox label="#{messages.LABEL_ACOMODACAO}"
+								title="#{messages.TITLE_LABEL_ACOMODACOES}" descricaoInput="seq"
+								descricaoLabel="descricao"
+								suggestionAction="pesquisarAcomodacoes" id="acomodacao"
+								controller="#{solicitacaoInternacaoController}"
+								value="#{solicitacaoInternacaoController.acomodacao}">
+								<p:column>#{item.seq}</p:column>
+								<p:column>#{item.descricao}</p:column>
+							</mec:suggestionBox>
+						</aghu:linha>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputTextData label="#{messages.LABEL_DT_PREV_INTERNACAO}"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.dtPrevInternacao}"
+							title="#{messages.TITLE_DT_PREV_INTERNACAO}"
+							id="dtPrevInternacao" tipo="data" />
+						<mec:selectOneMenu enum="DominioSituacaoSolicitacaoInternacao"
+							required="true"
+							readonly="#{solicitacaoInternacaoController.ocultarSituacaoSolicitacao}"
+							label="#{messages.LABEL_SITUACAO}"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.indSitSolicInternacao}"
+							title="#{messages.TITLE_LABEL_SITUACAO_SOL_INT}" id="situacao" />
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox label="#{messages.LABEL_SSM}"
+							title="#{messages.TITLE_LABEL_SSM_SOL_INT}"
+							converter="#{fatVlrItemProcedHospCompsConverter}"
+							descricaoInput="fatItensProcedHospitalar.codTabela"
+							descricaoLabel="fatItensProcedHospitalar.descricao"
+							suggestionAction="pesquisarSsm" id="ssm"
+							controller="#{solicitacaoInternacaoController}"
+							value="#{solicitacaoInternacaoController.vlrItemProcedHospComp}">
+							<p:column>#{item.fatItensProcedHospitalar.codTabela}</p:column>
+							<p:column>#{item.fatItensProcedHospitalar.descricao}</p:column>
+							<p:column>#{item.fatItensProcedHospitalar.sexo}</p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputTextArea cols="50" label="#{messages.LABEL_OBSERVACAO}"
+							rows="10"
+							value="#{solicitacaoInternacaoController.solicitacaoInternacao.observacao}"
+							title="#{messages.TITLE_OBSERVACAO}" id="observacao"
+							maxlength="240" />
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_salvar" value="#{messages.LABEL_GRAVAR}"
+					action="#{solicitacaoInternacaoController.salvar}" process="@this"
+					profile="ok" ajax="true" 
+					disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/>
+				<mec:commandButton value="#{messages.LABEL_CANCELAR}" id="cancelar"
+					immediate="true"
+					action="#{solicitacaoInternacaoController.cancelar}"
+					profile="cancel" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

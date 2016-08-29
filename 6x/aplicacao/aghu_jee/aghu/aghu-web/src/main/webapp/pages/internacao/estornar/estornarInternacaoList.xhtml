@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Estorno de Internações</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{estornarInternacaoController}"/>  
+      <h:form prependId="false" id="EstornarInternacaoForm"> 
+        <aghu:panelGeral id="ffdl_estornarInt" legend="#{messages.TITLE_PESQUISA_ESTORNAR_INTERNACAO}"> 
+          <aghu:linha> 
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" size="9" maxlength="8" style="text-transform:uppercase" title="#{messages.TITLE_PRONTUARIO_INTERNACAO}" required="true" value="#{estornarInternacaoController.prontuarioPesquisa}" id="prontuario"/>  
+            <mec:inputText label="#{messages.LABEL_NOME}" value="#{estornarInternacaoController.nomePaciente}" readonly="true" title="#{messages.TITLE_CRUD_DADOS_INTERNACAO_NOME}" size="80" style="text-transform:uppercase" id="prontuario_nome"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{estornarInternacaoController.pesquisar}" render="internacoesEstornoTable, prontuario_nome" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{estornarInternacaoController.limparCampos}" render="internacoesEstornoTable,prontuario,prontuario_nome,leito,quarto,unidade" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao>  
+        <p:outputPanel id="internacoesEstornoTable" layout="inline"> 
+          <p:outputPanel id="internacoesEstornoTableRendered" rendered="#{estornarInternacaoController.exibirListagem}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral id="ffdl_prontuario" legend="#{messages.LEGEND_FIELDSET_INTERNACOES}"> 
+              <aghu:linha> 
+                <h:outputText value="#{messages.NENHUMA_INTERNACAO_ENCONTRADA}" rendered="#{empty estornarInternacaoController.listaInternacoes}"/>  
+                <mec:serverDataTable rendered="#{not empty estornarInternacaoController.listaInternacoes}" list="#{estornarInternacaoController.listaInternacoes}" scrollable="true"> 
+                  <c:set var="_internacao" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink title="#{messages.LABEL_ESTORNAR}" action="#{estornarInternacaoController.visualizarInternacaoEstorno()}" styleClass=" silk-door-out silk-icon"> 
+                      <f:setPropertyActionListener target="#{estornarInternacaoController.internacao}" value="#{_internacao}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ESPECIALIDADE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_internacao.especialidade.sigla} - "/>  
+                    <h:outputText value="#{_internacao.especialidade.nomeEspecialidade}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CONVENIO_PLANO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_internacao.convenioSaudePlano.id.cnvCodigo} - "/>  
+                    <h:outputText value="#{_internacao.convenioSaudePlano.convenioSaude.descricao} - #{_internacao.convenioSaudePlano.descricao}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CRM_PROFISSIONAL}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{estornarInternacaoController.obterNroRegConselhoNomeProfessor(_internacao)}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_LEITO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{estornarInternacaoController.obterIdLeito(_internacao.leito)}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_QUARTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{estornarInternacaoController.obterDescricaoQuarto(_internacao.quarto)}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_UNIDADE_FUNCIONAL}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{estornarInternacaoController.obterDescricaoUnidadeFuncional(_internacao.unidadesFuncionais)}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_INTERNACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_internacao.dthrInternacao}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_ALTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_internacao.dthrAltaMedica}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                    </h:outputText> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

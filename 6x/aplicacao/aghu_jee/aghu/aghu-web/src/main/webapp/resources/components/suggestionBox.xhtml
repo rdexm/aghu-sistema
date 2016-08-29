@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:mf="http://www.mec.gov.br/taglib"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+
+    <h:head>
+        <title>suggestionBox</title>
+    </h:head>
+    
+	<ui:remove><!-- Comments -->	
+	COMPONENTE SUGGESTIONBOX
+	============================
+	Autor: Cristiano Quadros (2013)
+	
+	Renderiza um componente de seleção de dados com filtro baseado no rich:suggestionbox
+	
+	Propriedades:
+	
+	id: identificador do componente
+	value: variavel que armazenará o item selecionado
+	width: largura do panel da Suggestion
+	label: Label do componente
+	title: Hint do componente
+	controller: nome da instância da classe controladora (mbean) da tela
+	descricaoInput: atributo mostrado dentro do box depois da seleção
+	descricaoLabel: atributo mostrado fora do box depois da seleção
+	descricaoLimite: tamanho da descricao da suggestion. Default: 100
+	suggestionAction: método de pesquisa (autocomplete) da suggestion
+	posSelectionAction: Ação a executar após seleção
+	posDeleteAction: Ação a executar após clicar na borracha
+	render: Componentes que receberão o refresh após as ações executadas.
+	breakTo: (posição caracter). Busca o primeiro espaço em branco apartir da 'posição' para quebra de linha, a palavra 'middle' tenta buscar o meio do texto. Default: 100 middle 
+	resultTitle: Exibe um title quando o mouse passa pela descricao da Suggestion
+	externalDescricaoLabel: Chama o método especificado para mostrar na descricao da suggestion
+	minQueryLength: Número de caracteres que precisam ser digitados antes de realizar a pesquisa
+	cache(true/false): Habilita e desabilita cache de página
+	descricaoLimite: Limita o tamanho da descricao da suggestion (default=100)
+	
+	Layout:
+	
+	Insira as colunas dentro da tag utilizando o componente h:column	
+	
+	
+	Migração:
+	
+	name             : id
+	value="atributo" : #{bean.atributo} 
+	reRender         : render
+	h:column         : p:column
+	mbean            : controller
+	methodCount      : inserir "returnSGwithCount(resultSG, count)" no método action da suggestion na controller
+	
+	Nota:
+	
+	O método de busca da suggestion (suggestionAction) que fica na controller deve receber um valor do tipo String ao contrário do Richfaces que esperava um Object.
+	
+	Para desabilitar o modo de auto ajuste da suggestion acrescente 'noAdjust' no atributo styleClass.  
+	
+	
+	
+	</ui:remove>  
+    
+    <h:body>
+        <cc:interface name="suggestionbox" displayName="Cria uma caixa de texto com autocomplete">        
+        	
+			<cc:attribute name="descricaoInput" />
+			<cc:attribute name="descricaoLabel" />
+			<cc:attribute name="suggestionAction"  />
+			<cc:attribute name="posSelectionAction"  />
+			<cc:attribute name="posDeleteAction"  />
+			<cc:attribute name="controller"  />        	
+	        <cc:attribute name="label" />
+	        <cc:attribute name="render" />
+	        <cc:attribute name="showLabel" default="true" />
+	        <cc:attribute name="showLabel" default="true" />
+	        <cc:attribute name="posicaoLabel" default="acima" />
+	        <cc:attribute name="escape" default="true" />
+	        <cc:attribute name="tooltipEscape" default="false" />
+	        <cc:attribute name="readonly" default="false" />
+	        <cc:attribute name="title" />
+	        <cc:attribute name="required" default="false" />
+	        <cc:attribute name="requiredFake" default="false" />
+	        <cc:attribute name="value" />
+			<cc:attribute name="maxlength" default="100" />
+			<cc:attribute name="style" />
+			<cc:attribute name="styleClass" />
+			<cc:attribute name="panelStyleClass" />
+			<cc:attribute name="width" default="350px" />
+			<cc:attribute name="height" default="240px" />
+			<cc:attribute name="immediate" default="false" />
+			<cc:attribute name="onkeypress" />
+			<cc:attribute name="onkeyup" />
+			<cc:attribute name="onkeydown" />
+			<cc:attribute name="onblur" />
+			<cc:attribute name="converter" />			
+			<cc:attribute name="onchange" />
+			<cc:attribute name="onfocus" />
+			<cc:attribute name="size" default="25" />
+			<cc:attribute name="descricaoLimite" default="100" />
+			<cc:attribute name="breakTo" default="100 middle"  />
+			<cc:attribute name="externalDescricaoLabel"  />
+			<cc:attribute name="var" default="item" />
+			<cc:attribute name="itemValue"  />
+			<cc:attribute name="minQueryLength"  />
+			<cc:attribute name="cache" default="true"  />
+			<cc:attribute name="maxResults" default="100"  />
+			<cc:attribute name="queryDelay" default="800"  />
+			<cc:attribute name="confirmDelete" default="false"  />			
+			<cc:attribute name="msgConfirmDelete" default="#{messages.LABEL_LIMPAR_SUGGESTION}"  />
+        </cc:interface>
+
+        <cc:implementation>
+
+			<h:outputScript name="aghu-suggestionBox.js"  library="js" target="head" />
+			
+			<ui:param name="sgWG" value="#{cc.clientId}WG" />
+			<ui:param name="render" value="#{mf:customPrefixAjaxRender(cc.attrs.render)}" />
+			
+			<c:if test="#{cc.attrs.var eq 'item'}">
+				<ui:param name="itemValue" value="#{item}" />
+			</c:if>
+			<c:if test="#{cc.attrs.var ne 'item'}">
+				<ui:param name="itemValue" value="#{cc.attrs.itemValue}" />
+			</c:if>				
+			
+			<c:if test="#{not empty cc.attrs.breakTo}">
+				<ui:param name="breakTo" value="breakTo #{cc.attrs.breakTo}" />
+			</c:if>			
+		    <c:if test="#{empty cc.attrs.posSelectionAction}">	
+	    		<pe:remoteCommand name="sgProcess#{cc.clientId}" update="#{cc.clientId} #{render}" process="#{cc.clientId}" 
+	    			onsuccess="sg.sgSelected(PF('#{sgWG}'))" oncomplete="sg.sgValida(PF('#{sgWG}'))"/>
+	    	</c:if>
+		    <c:if test="#{not empty cc.attrs.posSelectionAction}">	
+	    		<pe:remoteCommand name="sgProcess#{cc.clientId}" update="#{cc.clientId} #{render}" action="#{cc.attrs.controller[cc.attrs.posSelectionAction]}" 
+	    						process="#{cc.clientId}" onsuccess="sg.sgSelected(PF('#{sgWG}'))" oncomplete="sg.sgValida(PF('#{sgWG}'))" />
+	    	</c:if>	
+			
+			
+        	<mec:field label="#{cc.attrs.label}" id="#{cc.clientId}" tooltipEscape="cc.attrs.tooltipEscape"
+        		showLabel="#{cc.attrs.showLabel}" title="#{cc.attrs.title}" 
+        		posicaoLabel="#{cc.attrs.posicaoLabel}" readonly="#{cc.attrs.readonly}" 
+        		escape="#{cc.attrs.escape}" 
+        		required="#{cc.attrs.required or cc.attrs.requiredFake}">
+        		
+				<p:outputPanel style="float:left">
+				    <p:autoComplete id="suggestion" forceSelection="true" 
+				    	value="#{cc.attrs.value}" completeMethod="#{cc.attrs.controller[cc.attrs.suggestionAction]}"
+				    	dropdown="true"	var="#{cc.attrs.var}" itemLabel="#{mf:getProperty(cc.attrs.descricaoInput, itemValue)}" itemValue="#{itemValue}" 
+				    	emptyMessage="Nenhum Registro"  widgetVar="#{sgWG}" 
+				    	queryDelay="#{cc.attrs.queryDelay}" converter="suggestionConverter" 
+				    	cache="#{cc.attrs.cache}" maxResults="#{cc.attrs.maxResults}" 
+				    	panelStyle="width: #{cc.attrs.width};height: #{cc.attrs.height};" 
+				    	onkeypress="if (sg.sgTab(PF('#{sgWG}'), event)){sgProcess#{cc.clientId}();}"
+    					styleClass="#{cc.attrs.styleClass}"
+    					required="#{cc.attrs.required}"			
+    					maxlength="#{cc.attrs.maxlength}" 
+    					style="#{cc.attrs.style}"  
+    					readonly="#{cc.attrs.readonly}"
+    					disabled="#{cc.attrs.readonly or not empty cc.attrs.value}"
+    					immediate="#{cc.attrs.immediate}"
+    					onkeyup="#{cc.attrs.onkeyup}"
+    					onkeydown="#{cc.attrs.onkeydown}"
+    					onblur="sg.sgBlur(PF('#{sgWG}'));#{cc.attrs.onblur}"	
+    					onchange="#{cc.attrs.onchange}"
+    					onfocus="#{cc.attrs.onfocus}"
+    					label="#{cc.attrs.label}" 
+    					panelStyleClass="#{cc.attrs.panelStyleClass}"
+    					size="#{cc.attrs.size}"
+    					minQueryLength="#{cc.attrs.minQueryLength}"> 
+			    		<p:ajax event="itemSelect" immediate="true" onstart="sgProcess#{cc.clientId}();return false;"  />
+				    	
+						<cc:insertChildren />       		
+	
+					</p:autoComplete>
+				</p:outputPanel>
+					
+				<p:outputPanel id="sgText" 
+					styleClass="aghu-suggestion-text #{breakTo}" 
+					style="float:left;font-weight:bold;"  >
+					
+					<h:outputText id="sgDescricaoLabel" value="#{fn:substring(mf:getProperty(cc.attrs.descricaoLabel, cc.attrs.value),0,cc.attrs.descricaoLimite)}" 
+						rendered="#{not empty cc.attrs.descricaoLabel and not empty mf:getProperty(cc.attrs.descricaoLabel, cc.attrs.value)}"
+						style="margin:0px 3px" title="#{cc.attrs.resultTitle}"/>
+						
+					<h:outputText id="sgExternalDescricaoLabel" value="#{fn:substring(cc.attrs.controller[cc.attrs.externalDescricaoLabel],0,cc.attrs.descricaoLimite)}" 
+						rendered="#{not empty cc.attrs.externalDescricaoLabel and empty cc.attrs.descricaoLabel and not empty cc.attrs.controller[cc.attrs.externalDescricaoLabel]}" 
+						style="margin:0px 3px" title="#{cc.attrs.resultTitle}"/>
+				</p:outputPanel>
+				
+				<p:outputPanel id="suggestionClearButton" style="display:table-cell;vertical-align:middle;float:left;" rendered="#{not cc.attrs.readonly}">
+					<c:if test="#{empty cc.attrs.posDeleteAction and not cc.attrs.confirmDelete and not empty cc.attrs.value}">
+			            <p:commandButton id="sgClear" tabindex="-1"  
+			            	icon="aghu-icons-16x16 aghu-icon-cleaner-aghu"
+			            	styleClass="ui-autocomplete-dropdown aghu-autocomplete-button-clear-left bt-close" process="@this" 
+			            	update="suggestion sgText suggestionClearButton #{render}" resetValues="true" oncomplete="sg.sgClear(PF('#{sgWG}'))" >
+		            		<f:setPropertyActionListener target="#{cc.attrs.value}" value="#{null}" />			                
+		            	</p:commandButton>
+		            </c:if>
+					<c:if test="#{not empty cc.attrs.posDeleteAction and not cc.attrs.confirmDelete and not empty cc.attrs.value}">
+			            <p:commandButton id="sgClear" tabindex="-1"  
+			            	icon="aghu-icons-16x16 aghu-icon-cleaner-aghu" action="#{cc.attrs.controller[cc.attrs.posDeleteAction]}" 
+			            	styleClass="ui-autocomplete-dropdown aghu-autocomplete-button-clear-left bt-close" process="@this" 
+			            	update="suggestion sgText suggestionClearButton #{render}" 
+			            	resetValues="true" oncomplete="sg.sgClear(PF('#{sgWG}'))" >
+		            		<f:setPropertyActionListener target="#{cc.attrs.value}" value="#{null}" />		            					                
+		            	</p:commandButton>
+		            </c:if>	
+		            <c:if test="#{empty cc.attrs.posDeleteAction and cc.attrs.confirmDelete and not empty cc.attrs.value}">
+			            <p:commandButton id="sgClear" tabindex="-1"   
+			            	icon="aghu-icons-16x16 aghu-icon-cleaner-aghu"
+			            	styleClass="ui-autocomplete-dropdown aghu-autocomplete-button-clear-left bt-close" process="@this" 
+			            	update="suggestion sgText suggestionClearButton #{render}" resetValues="true" oncomplete="sg.sgClear(PF('#{sgWG}'))" >
+		            		<f:setPropertyActionListener target="#{cc.attrs.value}" value="#{null}" />
+		            		<p:confirm  header="#{messages.LABEL_CONFIRMACAO}" message="#{cc.attrs.msgConfirmDelete}" icon="ui-icon-alert"  />			                
+		            	</p:commandButton>
+		            </c:if>
+					<c:if test="#{not empty cc.attrs.posDeleteAction and cc.attrs.confirmDelete and not empty cc.attrs.value}">
+			            <p:commandButton id="sgClear" tabindex="-1" 
+			            	icon="aghu-icons-16x16 aghu-icon-cleaner-aghu" action="#{cc.attrs.controller[cc.attrs.posDeleteAction]}" 
+			            	styleClass="ui-autocomplete-dropdown aghu-autocomplete-button-clear-left bt-close" process="@this" 
+			            	update="suggestion sgText suggestionClearButton #{render}" 
+			            	resetValues="true" oncomplete="sg.sgClear(PF('#{sgWG}'))" >
+		            		<f:setPropertyActionListener target="#{cc.attrs.value}" value="#{null}" />
+		            		<p:confirm  header="#{messages.LABEL_CONFIRMACAO}" message="#{cc.attrs.msgConfirmDelete}" icon="ui-icon-alert"  />			                
+		            	</p:commandButton>
+		            </c:if>
+		            	
+				</p:outputPanel>
+				<script>
+				 	jQuery(document).ready(function() {
+						sg.init(#{cc.attrs.value ne null}, PF('#{sgWG}'), #{cc.attrs.readonly});
+				 	});	
+				</script>							
+				
+        	</mec:field>
+        	
+        </cc:implementation>
+    </h:body>
+</html>

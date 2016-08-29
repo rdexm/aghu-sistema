@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.FS_CONSULTAR_NOTAS}</title>
+		
+		<style>
+				fieldset {
+				    border: 0;
+				}
+		</style>
+		
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{listaTrabalhoSessaoTerapeuticaPaginatorController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{listaTrabalhoSessaoTerapeuticaPaginatorController}" />
+		
+		<h:form prependId="false" id="formPesquisa">
+			<script type="text/javascript">
+				  var currentEvent;
+				  var showMenu = true;
+				  jQuery(document).ready(function() {
+		
+				  PrimeFaces.widget.ContextMenu.prototype.show = function(e) {
+					 showMenu = true;
+				     //hide other contextmenus if any
+				     jQuery(document.body).children('.ui-contextmenu:visible').hide();
+				
+				     if(e) {
+				        currentEvent = e;
+				     } 
+		
+					 if(this.cfg.beforeShow) {
+						this.cfg.beforeShow.call(this);
+					 }
+					 
+					 if (showMenu) {
+						 var win = jQuery(window),
+						 left = e.pageX,
+						 top = e.pageY,
+						 width = this.jq.outerWidth(),
+						 height = this.jq.outerHeight();
+					
+						 //collision detection for window boundaries
+						 if((left + width) > (win.width())+ win.scrollLeft()) {
+							left = left - width;
+						 }
+						 if((top + height ) > (win.height() + win.scrollTop())) {
+							top = top - height;
+						 }
+					
+						 this.jq.css({
+							'left': left,
+							'top': top,
+							'z-index': ++PrimeFaces.zindex
+						 }).show();
+					 }
+				     e.preventDefault(); 
+				  };
+				});
+				
+				var showContext=true;
+				function dontShowContentBefore(obj){
+					showContext = !showContext;
+					showMenu = showContext;
+				}
+			
+				function showCtxMenu(varWidget){
+			  		PF(varWidget).show(currentEvent);	  
+				}
+
+				function closeAllContextMenu(){
+					jQuery('.ui-contextmenu:visible').hide();					
+				}
+			</script>			
+				 
+			<aghu:linha>
+				<p:accordionPanel id="togglePanelPesquisa" prependId="false" activeIndex="#{listaTrabalhoSessaoTerapeuticaPaginatorController.toggleFiltro}" style="width:100%" >
+					<p:tab title="#{messages.TITLE_FILTROS_PESQUISA} #{listaTrabalhoSessaoTerapeuticaPaginatorController.descricaoFiltrosConsulta()}" >
+					 <fieldset class="geral"> 	
+						<aghu:linha>
+							<mec:inputTextData id="dataInicial"
+								label="#{messages.LABEL_DATA}"
+								title="#{messages.TITLE_DATA}"
+								value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.dataInicial}"
+								tipo="data" size="10" requiredFake="true" />
+							
+							 <mec:selectOneMenu id="tipoSessao"
+							 		requiredFake="true" style="width: 200px !important;"
+							 		label="#{messages.LABEL_TIPO_SESSAO}"
+							 		value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.tipoSessaoCombo}"> 
+							 		<f:selectItems id="salaCombo" var="item"
+										value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.listaTipoSessao}" 
+										itemLabel="#{item.descricao}" itemValue="#{item.seq}"/>								 		
+							 		<p:ajax event="change" update="@(#sala), @(#panelprotocolo), @(#panelAcomodacao)" process="@this" listener="#{listaTrabalhoSessaoTerapeuticaPaginatorController.carregarComboSala}"/>							 		
+							 </mec:selectOneMenu>
+		
+							<mec:selectOneMenu id="sala"							
+									label="#{messages.LABEL_SALA}" style="width: 200px !important;"							
+									value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.salaCombo}"
+									render="@(#formPesquisa)" process="@this" >
+									<f:selectItems id="salaCombo" var="item"
+										value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.listaSalas}" 
+										itemLabel="#{item.descricao}" itemValue="#{item.seq}"/>	
+									<p:ajax event="change" update="@(#panelAcomodacao)" process="@this" listener="#{listaTrabalhoSessaoTerapeuticaPaginatorController.limparCampoAcomodacao}"/>				
+							</mec:selectOneMenu>
+							
+							<mec:selectOneMenu id="turno"
+								enum="DominioTurno" style="width: 100px !important;"
+								label="#{messages.LABEL_TURNO}"
+								value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.turnoCombo}" >
+								<p:ajax event="change" update="@(#sala), @(#panelprotocolo), @(#turno)" process="@this" listener="#{listaTrabalhoSessaoTerapeuticaPaginatorController.consultarHorarioTurno}"/>
+							</mec:selectOneMenu>
+						</aghu:linha>
+							
+						<aghu:linha>
+							<p:outputPanel id="panelprotocolo">							
+								<mec:suggestionBox id="protocolo" var="row" itemValue="#{row}"
+									label="#{messages.LABEL_PROTOCOLO}"
+									suggestionAction="pesquisarProtocolo"
+									descricaoInput="seq" descricaoLabel="titulo"
+									maxlength="60" width="500" 
+									controller="#{listaTrabalhoSessaoTerapeuticaPaginatorController}"
+									value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.mpaProtocoloAssistencial}" >
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_CODIGO}</b>
+										</f:facet> #{row.seq}
+			                    </p:column>					
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_TITULO}</b>
+										</f:facet> #{row.titulo}
+			                    </p:column>					
+								</mec:suggestionBox>
+							</p:outputPanel>
+							
+							<p:outputPanel id="panelAcomodacao">					
+								<mec:suggestionBox id="acomodacao" var="row" itemValue="#{row}"
+									label="#{messages.LABEL_ACOMODACAO}"
+									suggestionAction="pesquisarLocalAtendimento"
+									descricaoInput="seq" descricaoLabel="descricao"
+									maxlength="60" width="500" 
+									controller="#{listaTrabalhoSessaoTerapeuticaPaginatorController}"
+									value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.localAtendimento}" >
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_CODIGO}</b>
+										</f:facet> #{row.seq}
+			                    </p:column>					
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_DESCRICAO}</b>
+										</f:facet> #{row.descricao}
+			                    </p:column>					
+								</mec:suggestionBox>
+							</p:outputPanel>
+							
+							<mec:selectOneMenu id="tipoAcomodacao"
+								enum="DominioTipoAcomodacao" style="width: 100px !important;"
+								label="#{messages.LABEL_TIPO_ACOMODACAO}"
+								value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.acomodacaoCombo}" />				
+						</aghu:linha>					        
+	 				</fieldset>
+	 				
+	 				<aghu:acao>
+			          <mec:commandButton value="#{messages.LABEL_PESQUISAR}"
+			          	id="bt_pesquisar" style="align:left"
+			          	action="#{listaTrabalhoSessaoTerapeuticaPaginatorController.pesquisarAbas}"			          	
+			          	profile="search" render="formAba1" process="formAba1"/>
+			          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" 
+			          	block="true" requestDelay="2000"
+			          	action="#{listaTrabalhoSessaoTerapeuticaPaginatorController.limpar}"
+			          	render="formPesquisa, formAba1, formAba3, formAba4" ajax="true" process="@this"
+			          	profile="clear" />
+					</aghu:acao>
+					
+					</p:tab>
+	        	</p:accordionPanel>
+	        	
+	        	
+	        </aghu:linha>
+      </h:form> 
+      
+      <p:outputPanel id="panelAbas" layout="inline"> 
+          <aghu:linha> 
+            <p:tabView id="tabPanelAbas" dynamic="false" immediate="true" onTabChange="closeAllContextMenu();" activeIndex="#{listaTrabalhoSessaoTerapeuticaPaginatorController.selectedTab}" prependId="false"> 
+              	<p:ajax event="tabChange" update="@(#panelAbas), @(#tabPanelAbas)" listener="#{listaTrabalhoSessaoTerapeuticaPaginatorController.injetarValores}"/>
+              <p:tab id="aba1" labelWidth="200px" immediate="true" title="#{messages.LABEL_AGENDADOS}"> 
+                <ui:include src="agendadosList.xhtml"/> 
+              </p:tab>  
+              <p:tab id="aba2" labelWidth="200px" immediate="true" title="#{messages.LABEL_ACOLHIMENTO}" rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.exibirAbaAcolhimento}" >
+              	<ui:include src="acolhimentoList.xhtml"/>
+              </p:tab> 
+              <p:tab id="aba3" labelWidth="200px" immediate="true" title="#{messages.LABEL_AGUARDANDO_ATENDIMENTO}">
+              	<ui:include src="aguardandoAtendimentoList.xhtml"/>
+              </p:tab> 
+              <p:tab id="aba4" labelWidth="200px" immediate="true" title="#{messages.LABEL_EM_ATENDIMENTO}">
+              	<ui:include src="emAtendimentoList.xhtml"/>
+              </p:tab>               
+              <p:tab id="aba5" labelWidth="200px" immediate="true" title="#{messages.LABEL_ATENDIMENTO_CONCLUIDO}">
+              	<ui:include src="concluidoList.xhtml"/>
+              </p:tab> 
+            </p:tabView> 
+          </aghu:linha> 
+      </p:outputPanel>     
+      
+      <h:form prependId="false" id="formAgendasPaciente">
+		<!-- #41729  -->
+		<p:dialog id="modalVisualizaAgendaPaciente" width="860" height="305"
+			modal="true" resizable="false" scrollable="false"
+			widgetVar="modalVisualizaAgendaPaciente">
+	
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.TITLE_AGENDA_DO_PACIENTE}" />
+				</h:panelGroup>
+			</f:facet>
+	
+			<p:outputPanel id="agendaPaciente">
+				<aghu:panelGeral legend="#{messages.LABEL_PACIENTE}">
+					<aghu:linha>
+						<p:column>
+							<mec:inputText id="prontuario"
+								style="text-transform:uppercase; margin-right:8px;"
+								label="#{messages.LABEL_PRONTUARIO}" size="8" readonly="true"
+								value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.pacienteAgendamentoModal.prontuario}" />
+	
+							<mec:inputText id="codigo"
+								style="text-transform:uppercase; margin-right:8px;"
+								label="#{messages.LABEL_CODIGO}" size="8" readonly="true"
+								value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.pacienteAgendamentoModal.codigo}" />
+	
+							<mec:inputText id="nome" style="text-transform:uppercase"
+								label="#{messages.LABEL_PACIENTE}" size="80" readonly="true"
+								value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.pacienteAgendamentoModal.nome}" />
+						</p:column>
+					</aghu:linha>
+				</aghu:panelGeral>
+	
+				<aghu:panelGeral legend="#{messages.TITLE_AGENDA_DO_PACIENTE}">
+	
+					<mec:serverDataTable id="gridAgendaPaciente"
+						controller="#{listaTrabalhoSessaoTerapeuticaPaginatorController}"
+						rowKeyVar="row"
+						list="#{listaTrabalhoSessaoTerapeuticaPaginatorController.listaAgendamentosPaciente}"
+						scrollable="true" scrollHeight="180"
+						selection="selecionadoAgendamentoPaciente">
+						<c:set var="item" value="#{item}" />
+	
+						<p:column
+							style="white-space: nowrap !important; text-align:left; width:50px !important;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_PROTOCOLO_AGENDA}" />
+							</f:facet>
+							<h:outputText id="protocolos"
+								value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.trucarProtocolo(item.protocolo, 36)}" />
+	
+							<p:tooltip direction="bottom-right" styleClass="tooltip"
+								for="protocolos" layout="block"
+								rendered="#{item.protocolo.length() > 36}">
+								<h:outputText id="protocolosHint" value="#{item.protocolo}" />
+							</p:tooltip>
+						</p:column>
+	
+						<p:column style="width:13px;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CICLO}" />
+							</f:facet>
+							<h:outputText value="#{messages.LABEL_CICLO} #{item.ciclo}" />
+						</p:column>
+						<p:column style="width:13px;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DIA}" />
+							</f:facet>
+							<h:outputText value="D#{item.dia}" />
+						</p:column>
+						<p:column style="width:15px;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_TEMPO}" />
+							</f:facet>
+							<h:outputText value="#{item.tempo}">
+								<f:convertDateTime pattern="HH:mm 'h'" />
+							</h:outputText>
+						</p:column>
+						<p:column style="width:40px;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DATA_HORA_INICIO}" />
+							</f:facet>
+							<h:outputText value="#{item.dtInicio}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+							</h:outputText>
+						</p:column>
+						<p:column style="width:40px;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DATA_HORA_FIM}" />
+							</f:facet>
+							<h:outputText value="#{item.dtFim}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+							</h:outputText>
+						</p:column>
+						<p:column style="width:20px;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_TURNO}" />
+							</f:facet>
+							<h:outputText value="#{item.turno.getDescricao()}" />
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:panelGeral>
+			</p:outputPanel>
+		</p:dialog>
+        <!-- #41729  -->
+        </h:form> 
+	</ui:define>
+</ui:composition>
+</html>

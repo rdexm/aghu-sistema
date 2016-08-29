@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_LAUDO_AIH}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{laudoAIHController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{laudoAIHController}"/>  
+      <p:outputPanel id="panelTodos" layout="inline"> 
+        <h:form prependId="false" id="formLaudoAIH"> 
+          <p:outputPanel id="laudoAihPanel" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.LABEL_LAUDO_AIH}"> 
+              <aghu:linha> 
+                <mec:inputText id="prontuario" label="#{messages.LABEL_PRONTUARIO_ANOTACOES}" value="#{laudoAIHController.mamLaudoAih.paciente.prontuario}" size="9" style="width: 90px;" readonly="true"/>  
+                <mec:inputText id="nomePaciente" label="#{messages.LABEL_NOME}" value="#{laudoAIHController.mamLaudoAih.paciente.nome}" size="67" maxlength="60" removerCaratersEspeciais="false" readonly="true"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextData id="dataProvInternacao" label="#{messages.LABEL_LAUDO_AIH_DATA_PROV_INTERNACAO}" title="#{messages.TITLE_LAUDO_AIH_DATA_PROV_INTERNACAO}" value="#{laudoAIHController.mamLaudoAih.dtProvavelInternacao}" size="11" maxlength="10" onkeypress="formatar( this , '99/99/9999' , event )" required="true" readonly="#{not laudoAIHController.permiteEdicao}" tipo="data"/>  
+                <mec:inputTextData id="dataProvCirurgia" label="#{messages.LABEL_LAUDO_AIH_DATA_PROV_CIRURGIA}" title="#{messages.TITLE_LAUDO_AIH_DATA_PROV_CIRURGIA}" value="#{laudoAIHController.mamLaudoAih.dtProvavelCirurgia}" size="11" maxlength="10" onkeypress="formatar( this , '99/99/9999' , event )" required="false" readonly="#{not laudoAIHController.permiteEdicao}" tipo="data"/>  
+                <mec:field name="prioridade_field" id="prioridade_field" required="true" inputId="prioridade" label="#{messages.LABEL_LAUDO_AIH_PRIORIDADE}" title="#{messages.TITLE_LAUDO_AIH_PRIORIDADE}"> 
+                  <h:selectOneMenu id="prioridade" value="#{laudoAIHController.prioridade}" title="#{messages.LABEL_LAUDO_AIH_PRIORIDADE}" label="{messages.TITLE_LAUDO_AIH_PRIORIDADE}" onkeydown="enterInSelectField(event, '#{stopEnter}');" readonly="#{not laudoAIHController.permiteEdicao}"> 
+                    <f:converter converterId="dominioConverter" for="inputId"/>  
+                    <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{laudoAIHController.itensPrioridade}"/>  
+                    <p:ajax event="change" bypassUpdates="false" process="@this"/> 
+                  </h:selectOneMenu> 
+                </mec:field> 
+              </aghu:linha>  
+              <p:outputPanel id="espEquipePanel" layout="inline"> 
+                <aghu:linha> 
+                  <mec:suggestionBox id="sbEspecialidade" var="_itemEspecialidade" itemValue="#{_itemEspecialidade}" label="#{messages.LABEL_ESPECIALIDADE}" title="#{messages.TITLE_LAUDO_AIH_ESPECIALIDADE}" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" suggestionAction="pesquisarEspecialidades" width="350" posDeleteAction="posRemoverEspecialidade" required="true" readonly="#{not laudoAIHController.permiteEdicao}" controller="#{laudoAIHController}" value="#{laudoAIHController.mamLaudoAih.especialidade}" render="espEquipePanel"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_SIGLA}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemEspecialidade.sigla}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ESPECIALIDADE}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemEspecialidade.nomeEspecialidade}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <mec:suggestionBox id="sbEquipe" var="_itemNroConselho" itemValue="#{_itemNroConselho}" label="#{messages.LABEL_EQUIPE}" title="#{messages.TITLE_LAUDO_AIH_EQUIPE}" descricaoInput="id.nroRegConselho" descricaoLabel="id.nome" suggestionAction="pesquisarEquipe" posSelectionAction="posSelecionarEquipe" width="450" required="true" readonly="#{empty laudoAIHController.mamLaudoAih.especialidade or not laudoAIHController.permiteEdicao}" controller="#{laudoAIHController}" value="#{laudoAIHController.vAinServInterna}" render="espEquipePanel"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NRO_CONSELHO}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemNroConselho.id.nroRegConselho}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemNroConselho.id.nome}
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <aghu:linha> 
+                <mec:inputTextArea id="sinaisSintomas" label="#{messages.LABEL_LAUDO_AIH_SINAIS_SINTOMAS}" title="#{messages.TITLE_LAUDO_AIH_SINAIS}" style="width:301px; z-index:0;" rows="7" required="true" value="#{laudoAIHController.mamLaudoAih.sinaisSintomas}" readonly="#{not laudoAIHController.permiteEdicao}" maxlength="1000"/>  
+                <mec:inputTextArea id="condicoes" label="#{messages.LABEL_LAUDO_AIH_CONDICOES_INTERNACAO}" title="#{messages.TITLE_LAUDO_AIH_CONDICOES}" style="width:284px; z-index:0;" rows="7" required="true" value="#{laudoAIHController.mamLaudoAih.condicoes}" readonly="#{not laudoAIHController.permiteEdicao}" maxlength="500"/>  
+                <mec:inputTextArea id="resultadosProvas" label="#{messages.LABEL_LAUDO_AIH_PROVAS_DIAGNOSTICAS}" title="#{messages.TITLE_LAUDO_AIH_PROVAS_DIAGNOSTICAS}" style="width:317px; z-index:0;" rows="7" required="true" value="#{laudoAIHController.mamLaudoAih.resultadosProvas}" readonly="#{not laudoAIHController.permiteEdicao}" maxlength="500"/> 
+              </aghu:linha>  
+              <p:outputPanel id="procedimentoCidPanel" layout="inline"> 
+                <aghu:linha> 
+                  <mec:suggestionBox id="sbProcedimento" var="_itemProcedimento" itemValue="#{_itemProcedimento}" label="#{messages.LABEL_PROCEDIMENTO}" title="#{messages.TITLE_PROCEDIMENTO_LAUDO_AIH}" descricaoInput="codTabela" descricaoLabel="descricaoSinonimo" suggestionAction="pesquisarProcedimentos" posSelectionAction="posSelecionarProcedimento" width="800" required="true" readonly="#{not laudoAIHController.permiteEdicao}" controller="#{laudoAIHController}" value="#{laudoAIHController.vFatSsmInternacaoVO}"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PROCEDIMENTO}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemProcedimento.descricaoSinonimo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemProcedimento.codTabela}
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:suggestionBox id="sbCid" var="_itemCid" itemValue="#{_itemCid}" label="#{messages.LABEL_LAUDO_AIH_CID_PRINCIPAL}" title="#{messages.TITLE_LAUDO_AIH_CID}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarCids" posSelectionAction="posSelecionarCid" posDeleteAction="posRemoverCid" width="500" required="true" readonly="#{not laudoAIHController.permiteEdicao}" controller="#{laudoAIHController}" value="#{laudoAIHController.mamLaudoAih.aghCid}" render="procedimentoCidPanel"> 
+                    <p:column style="width:60px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemCid.codigo}
+                    </p:column>  
+                    <p:column style="width:440px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemCid.descricao}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <mec:suggestionBox id="sbCidSecundario" var="_itemCidSecundario" itemValue="#{_itemCidSecundario}" label="#{messages.LABEL_LAUDO_AIH_CID_SECUNDARIO}" title="#{messages.TITLE_LAUDO_AIH_CID}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarCidsSecundario" posDeleteAction="posRemoverCidSecundario" width="500" readonly="#{not laudoAIHController.habilitaCidSecundario or not laudoAIHController.permiteEdicao}" controller="#{laudoAIHController}" value="#{laudoAIHController.mamLaudoAih.aghCidSecundario}"> 
+                    <p:column style="width:60px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemCidSecundario.codigo}
+                    </p:column>  
+                    <p:column style="width:440px"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                      </f:facet> #{_itemCidSecundario.descricao}
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </aghu:panelGeral> 
+          </p:outputPanel>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'manterLaudoAih,executar') and laudoAIHController.permiteEdicao}" action="#{laudoAIHController.gravar}" profile="ok"/>  
+            <mec:backButton id="bt_cancelar" immediate="true" action="#{laudoAIHController.voltar}"/> 
+          </aghu:acao> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_PARAMETRO_SISTEMA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterParametrosPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterParametrosPaginatorController}"/>  
+      <h:form prependId="false" id="form_mensagemAlerta" name="formMensagem"> 
+        <p:outputPanel id="panelMensagemAlerta" rendered="#{manterParametrosPaginatorController.verificarExistenciaParametrosSemQualquerValorAssociado()}" layout="inline"> 
+          <aghu:linha> 
+            <legend class="ui-widget-header">#{messages.LEGEND_FIELD_SET_ALERTA}</legend>  
+            <aghu:linha style="padding: 10px;"> 
+              <h:graphicImage value="/images/icons/ico-alerta.png"/>  
+              <p:spacer width="5px"/>  
+              <h:outputText style="font-size: 20px;" value="#{messages.ALERTA_PARAMETROS_NAO_CONFIGURADOS_ATENCAO}"/>  
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{msgFormated.getFormated('ALERTA_PARAMETROS_NAO_CONFIGURADOS',manterParametrosPaginatorController.obterNumeroParametrosSemQualquerValorAssociado())}" escape="false"/> 
+            </aghu:linha> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false"> 
+        <p:outputPanel id="campos" layout="inline"> 
+          <h:graphicImage value="/images/icons/ico-configuracao.png"/>  
+          <mec:commandButton id="btn_iniciarAssistente" value="#{messages.LABEL_INICIAR_ASSISTENTE_CONFIGURACAO}" action="assistenteConfiguracaoParametroInicial" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{assistenteParametroController.origemPesquisa}" value="pesquisarParametrosSistema" for="command"/> 
+          </mec:commandButton>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <aghu:linha> 
+            <legend>#{messages.LEGEND_FIELD_SET_PESQUISAR_PARAMETROS}</legend>  
+            <aghu:linha> 
+              <mec:inputText id="ipt_parametro" label="#{messages.LABEL_NOME_PARAMETRO_PESQUISA}" size="60" maxlength="60" title="#{messages.TITLE_NOME_PARAMETRO_PESQUISA}" value="#{manterParametrosPaginatorController.parametro.nome}" style="text-transform:uppercase"/>  
+              <mec:field name="valorField" label="#{messages.LABEL_VALOR_PESQUISAR_PARAMETROS}" title="#{messages.TITLE_VALOR_PESQUISAR_PARAMETROS}"> 
+                <h:inputText id="ipt_valor" label="#{messages.LABEL_VALOR_PESQUISAR_PARAMETROS}" name="valor" size="15" maxlength="150" value="#{manterParametrosPaginatorController.valor}"/> 
+              </mec:field>  
+              <mec:field name="modulosField" size="100" label="#{messages.LABEL_MODULOS_PESQUISAR_PARAMETROS}" title="#{messages.TITLE_MODULOS_PESQUISAR_PARAMETROS}"> 
+                <p:outputPanel layout="block" style="overflow-x:hidden; overflow-y:scroll; height:100px"> 
+                  <h:selectManyCheckbox id="modulos" name="modulos" label="#{messages.LABEL_MODULOS_PESQUISAR_PARAMETROS}" layout="pageDirection" value="#{manterParametrosPaginatorController.modulos}" size="100"> 
+                    <f:selectItems value="#{manterParametrosPaginatorController.todosModulos}"/> 
+                  </h:selectManyCheckbox> 
+                </p:outputPanel> 
+              </mec:field>  
+              <mec:selectOneMenu id="som_filtroPreenchidos" label="#{messages.LABEL_FILTRAR_POR_FILTRO_PREENCHIDOS}" title="#{messages.TITLE_FILTRAR_POR_FILTRO_PREENCHIDOS}" enum="DominioFiltroParametrosPreenchidos" noSelectionLabel="" value="#{manterParametrosPaginatorController.filtroPreenchidos}"/> 
+            </aghu:linha> 
+          </aghu:linha>  
+          <aghu:acao> 
+            <mec:commandButton id="btn_pesquisar" hint="#{messages.HINT_PESQUISAR_PARAMETROS}" value="#{messages.LABEL_BTN_PESQUISAR_PARAMETROS}" block="true" action="#{manterParametrosPaginatorController.pesquisar}" profile="ok"/>  
+            <mec:commandButton id="btn_limparPesquisa" hint="#{messages.HINT_LIMPAR_CAMPOS_PESQUISAR_PARAMETROS}" value="#{messages.LABEL_BTN_LIMPAR_CAMPOS_PESQUISAR_PARAMETROS}" block="true" action="#{manterParametrosPaginatorController.limparCampos}" profile="clear"/> 
+          </aghu:acao> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false" id="form_resultPesquisa" name="formParametro"> 
+        <p:outputPanel id="panelListaParametros" layout="inline"> 
+          <p:outputPanel rendered="#{manterParametrosPaginatorController.dataModel.pesquisaAtiva}" layout="inline"> 
+            <mec:serverDataTable dataModel="dataModel" id="dtb_listaParametros" value="#{manterParametrosPaginatorController}" title="#{messages.TITLE_RESULTADO_PESQUISAR_PARAMETROS}" controller="#{manterParametrosPaginatorController}"> 
+              <c:set var="_par" value="#{item}"/>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACOES_PESQUISAR_PARAMETROS}"/> 
+                </f:facet>  
+                <mec:commandLink action="manterParametroSistema" name="editarRegistro" rendered="#{mf:hasPermission(securityController,'manutencaoParametrosSistema,alterar')}" title="#{messages.TITLE_EDITAR_PARAMETRO_PESQUISAR_PARAMETROS}" profile="edit"> 
+                  <f:setPropertyActionListener target="#{manterParametrosPaginatorController.seqParametro}" value="#{_par.seq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{manterParametrosPaginatorController.origemPesquisa}" value="pesquisarParametrosSistema" for="command"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO_PARAMETRO_PESQUISAR_PARAMETROS}"/> 
+                </f:facet>  
+                <h:outputText value="#{_par.seq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_NOME_PARAMETRO_PESQUISAR_PARAMETROS}"/> 
+                </f:facet>  
+                <h:outputText value="#{_par.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_VALOR_RESULTADO_PESQUISAR_PARAMETROS}"/> 
+                </f:facet>  
+                <p:outputPanel id="panelValor" layout="inline"> 
+                  <p:outputPanel id="valoresReadOnly" rendered="#{!manterParametrosPaginatorController.modoEdicao}" layout="inline"> 
+                    <table width="100%" cellpadding="0" cellspacing="0"> 
+                      <tr valign="middle"> 
+                        <td style="border-right: 0px !important;" align="left" rowspan="1" colspan="1"> 
+                          <h:outputText rendered="#{_par.tipoDado eq manterParametrosPaginatorController.dominioTipoDadoParametroDataAsString}" value="#{_par.valor}"> 
+                            <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                          </h:outputText>  
+                          <h:outputText rendered="#{!(_par.tipoDado eq manterParametrosPaginatorController.dominioTipoDadoParametroDataAsString)}" value="#{_par.valor}"/> 
+                        </td>  
+                        <td align="right" rowspan="1" colspan="1"> 
+                          <mec:commandLink id="link_mudar_modo_edicao_vlr" rendered="#{!manterParametrosPaginatorController.modoEdicao and mf:hasPermission(securityController,'manutencaoParametrosSistema,alterar')}" actionListener="#{manterParametrosPaginatorController.editarParametro(_par)}" title="#{messages.TITLE_EDITAR_VALOR_GRID_MANTER_PARAMETROS}" styleClass="alinha-direita" ajax="true" render="panelValor"> 
+                            <h:graphicImage value="/images/icons/page_edit.png"/> 
+                          </mec:commandLink> 
+                        </td> 
+                      </tr> 
+                    </table> 
+                  </p:outputPanel>  
+                  <p:outputPanel id="valoresEdicao" rendered="#{manterParametrosPaginatorController.modoEdicao}" layout="inline"> 
+                    <table width="100%" cellpadding="0" cellspacing="0"> 
+                      <tr valign="middle"> 
+                        <td style="border-right: 0px !important;" align="left" rowspan="1" colspan="1"> 
+                          <p:outputPanel id="panelInputs" layout="inline"> 
+                            <mec:inputTextData id="ipt_data" maxlength="10" styleClass="datepicker" label="" title="" rendered="#{_par.tipoDado eq manterParametrosPaginatorController.dominioTipoDadoParametroDataAsString}" value="#{manterParametrosPaginatorController.parametroEdicao.vlrData}" tipo="data"/>  
+                            <mec:inputNumero id="ipt_numerico" label="" class="" size="15" maxlength="15" rendered="#{_par.tipoDado=='N'}" value="#{manterParametrosPaginatorController.parametroEdicao.vlrNumerico}"/>  
+                            <mec:inputText id="ipt_texto" label="" class="" size="15" maxlength="2000" rendered="#{_par.tipoDado=='T'}" value="#{manterParametrosPaginatorController.parametroEdicao.vlrTexto}" style="text-transform:uppercase"/> 
+                          </p:outputPanel> 
+                        </td>  
+                        <td align="right" rowspan="1" colspan="1"> 
+                          <p:outputPanel id="panelAcaoSalvar" layout="inline"> 
+                            <mec:commandLink id="cmd_link_atualizarValor" rendered="#{mf:hasPermission(securityController,'manutencaoParametrosSistema,alterar')}" title="#{messages.TITLE_SALVAR_VALOR_GRID_MANTER_PARAMETROS}" actionListener="#{manterParametrosPaginatorController.atualizarValorParametro(_par.seq, _par.tipoDado)}" styleClass=" silk-disk alinha-direita silk-icon" ajax="true" render="panelValor,panelMensagemAlerta"/> 
+                          </p:outputPanel> 
+                        </td> 
+                      </tr> 
+                    </table> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_VALOR_PADRAO_PESQUISAR_PARAMETROS}"/> 
+                </f:facet>  
+                <table width="100%" cellpadding="0" cellspacing="0"> 
+                  <tr valign="middle"> 
+                    <td style="border-right: 0px !important;" align="left" rowspan="1" colspan="1"> 
+                      <h:outputText rendered="#{_par.tipoDado eq manterParametrosPaginatorController.dominioTipoDadoParametroDataAsString}" value="#{_par.valorPadrao}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                      </h:outputText>  
+                      <h:outputText rendered="#{!(_par.tipoDado eq manterParametrosPaginatorController.dominioTipoDadoParametroDataAsString)}" value="#{_par.valorPadrao}"/> 
+                    </td>  
+                    <td align="right" rowspan="1" colspan="1"> 
+                      <p:outputPanel id="panelLinkCopiarVlrPadrao" rendered="#{_par.vlrDataPadrao!=null || _par.vlrNumericoPadrao!=null || _par.vlrTextoPadrao!=null}" layout="inline"> 
+                        <mec:commandLink id="cmd_link_copiar_vlr" title="#{messages.TITLE_COPIAR_E_SALVAR_VALOR_PADRAO_MANTER_PARAMENTROS}" rendered="#{mf:hasPermission(securityController,'manutencaoParametrosSistema,alterar')}" actionListener="#{manterParametrosPaginatorController.persistirValorPadraoCampoValor(_par.seq)}" styleClass="alinha-direita" ajax="true" render="panelValor, panelMensagemAlerta"> 
+                          <h:graphicImage value="/images/icons/page_paste.png"/> 
+                        </mec:commandLink> 
+                      </p:outputPanel> 
+                    </td> 
+                  </tr> 
+                </table> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_MODULOS_RESULTADO_PESQUISAR_PARAMETROS}"/> 
+                </f:facet>  
+                <h:outputText value="#{manterParametrosPaginatorController.obterModulosFormatadosParaResultadoPesquisa(_par.seq)}" style="text-transform:uppercase" escape="false"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

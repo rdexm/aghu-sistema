@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:mf="http://www.mec.gov.br/taglib"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+      
+	<ui:remove><!-- Comments -->	
+	
+	COMPONENTE SERVER DATA TABLE
+	============================
+	Autor: Cristiano Quadros (2013)
+	
+	Renderiza uma consulta em dados baseada no componente rich:datatable, inclui
+	paginador e ordenador dinâmico. 
+	Dependências: DynamicDataModel e ActionPaginator.
+	
+	Propriedades:
+	
+	id: identificador do componente
+	var: Nome variável que contém instância do objeto na linha do datatable
+	controller: nome da instância da classe controladora (mbean) da tela 
+	dataModel: nome da instância da classe DynamicDataModel
+	selection: nome do atributo que receberá instância da linha selecionada
+	render: componente que será atualizado via ajax após seleção da linha. Não usar em conjunto com um p:ajax interno.
+	style: css geral para tabela
+	styleClass: classe css geral para tabela
+	rowClass: classe css para linhas para tabela
+	styleControls: classe css para coluna de controle
+	exportDataTable: Aciona exportar dataTable
+	exportFilename: Nome do arquivo para exportar
+	scrollable: (true/false) barra de rolagem 
+	scrollHeight: altura do panel para barra de rolagem
+	scrollWidth: largura do panel para barra de rolagem
+	list: Lista de dados para exibir quando utilizar barra de rolagem
+	rowKeyVar           : índice da linha
+	rowsPerPage         : (true/false) Mostrar linhas por página
+	blockUI				: (true/false) Exibir modal de block sob a grid
+	columnToggler		: (true/false) Permite desabilitar a funcionalidade
+	
+	
+	Layout:
+	
+	Insira as colunas dentro da tag utilizando o componente p:column
+	
+	Migração:
+	
+	name                : id
+	h:column            : p:column	
+	reRender            : render
+	inputRadio          : Excluído
+	mbean               : controller
+	headerClass         : excluído
+	styleClass="tabela" : excluído
+	selectionEvent      : excluído
+	editWithAjax        : excluído (inserir no mec:commandLink ajax="true")
+	reRenderEdit        : excluído (inserir no mec:commandLink a tag p:ajax update="xxx")
+	editMethod          : excluído (inserir mec:commandLink profile="edit")
+	removeMethod        : excluído (inserir mec:commandLink profile="delete")
+	styleControls       : excluído
+	controls            : excluído
+	
+	NOTAS: 
+
+	remover componentes na coluna de controle use ui:define name="controls" ou ui:define name="controlsBefore"	 
+	remover eventos no link edição use ui:define name="editParameter"
+	remover eventos no link exclusão use ui:define name="removeParameter"
+
+	
+	A geração de links para editar e excluir foi removida.
+	a tela pesquisarPermissoes.xhtml têm um exemplo com a recomendação de implementação
+	
+	mec:scrollDataTable
+	
+	Esse componente substitui o componente scrollDataTable
+	
+	scrollable       : true
+	height           : scrollHeight
+	
+	Utilize o atributo "list".
+	
+	</ui:remove>
+	      
+
+    <h:head>
+        <title>mec:serverDataTable</title>
+    </h:head>
+    <h:body>
+        <cc:interface name="serverDataTable" displayName="Cria um componente de grid com paginação">
+	        <cc:attribute name="var" default="item" />
+	        <cc:attribute name="controller"  />
+	        <cc:attribute name="render"  />
+	        <cc:attribute name="dataModel"  />
+	        <cc:attribute name="selection"  />
+	        <cc:attribute name="exportDataTable" default="true"  />
+	        <cc:attribute name="exportFilename"  default="aghu_datatable_export" />
+	        <cc:attribute name="rowClass" />
+	        <cc:attribute name="scrollable" default="false" />
+	        <cc:attribute name="scrollHeight" default="200" />
+	        <cc:attribute name="scrollWidth"  />
+	        <cc:attribute name="list" />
+	        <cc:attribute name="rowKeyVar" />
+	        <cc:attribute name="draggableColumns" default="true"/>
+	        <cc:attribute name="filteredValue" />   
+	        <cc:attribute name="filteredEvent" />
+	        <cc:attribute name="emptyMessage" default="Nenhum registro encontrado!" />
+	        <cc:attribute name="styleClass" />
+	        <cc:attribute name="rowsPerPage" default="true" />
+	        <cc:attribute name="blockUI" default="true" />
+	        <cc:attribute name="columnToggler" default="true" />
+	        <cc:attribute name="showExportButtons" default="false" />
+	        	        
+	        <cc:clientBehavior name="rowSelect" event="rowSelect"
+                   targets="#{cc.clientId}:resultList" />
+	        <cc:clientBehavior name="page" event="page"
+                   targets="#{cc.clientId}:resultList" />
+	        <cc:clientBehavior name="page" event="page"
+                   targets="#{cc.clientId}:resultList" />
+                   
+            <cc:facet name="header" />
+            
+			<cc:valueHolder name="#{cc.clientId}:resultList" />                  
+	        
+	        <cc:attribute name="widgetVar" default="#{cc.clientId}WG" />
+        </cc:interface>
+
+        <cc:implementation>
+			<ui:param name="render" value="#{mf:customPrefixAjaxRender(cc.attrs.render)}" />	
+			<ui:param name="encode" value="iso-8859-1" />
+			
+			<c:choose>
+	    		<c:when test="#{cc.attrs.dataModel ne null}">
+	    			<ui:param name="pesquisaAtiva" value="#{cc.attrs.controller[cc.attrs.dataModel]['pesquisaAtiva']}" />
+	    			<ui:param name="paginador" value="#{!cc.attrs.controller[cc.attrs.dataModel]['empty']}" />
+	    		</c:when>
+	    		<c:when test="#{cc.attrs.dataModel eq null}">
+	    			<ui:param name="pesquisaAtiva" value="true" />
+	    			<ui:param name="paginador" value="false" />
+	    		</c:when>
+	    	</c:choose>
+	    		
+    		<c:if test="#{not empty cc.attrs.selection}">
+    			<ui:param name="selection" value="#{cc.attrs.controller[cc.attrs.selection]}" />
+    			<ui:param name="selectionMode" value="single" />
+    		</c:if>
+    		
+    		<c:if test="#{cc.attrs.rowsPerPage}">
+    			<ui:param name="rowsPerPageTemplate" value="5,10,20,30,40,50" />
+    			<ui:param name="rowsPerPageDropDown" value="{RowsPerPageDropdown}" />
+    		</c:if>
+    		
+			<c:choose>
+	    		<c:when test="#{not empty cc.attrs.dataModel and cc.attrs.showExportButtons}">
+    				<ui:param name="paginatorTemplate" value="{ExportButtonsMenu} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}   #{rowsPerPageDropDown} {CurrentPageReport}" />
+    			</c:when>
+    			<c:otherwise>
+    				<ui:param name="paginatorTemplate" value="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}   #{rowsPerPageDropDown} {CurrentPageReport}" />
+    			</c:otherwise>
+    		</c:choose>
+    		
+	        <div id="#{cc.clientId}" style="clear:both;">	 
+				<p:dataTable id="resultList"  rowKey="#{item}" 
+					var="item" styleClass="aghu-server-datatable #{cc.attrs.styleClass}" rowStyleClass="#{cc.attrs.rowClass}"    
+					selection="#{selection}" selectionMode="single" disabledSelection="#{empty cc.attrs.selection}" 
+					paginator="#{paginador}" rows="#{cc.attrs.controller[cc.attrs.dataModel]['defaultMaxRow']}" 
+					paginatorAlwaysVisible="true" paginatorPosition="bottom" 
+					currentPageReportTemplate="Exibindo: {startRecord} - {endRecord} de {totalRecords} Registros" 
+					pageLinks="10" 
+					paginatorTemplate="#{paginatorTemplate}"
+					rowsPerPageTemplate="#{rowsPerPageTemplate}" lazy="#{!cc.attrs.scrollable}"  
+					rendered="#{pesquisaAtiva}"
+					resizableColumns="#{!cc.attrs.scrollable}"	
+					draggableColumns="#{cc.attrs.draggableColumns and !cc.attrs.scrollable}" 
+					widgetVar="#{cc.attrs.widgetVar}"  
+					scrollable="#{cc.attrs.scrollable}" scrollHeight="#{cc.attrs.scrollHeight}" 
+					scrollWidth="#{cc.attrs.scrollWidth}" rowIndexVar="#{cc.attrs.rowKeyVar}" 
+					filteredValue="#{cc.attrs.filteredValue}" filterEvent="#{cc.attrs.filteredEvent}" filterDelay="50"
+					emptyMessage="#{cc.attrs.emptyMessage}" first="#{cc.attrs.controller[cc.attrs.dataModel]['first']}">
+
+				    <c:if test="#{not empty cc.attrs.dataModel}">
+				        <f:attribute name="binding" value="#{cc.attrs.controller[cc.attrs.dataModel]['dataTableComponent']}" />
+				    </c:if>
+				    
+				    <c:if test="#{cc.attrs.dataModel ne null}">
+				    	<f:attribute name="value" value="#{cc.attrs.controller[cc.attrs.dataModel]}" />
+				    </c:if>		
+				    <c:if test="#{cc.attrs.dataModel eq null}">
+				    	<f:attribute name="value" value="#{cc.attrs.list}" />
+				    </c:if>		
+					<c:if test="#{not empty cc.attrs.render}">
+				        <p:ajax event="rowSelect" update="#{render}" />
+				    </c:if>
+				    
+			    	<p:ajax event="page" oncomplete="form.fixBugColumnToggleDataTable('#{cc.clientId}');" listener="#{cc.attrs.controller[cc.attrs.dataModel]['onPageChange']}" />
+
+					 <cc:insertFacet name="header" />
+
+	  				<cc:insertChildren />
+	  				
+  					<c:if test="#{not empty cc.attrs.dataModel and cc.attrs.showExportButtons}">
+	  					<f:facet name="{ExportButtonsMenu}">
+	  					 	<p:outputPanel style="float:left;margin-left: 5px;" rendered="#{paginador}">
+	  						 	
+		  				 		<p:commandButton id="export#{cc.clientId}" style="float:right;width:24px;height:24px;z-index:200;" icon="ui-icon-extlink" title="Exportar para Arquivo" rendered="#{cc.attrs.exportDataTable}" />
+							    <p:menu id="export_menu" overlay="true" trigger="export#{cc.clientId}" my="left top" at="left bottom" style="background-color:white;width:100px;color:black;" rendered="#{cc.attrs.exportDataTable}">
+							        <p:menuitem value="PDF (Tudo)" ajax="false" icon="icon-pdf" >
+							        	<p:dataExporter type="pdf" target="resultList" encoding="#{encode}" fileName="#{cc.attrs.exportFilename}" preProcessor="#{cc.attrs.controller[cc.attrs.dataModel]['preProcessPDF']}"/>
+							        </p:menuitem>
+							        <p:menuitem value="PDF (Página)" ajax="false" icon="icon-pdf">
+							        	<p:dataExporter type="pdf" target="resultList" encoding="#{encode}" fileName="#{cc.attrs.exportFilename}" pageOnly="true" preProcessor="#{cc.attrs.controller[cc.attrs.dataModel]['preProcessPDF']}"/>
+							        </p:menuitem>
+							        <p:separator />
+							        <p:menuitem value="XLS (Tudo)" ajax="false" icon="icon-excel">
+										<p:dataExporter type="xls" target="resultList" encoding="#{encode}" fileName="#{cc.attrs.exportFilename}"  />								        
+							        </p:menuitem>
+							        <p:menuitem value="XLS (Página)" ajax="false" icon="icon-excel">
+										<p:dataExporter type="xls" target="resultList" encoding="#{encode}" fileName="#{cc.attrs.exportFilename}" pageOnly="true"  />								        
+							        </p:menuitem>
+							    </p:menu>
+							    <p:commandButton id="toggler#{cc.clientId}" style="float:right;width:24px;height:24px;z-index:200;" icon="ui-icon-calculator" title="Selecionar Colunas" />
+							    <p:columnToggler datasource="resultList" trigger="toggler#{cc.clientId}" >
+							      	<p:ajax event="toggle" listener="#{cc.attrs.controller[cc.attrs.dataModel]['salvarAlteracaoEstrutura']}" />
+							    </p:columnToggler>	
+					            
+					         </p:outputPanel>
+	  					</f:facet>
+	  				</c:if>
+  				</p:dataTable>
+  				
+  				<p:outputPanel style="float:right;margin-top:-28px;margin-right:1px;" rendered="#{paginador}">
+					<p:graphicImage id="timequery" library="img" name="/icons/clock.png" />
+					<p:tooltip for="timequery">
+						<p:outputPanel autoUpdate="true">
+							<h:outputText value="Tempo Pesquisa:#{cc.attrs.controller[cc.attrs.dataModel]['timeQuering']}"  />
+						</p:outputPanel>
+					</p:tooltip>  	
+				</p:outputPanel>				  
+			</div>
+
+ </cc:implementation>
+        
+    </h:body>
+</html>

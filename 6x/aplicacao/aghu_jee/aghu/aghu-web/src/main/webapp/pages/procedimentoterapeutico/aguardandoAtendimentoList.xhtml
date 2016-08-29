@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+		
+	  <style>
+		 .icon-ativo{
+			background-position: 0px 0px;
+		  }
+
+		.icon-inativo{
+			background-position: -16px 0px;
+
+		}
+
+		.icon-lq{
+			background-image:url('../../resources/img/icons/thumb_positive2.png')
+
+		}
+	  </style>
+	
+      <h:form prependId="false" id="formAba3" > 
+      	
+      	 <p:poll id="poll" interval="#{abaAgardandoAtendimentoPaginatorController.tempo}"  widgetVar="poll" 
+			listener="#{abaAgardandoAtendimentoPaginatorController.pesquisar}"  
+	      	update="@(#formAba3)" 
+	      	oncomplete="closeAllContextMenu();"
+	      	autoStart="#{listaTrabalhoSessaoTerapeuticaPaginatorController.pauseAguardAtendimento}"			
+			stop="#{not listaTrabalhoSessaoTerapeuticaPaginatorController.pauseAguardAtendimento}"			      	
+      	 />
+		
+		<p:outputPanel id="panelListaAba3"
+						rendered="#{not empty abaAgardandoAtendimentoPaginatorController.listaPacientes}"
+						layout="inline" >
+          <p:contextMenu for="listaAbaAguAte" style="min-width:150px">
+       		<p:menuitem value="#{messages.LABEL_VOLTAR_ACOLHIMENTO}" title="#{messages.TITLE_RETORNA_PACIENTE_EM_ACOLHIMENTO}" update="@(#formAba3)"
+	       		actionListener="#{abaAgardandoAtendimentoPaginatorController.voltarAcolhimento(abaAgardandoAtendimentoPaginatorController.parametroSelecionado)}" ajax="true" />
+			<p:menuitem value="#{messages.LABEL_EXTRATO_DA_SESSAO}"
+				oncomplete="PF('modalExtratodaSessaoAguardandoAtendimentoWG').show()"
+				update="historicoPacienteAguardandoAtendimento,DadosPacienteAguardandoAtendimento"
+				actionListener="#{abaAgardandoAtendimentoPaginatorController.visualizarExtratoSessaoModal(abaAgardandoAtendimentoPaginatorController.parametroSelecionado.codigoPaciente)}"
+				ajax="true" />
+			<p:menuitem value="#{messages.LABEL_AGENDAMENTOS_PACIENTE}" update="@(#gridAgendaPaciente),@(#agendaPaciente)" ajax="true"
+				actionListener="#{abaAgardandoAtendimentoPaginatorController.controleFiltro.visualizarAgendaPacienteModal(abaAgardandoAtendimentoPaginatorController.parametroSelecionado.codigoPaciente)}" />
+       		<p:menuitem value="#{messages.LABEL_SAIR}"/>       		
+   		  </p:contextMenu>
+   		  						
+	         <p:dataTable id="listaAbaAguAte"
+                           rowKey="#{item.seqSessao}"
+                           value="#{abaAgardandoAtendimentoPaginatorController.listaPacientes}"
+                           var="item"
+                           styleClass="aghu-server-datatable transparent_background"
+                           paginator="false" 
+                           paginatorAlwaysVisible="false"
+                           paginatorPosition="bottom"                           
+                           emptyMessage="Nenhum registro encontrado!"
+                           selectionMode="single"                           
+                           scrollable="true" scrollHeight="200"
+                           selection="#{abaAgardandoAtendimentoPaginatorController.parametroSelecionado}"
+                           render="modalExtratodaSessaoAguardandoAtendimento">                           
+	            
+	            <p:column style="width:25px; background-color: #{item.colorLinhaAzul};" >
+	            	<f:facet name="header"> 
+	                	<h:outputText value="#{messages.LABEL_INICIAR_SESSAO}"/> 
+	              	</f:facet>  
+		            <p:outputPanel id="panelAtendimento" layout="inline">
+			            <center>
+							<mec:commandLink id="lnk-silk-checked"
+								action="#{abaAgardandoAtendimentoPaginatorController.emAtendimento(item)}"				
+								styleClass="silk-icon silk-checked" render="formAba3" process="@this"
+								ajax="true" title="#{messages.TITLE_LIBERAR_PACIENTE_EM_ATENDIMENTO}" 
+								disabled="#{!mf:hasPermission(securityController, 'admAbaAguardando,executar')}" 
+								rendered="#{abaAgardandoAtendimentoPaginatorController.exibirColunaLM}"/>
+							<h:outputText id="linkDisabledVerde" styleClass="silk-icon silk-checked" title="#{messages.TITLE_SESSAO_SEM_LM}"
+								rendered="#{!abaAgardandoAtendimentoPaginatorController.exibirColunaLM}"/>
+						</center>
+					</p:outputPanel>					
+	            </p:column>
+	            
+	            <p:column style="width:20px; background-color: #{item.colorColunaAmarelo == null ? item.colorLinhaAzul : item.colorColunaAmarelo};" sortBy="#{item.hora}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_HORA}"/> 
+	              </f:facet>  
+	              <h:outputText id="idHora" value="#{item.hora}">
+	              	<f:convertDateTime pattern="HH:mm" />
+	              </h:outputText>
+	              <p:tooltip direction="bottom-right" styleClass="tooltip" for="idHora"
+	               	rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}">
+					<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+				 </p:tooltip> 
+	              <p:tooltip direction="bottom-right" styleClass="tooltip" for="idHora"
+	                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintColuna(item.colorColunaAmarelo) eq '')}">
+					<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintColuna(item.colorColunaAmarelo)}" />
+				  </p:tooltip>
+	            </p:column>
+	            
+	            <p:column style="width:30px; background-color: #{item.colorLinhaAzul}; white-space: nowrap;" sortBy="#{item.horaChegada}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_HORA_CHEGADA}"/> 
+	              </f:facet>  
+	              <h:outputText id="idHoraChegada" value="#{item.horaChegada}">
+	              	<f:convertDateTime pattern="HH:mm" />
+	              </h:outputText>
+	              	<p:tooltip direction="bottom-right" styleClass="tooltip" for="idHoraChegada"
+		                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}">
+						<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+					</p:tooltip> 
+	            </p:column>    
+
+	            <p:column style="width:26px; background-color: #{item.colorLinhaAzul};" sortBy="#{item.horaTriagem}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_HORA_TRIADO}"/> 
+	              </f:facet>  
+	              <h:outputText id="idTriagem" value="#{item.horaTriagem}">
+	              	<f:convertDateTime pattern="HH:mm" />
+	              </h:outputText>
+	              	 <p:tooltip direction="bottom-right" styleClass="tooltip" for="idTriagem"
+		                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}">
+						<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+					 </p:tooltip> 
+	            </p:column>
+	            	            
+	            <p:column style="width:37px; background-color: #{item.colorLinhaAzul};" sortBy="#{item.prontuario}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+	              </f:facet>  
+	              <h:outputText id="idProntuario" value="#{item.prontuario}" />	 
+	                  <p:tooltip direction="bottom-right" styleClass="tooltip" for="idProntuario"
+		                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}">
+						<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+					  </p:tooltip>              
+	            </p:column>      
+	            
+				<p:column style="width:60px; background-color: #{item.colorLinhaAzul};" sortBy="#{item.paciente}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_PACIENTE}"/> 
+	              </f:facet>
+					 <h:outputText id="idPaciente" value="#{item.paciente}"/>
+					<p:tooltip direction="bottom-right" styleClass="tooltip" for="idPaciente" layout="block"
+		                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}">
+						<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+					</p:tooltip>			
+	            </p:column>
+	            
+	            <p:column style="width:26px; background-color: #{item.colorLinhaAzul}; white-space: nowrap;" sortBy="#{item.dataNascimento}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_IDADE}"/> 
+	              </f:facet>  
+	              <h:outputText id="idIdade" value="#{abaAgardandoAtendimentoPaginatorController.formatarIdade(item.dataNascimento)}"/>	
+		             <p:tooltip direction="bottom-right" styleClass="tooltip" for="idIdade"
+		                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}">
+						<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+					</p:tooltip>                
+	            </p:column>
+	             
+	            <p:column style="width:25px; background-color: #{item.colorLinhaAzul};" sortBy="#{item.sexo.descricao}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_SEXO}"/> 
+	              </f:facet>  
+	              <h:outputText id="idSexo" value="#{item.sexo.descricao}" />
+		              <p:tooltip direction="bottom-right" styleClass="tooltip" for="idSexo"
+		                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}">
+						<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+					</p:tooltip>  	              
+	            </p:column>  
+	            
+	            <p:column style="width:45px; background-color: #{item.colorLinhaAzul};" sortBy="#{abaAgardandoAtendimentoPaginatorController.protocoloTruncado(item.listaProtocoloCiclo, 15)}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_PROTOCOLO}"/> 
+	              </f:facet>
+					<h:outputText id="idProtocolo" value="#{abaAgardandoAtendimentoPaginatorController.protocoloTruncado(item.listaProtocoloCiclo, 10)}"/>
+		            <p:tooltip direction="bottom-right" styleClass="tooltip" for="idProtocolo" layout="block"
+		                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq null)}">
+						<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+						<br />
+						<br />
+						<h:outputText value="#{!item.listaProtocoloCiclo.isEmpty() ? abaAgardandoAtendimentoPaginatorController.hintProtocolo(item.listaProtocoloCiclo) : ''}"/>
+					</p:tooltip>
+	            </p:column>
+	              
+	            <p:column style="width:27px; background-color: #{item.colorLinhaAzul}; white-space: nowrap;" sortBy="#{item.cicloNr}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_CICLO}"/> 
+	              </f:facet>  
+	              <h:outputText id="idCiclo" value="#{item.cicloNr}"/>
+	                 <p:tooltip direction="bottom-right" styleClass="tooltip" for="idCiclo"
+		                rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}">
+						<h:outputText value="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" />
+					</p:tooltip> 
+	            </p:column>
+	         
+	            <p:column style="width:15px; background-color: #{item.colorLinhaAzul};" rendered="#{abaAgardandoAtendimentoPaginatorController.exibirColunaIS}">
+	            	<f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_IS}" title="#{messages.TITLE_IS}"/> 
+	              </f:facet>  
+	              <center>
+	              	<mec:commandLink id="isIs" action="#{abaAgardandoAtendimentoPaginatorController.registrarIntercorrencia(item)}" rendered="#{!abaAgardandoAtendimentoPaginatorController.semaforo(item)}">
+							<p:graphicImage value="/resources/img/icons/bola_verde.png" />									
+	              	</mec:commandLink>
+	              	
+	              	<mec:commandLink id="isIss" action="#{abaAgardandoAtendimentoPaginatorController.registrarIntercorrencia(item)}" rendered="#{abaAgardandoAtendimentoPaginatorController.semaforo(item)}">
+							<p:graphicImage value="/resources/img/icons/bola_amarela.png" />								
+	              	</mec:commandLink>
+	              </center>
+	            </p:column>
+	         
+	            <p:column style="width:15px; background-color: #{item.colorLinhaAzul};" rendered="#{abaAgardandoAtendimentoPaginatorController.exibirColunaIP}">
+	            	<f:facet name="header"> 
+	            		<h:outputText value="#{messages.LABEL_IP}" id="colIP"/>
+	            	</f:facet>
+	            </p:column>           	             
+
+	            <p:column style="width:15px; background-color: #{item.colorLinhaAzul};"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_LM}"/> 
+	              </f:facet>
+	               <p:outputPanel id="panelLm" layout="inline">
+			            <center>
+							<p:graphicImage value="/resources/img/icons/bola_vermelha.png"
+								rendered="#{item.situacaoLm.descricao eq 'PAE'}"
+								title="#{messages.TITLE_LIBERACAO_MEDICA_PAE}" />
+							<p:graphicImage value="/resources/img/icons/bola_vermelha.png"
+								rendered="#{item.situacaoLm.descricao eq 'PAA'}"
+								title="#{messages.TITLE_LIBERACAO_MEDICA_PAA}" />
+							<p:graphicImage value="/resources/img/icons/bola_verde.png"
+								rendered="#{item.situacaoLm.descricao eq 'PLM'}"
+								title="#{messages.TITLE_LIBERACAO_MEDICA_PLM}" />
+							<p:graphicImage value="/resources/img/icons/bola_azul.png"
+								rendered="#{item.situacaoLm.descricao eq 'PLE'}"
+								title="#{messages.TITLE_LIBERACAO_MEDICA_PLE}" />
+						</center>
+					</p:outputPanel>	
+	            </p:column>
+	            
+	            <p:column style="width:15px; background-color: #{item.colorLinhaAzul};" rendered="#{abaAgardandoAtendimentoPaginatorController.exibirColunaCP}">
+	            	<f:facet name="header"> 
+	            		<h:outputText value="#{messages.LABEL_CP}" id="colCP"/>
+	            	</f:facet>
+	            </p:column>	             
+
+				<p:column style="width:30px; background-color: #{item.colorLinhaAzul};" rendered="#{abaAgardandoAtendimentoPaginatorController.exibirColunaLQ}">
+	            	<f:facet name="header"> 
+	            		<h:outputText value="#{messages.LABEL_LQ}" title="#{messages.TITLE_LIBERAR_QUIMIOTERAPIA}"/>
+	              	</f:facet>  
+		            <p:outputPanel id="panelLQ" layout="inline">
+			            <center>
+							<mec:commandLink id="lnk-LQ-Ativo"
+								disabled="#{!mf:hasPermission(securityController, 'avisoFarmacia,executar')}"
+								styleClass="silk-icon icon-lq icon-ativo" ajax="true" rendered="#{item.situacaoAdministracao == 'AAC' and abaAgardandoAtendimentoPaginatorController.verificarExisteSessao(item)}"
+								render="@(#formAba3)" process="@this" title="#{messages.TITLE_LIBERAR_QUIMIOTERAPIA_ATIVO}"/>
+							<mec:commandLink id="lnk-LQ-Inativo"
+								action="#{abaAgardandoAtendimentoPaginatorController.liberarQuimioterapia(item)}"
+								disabled="#{!mf:hasPermission(securityController, 'avisoFarmacia,executar')}"
+								styleClass="silk-icon icon-lq icon-inativo" ajax="true" rendered="#{item.situacaoAdministracao != 'AAC' and abaAgardandoAtendimentoPaginatorController.verificarExisteSessao(item)}"
+								render="@(#formAba3)" process="@this" title="#{messages.TITLE_LIBERAR_QUIMIOTERAPIA_INATIVO}"/>
+						</center>
+					</p:outputPanel>
+	            </p:column>
+
+	            <p:column style="width:60px; background-color: #{item.colorLinhaAzul};" sortBy="#{item.manipulacao.descricao}"> 
+	              <f:facet name="header"> 
+	                <h:outputText value="#{messages.LABEL_MANIPULACAO}"/>
+	              </f:facet>
+   	              <h:outputText id="idManipulacao" value="#{item.manipulacao.descricao}" title="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" rendered="#{!(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}"/>
+   	              <h:outputText id="idManipulacao2" value="#{item.manipulacao.descricao}" title="#{abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul)}" rendered="#{(abaAgardandoAtendimentoPaginatorController.obterHintLinha(item.colorLinhaAzul) eq '')}"/>
+	            </p:column> 
+	             
+	          </p:dataTable>
+          </p:outputPanel>
+          
+          <h:outputText id="idCount" value="#{abaAgardandoAtendimentoPaginatorController.listaPacientes.size()} #{messages.MENSAGEM_QTD_PACIENTE_AGUARDANDO_ATENDIMENTO}" 
+            rendered="#{abaAgardandoAtendimentoPaginatorController.listaPacientes.size() ne 0}" />
+
+          <h:outputText id="idMensagem" value="#{messages.MENSAGEM_MAIORES_INFORMACOES}" style="float:right" 
+          rendered="#{abaAgardandoAtendimentoPaginatorController.listaPacientes.size() ne 0}" />
+          
+    <!-- #41717 -->
+	<p:dialog id="modalExtratodaSessaoAguardandoAtendimento" resizeable="false" moveable="false"
+		domElementAttachment="parent" zindex="2" closable="true" width="960"
+		height="350" modal="true" resizable="false" scrollable="false" 
+		widgetVar="modalExtratodaSessaoAguardandoAtendimentoWG">
+		<f:facet name="header">
+			<h:panelGroup>
+				<h:outputText value="#{messages.TITLE_EXTRATO_SESSAO}" />
+			</h:panelGroup>
+		</f:facet>
+		<f:facet name="controls">
+			<h:panelGroup>
+				<h:graphicImage value="/resources/img/close.png"
+					onclick="#{PF('modalExtratodaSessaoAguardandoAtendimento')}.hide();"
+					styleClass="hidelink" id="hidelinkInterconsultaRetornoAguardandoAtendimento"></h:graphicImage>
+			</h:panelGroup>
+		</f:facet>
+		<aghu:panelGeral legend="#{messages.LABEL_PACIENTE_DADOS}">
+			<p:outputPanel id="DadosPacienteAguardandoAtendimento" layout="inline">
+				<aghu:linha>
+					<mec:inputText size="8" maxlength="8"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_PRONTUARIO}"
+						id="modal_prontuario_paciente_aguardando_atendimento"
+						value="#{abaAgardandoAtendimentoPaginatorController.parametroSelecionado.prontuario}" />
+					<mec:inputText size="8" maxlength="8"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_CODIGO}"
+						id="modal_codigo_paciente_aguardando_atendimento"
+						value="#{abaAgardandoAtendimentoPaginatorController.parametroSelecionado.codigoPaciente}" />
+					<mec:inputText size="60" maxlength="50"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_NOME}" id="modal_nome_paciente_aguardando_atendimento"
+						value="#{abaAgardandoAtendimentoPaginatorController.parametroSelecionado.paciente}" />
+				</aghu:linha>
+			</p:outputPanel>
+		</aghu:panelGeral>
+		<br />
+		<aghu:panelGeral legend="#{messages.TITLE_HISTORICO_SESSAO}">
+			<mec:serverDataTable id="historicoPacienteAguardandoAtendimento"
+				controller="#{abaAgardandoAtendimentoPaginatorController}"
+				rowKeyVar="row"
+				list="#{abaAgardandoAtendimentoPaginatorController.listaExtratoSessao}"
+				scrollable="true">
+				<c:set var="item" value="#{item}" />
+				<p:column style="width:55px; !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_EVENTO}" />
+					</f:facet>
+					<h:outputText value="#{item.indSituacao.getDescricao()}" />
+				</p:column>
+
+				<p:column style="width:40px;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_DATA_EVENTO}" />
+					</f:facet>
+					<h:outputText value="#{item.criadoEm}">
+						<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+					</h:outputText>
+				</p:column>
+
+				<p:column style="width:70px; !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_JUSTIFICATIVA}" />
+					</f:facet>
+					<h:outputText id="extratoSessaoJustificativa"
+						value="#{abaAgardandoAtendimentoPaginatorController.hintExtratoSessao(item.tipoJustificativaDescricao,item.descricaoJustificativa,23)}" />
+					<p:tooltip styleClass="tooltip" for="extratoSessaoJustificativa"
+						trackMouse="true">
+						<h:outputText value="#{item.justificativa}" />
+						<br />
+						<h:outputText
+							value="#{item.tipoJustificativaDescricao} - #{item.descricaoJustificativa}"
+							rendered="#{abaAgardandoAtendimentoPaginatorController.showHint(item.tipoJustificativaDescricao,item.descricaoJustificativa,23)}" />
+					</p:tooltip>
+				</p:column>
+
+				<p:column style="width:150px;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_SERVIDOR}" />
+					</f:facet>
+					<h:outputText id="extratoSessaoServidorAguardandoAtendimento"
+						value="#{abaAgardandoAtendimentoPaginatorController.obterHint(item.usuarioServidor,38)}" />
+					<p:tooltip styleClass="tooltip" for="extratoSessaoServidorAguardandoAtendimento"
+						trackMouse="true"
+						rendered="#{abaAgardandoAtendimentoPaginatorController.showHintServidor(item.usuarioServidor,38)}">
+						<h:outputText value="#{item.usuarioServidor}" />
+					</p:tooltip>
+				</p:column>
+
+			</mec:serverDataTable>
+		</aghu:panelGeral>
+	</p:dialog>
+	<!-- FIM #41717 -->
+      </h:form> 
+      
+</html>

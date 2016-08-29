@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_AGENDAR_ENCERRAMENTO_AMBULATORIO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{programarEncerramentoAmbulatorioController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <style xml:space="preserve">
+			form#formEncerramentoForm input[type="radio"] {
+			    float: left;
+			    margin: 4px 0 0 4px;
+			}
+			form#formEncerramentoForm label {
+				padding: 4px 3px 0 !important;
+			}
+		</style>  
+      <mec:pageConfig controller="#{programarEncerramentoAmbulatorioController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formEncerramento"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PARAMETROS_EXECUCAO}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelDtExecucao" layout="inline"> 
+              <mec:inputTextData label="#{messages.LABEL_DATA_HORA_EXECUCAO}" title="#{messages.TITLE_DATA_HORA_EXECUCAO}" size="20" maxlength="16" value="#{programarEncerramentoAmbulatorioController.dtExecucao}" required="true" id="dataHoraExecucao" tipo="datahora"/>  
+              <mec:inputTextData label="#{messages.LABEL_DATA_FIM_COMPETENCIA}" title="#{messages.TITLE_DATA_FIM_COMPETENCIA}" size="20" maxlength="16" value="#{programarEncerramentoAmbulatorioController.dtFimCompetencia}" required="true" id="dataFimCompetencia" tipo="datahora"/>  
+              <mec:inputTextData label="#{messages.LABEL_DATA_FIM_PROX_COMPETENCIA}" title="#{messages.TITLE_DATA_FIM_PROX_COMPETENCIA}" size="20" maxlength="16" readonly="#{programarEncerramentoAmbulatorioController.previa}" value="#{programarEncerramentoAmbulatorioController.dtFimProximaCompetencia}" id="dataFimProximaCompetencia" tipo="datahora"/> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_PREVIA}" id="previa" title="#{messages.TITLE_PREVIA}" value="#{programarEncerramentoAmbulatorioController.previa}" readonly="#{!mf:hasPermission(securityController,'faturamentoAmbulatorio,encerrar')}"> 
+              <p:ajax event="change" update="@(#panelDtExecucao)" process="@this" listener="#{programarEncerramentoAmbulatorioController.ajustaDataExecucao}"/> 
+            </mec:selectBooleanCheckbox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_OPCOES}"> 
+          <mec:selectOneRadio id="opcao" enum="DominioOpcaoEncerramentoAmbulatorio" value="#{programarEncerramentoAmbulatorioController.opcao}" layout="pageDirection" readonly="true"/> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisarPrevia" value="#{messages.LABEL_AGENDAR_PREVIA_ENCERRAMENTO}" action="#{programarEncerramentoAmbulatorioController.validaCampos}" profile="ok"/>  
+          <mec:commandButton id="bt_estornar" value="#{messages.LABEL_ESTORNAR_COMPETENCIA}" immediate="true" onclick="PF('modalConfirmacaoEstornoDeCompetenciaWG').show();;" disabled="#{!mf:hasPermission(securityController,'faturamentoAmbulatorio,estornarCompetencia')}" ajax="true" styleClass="bt_cinza"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{programarEncerramentoAmbulatorioController.limpar}" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:dialog id="modalConfirmacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.MENSAGEM_TITLE_CONFIRMACAO_AGENDAMENTO}"/> 
+        </f:facet>  
+        <p:outputPanel id="mensagemConfirmacao" layout="inline">#{programarEncerramentoAmbulatorioController.getMensagemConfirmacao()}</p:outputPanel>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao" name="formModalExclusao"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{programarEncerramentoAmbulatorioController.agendar}" profile="search"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" action="#{programarEncerramentoAmbulatorioController.naoAgendar}" oncomplete="PF('modalConfirmacaoWG').hide();; return false;" id="bt_nao" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoEstornoDeCompetencia" width="360" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoEstornoDeCompetenciaWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_ESTORNAR_COMPETENCIA}"/> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_ESTORNO_DE_COMPETENCIA} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formConfirmacaoEstornoDeCompetencia"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_okConfirmacaoEstornoDeCompetencia" value="#{messages.LABEL_SIM}" block="true" action="#{programarEncerramentoAmbulatorioController.extornarCompetencia}" profile="search"/>  
+              <mec:commandButton id="bt_cancelarConfirmacaoEstornoDeCompetencia" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoEstornoDeCompetenciaWG').hide();; return false;" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:outputPanel rendered="#{programarEncerramentoAmbulatorioController.exibirModal}" layout="inline"> 
+        <h:form> 
+          <script xml:space="preserve">PF('modalConfirmacaoWG').show();</script> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

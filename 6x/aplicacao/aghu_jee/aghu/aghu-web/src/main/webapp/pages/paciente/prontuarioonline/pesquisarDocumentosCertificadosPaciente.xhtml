@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_TITULO_FILTRO_DOCUMENTOS_PACIENTE}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{documentosPacientePaginatorController.iniciarPOL}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{documentosPacientePaginatorController}" />
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral
+				legend="#{messages.LABEL_TITULO_FILTRO_DOCUMENTOS_PACIENTE}">
+				<aghu:linha>
+					<mec:suggestionBox id="sbPaciente" maxlength="8" numeric="true"
+						label="#{messages.LABEL_PRONTUARIO}" descricaoInput="prontuario"
+						descricaoLabel="nome" posDeleteAction="limparCampos"
+						suggestionAction="pesquisarPaciente"
+						title="#{messages.TITLE_PRONTUARIO_DOCUMENTOS_PACIENTE}"
+						controller="#{documentosPacientePaginatorController}"
+						value="#{documentosPacientePaginatorController.paciente}">
+						<p:column>#{item.prontuario}</p:column>
+						<p:column>#{item.nome}</p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputTextData
+						label="#{messages.LABEL_DT_INICIAL_DOCUMENTOS_PACIENTE}"
+						id="dtInicio"
+						title="#{messages.TITLE_DT_INICIAL_DOCUMENTOS_PACIENTE}" size="10"
+						maxlength="10" onkeypress="Pesquisar(event);"
+						value="#{documentosPacientePaginatorController.dataInicial}"
+						required="true" tipo="data">
+						<p:ajax id="#{name}SupOnChanged" event="dateSelect"
+							update="@(#dtFim)" process="@this"
+							listener="#{documentosPacientePaginatorController.carregarPeriodoFinal}" />
+					</mec:inputTextData>
+					<mec:inputTextData
+						label="#{messages.LABEL_DT_FINAL_DOCUMENTOS_PACIENTE}" id="dtFim"
+						title="#{messages.TITLE_DT_FINAL_DOCUMENTOS_PACIENTE}" size="10"
+						maxlength="10" onkeypress="Pesquisar(event);"
+						value="#{documentosPacientePaginatorController.dataFinal}"
+						required="true" tipo="data" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputNumero
+						label="#{messages.LABEL_VINCULO_DOCUMENTOS_PACIENTE}"
+						title="#{messages.TITLE_PESQUISA_VINCULO_DOCUMENTOS_PACIENTE}"
+						maxlength="3" size="5" id="vinculo"
+						value="#{documentosPacientePaginatorController.vinculo}"
+						readonly="true" />
+					<mec:suggestionBox id="sbMatricula"
+						label="#{messages.LABEL_MATRICULA_DOCUMENTOS_PACIENTE}"
+						title="#{messages.TITLE_MATRICULA_DOCUMENTOS_PACIENTE}"
+						suggestionAction="obterServidor" required="false" size="15"
+						maxlength="15" descricaoInput="id.matricula"
+						descricaoLabel="pessoaFisica.nome"
+						posSelectionAction="atualizarVinculo"
+						posDeleteAction="limparVinculo" width="520"
+						controller="#{documentosPacientePaginatorController}"
+						value="#{documentosPacientePaginatorController.responsavel}"
+						render="vinculo">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_VINCULO_SERVIDOR_DOCUMENTOS_PACIENTE}</b>
+							</f:facet> #{item.id.vinCodigo}
+            			</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_MATRICULA_SERVIDOR_DOCUMENTOS_PACIENTE}</b>
+							</f:facet> #{item.id.matricula}
+            			</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_NOME_PESSOA_FISICA_DOCUMENTOS_PACIENTE}</b>
+							</f:facet> #{item.pessoaFisica.nome}
+            			</p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:suggestionBox id="sbServico"
+						label="#{messages.LABEL_SERVICO_DOCUMENTOS_PACIENTE}"
+						title="#{messages.TITLE_SERVICO_DOCUMENTOS_PACIENTE}"
+						suggestionAction="obterCentroCusto" required="false" size="15"
+						maxlength="15" descricaoInput="codigo" descricaoLabel="descricao"
+						width="520" controller="#{documentosPacientePaginatorController}"
+						value="#{documentosPacientePaginatorController.servico}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO_CENTRO_CUSTO_DOCUMENTOS_PACIENTE}</b>
+							</f:facet> #{item.codigo}
+            </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO_CENTRO_CUSTO_DOCUMENTOS_PACIENTE}</b>
+							</f:facet> #{item.descricao}
+            </p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:field label="#{messages.LABEL_DOCUMENTO_PACIENTE}"
+						id="selectTipo_field" showLabel="true"
+						title="#{messages.TITLE_DOCUMENTO_PACIENTE}" posicaoLabel="acima"
+						readonly="false" escape="true" required="false">
+						<p:selectOneMenu id="selectTipo"
+							value="#{documentosPacientePaginatorController.tipoDocumento}"
+							styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+							required="false" label="#{messages.LABEL_DOCUMENTO_PACIENTE}">
+							<f:selectItem itemLabel="Selecione" itemValue="" />
+							<f:selectItems
+								value="#{documentosPacientePaginatorController.listaTipoDocumentoAtivoItens}"
+								var="item" itemLabel="#{item.descricao}" itemValue="#{item}" />
+						</p:selectOneMenu>
+					</mec:field>
+					<mec:selectOneMenu id="selectSituacao"
+						enum="DominioSituacaoVersaoDocumento"
+						label="#{messages.LABEL_SITUACAO_DOCUMENTOS_PACIENTE}"
+						title="#{messages.TITLE_SITUACAO_DOCUMENTOS_PACIENTE}"
+						required="false"
+						value="#{documentosPacientePaginatorController.situacao}" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					action="#{documentosPacientePaginatorController.pesquisar}"
+					profile="search" />
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar"
+					action="#{documentosPacientePaginatorController.limpar}"
+					immediate="true" styleClass="bt_cinza" profile="clear" />
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formListaDocumentosPaciente">
+			<mec:serverDataTable dataModel="dataModel" id="tblDocumentoPaciente"
+				value="#{documentosPacientePaginatorController}"
+				title="#{messages.TITLE_DOCUMENTOS_PACIENTE}"
+				controller="#{documentosPacientePaginatorController}">
+				<c:set var="_item" value="#{item}" />
+				<p:column sortBy="#{_item.prontuarioPaciente}" sortable="true"
+					rendered="#{not documentosPacientePaginatorController.prontuarioOnLine}">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_PRONTUARIO_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<h:outputText value="#{_item.prontuarioPaciente}"
+						style="text-transform:uppercase" />
+				</p:column>
+				<p:column sortBy="#{_item.nomePaciente}" sortable="true"
+					rendered="#{not documentosPacientePaginatorController.prontuarioOnLine}">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_NOME_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<h:outputText value="#{_item.nomePaciente}"
+						style="text-transform:uppercase" />
+				</p:column>
+				<p:column sortBy="#{_item.tipo}" sortable="true">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_TIPO_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<h:outputText value="#{_item.tipo.descricao}"
+						style="text-transform:uppercase" />
+				</p:column>
+				<p:column sortBy="#{_item.situacao}" sortable="true">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_SITUACAO_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<h:outputText value="#{_item.situacao.descricao}"
+						style="text-transform:uppercase" />
+				</p:column>
+				<p:column sortBy="#{_item.criadoEm}" sortable="true">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_CRIADO_EM_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<h:outputText value="#{_item.criadoEm}">
+						<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+					</h:outputText>
+				</p:column>
+				<p:column sortBy="#{_item.nomeResp}" sortable="true">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_RESPONSAVEL_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<h:outputText value="#{_item.nomeResp}"
+						style="text-transform:uppercase" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_RESPONSAVEL_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<h:outputText value="#{_item.nomeResp}"
+						style="text-transform:uppercase" />
+				</p:column>
+				<p:column style="text-align:center;">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_ORIGINAL_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<p:outputPanel
+						rendered="#{mf:hasPermission(securityController,'samisAssinaturaDigital,visualizarDocumentoOriginal')}"
+						layout="inline">
+						<mec:commandLink id="linkDocumentoOriginalPol"
+							action="#{documentosPacientePaginatorController.abrirVisualizarDocumentoCertificado}"
+							styleClass=" silk-doc-digital-pendente silk-icon">
+							<f:setPropertyActionListener
+								target="#{visualizarDocumentoCertificadoController.seqVersaoDocumento}"
+								value="#{_item.seq}" for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarDocumentoCertificadoController.voltarPara}"
+								value="pol-pesquisarDocumentosCertificadosPaciente"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarDocumentoCertificadoController.situacaoDocumento}"
+								value="original" for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarDocumentoCertificadoController.descricaoTipoDocumento}"
+								value="#{_item.tipo.descricao}" for="command" />
+						</mec:commandLink>
+						<p:outputPanel layout="inline">
+							<mec:commandLink
+								action="#{documentosPacientePaginatorController.abreDocumentoOriginal}"
+								id="linkDocumentoOriginal"
+								styleClass=" silk-doc-digital-pendente silk-icon">
+								<f:setPropertyActionListener
+									target="#{visualizarDocumentoController.seqAghVersaoDocumento}"
+									value="#{_item.seq}" for="command" />
+								<f:setPropertyActionListener
+									target="#{visualizarDocumentoController.origem}"
+									value="voltarDocumentosPaciente" for="command" />
+							</mec:commandLink>
+						</p:outputPanel>
+						<p:tooltip direction="bottom-right" styleClass="tooltip"
+							layout="block">
+							<h:outputText
+								value="#{messages.LABEL_TOOLTIP_DOCUMENTO_ORIGINAL}" />
+						</p:tooltip>
+					</p:outputPanel>
+				</p:column>
+				<p:column style="text-align:center;">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_ASSINADO_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<p:outputPanel rendered="#{_item.situacao.assinado}"
+						layout="inline">
+						<mec:commandLink id="linkDocumentoAssinadoPol"
+							action="#{documentosPacientePaginatorController.abrirVisualizarDocumentoCertificado}"
+							styleClass=" silk-doc-digital-assinado silk-icon">
+							<f:setPropertyActionListener
+								target="#{visualizarDocumentoCertificadoController.seqVersaoDocumento}"
+								value="#{_item.seq}" for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarDocumentoCertificadoController.voltarPara}"
+								value="pol-pesquisarDocumentosCertificadosPaciente"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarDocumentoCertificadoController.situacaoDocumento}"
+								value="assinado" for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarDocumentoCertificadoController.descricaoTipoDocumento}"
+								value="#{_item.tipo.descricao}" for="command" />
+						</mec:commandLink>
+						<p:outputPanel
+							rendered="#{!visualizarDocumentoController.origem.equals('pol') }"
+							layout="inline">
+							<mec:commandLink
+								action="#{documentosPacientePaginatorController.abreDocumentoOriginal}"
+								id="linkDocumentoAssinadoCertificacao"
+								styleClass=" silk-doc-digital-assinado silk-icon">
+								<f:setPropertyActionListener
+									target="#{visualizarDocumentoController.seqAghVersaoDocumento}"
+									value="#{_item.seq}" for="command" />
+								<f:setPropertyActionListener
+									target="#{visualizarDocumentoController.origem}"
+									value="voltarDocumentosPaciente" for="command" />
+							</mec:commandLink>
+						</p:outputPanel>
+						<p:tooltip direction="bottom-right" styleClass="tooltip"
+							layout="block">
+							<h:outputText
+								value="#{messages.LABEL_TOOLTIP_DOCUMENTO_ASSINADO}" />
+						</p:tooltip>
+					</p:outputPanel>
+				</p:column>
+				<p:column style="text-align:center;">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_DOWNLOAD_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<p:outputPanel rendered="#{_item.situacao.assinado}"
+						layout="inline">
+						<p:outputPanel layout="inline">
+							<mec:commandLink
+								title="#{messages.LABEL_DOWNLOAD_DOCUMENTO_PACIENTE}"
+								action="#{visualizarDocumentoController.downloadEnvelope}"
+								styleClass=" silk-envelope-criptografado silk-icon">
+								<f:setPropertyActionListener
+									target="#{visualizarDocumentoController.seqAghVersaoDocumento}"
+									value="#{_item.seq}" for="command" />
+								<f:setPropertyActionListener
+									target="#{visualizarDocumentoController.origem}"
+									value="voltarDocumentosPaciente" for="command" />
+							</mec:commandLink>
+						</p:outputPanel>
+						<p:tooltip direction="bottom-right" styleClass="tooltip"
+							layout="block">
+							<h:outputText
+								value="#{messages.LABEL_TOOLTIP_DOCUMENTO_DOWNLOAD}" />
+						</p:tooltip>
+					</p:outputPanel>
+				</p:column>
+				<p:column style="text-align:center;">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_CERTIFICADO_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<p:outputPanel rendered="#{_item.situacao.assinado}"
+						layout="inline">
+						<p:outputPanel
+							rendered="#{visualizarDocumentoController.origem.equals('pol') }"
+							layout="inline">
+							<mec:commandLink id="link_modal_pol"
+								action="#{validarCertificadoController.validarAssinaturas}"
+								oncomplete="PF('modalCertificadoAssinaturaWG').show();"
+								styleClass=" silk-certificado silk-icon" ajax="true"
+								render="modalCertificadoAssinatura" process="@this">
+								<f:setPropertyActionListener
+									target="#{visualizarDocumentoController.seqVersaoDocumento}"
+									value="#{_item.seq}" for="command" />
+							</mec:commandLink>
+						</p:outputPanel>
+						<p:outputPanel
+							rendered="#{!visualizarDocumentoController.origem.equals('pol') }"
+							layout="inline">
+							<mec:commandLink id="link_modal_certificado"
+								action="#{validarCertificadoController.validarAssinaturas}"
+								oncomplete="PF('modalCertificadoAssinaturaWG').show();"
+								styleClass=" silk-certificado silk-icon" ajax="true"
+								render="modalCertificadoAssinatura" process="@this">
+								<f:setPropertyActionListener
+									target="#{validarCertificadoController.seqVersaoDocumento}"
+									value="#{_item.seq}" for="command" />
+							</mec:commandLink>
+						</p:outputPanel>
+						<p:tooltip direction="bottom-right" styleClass="tooltip"
+							layout="block">
+							<h:outputText
+								value="#{messages.LABEL_TOOLTIP_DOCUMENTO_CERTIFICADO}" />
+						</p:tooltip>
+					</p:outputPanel>
+				</p:column>
+				<p:column style="text-align:center;"
+					rendered="#{not documentosPacientePaginatorController.prontuarioOnLine}">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_TRANSFERENCIA_DOCUMENTO_PACIENTE}" />
+					</f:facet>
+					<p:outputPanel
+						rendered="#{mf:hasPermission(securityController,'samisAssinaturaDigital,transferirResponsavelDocumento') and _item.situacao.pendente}"
+						layout="inline">
+						<mec:commandLink id="link_modal_transferencia"
+							action="#{transferirDocumentoPacienteController.iniciar}"
+							oncomplete="PF('modalTransferenciaResponsavelWG').show();"
+							styleClass=" silk-arrow-switch silk-icon" ajax="true"
+							render="modal_documento, modal_prontuario, modal_nome_paciente, modal_criado_em, modal_nome_responsavel"
+							process="@this">
+							<f:param name="seqAghVersaoDocumento" value="#{_item.seq}" />
+							<f:setPropertyActionListener
+								target="#{transferirDocumentoPacienteController.seqAghVersaoDocumento}"
+								value="#{_item.seq}" for="command" />
+						</mec:commandLink>
+						<p:tooltip direction="bottom-right" styleClass="tooltip"
+							layout="block">
+							<h:outputText
+								value="#{messages.LABEL_TOOLTIP_DOCUMENTO_TRANSFERENCIA}" />
+						</p:tooltip>
+					</p:outputPanel>
+				</p:column>
+			</mec:serverDataTable>
+			<p:dialog id="modalCertificadoAssinatura" moveable="false"
+				width="610" height="260" resizeable="false" modal="true"
+				resizable="false" widgetVar="modalCertificadoAssinaturaWG">
+				<f:facet name="header">
+					<h:outputText value="#{messages.TITLE_CERTIFICADO_ASSINATURA}" />
+				</f:facet>
+				<aghu:panelGeral style="padding: 7px"
+					legend="#{messages.LABEL_ASSINANTES}">
+					<mec:serverDataTable list="#{validarCertificadoController.result}"
+						scrollable="true">
+						<c:set var="_item" value="#{item}" />
+						<p:column style="width:5%; white-space:nowrap;">
+							<table border="0">
+								<tr>
+									<td rowspan="2" style="padding: 10px; vertical-align: middle;"
+										colspan="1"><h:graphicImage value="/images/accept.png"
+											rendered="#{empty item.messages}"
+											alt="#{messages.TITLE_ASSINATURA_VALIDA}"
+											title="#{messages.TITLE_ASSINATURA_VALIDA}" /> <h:graphicImage
+											value="/img/false.png" rendered="#{not empty item.messages}"
+											alt="#{messages.TITLE_ASSINATURA_INVALIDA}"
+											title="#{messages.TITLE_ASSINATURA_INVALIDA}" /></td>
+									<td rowspan="1" colspan="1"><h:outputText
+											value="#{messages.LABEL_DATA_ASSINATURA}: "
+											style="font-weight: bold" /> <h:outputText
+											id="data_assinatura" value="#{_item.signingTime}">
+											<f:convertDateTime pattern="dd/MM/yy HH:mm:ss" />
+										</h:outputText></td>
+								</tr>
+								<tr>
+									<td rowspan="1" colspan="1"><h:outputText
+											value="#{messages.LABEL_ASSINANTE}: "
+											style="font-weight: bold" /> <h:outputText
+											value="#{_item.subjectCN}" /></td>
+								</tr>
+							</table>
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:panelGeral>
+				<mec:commandButton id="bt_fechar" value="#{messages.LABEL_FECHAR}"
+					immediate="true"
+					onclick="PF('modalCertificadoAssinaturaWG').hide();"
+					profile="cancel" ajax="true" process="@this" />
+			</p:dialog>
+		</h:form>
+		<ui:decorate
+			template="/pages/certificacaodigital/modalTransferenciaResponsavel.xhtml" />
+	</ui:define>
+</ui:composition>
+</html>

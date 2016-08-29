@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_DETALHAR_MOTIVO_SAIDA_PACIENTES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{situacaoSaidaPacientePaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{situacaoSaidaPacientePaginatorController}"/>  
+      <h:form prependId="false" id="formDetalhe"> 
+        <aghu:panelGeral legend="#{messages.LABEL_MOTIVO_SAIDA_PACIENTES}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelMotivo" layout="inline"> 
+              <mec:inputNumero id="codigo_motivo" value="#{situacaoSaidaPacientePaginatorController.fatMotivoSaidaPaciente.seq}" label="#{messages.LABEL_CODIGO}" readonly="true" maxlength="3" size="5"/>  
+              <mec:inputNumero id="codigo_sus_motivo" value="#{situacaoSaidaPacientePaginatorController.fatMotivoSaidaPaciente.codigoSus}" label="#{messages.LABEL_CODIGO_SUS}" readonly="true" maxlength="2" size="5"/>  
+              <mec:inputText id="descricao_motivo" value="#{situacaoSaidaPacientePaginatorController.fatMotivoSaidaPaciente.descricao}" label="#{messages.LABEL_MOTIVO}" readonly="true" maxlength="60" size="100" style="text-transform:uppercase"/>  
+              <mec:inputText id="situacao_motivo" value="#{situacaoSaidaPacientePaginatorController.fatMotivoSaidaPaciente.situacao.descricao}" label="#{messages.LABEL_SITUACAO}" readonly="true" maxlength="10" size="10"/> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <p:outputPanel id="panelNovo" layout="inline"> 
+            <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" action="#{situacaoSaidaPacientePaginatorController.incluir}" rendered="#{situacaoSaidaPacientePaginatorController.dataModel.pesquisaAtiva}" disabled="#{!mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}" profile="add"> 
+              <f:setPropertyActionListener target="#{situacaoSaidaPacienteController.seqMotivoSaidaPaciente}" value="#{situacaoSaidaPacientePaginatorController.fatMotivoSaidaPaciente.seq}" for="command"/> 
+            </mec:commandButton> 
+          </p:outputPanel> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formLista"> 
+        <h:panelGroup rendered="#{situacaoSaidaPacientePaginatorController.dataModel.pesquisaAtiva}"> 
+          <aghu:panelGeral legend="#{messages.LABEL_SITUACOES_SAIDA_PACIENTES}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelSituacoes" layout="inline"> 
+                <mec:serverDataTable id="tblSituacaoSaidaPacientes" dataModel="dataModel" controller="#{situacaoSaidaPacientePaginatorController}"> 
+                  <c:set var="_situacaoSaidaPaciente" value="#{item}"/>  
+                  <p:column style="width:60px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.CASCA_LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="lnk_editar" action="#{situacaoSaidaPacientePaginatorController.editar}" title="#{messages.CASCA_LABEL_EDITAR}" disabled="#{!mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}" profile="edit"> 
+                      <f:setPropertyActionListener target="#{situacaoSaidaPacienteController.entity}" value="#{_situacaoSaidaPaciente}" for="command"/>  
+                      <f:setPropertyActionListener target="#{situacaoSaidaPacienteController.seqMotivoSaidaPaciente}" value="#{situacaoSaidaPacientePaginatorController.fatMotivoSaidaPaciente.seq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{situacaoSaidaPacienteController.modoEdicao}" value="true" for="command"/> 
+                    </mec:commandLink>  
+                    <mec:commandLink id="lnk_excluir" title="#{messages.CASCA_LABEL_EXCLUIR}" onclick="PF('modalExclusaoWG').show();;" rendered="#{mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}" styleClass="silk-icon silk-delete" ajax="true" process="@this"> 
+                      <f:setPropertyActionListener target="#{situacaoSaidaPacientePaginatorController.entitySelecionado}" value="#{_situacaoSaidaPaciente}" for="command"/> 
+                    </mec:commandLink>  
+                    <mec:commandLink id="lnk_excluir_disabled" title="#{messages.CASCA_LABEL_EXCLUIR}" disabled="true" rendered="#{!mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}" styleClass="silk-icon silk-delete"/>  
+                    <mec:commandLink id="lnk_ativar_inativar" action="#{situacaoSaidaPacientePaginatorController.ativarInativar}" title="#{_situacaoSaidaPaciente.situacao eq 'A' ? messages.TITLE_CLIQUE_INATIVAR : messages.TITLE_CLIQUE_ATIVAR}" status="commonstatus" rendered="#{mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}" styleClass="#{_situacaoSaidaPaciente.situacao eq 'A' ? 'silk-activate silk-icon' : 'silk-deactivate silk-icon'}" ajax="true" render="panelSituacoes" process="@this"> 
+                      <f:setPropertyActionListener target="#{situacaoSaidaPacientePaginatorController.entitySelecionado}" value="#{_situacaoSaidaPaciente}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column style="width:30px;" sortBy="#{_situacaoSaidaPaciente.id}" sortable="true"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_COD_SITUACAO_SAIDA_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_situacaoSaidaPaciente.id.seq}"/> 
+                  </p:column>  
+                  <p:column style="width:45px;" sortBy="#{_situacaoSaidaPaciente.codigoSus}" sortable="true"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_COD_SUS_SITUACAO_SAIDA_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_situacaoSaidaPaciente.codigoSus}"/> 
+                  </p:column>  
+                  <p:column style="width:150px;" sortBy="#{_situacaoSaidaPaciente.descricao}" sortable="true"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SITUACAO_SAIDA}"/> 
+                    </f:facet>  
+                    <h:outputText id="txtDescricao" escape="false" value="#{situacaoSaidaPacientePaginatorController.obterHint(_situacaoSaidaPaciente.descricao, 20)}"/>  
+                    <p:overlayPanel id="pnlDescricao" for="txtDescricao" showEvent="mouseover" hideEvent="mouseout" rendered="#{_situacaoSaidaPaciente.descricao.length() > 20}"> 
+                      <h:outputText value="#{_situacaoSaidaPaciente.descricao}"/> 
+                    </p:overlayPanel> 
+                  </p:column>  
+                  <p:column style="width:55px;" sortBy="#{_situacaoSaidaPaciente.tipoUso}" sortable="true"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_TIPO_USO_SITUACAO_SAIDA_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_situacaoSaidaPaciente.tipoUso.descricao}"/> 
+                  </p:column>  
+                  <p:column style="width:55px;" sortBy="#{_situacaoSaidaPaciente.sexo}" sortable="true"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SEXO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_situacaoSaidaPaciente.sexo.descricao}"/> 
+                  </p:column>  
+                  <p:column style="width:45px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_IDADE_MIN}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_situacaoSaidaPaciente.idadeMinima}"/> 
+                  </p:column>  
+                  <p:column style="width:45px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_IDADE_MAX}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_situacaoSaidaPaciente.idadeMaxima}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO_EDITADA}"/> 
+                    </f:facet>  
+                    <h:outputText id="txtDescricaoEditada" escape="false" value="#{situacaoSaidaPacientePaginatorController.obterHint(_situacaoSaidaPaciente.descricaoEditada, 30)}"/>  
+                    <p:overlayPanel id="pnlDescricaoEditada" for="txtDescricaoEditada" showEvent="mouseover" hideEvent="mouseout" rendered="#{_situacaoSaidaPaciente.descricaoEditada.length() > 30}"> 
+                      <h:outputText value="#{_situacaoSaidaPaciente.descricaoEditada}"/> 
+                    </p:overlayPanel>
+                  </p:column>  
+                  <p:column style="width:55px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_COBRANCA_DIAS}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_situacaoSaidaPaciente.cobrancaDias ? messages.LABEL_SIM : messages.LABEL_NAO}"/> 
+                  </p:column>  
+                  <p:column style="width:45px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_situacaoSaidaPaciente.situacao.descricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel>  
+              <p:dialog id="modalExclusao" width="400" height="160" autosized="false" domElementAttachment="parent" resizeable="false" rendered="#{situacaoSaidaPacientePaginatorController.dataModel.pesquisaAtiva}" modal="true" resizable="false" widgetVar="modalExclusaoWG"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.TITLE_EXCLUSAO_SITUACAO_SAIDA_PACIENTE}"/> 
+                </f:facet>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.MENSAGEM_PADRAO_CONFIRMACAO_EXCLUSAO}"/>  
+                <br clear="none"/>  
+                <br clear="none"/>  
+                <br clear="none"/>  
+                <aghu:acao> 
+                  <mec:commandButton id="bt_confirmar_exclusao" value="#{messages.CASCA_LABEL_SIM}" action="#{situacaoSaidaPacientePaginatorController.excluir}" oncomplete="PF('modalExclusaoWG').hide();" profile="ok" ajax="true" render="tblSituacaoSaidaPacientes" process="@this"/>  
+                  <mec:commandButton id="bt_cancelar_exclusao" value="#{messages.CASCA_LABEL_NAO}" onclick="PF('modalExclusaoWG').hide();;return false;" profile="cancel" ajax="true"/> 
+                </aghu:acao> 
+              </p:dialog> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <p:outputPanel id="panelVoltar" layout="inline"> 
+              <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{situacaoSaidaPacientePaginatorController.voltar}" styleClass="bt_voltar icon-back bt_cinza" ajax="true" process="@this" profile="cancel"/> 
+            </p:outputPanel> 
+          </aghu:acao> 
+        </h:panelGroup> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

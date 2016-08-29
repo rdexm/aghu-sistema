@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Libera leito limpeza :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{liberaLeitoLimpezaController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="Liberar Leito da Limpeza"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_LEITO}" size="14" maxlength="14" title="#{messages.TITLE_LABEL_LEITO_LIB_LIMP}" value="#{liberaLeitoLimpezaController.leitoId}" style="text-transform:uppercase" id="leitoId"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{liberaLeitoLimpezaController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_VISUALIZAR_IMPRESSAO}" id="bt_print" action="#{relatorioLeitoLimpezaController.print}" styleClass=" icon-see-print bt_cinza"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{liberaLeitoLimpezaController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="resultados"> 
+        <mec:serverDataTable id="id_liberaLeitoLimpezaController" title="Liberar Leito da Limpeza" dataModel="dataModel" controller="#{liberaLeitoLimpezaController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column styleClass="first-column auto-adjust"> 
+            <f:facet name="header"> 
+              <h:outputText value="Ações"/> 
+            </f:facet>  
+            <mec:commandLink title="Liberado" rendered="#{_item.situacao != 'PERTENCES PACIENTE'}" oncomplete="PF('modalLiberacaoWG').show();;" action="#{liberaLeitoLimpezaController.obterLeito(_item.ltoId)}" styleClass=" silk-accept silk-icon" ajax="true" render="modalLiberacao"/>  
+            <mec:commandLink title="Pertences Pacientes" rendered="#{_item.situacao != 'PERTENCES PACIENTE'}" oncomplete="PF('modalPertencesPacientesWG').show();;" action="#{liberaLeitoLimpezaController.obterInternacao(_item.ltoId, _item.intSeq)}" styleClass=" silk-exclamation silk-icon" ajax="true" render="modalPertencesPacientes"/>  
+            <mec:commandLink title="Limpeza" rendered="#{_item.situacao == 'PERTENCES PACIENTE'}" oncomplete="PF('modalLimpezaWG').show();;" action="#{liberaLeitoLimpezaController.obterInternacao(_item.ltoId, _item.intSeq)}" styleClass=" silk-status-busy silk-icon" ajax="true" render="modalLimpeza"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="Leito"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.ltoId}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="Unidade"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.andarAlaDescricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="Data do Bloqueio"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.dataBloqueio}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="Situação do Leito"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.situacao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:dialog onshow="aghu.system.style.rich_modal();" id="modalLiberacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalLiberacaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="Liberar"/> 
+          </h:panelGroup> 
+        </f:facet> Confirma liberação do leito 
+        <h:outputText value=" #{liberaLeitoLimpezaController.leito.leitoID}"/> ? 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalLiberacao"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_liberar" action="#{liberaLeitoLimpezaController.liberar}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="Cancela_liberacao" onclick="PF('modalLiberacaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalPertencesPacientes" width="400" height="150" modal="true" resizable="false" widgetVar="modalPertencesPacientesWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="Pertences Pacientes"/> 
+          </h:panelGroup> 
+        </f:facet> Confirma bloqueio por pertences de paciente do leito 
+        <h:outputText value=" #{liberaLeitoLimpezaController.leito.leitoID}"/> ? 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="panelPertencesPacientes"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_bloquear" action="#{liberaLeitoLimpezaController.bloquear}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="Cancela_bloqueio" onclick="PF('modalPertencesPacientesWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalLimpeza" width="400" height="150" modal="true" resizable="false" widgetVar="modalLimpezaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="Pertences Pacientes"/> 
+          </h:panelGroup> 
+        </f:facet> Confirma bloqueio por limpeza do leito 
+        <h:outputText value=" #{liberaLeitoLimpezaController.leito.leitoID}"/> ? 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formLimpeza"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_bloquear2" action="#{liberaLeitoLimpezaController.bloquear}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="Cancela_bloqueio2" onclick="PF('modalLimpezaWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

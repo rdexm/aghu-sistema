@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PRONTUARIO_ONLINE_CONSULTAS_AMBULATORIAIS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{consultarAmbulatorioPOLController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{consultarAmbulatorioPOLController}"/>  
+      <h:form id="formConsulta" prependId="false"> 
+        <aghu:panelGeral legend="#{messages.LABEL_CONS_AMBULATORIAIS}"> 
+          <p:outputPanel id="datas_panel" rendered="#{!consultarAmbulatorioPOLController.usuarioAdministrativo}" layout="inline"> 
+            <aghu:linha style="z-index:300"> 
+              <mec:inputTextData label="#{messages.LABEL_DATA_INICIAL}" title="#{messages.DATA_INICIAL_CONSULTA_AMBULATORIAL}" 
+              					 readonly="#{consultarAmbulatorioPOLController.readOnly}" onkeypress="return LockTab(event);" 
+              					 value="#{consultarAmbulatorioPOLController.dtInicial}" reRender="bt_visualizar" id="data_inicial" tipo="data"/>  
+              					 
+              <mec:inputTextData label="#{messages.LABEL_DATA_FINAL}" title="#{messages.DATA_FINAL_CONSULTA_AMBULATORIAL}" 
+              					 readonly="#{consultarAmbulatorioPOLController.readOnly}" onkeypress="return LockTab(event);" 
+              					 value="#{consultarAmbulatorioPOLController.dtFinal}" reRender="bt_visualizar" id="data_final" tipo="data"/>  
+              					 
+              <aghu:acao style="margin-top: 18px !important" newLine="false" id="botoes_impressao"> 
+                <mec:commandButton id="bt_visualize" action="#{consultarAmbulatorioPOLController.print}" onclick="PF('loadDialogWG').show();" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" profile="view"/>  
+                <mec:commandButton id="bt_print" 
+                			 action="#{consultarAmbulatorioPOLController.directPrint}" onclick="PF('loadDialogWG'))}" value="#{messages.LABEL_IMPRIMIR}"
+							 rendered="#{mf:hasPermission(securityController,'permiteImprimirAnamneseEvolucaoAmbulatorioPOL, imprimir')}" profile="print"/> 
+   			    <mec:commandButton id="bt_controle_paciente" value="#{messages.LABEL_CONTROLES}" 
+				  	action="#{consultarAmbulatorioPOLController.imprimirControlePaciente}" ajax="true"
+				  	disabled="#{!consultarAmbulatorioPOLController.habilitarBotaoControle()}"
+				  	process="@this" styleClass="bt_cinza" />
+              </aghu:acao> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <p:outputPanel id="listagem_panel" rendered="#{consultarAmbulatorioPOLController.dataModel.pesquisaAtiva}" layout="inline"> 
+            <aghu:linha> 
+            
+              <mec:serverDataTable dataModel="dataModel"  id="tabelaAmb" controller="#{consultarAmbulatorioPOLController}" selection="selecionado"> 	             
+             
+                  <c:set var="_atendimento" value="#{item}"/>
+                     
+              	  <p:ajax event="rowSelect" update="@(#linhaDescritiva) @(#botoes_impressao)" listener="#{consultarAmbulatorioPOLController.obtemDescricaoConsulta}" />
+              	  <p:ajax event="page" update="@(#linhaDescritiva) @(#botoes_impressao)" />
+                
+                  <p:column rendered="#{!consultarAmbulatorioPOLController.usuarioAdministrativo}" style="width:20px;">
+                  <f:facet name="header"> 
+                    <p:selectBooleanCheckbox id="selecionarTodosCheckBox" value="#{consultarAmbulatorioPOLController.selecionarTodos}" title="#{messages.LABEL_SELECIONAR}"> 
+                      <p:ajax event="change" update="@(#tabelaAmb) @(#bt_visualizar) @(#datas_panel)" listener="#{consultarAmbulatorioPOLController.selecionarTodosAtendimentos}" process="@this" /> 
+                    </p:selectBooleanCheckbox> 
+                  </f:facet>  
+                    
+                    <p:selectBooleanCheckbox name="marcador" id="marcador" value="#{consultarAmbulatorioPOLController.atendimentosSelecionados[_atendimento]}" readonly="#{consultarAmbulatorioPOLController.readOnlyDataTable}">
+                        <p:ajax listener="#{consultarAmbulatorioPOLController.selecionarLinha(_atendimento, consultarAmbulatorioPOLController.atendimentosSelecionados[_atendimento])}" 
+                        		update="@this,  @(#datas_panel)" process="@this" />
+                    </p:selectBooleanCheckbox> 
+           
+                </p:column>  
+                
+	                <p:column rendered="#{!consultarAmbulatorioPOLController.usuarioAdministrativo}" style="width:80px;"> 
+                  <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+                  <mec:commandLink id="link_relAnestesico" rendered="#{_atendimento.controleAtd}" 
+                  				   action="#{consultarAmbulatorioPOLController.relatorioAtoAnestesico(_atendimento.consulta.numero)}" 
+                  				   title="#{messages.LABEL_VISUALIZAR_ATOS_ANESTESICOS}" process="@this"
+                  				   styleClass=" silk-ato-anestesico silk-icon" ajax="true"/>
+                  				     
+                  <mec:commandLink id="link_relAltasAmbulatoriais" 
+                                   rendered="#{fn:length(_atendimento.mamAltasSumarios) gt 0 and mf:hasPermission(securityController,'permiteImprimirAltaAmbulatorialPOL,imprimir')}" 
+                  				   action="#{consultarAmbulatorioPOLController.relatorioAltasAmbulatoriais(_atendimento)}" process="@this"
+                  				   title="#{messages.LABEL_ALTAS_AMBULATORIAIS}" styleClass=" silk-alta-ambulatorial silk-icon" ajax="true"/>
+                  				     
+                  <mec:commandLink id="link_relPrescricaoMedica" process="@this"
+                  				   rendered="#{mf:hasPermission(securityController, 'prescricaoMedicaPOL, visualizar') and consultarAmbulatorioPOLController.atendimentoAmbulatorialComPrescricao(_atendimento)}" action="#{procedimentosPOLController.redirecionarParaVerPrescricaoMedica(_atendimento)}" 
+                  				   title="#{messages.LABEL_PRESCRICOES_AMBULATORIAIS}" styleClass=" silk-prescricao-menu silk-icon"> 
+                  </mec:commandLink> 
+                </p:column>  
+	                
+	                <p:column style="width:45px;"> 
+                  <f:facet name="header">#{messages.LABEL_DATA}</f:facet>  
+                  <h:outputText value="#{_atendimento.dthrInicio}" > 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText>  
+                </p:column>  
+	                <p:column> 
+                  <f:facet name="header">#{messages.LABEL_ESPECIALIDADE}</f:facet>  
+                  <h:outputText value="#{(_atendimento.especialidade.especialidade != null) ? _atendimento.especialidade.especialidade.nomeEspecialidade : _atendimento.especialidade.nomeEspecialidade}"/>  
+                </p:column>  
+	                <p:column> 
+                  <f:facet name="header">#{messages.LABEL_PROFISSIONAL}</f:facet>  
+                  <h:outputText value="#{(_atendimento.consulta.gradeAgendamenConsulta.profServidor != null) ? consultarAmbulatorioPOLController.nomeProfissional(_atendimento.consulta.gradeAgendamenConsulta.profServidor) : consultarAmbulatorioPOLController.nomeProfissional(_atendimento.consulta.gradeAgendamenConsulta.equipe.profissionalResponsavel)}"/>  
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          
+          <aghu:linha id="linhaDescritiva"> 
+            <mec:inputText size="75" label="#{messages.LABEL_ESP_AGENDA}" readonly="true" value="#{consultarAmbulatorioPOLController.nomeEspecialidade}" id="espAgenda"/>  
+            <p:outputPanel id="descConsulta_panel" rendered="#{!consultarAmbulatorioPOLController.usuarioAdministrativo}" layout="inline"> 
+              <mec:inputTextArea id="descConsulta" cols="93" rows="7" label="#{messages.LABEL_DESCRICAO}" title="#{messages.LABEL_DESCRICAO}" value="#{consultarAmbulatorioPOLController.descricaoConsulta}" readonly="true"/>  
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

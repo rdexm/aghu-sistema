@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions">  
+      <p:outputPanel id="panelExternoTopografias" rendered="#{laudoUnicoController.telaVo.exibeTopografias}" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.LABEL_TOPOGRAFIAS}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelAelTopografiaCido" layout="inline"> 
+              <aghu:linha> 
+               
+                <mec:suggestionBox 
+                				id="aelTopografiaCidOs" 
+                				label="#{messages.LABEL_TOPOGRAFIA_CIDOS}" 
+                				title="#{messages.TITLE_TOPOGRAFIA_CIDOS}" 
+                				converter="#{aghCidConverter}" 
+                				descricaoInput="codigo" 
+                				descricaoLabel="descricao"                				 
+                				maxlength="45" 
+                				minChars="#{mf:getDefaultValue(minChars,3)}" 
+                				render="panelAelTopografiaCido,panelListaTopografiaLaudo"
+                				readonly="#{!laudoUnicoController.telaVo.permitirEdicaoTopografia}" 
+                				required="true" 
+                				controller="#{cadastroLaudoUnicoController}"
+                				suggestionAction="pesquisarCidOs"
+                				posSelectionAction="adicionarTopografiaLaudos" 
+                				value="#{cadastroLaudoUnicoController.aelTopografiaCidOs}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_COD_CIDO_CIDS}</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESC_CIDO_CIDS}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton id="btPesquisaCidO" 
+                                     value="#{messages.LABEL_POR_CAPITULO}" 
+                                     action="#{cadastroLaudoUnicoController.pesquisarCidOsPorCapitulo}" 
+                                     rendered="#{mf:hasPermission(securityController,'preencherTopografiaLaudoUnico,persistir')}" 
+                                     readonly="#{!laudoUnicoController.telaVo.permitirEdicaoTopografia}"
+                                     profile="search" 
+                                     ajax="true" 
+                                     process="@this"/>  
+                </aghu:acao> 
+              </aghu:linha> 
+            </p:outputPanel>  
+            <aghu:linha> 
+              <p:outputPanel id="panelListaTopografiaLaudo" layout="inline"> 
+                <p:outputPanel id="innerpanelListaTopografiaCidO" rendered="#{not empty cadastroLaudoUnicoController.listaTopografiaLaudos}" layout="inline"> 
+                  <aghu:linha> 
+                    <p:outputPanel layout="block">
+                     
+                      <mec:serverDataTable 
+                      		id="listaTopografiasLaudos" 
+                      		sortMode="single" 
+                      		style="margin: 0px !important;" 
+                      		scrollHeight="#{cadastroLaudoUnicoController.topografiaDataTableHeight}"
+                      		controller="cadastroLaudoUnicoController" 
+                      		list="#{cadastroLaudoUnicoController.listaTopografiaLaudos}" 
+                      		scrollable="true">
+                      		 
+                        <c:set var="_itemLaudo" value="#{item}"/>  
+                        <p:column style="width: 40px; white-space:nowrap;"> 
+                        
+                          <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+
+		                    <mec:commandLink
+		                    	id="deleteTopografiaCidO"
+		                    	title="#{messages.LABEL_EXCLUIR}"
+		                    	requestDelay="1000"
+		                    	ignoreDupResponses="true"
+		                    	eventsQueue="filaDelete"
+								action="#{cadastroLaudoUnicoController.excluir}"
+								immediate="true"
+		                    	profile="delete"
+		                    	ajax="true"
+		                    	process="@this" 
+		                        disabled="#{!laudoUnicoController.telaVo.permitirEdicaoTopografia}"
+		                        render="panelListaTopografiaLaudo,panelListaDiagnosticoLaudos,panelListaPatologistaAp" 
+		                        rendered="#{mf:hasPermission(securityController,'preencherTopografiaLaudoUnico,excluir')}">
+                            <f:setPropertyActionListener target="#{cadastroLaudoUnicoController.seqExcluirTopografiaLaudoCidOs}" value="#{_itemLaudo.seq}" for="command"/>  
+                            <f:setPropertyActionListener target="#{cadastroLaudoUnicoController.tipoExclusao}" value="panelListaTopografiaLaudo" for="command"/> 
+                          </mec:commandLink> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header">#{messages.LABEL_TOPOGRAFIA}</f:facet>  
+                          <h:outputText value="#{_itemLaudo.topografiaCidOs.codigo} - #{_itemLaudo.topografiaCidOs.descricao}"/> 
+                        </p:column> 
+                      </mec:serverDataTable> 
+                    </p:outputPanel> 
+                  </aghu:linha> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelExternoDiagnosticos" rendered="#{laudoUnicoController.telaVo.exibeDiagnosticos}" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.LABEL_DIAGNOSTICOS_CIDS}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelAelDiagnosticoLaudo" layout="inline"> 
+              <aghu:linha> 
+                <mec:suggestionBox id="aelCidO" 
+                                   label="#{messages.LABEL_DIAGNOSTICO_LAUDOS_CIDO}" 
+                                   title="#{messages.TITLE_DIAGNOSTICO_LAUDOS_CIDO}" 
+                                   converter="#{aghCidConverter}" 
+                                   descricaoInput="codigo" descricaoLabel="descricao" 
+                                   suggestionAction="pesquisarAelCidos" 
+                                   posSelectionAction="adicionarDiagnosticoLaudos"
+                                   render="panelAelDiagnosticoLaudo,panelListaDiagnosticoLaudos"
+                                   maxlength="45" 
+                                   minChars="#{mf:getDefaultValue(minChars,3)}" 
+                                   readonly="#{!laudoUnicoController.telaVo.permitirEdicaoCID}" 
+                                   controller="#{cadastroLaudoUnicoController}" 
+                                   value="#{cadastroLaudoUnicoController.aelCidO}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_COD_CIDO_CIDS}</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESC_CIDO_CIDS}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:suggestionBox id="aghCid" 
+                                   label="#{messages.LABEL_DIAGNOSTICO_LAUDOS_CID10}" 
+                                   title="#{messages.TITLE_DIAGNOSTICO_LAUDOS_CID10}" 
+                                   converter="#{aghCidConverter}" 
+                                   descricaoInput="codigo" descricaoLabel="descricao" 
+                                   suggestionAction="pesquisarCids" 
+                                   posSelectionAction="adicionarDiagnosticoLaudos"
+                                   render="panelAelDiagnosticoLaudo,panelListaDiagnosticoLaudos"
+                                   maxlength="45" minChars="#{mf:getDefaultValue(minChars,3)}" 
+                                   readonly="#{!laudoUnicoController.telaVo.permitirEdicaoCID}" 
+                                   controller="#{cadastroLaudoUnicoController}" 
+                                   value="#{cadastroLaudoUnicoController.aghCid}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_COD_CIDO_CIDS}</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESC_CIDO_CIDS}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton id="btPesquisaDiagLaudos" 
+                                     value="#{messages.LABEL_POR_CAPITULO}" 
+                                     action="#{cadastroLaudoUnicoController.pesquisarCid10PorCapitulo}" 
+                                     disabled="#{!laudoUnicoController.telaVo.permitirEdicaoCID}" 
+                                     rendered="#{mf:hasPermission(securityController,'preencherDiagnosticoLaudoUnico,persistir')}" 
+                                     profile="search" ajax="true" process="@this"> 
+                    <f:setPropertyActionListener target="#{pesquisaCidController.fromPageDiagnosticolaudos}" value="true" for="command"/> 
+                  </mec:commandButton>  
+                </aghu:acao> 
+              </aghu:linha> 
+            </p:outputPanel>  
+            <aghu:linha> 
+              <p:outputPanel id="panelListaDiagnosticoLaudos" layout="inline"> 
+                <p:outputPanel id="innerpanelListaDiagLaudos" rendered="#{not empty cadastroLaudoUnicoController.listaDiagnosticoLaudos}" layout="inline"> 
+                  <aghu:linha> 
+                    <p:outputPanel layout="block" style="width:99%; max-height:265px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;"> 
+                      <mec:serverDataTable id="listaDiagLaudos" 
+                                           rowKeyVar="_itemId" 
+                                           sortMode="single" 
+                                           style="margin: 0px !important;" 
+                                           width="99%" 
+                                           scrollHeight="#{cadastroLaudoUnicoController.diagnosticoDataTableHeight}"
+                                           list="#{cadastroLaudoUnicoController.listaDiagnosticoLaudos}" 
+                                           scrollable="true"> 
+                        <c:set var="_itemDiagLaudos" value="#{item}"/>  
+                        <p:column style="width: 40px; white-space:nowrap;"> 
+                          <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+                          <mec:commandLink id="deleteDiagLaudos" 
+                                           title="#{messages.LABEL_EXCLUIR}" 
+                                           requestDelay="1000" 
+                                           ignoreDupResponses="true" 
+                                           eventsQueue="filaDelete" 
+                                           action="#{cadastroLaudoUnicoController.excluir}" 
+                                           render="panelListaTopografiaLaudo,panelListaDiagnosticoLaudos,panelListaPatologistaAp" 
+                                           disabled="#{!laudoUnicoController.telaVo.permitirEdicaoCID}" 
+                                           rendered="#{mf:hasPermission(securityController,'preencherDiagnosticoLaudoUnico,excluir')}" 
+                                           profile="delete" 
+                                           ajax="true" process="@this"> 
+                            <f:setPropertyActionListener target="#{cadastroLaudoUnicoController.seqExcluirDiagnosticoLaudos}" 
+                                                         value="#{_itemDiagLaudos.seq}" for="command"/>  
+                            <f:setPropertyActionListener target="#{cadastroLaudoUnicoController.tipoExclusao}" 
+                                                         value="panelListaDiagnosticoLaudos" for="command"/> 
+                          </mec:commandLink> 
+                        </p:column>  
+                        <p:column style="width: 80px; white-space:nowrap;"> 
+                          <f:facet name="header">#{messages.LABEL_CLASS_DIAGNOSTICO_LAUDOS}</f:facet>  
+                          <h:outputText value="CID-O" rendered="#{_itemDiagLaudos.aelCidos!= null}"/>  
+                          <h:outputText value="CID-10" rendered="#{_itemDiagLaudos.aghCid!= null}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header">#{messages.LABEL_DIAGNOSTICO_LAUDOS}</f:facet>  
+                          <h:outputText value="#{_itemDiagLaudos.aelCidos.codigo} - #{_itemDiagLaudos.aelCidos.descricao}" rendered="#{_itemDiagLaudos.aelCidos!= null}"/>  
+                          <h:outputText value="#{_itemDiagLaudos.aghCid.codigo} - #{_itemDiagLaudos.aghCid.descricao}" rendered="#{_itemDiagLaudos.aghCid!= null}"/> 
+                        </p:column> 
+                      </mec:serverDataTable> 
+                    </p:outputPanel> 
+                  </aghu:linha> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </p:outputPanel>  
+      <aghu:panelGeral legend="#{messages.LABEL_PATOLOGISTAS}"> 
+        <aghu:linha> 
+          <p:outputPanel id="panelPatologista" layout="inline"> 
+            <mec:suggestionBox 
+            	id="aelPatologista"
+            	label="#{messages.LABEL_PATOLOGISTA}"
+            	title="#{messages.TITLE_PATOLOGISTA_LAUDO_UNICO}"
+            	width="600" size="15"
+            	descricaoInput="servidor.id.matricula"
+            	descricaoLabel="nome"
+            	suggestionAction="pesquisarPatologistaResponsavel"
+            	descricaoLimite="70"
+            	required="#{laudoUnicoController.telaVo.stAelPatologista}"
+            	readonly="#{!laudoUnicoController.telaVo.stAelPatologista or not mf:hasPermission(securityController,'preencherPatologistasLaudoUnico,persistir')}"
+            	controller="#{cadastroLaudoUnicoController}"
+            	posSelectionAction="adicionarPatologistaAp"
+            	value="#{cadastroLaudoUnicoController.aelPatologista}"
+            	render="panelListaPatologistaAp, panelPatologista"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_MATRICULA}</b> 
+                </f:facet> #{item.servidor.id.matricula}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_VINCULO}</b> 
+                </f:facet> #{item.servidor.id.vinCodigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_NOME}</b> 
+                </f:facet> #{item.nome}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_FUNCAO}</b> 
+                </f:facet> #{item.funcao.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <br clear="none"/> 
+          </p:outputPanel>  
+        </aghu:linha>  
+        <p:outputPanel id="panelListaPatologistaAp" layout="inline"> 
+          <p:outputPanel id="innerListaPatologistaAp" rendered="#{not empty cadastroLaudoUnicoController.listaPatologistaLaudoVO}" layout="inline"> 
+            <aghu:linha> 
+              <p:outputPanel layout="block" style="width:99%; max-height:265px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;"> 
+                <mec:serverDataTable name="listaPatologistas" 
+                                     rowKeyVar="_itemId" 
+                                     sortMode="single" 
+                                     style="margin: 0px !important;" width="99%" 
+                                     scrollHeight="#{cadastroLaudoUnicoController.patologistaDataTableHeight}"
+                                     list="#{cadastroLaudoUnicoController.listaPatologistaLaudoVO}" 
+                                     scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column style="width: 60px; white-space:nowrap;" rendered="#{mf:hasPermission(securityController,'preencherPatologistasLaudoUnico,persistir')}"> 
+                    <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+                    <p:commandLink id="upPatologistaAp" title="#{messages.LABEL_PARA_CIMA}" rendered="#{_item.patologistaAp.ordemMedicoLaudo gt 1}" immediate="true" action="#{cadastroLaudoUnicoController.upPatologistaAp(_item.patologistaAp)}" disabled="#{!laudoUnicoController.telaVo.stAelPatologista}" styleClass=" silk-ord-ascendente silk-icon" ajax="true" update="@(#panelListaPatologistaAp)"/>  
+                    <p:commandLink id="upPatologistaApOff" rendered="#{!(_item.patologistaAp.ordemMedicoLaudo gt 1)}" immediate="true" disabled="true" styleClass=" silk-ord-ascendente-off silk-icon" ajax="true" update="@(#panelListaPatologistaAp)"/>  
+                    <p:commandLink id="downPatologistaAp" title="#{messages.LABEL_PARA_BAIXO}" rendered="#{_item.patologistaAp.ordemMedicoLaudo lt fn:length(cadastroLaudoUnicoController.listaPatologistaLaudoVO)}" immediate="true" action="#{cadastroLaudoUnicoController.downPatologistaAp(_item.patologistaAp)}" disabled="#{!laudoUnicoController.telaVo.stAelPatologista}" styleClass=" silk-ord-decrescente silk-icon" ajax="true" update="@(#panelListaPatologistaAp)"/>  
+                    <p:commandLink id="downPatologistaApOff" rendered="#{!(_item.patologistaAp.ordemMedicoLaudo lt fn:length(cadastroLaudoUnicoController.listaPatologistaLaudoVO))}" immediate="true" disabled="true" styleClass=" silk-ord-decrescente-off silk-icon" ajax="true" update="@(#panelListaPatologistaAp)"/>  
+                    <mec:commandLink id="deletePatologistaAp" title="#{messages.LABEL_EXCLUIR}" requestDelay="1000" ignoreDupResponses="true" eventsQueue="filaDelete" render="panelListaTopografiaLaudo,panelListaDiagnosticoLaudos,panelListaPatologistaAp" action="#{cadastroLaudoUnicoController.excluir}" disabled="#{!laudoUnicoController.telaVo.stAelPatologista}" profile="delete" ajax="true" process="@this"> 
+                      <f:setPropertyActionListener target="#{cadastroLaudoUnicoController.seqExcluirPatologistaAp}" value="#{_item.patologistaAp.seq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{cadastroLaudoUnicoController.tipoExclusao}" value="panelListaPatologistaAp" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column style="width: 40px; white-space:nowrap;"> 
+                    <f:facet name="header">#{messages.LABEL_ORDEM}</f:facet>  
+                    <h:outputText value="#{_item.patologistaAp.ordemMedicoLaudo}"/> 
+                  </p:column>  
+                  <p:column style="width: 50px; white-space:nowrap;"> 
+                    <f:facet name="header">#{messages.LABEL_MATRICULA}</f:facet>  
+                    <h:outputText value="#{_item.patologistaAp.servidor.id.matricula}"/> 
+                  </p:column>  
+                  <p:column style="width: 40px; white-space:nowrap;"> 
+                    <f:facet name="header">#{messages.LABEL_VINCULO}</f:facet>  
+                    <h:outputText value="#{_item.patologistaAp.servidor.id.vinCodigo}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header">#{messages.LABEL_NOME_PATOLOGISTA}</f:facet>  
+                    <h:outputText value="#{_item.patologista.nome}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header">#{messages.LABEL_FUNCAO}</f:facet>  
+                    <h:outputText value="#{_item.patologista.funcao.descricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </aghu:panelGeral> 
+  </ui:composition> 
+</html>

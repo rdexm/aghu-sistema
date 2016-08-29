@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_ATIVIDADES}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterEquipamentosCirurgicosController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterEquipamentosCirurgicosController}"/>  
+      <h:form prependId="false" id="formFiltroPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_ASSOCIAR_EQUIPAMENTOS_CIRURGICO}"> 
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_EQUIPAMENTO_CODIGO_DO_EQUIPAMENTO}" title="#{messages.TITLE_EQUIPAMENTO_CODIGO_DO_EQUIPAMENTO}" readonly="true" size="20" maxlength="9" value="#{manterEquipamentosCirurgicosController.equipamentoCirurgico.seq}" id="codigoEquipamento"/>  
+            <mec:selectOneMenu title="#{messages.TITLE_EQUIPAMENTO_SITUACAO}" label="#{messages.LABEL_EQUIPAMENTO_SITUACAO}" enum="DominioSituacao" readonly="true" value="#{manterEquipamentosCirurgicosController.equipamentoCirurgico.situacao}" id="comboSituacaoEquipamento"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText value="#{manterEquipamentosCirurgicosController.equipamentoCirurgico.descricao}" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_EQUIPAMENTO_NOME_DO_EQUIPAMENTO}" readonly="true" size="90" maxlength="200" caixaAlta="false" id="nomeEquipamento"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_PATRIMONIO_EQUIPAMENTO}"> 
+          <p:outputPanel id="panelCamposEquipamentos" rendered="#{mf:hasPermission(securityController,'editarEquipamentoCirurgico,editar')}" layout="inline"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelCodigoEquipamento" layout="inline"> 
+                <mec:suggestionBox label="#{messages.LABEL_EQUIPAMENTO_EQUIPAMENTO}" title="#{messages.TITLE_SUGGESTION_SELECAO_EQUIPAMENTO_CIRURGICO}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarEquipamento" required="true" width="800" id="suggestionEquipamento" controller="#{manterEquipamentosCirurgicosController}" value="#{manterEquipamentosCirurgicosController.equipamentoSelecionado}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>Código</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>Descrição</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:commandButton id="bt_adicionar_equipamento" value="#{messages.LABEL_ADICIONAR}" action="#{manterEquipamentosCirurgicosController.adicionar}" process="@this" profile="add" ajax="true" render="panelCamposEquipamentos, panelTabelaEquipamentos"/> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelTabelaEquipamentos" layout="inline"> 
+            <aghu:linha> 
+              <mec:serverDataTable id="tblistaEquipamentos" rowKeyVar="indEquipamento" rendered="#{not empty manterEquipamentosCirurgicosController.listEquipamento}" list="#{manterEquipamentosCirurgicosController.listEquipamento}" scrollable="true"> 
+                <c:set var="_equipamento" value="#{item}"/>  
+                <p:column rendered="#{mf:hasPermission(securityController,'editarEquipamentoCirurgico,editar')}" styleClass="first-column auto-adjust"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_ACOES}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_EXCLUIR}" rendered="#{mf:hasPermission(securityController,'excluirEquipamentoCirurgico,excluir')}" onclick="PF('modalConfirmacaoExclusaoEquipamentoWG').show();;" styleClass="silk-icon silk-delete" ajax="true" process="@this"> 
+                    <f:setPropertyActionListener target="#{manterEquipamentosCirurgicosController.codigoEquipamentoExclusao}" value="#{_equipamento.codPatrimonio}" for="command"/> 
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column style="width:50px"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_equipamento.codPatrimonio}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_DESCRICAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{manterEquipamentosCirurgicosController.getDescricaoBem(_equipamento)}" rendered="#{manterEquipamentosCirurgicosController.integracaoPatrimonioOnline}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao id="fsetAlteracao"> 
+          <mec:commandButton id="btn_gravar" value="#{messages.LABEL_GRAVAR}" action="#{manterEquipamentosCirurgicosController.gravar}" process="@this" rendered="#{mf:hasPermission(securityController,'editarEquipamentoCirurgico,editar')}" profile="ok" ajax="true"/>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{manterEquipamentosCirurgicosController.voltar}" immediate="true" ajax="true" styleClass="bt_cinza" profile="back"> 
+            <f:setPropertyActionListener target="#{manterEquipamentosCirurgicosPaginatorController.ativo}" value="#{true}" for="command"/> 
+          </mec:commandButton> 
+        </aghu:acao> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoExclusaoEquipamento" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoEquipamentoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO_EQUIPAMENTO_ATIVIDADE}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_ATIVIDADE} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusaoEquipamento"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_excluirEquipamento" action="#{manterEquipamentosCirurgicosController.excluir}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_excluirEquipamento" onclick="PF('modalConfirmacaoExclusaoEquipamentoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

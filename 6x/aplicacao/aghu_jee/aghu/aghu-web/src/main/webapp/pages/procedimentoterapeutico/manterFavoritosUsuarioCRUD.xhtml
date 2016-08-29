@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" 
+xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" 
+xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+xmlns:mf="http://www.mec.gov.br/taglib">
+  
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">  
+    	<ui:define name="head"> 
+      		<title>#{messages.LABEL_FAVORITOS}</title> 
+    	</ui:define>  
+     	<ui:define name="metadata"> 
+      		<f:metadata> 
+        		<f:viewAction action="#{manterFavoritosUsuarioController.iniciar}"/> 
+      		</f:metadata> 
+    	</ui:define>  
+    	<ui:define name="body"> 
+      		<mec:pageConfig controller="#{manterFavoritosUsuarioController}"/>
+      		<h:form prependId="false" id="formFavoritos">
+	      		<aghu:panelGeral id="panelProfissional" legend="#{messages.LABEL_PROFISSIONAL}">
+	      			<aghu:linha>
+	      				<mec:inputText id="inNome" label="#{messages.LABEL_NOME}" readonly="true" 
+						value="#{manterFavoritosUsuarioController.nomeServidor}" size="60"/>
+	      			</aghu:linha>	
+	      		</aghu:panelGeral>
+	      		<aghu:panelGeral id="panelFavoritos" legend="#{messages.LABEL_FAVORITOS}">
+	      			<aghu:linha>
+	      				<mec:selectOneMenu id="cbTipoSessao"
+							 requiredFake="true" style="width: 370px !important;"
+							 label="#{messages.LABEL_TIPO_SESSAO}" 
+							 itemLabel="descricao" 
+							 value="#{manterFavoritosUsuarioController.tipoSessaoCombo}" 
+							 items="#{manterFavoritosUsuarioController.listaTipoSessao}">
+							 <p:ajax event="change" update="@(#cbSalas)" process="@this" listener="#{manterFavoritosUsuarioController.carregarSalas}"/>							 		
+						</mec:selectOneMenu>		
+						<mec:selectOneMenu id="cbSalas"	style="width: 200px !important;"						
+							 label="#{messages.LABEL_SALAS_ACOMODACOES}"							
+							 value="#{manterFavoritosUsuarioController.salaCombo}"
+							 render="@(#formFavoritos)" process="@this" >
+							 <f:selectItems id="salaCombo" var="item"
+							 value="#{manterFavoritosUsuarioController.listaSalas}" 
+							 itemLabel="#{item.descricao}" itemValue="#{item}"/>													
+						</mec:selectOneMenu>
+	      				<aghu:acao newLine="false">
+	      					<mec:commandButton id="btAdicionar" value="#{messages.LABEL_ADICIONAR}" profile="add" action="#{manterFavoritosUsuarioController.adicionar}"/>
+	      				</aghu:acao>
+	      			</aghu:linha>
+	      			<aghu:linha>
+	      				<mec:serverDataTable id="gridListaFavoritos" controller="#{manterFavoritosUsuarioController}"
+	      				list="#{manterFavoritosUsuarioController.favorito}">
+	      				<c:set var="item" value="#{item}" />
+	      					<p:column id="colAcao" styleClass="first-column auto-adjust" exportable="false">
+		      					<mec:commandLink id="link_remover" styleClass="silk-icon silk-delete" title="Excluir" onclick="PF('modalConfirmacaoExclusaoWG').show();" ignoreDupResponses="true" ajax="true" process="@this"> 
+	              					<f:setPropertyActionListener for="command" target="#{manterFavoritosUsuarioController.favorito}" value="#{item}"/> 
+	            				</mec:commandLink>	
+	      					</p:column>
+	      					<p:column id="colTipoSessao" style="width:430px !important;">
+	      						<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_TIPO_SESSAO}" />
+								</f:facet>
+								<p:outputPanel>
+									<h:outputText value="#{item.tpsDescricao}" />
+								</p:outputPanel>	
+	      					</p:column>
+	      					<p:column id="colSala" style="width:430px !important;">
+	      						<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_SALA}" />
+								</f:facet>
+								<p:outputPanel>
+									<h:outputText value="#{item.salasDescricao}" />
+								</p:outputPanel>	
+	      					</p:column>
+	      				</mec:serverDataTable>
+	      			</aghu:linha>	
+	      		</aghu:panelGeral>
+	      			<aghu:acao>
+	      				<mec:commandButton id="btGravar" value="#{messages.LABEL_GRAVAR}" profile="ok" action="#{manterFavoritosUsuarioController.gravar}"/>
+	      			</aghu:acao>
+	      	</h:form>
+			<p:dialog id="modalConfirmacaoExclusao" width="400" height="150"
+				modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+					</h:panelGroup>
+				</f:facet> #{messages.MSG_EXCLUSAO_FAVORITO} 
+	        	<br />
+				<br />
+				<br />
+				<br />
+				<br />
+				<br />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalExclusao">
+						<aghu:linha>
+							<mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir"
+								action="#{manterFavoritosUsuarioController.excluir}"
+								render="outterListPanel" profile="ok" />
+							<mec:commandButton value="#{messages.LABEL_NAO}"
+								onclick="PF('modalConfirmacaoExclusaoWG').hide();"
+								profile="cancel" ajax="true" />
+						</aghu:linha>
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+		</ui:define>
+	</ui:composition>
+</html> 

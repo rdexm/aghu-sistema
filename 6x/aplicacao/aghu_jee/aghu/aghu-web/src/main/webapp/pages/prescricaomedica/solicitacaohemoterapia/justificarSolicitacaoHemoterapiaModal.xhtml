@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+	<p:outputPanel id="panelModalJustificativas" layout="inline">
+		<p:dialog id="modalJustificativas" width="860" style="height: auto !important;"
+			modal="true" resizable="false" widgetVar="modalJustificativasWG" 
+			closable="true">
+			<f:facet name="header">
+				<h:outputText
+					value="#{messages.LABEL_JUSTIFICATIVAS_DE_SOLICITACAO} #{manterSolicitacaoHemoterapiaController.descricaoJustificativaSolicitacao}" />
+			</f:facet>
+			<h:form prependId="false" id="formModalJustificativas">
+				<p:outputPanel id="justificativaPanel" layout="inline">
+					<aghu:linha>
+						<table>
+							<tr>
+								<td width="85%"><p:tabView id="tabPanelAbas" dynamic="false"
+										cache="false" 
+										activeIndex="#{manterSolicitacaoHemoterapiaController.selectedTab}"
+										prependId="false">
+
+										<c:forEach var="_grupo" varStatus="status"
+											items="#{manterSolicitacaoHemoterapiaController.listaGruposDeJustificativas}">
+
+											<p:tab id="aba-#{status.index}" title="#{_grupo.titulo}">
+											<p:outputPanel layout="block" style="width: 100%; height:#{manterSolicitacaoHemoterapiaController.justificativasSelecionadas[_grupo.seq].size() lt 3 ? 'auto' : '300px'}; overflow:auto;">
+						 					<p:dataTable id="tabela-#{status.index}"  
+													var="_justificativa"  
+													value="#{manterSolicitacaoHemoterapiaController.justificativasSelecionadas[_grupo.seq]}">
+
+													<p:column exportable="false" styleClass="first-column auto-adjust">
+														<f:facet name="header">
+															<h:outputText value="#{messages.LABEL_ACAO}" />
+														</f:facet>
+														
+														
+														<h:selectBooleanCheckbox name="marcado" id="marcado"
+															value="#{_justificativa.marcado}" />
+														
+													</p:column>
+
+													<p:column>
+														<f:facet name="header">
+															<h:outputText value="#{messages.LABEL_JUSTIFICATIVA}" />
+														</f:facet>
+														<h:outputText
+															value="#{_justificativa.justificativaComponenteSanguineo.descricao}" />
+													</p:column>
+
+													<p:column>
+														<f:facet name="header">
+															<h:outputText value="#{messages.LABEL_DESCRICAO_LIVRE}" />
+														</f:facet>
+
+														<p:inputTextarea  cols="35" rows="3" id="motivo" autoResize="false" 
+															value="#{_justificativa.descricaoLivre}" 
+															style="text-transform:uppercase" maxlength="500" />
+													</p:column>
+
+												</p:dataTable>
+												</p:outputPanel>
+											</p:tab>
+										</c:forEach>
+									</p:tabView></td>
+
+								<td width="15%" valign="top">
+										<ui:fragment
+											rendered="#{manterSolicitacaoHemoterapiaController.exames != null and 
+											fn:length(manterSolicitacaoHemoterapiaController.exames) gt 0}">
+											<mec:serverDataTable
+												style="margin:0px !important; border-width: 1px 0px 1px 0px !important;"
+												list="#{manterSolicitacaoHemoterapiaController.exames}"
+												scrollable="true">
+												<c:set var="_exame" value="#{item}" />
+												<p:column>
+													<f:facet name="header">
+														<h:outputText
+															value="#{messages.LABEL_ULTIMOS_RESULTADOS_EXAMES}" />
+													</f:facet> #{_exame}
+                      							</p:column>
+											</mec:serverDataTable>
+										</ui:fragment>
+										<ui:fragment
+											rendered="#{manterSolicitacaoHemoterapiaController.exames == null or 
+											fn:length(manterSolicitacaoHemoterapiaController.exames) le 0}">
+											<table cellspacing="0" cellpadding="0" border="0"
+												class="rich-table tbl_docs"
+												style="margin: 0px ! important; border-width: 1px 0px ! important; border-style: solid; border-color: rgb(119, 187, 238);">
+												<thead class="rich-table-thead">
+													<tr class="rich-table-subheader">
+														<th class="rich-table-subheadercell" scope="col"
+															rowspan="1" colspan="1">
+															<div>#{messages.LABEL_ULTIMOS_RESULTADOS_EXAMES}</div>
+														</th>
+													</tr>
+												</thead>
+												<tr class="rich-table-row rich-table-firstrow"
+													style="background-color: rgb(255, 255, 255);">
+													<td  class="rich-table-cell"
+														style="vertical-align: middle;" rowspan="1" colspan="1">#{messages.LABEL_NAO_EXISTEM_EXAMES}</td>
+												</tr>
+											</table>
+										</ui:fragment>
+								</td>
+							</tr>
+						</table>
+					</aghu:linha>
+				</p:outputPanel>
+				<aghu:linha>
+					<p:outputPanel id="panel_button_gravar" layout="block">
+						<mec:commandButton id="confirmar" value="#{messages.LABEL_GRAVAR}"
+							action="#{manterSolicitacaoHemoterapiaController.gravarJustificativas}"
+							profile="ok" 
+							ajax="true"
+							render="lista_itens_hemoterapicos,tabelaItemHemoterapico" />
+						<mec:commandButton id="bt_cancelar"
+							value="#{messages.LABEL_CANCELAR}"
+							action="#{manterSolicitacaoHemoterapiaController.cancelarEdicaoJustificativas}"
+							oncomplete="PF('modalJustificativasWG').hide();"
+							profile="cancel" ajax="true" />
+					</p:outputPanel>
+				</aghu:linha>
+			</h:form>
+		</p:dialog>
+
+	</p:outputPanel>
+</ui:composition>
+</html>

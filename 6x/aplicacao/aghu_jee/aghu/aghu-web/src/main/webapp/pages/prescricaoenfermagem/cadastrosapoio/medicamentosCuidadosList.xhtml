@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_PESQUISAR_MANTER_MEDICAMENTOS']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{medicamentosCuidadosPaginatorController}"/>  
+      <h:form prependId="false" id="formDadosCabecalho"> 
+        <aghu:panelGeral legend="#{messages['TITLE_PESQUISAR_MANTER_MEDICAMENTOS']}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelPesquisa" layout="inline"> 
+              <mec:suggestionBox id="medicamento" 
+              		label="#{messages.LABEL_GRUPO_MEDICAMENTOS}" 
+              		title="#{messages.TITLE_GRUPO_MANTER_MEDICAMENTOS_CUIDADOS}" 
+              		descricaoInput="matCodigo" 
+              		width="600" 
+              		descricaoLabel="descricao" 
+              		suggestionAction="pesquisarMedicamentos" 
+              		controller="#{medicamentosCuidadosPaginatorController}" 
+              		value="#{medicamentosCuidadosPaginatorController.medicamento}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.matCodigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO_SITUACAO}</b> 
+                  </f:facet> #{item.indSituacao.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <mec:selectOneMenu id="indSituacao" enum="DominioSituacaoMedicamento" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_MANTER_MEDICAMENTOS_CUIDADOS}" value="#{medicamentosCuidadosPaginatorController.indSituacao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{medicamentosCuidadosPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{medicamentosCuidadosPaginatorController.limparPesquisa}" render="bt_pesquisar, tabelaMedicamentos, regionTabelaMedicamentos, indSituacao" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formDadosTabela" rendered="#{medicamentosCuidadosPaginatorController.dataModel.pesquisaAtiva}"> 
+        <aghu:panelGeral legend="#{messages['TITLE_LISTA_MEDICAMENTOS_CUIDADOS']}"> 
+          <aghu:linha> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaMedicamentos" controller="#{medicamentosCuidadosPaginatorController}"> 
+              <c:set var="_medicamentos" value="#{item}"/>  
+              <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                <mec:commandLink id="tabelaMedicamentos_link_editar" profile="edit" title="editar" action="#{medicamentosCuidadosPaginatorController.editar}"> 
+                  <f:setPropertyActionListener target="#{medicamentosCuidadosCRUDController.indSituacaoMedicamento}" value="#{_medicamentos.indSituacao}" for="command"/>  
+                  <f:setPropertyActionListener target="#{medicamentosCuidadosCRUDController.matCodigoMedicamento}" value="#{_medicamentos.matCodigo}" for="command"/>  
+                  <f:setPropertyActionListener for="command" target="#{medicamentosCuidadosPaginatorController.medicamentoSelecionado}" value="#{_medicamentos}"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText id="codigo" value="#{_medicamentos.matCodigo}" style="text-transform:uppercase"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText id="descricao" value="#{_medicamentos.descricao}" title="#{_medicamentos.descricao}" style="text-transform:uppercase"> 
+                  <f:converter converterId="truncateConverter"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_OBSERVACOES}"/> 
+                </f:facet>  
+                <h:outputText id="observacao" value="#{_medicamentos.observacao}" title="#{_medicamentos.observacao}" style="text-transform:uppercase" converter="#{truncateConverter}"> 
+                  <f:attribute name="limitDescr" value="30"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ORIENTACOES_ADMINISTRACAO}"/> 
+                </f:facet>  
+                <h:outputText id="orientacoesAdministracao" value="#{_medicamentos.orientacoesAdministracao}" title="#{_medicamentos.orientacoesAdministracao}" style="text-transform:uppercase" converter="#{truncateConverter}"> 
+                  <f:attribute name="limitDescr" value="30"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText id="indSituacao" value="#{_medicamentos.indSituacao.descricao}" style="text-transform:uppercase"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

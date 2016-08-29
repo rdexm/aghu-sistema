@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+		<ui:define name="head">
+			<title>#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO} :: AGHU - MEC</title>
+			<script type="text/javascript" xml:space="preserve">
+	      	$(document).ready(function() {
+	      		binds();
+	    	});
+	    	function binds(){
+	    		$(".textArea").bind('paste', function(e) {
+	    	        e.preventDefault();
+	    	    });
+	    	    $(".textAlterou").keydown(function(e) {
+	    	        $(".btAlterou").click();
+	    	        $(".btAlterou").remove();
+	    	    });
+	    	    $(".textAlterou").keyup(function(e) {
+	    	        $(".btAlterou").click();
+	    	        $(".btAlterou").remove();
+	    	    });
+	        }
+	    	function ubs_exames_aghweb(url, prontuario, consulta, token, banco) {
+				var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+p_prontuario=' + prontuario + '+p_consulta=' + consulta;
+				if (prontuario != null) {
+					abrirJanelaModal(url,{
+						parameters: {	
+							config: 'aghweb',
+							form: 'aelf_solicitar_exame.fmx',
+							otherparams: otherParams },
+							onClose: function() {}
+					});
+				}
+			}
+	      </script>
+		</ui:define>
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:viewAction action="#{atenderPacientesAnamneseController.iniciar}" />
+			</f:metadata>
+		</ui:define>
+		<ui:define name="body">
+			<mec:pageConfig controller="#{atenderPacientesAnamneseController}" ignoreEnter="true" />
+			<h:form prependId="false" id="formAnamnese">
+				<p:outputPanel id="panelAtenderPacientesAgendados" layout="inline">
+					<p:outputPanel id="pnlAnamnese"
+						rendered="#{atenderPacientesAnamneseController.consultaSelecionada != null}"
+						layout="inline">
+						<aghu:panelGeral legend="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA2}">
+							<aghu:linha>
+								<h:outputText id="lblPaciente"
+									value="#{messages.LABEL_PESQUISAR_CONSULTAS_AGENDA_PACIENTE}:"
+									style="padding-right:5px;" />
+								<h:outputText id="txtPaciente"
+									value="#{atenderPacientesAnamneseController.consultaSelecionada.paciente.nome}"
+									style="font-weight:bold;padding-right:10px;" />
+								<h:outputText id="lblIdade" 
+									value="#{messages.LABEL_IDADE}:"
+									style="padding-right:5px;" />
+								<h:outputText id="txtIdade"
+									value="#{atenderPacientesAnamneseController.idadeFormatada}"
+									style="font-weight:bold;padding-right:10px;" />
+								<h:outputText id="lblProntuario"
+									value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PRONTUARIO}:"
+									style="padding-right:5px;" />
+								<h:outputText id="txtProntuario"
+									value="#{atenderPacientesAnamneseController.consultaSelecionada.paciente.prontuario}"
+									style="font-weight:bold;padding-right:10px;" />
+							</aghu:linha>
+							<aghu:linha>
+								<p:accordionPanel id="accordion" height="350" width="100%" prependId="false">
+									<p:tab closable="false" title="#{atenderPacientesAnamneseController.titleAccordion}">
+										<p:outputPanel style="width:50px; float:left; display:inline-block;">
+											<c:forEach xmlns:c="http://java.sun.com/jstl/core"
+												var="_botao" items="#{atenderPacientesAnamneseController.listaBotoes}">
+												<aghu:linha>
+													<p:commandButton value="#{_botao.tipoItemAnamnese.sigla}"
+														profile="clean" process="@this @(#panelTabs)"
+														update="@(#accordion)"
+														action="#{atenderPacientesAnamneseController.alteraTab(_botao)}"
+														style="width:41px !important;"
+														id="#{_botao.tipoItemAnamnese.sigla}_button"
+														title="#{_botao.tipoItemAnamnese.descricao}">
+													</p:commandButton>
+												</aghu:linha>
+											</c:forEach>
+										</p:outputPanel>
+										<p:outputPanel id="panelTabs" style="float:left; display:inline-block;">
+											<aghu:linha>
+												<c:forEach xmlns:c="http://java.sun.com/jstl/core"
+													var="_botao" items="#{atenderPacientesAnamneseController.listaBotoes}">
+													<p:tabView id="#{_botao.tipoItemAnamnese.sigla}"
+														immediate="true" dynamic="false" prependId="false"
+														style="float:left;" rendered="#{_botao.render}">
+														<p:ajax event="tabChange"
+															listener="#{atenderPacientesAnamneseController.obtemDescricaoConsultaAtual}"
+															process="@this" />
+														<p:tab name="aba1" title="#{messages.LABEL_LIVRE}"
+															rendered="#{_botao.tipoItemAnamnese.permiteLivre}">
+															<aghu:panelGeral>
+																<aghu:linha>
+																	<mec:inputTextArea cols="120" rows="11" maxlength="4000"
+																		value="#{_botao.texto}"
+																		styleClass="#{atenderPacientesAnamneseController.permiteColar ? 'textAlterou' : 'textArea textAlterou'}">
+																	</mec:inputTextArea>
+																	<script type="text/javascript" xml:space="preserve">
+									                		 	binds();
+									                		 </script>
+																</aghu:linha>
+															</aghu:panelGeral>
+														</p:tab>
+													</p:tabView>
+												</c:forEach>
+											</aghu:linha>
+										</p:outputPanel>
+									</p:tab>
+									<p:tab closable="false"
+										title="#{messages.LABEL_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_NOTA_ADICIONAL}">
+										<aghu:linha>
+											<p:outputPanel id="texto_notaAdicional2_output"
+												layout="inline">
+												<mec:inputTextArea cols="150" rows="4" requiredFake="true"
+													readonly="#{atenderPacientesAnamneseController.anaSeq eq null}"
+													maxlength="4000"
+													title="#{messages.TITLE_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_NOTA_ADICIONAL}"
+													value="#{atenderPacientesAnamneseController.descrNotaAdicionalAnamnese}"
+													id="texto_notaAdicional2" />
+											</p:outputPanel>
+											<p:outputPanel layout="block" style="float-left;"
+												id="bt_insere_ev_adc">
+												<br clear="none" />
+												<br clear="none" />
+												<mec:commandButton
+													disabled="#{atenderPacientesAnamneseController.anaSeq eq null}"
+													action="#{atenderPacientesAnamneseController.inserirNotaAdicionalAnamnese}"
+													process="@this, texto_notaAdicional2"
+													value="#{messages.LABEL_GRAVAR}" profile="ok" ajax="true"
+													render="texto_notaAdicional2, bt_insere_ev_adc, listAba3" />
+												<mec:commandButton style="float:none !important"
+													action="#{atenderPacientesAnamneseController.limparNotaAdicionalAnamnese}"
+													rendered="#{not atenderPacientesAnamneseController.modoInsercaoNotaAdicional and atenderPacientesAnamneseController.anaSeq ne null}"
+													value="#{messages.LABEL_CANCELAR}" profile="cancel"
+													ajax="true" render="texto_notaAdicional2, bt_insere_ev_adc"
+													process="@this" />
+											</p:outputPanel>
+										</aghu:linha>
+										<aghu:linha id="listAba3" styleClass="tabela-hachurada">
+											<p:outputPanel layout="block"
+												style="width: 100%; height:155px;overflow-y:scroll;">
+												<mec:serverDataTable style="margin: 0px !important;"
+													id="listNotasAdicionais2"
+													list="#{atenderPacientesAnamneseController.notasAdicionaisAnamnesesList}"
+													scrollable="true" scrollHeight="auto">
+													<c:set var="row" value="#{item}" />
+													<p:column style="width:20%;"
+														rendered="#{atenderPacientesAnamneseController.anaSeq ne null}">
+														<f:facet name="header">
+															<h:outputText value="#{messages.LABEL_ACOES}" />
+														</f:facet>
+														<mec:commandLink style="vertical-align:middle;"
+															action="#{atenderPacientesAnamneseController.editarNotaAdicionalAnamnese(row)}"
+															title="#{messages.LABEL_EDITAR}"
+															rendered="#{row.pendente eq 'P' or (row.servidor.id eq atenderPacientesAnamneseController.servidorLogadoSemFimVinculo.id)}"
+															profile="edit" ajax="true"
+															render="texto_notaAdicional2, bt_insere_ev_adc"
+															process="@this" />
+														<mec:commandLink style="vertical-align:middle;"
+															oncomplete="PF('modalConfirmaExclNotaAnamneseWG').show();"
+															rendered="#{row.pendente eq 'P' or (row.servidor.id eq atenderPacientesAnamneseController.servidorLogadoSemFimVinculo.id)}"
+															title="#{messages.LABEL_EXCLUIR}"
+															styleClass="silk-icon silk-delete" ajax="true"
+															process="@this">
+															<f:setPropertyActionListener
+																target="#{atenderPacientesAnamneseController.notaAdicionalAnamneses}"
+																value="#{row}" for="command" />
+														</mec:commandLink>
+													</p:column>
+													<p:column>
+														<f:facet name="header">
+															<h:outputText id="lblDescricaoNAN"
+																value="#{messages.LABEL_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_NOTA_ADICIONAL}" />
+														</f:facet>
+														<h:outputText id="descricaoNAN" value="#{row.descricao}" />
+														<p:tooltip for="descricaoNAN">
+															#{messages.TITLE_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_STATUS}: #{row.pendente.descricao} 
+										                	<br clear="none" /> 
+										                	#{messages.TITLE_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_CRIADO}: #{row.servidor.pessoaFisica.nome}
+										                </p:tooltip>
+													</p:column>
+												</mec:serverDataTable>
+											</p:outputPanel>
+										</aghu:linha>
+									</p:tab>
+								</p:accordionPanel>
+							</aghu:linha>
+						</aghu:panelGeral>
+						<aghu:acao id="panelButtons">
+							<mec:commandButton id="bt_gravar"
+								value="#{messages.LABEL_GRAVAR}"
+								action="#{atenderPacientesAnamneseController.gravar}"
+								styleClass="bt_cinza" profile="ok" block="true"
+								disabled="#{not mf:hasPermission(securityController,'realizarAnamneseAmbulatorio,salvar')}"/>
+
+							<mec:commandButton id="bt_exluir_anamnese"
+								value="#{messages.LABEL_EXCLUIR}"
+								onclick="PF('modalExcluirAnamneseWG').show();"
+								ajax="true" process="@this" styleClass="bt_cinza"
+								disabled="#{not mf:hasPermission(securityController,'realizarAnamneseAmbulatorio,salvar') or atenderPacientesAnamneseController.anaSeq eq null}"/>
+
+							<mec:commandButton id="bt_pendente" 
+								value="#{messages.LABEL_PENDENTE}"
+								onclick="PF('modalPendenteWG').show();" ajax="true"
+								process="@this" render="modalFinalizarAtendimento"
+								styleClass="bt_cinza"
+								disabled="#{not mf:hasPermission(securityController,'realizarAnamneseAmbulatorio,salvar')}"/>
+
+							<mec:commandButton id="bt_solicitar_exames"
+								action="#{atenderPacientesAnamneseController.solicitarExames}"
+								rendered="#{atenderPacientesAnamneseController.verificarModuloExameAtivo() and (mf:hasPermission(securityController,'/exames/solicitacao/solicitacaoExameList.xhtml,render') or mf:hasPermission(securityController,'/exames/solicitacao/solicitacaoExameCRUD.xhtml,render'))}"
+								disabled="#{not atenderPacientesAnamneseController.verificarGravarSolicitacaoExame()}"
+								value="#{messages.LABEL_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_SOLICITAR_EXAMES}"
+								ajax="true" process="@this, panelTabs" styleClass="bt_cinza">
+								<f:setPropertyActionListener
+									target="#{solicitacaoExameController.atendimentoSeq}"
+									value="#{atenderPacientesAnamneseController.atendimento.seq}"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{solicitacaoExameController.paginaChamadora}"
+									value="ambulatorio-atenderPacientesAnamnese" 
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{solicitacaoExameController.origemAmbulatorio}"
+									value="#{true}" 
+									for="command" />
+							</mec:commandButton>
+
+							<mec:commandButton id="bt_prescrever"
+								action="#{atenderPacientesAnamneseController.efetuarPrescricaoAmbulatorial}"
+								value="#{messages.LABEL_PRESCREVER}"
+								disabled="#{!atenderPacientesAnamneseController.verificarPrescricaoAmbulatorialAtiva()}"
+								ajax="true" process="@this, panelTabs" styleClass="bt_cinza">
+								<f:setPropertyActionListener
+									target="#{verificarPrescricaoMedicaController.atendimentoSeq}"
+									value="#{atenderPacientesAnamneseController.atendimento.seq}"
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{verificarPrescricaoMedicaController.voltarPara}"
+									value="ambulatorio-atenderPacientesAnamnese" 
+									for="command" />
+								<f:setPropertyActionListener
+									target="#{verificarPrescricaoMedicaController.habilitaVoltar}"
+									value="#{true}" 
+									for="command" />
+							</mec:commandButton>
+
+							<mec:commandButton id="bt_ok"
+								action="#{atenderPacientesAnamneseController.gravarOk}"
+								value="#{messages.LABEL_OK}" ajax="true"
+								process="@this @(#panelTabs)" styleClass="bt_cinza" block="true"
+								disabled="#{not mf:hasPermission(securityController,'realizarAnamneseAmbulatorio,salvar')}"/>
+
+							<mec:commandButton id="bt_voltar"
+								action="#{atenderPacientesAnamneseController.voltar}"
+								value="#{messages.LABEL_VOLTAR}" profile="back" ajax="true"
+								process="@this" />
+						</aghu:acao>
+					</p:outputPanel>
+				</p:outputPanel>
+			</h:form>
+	
+			<p:outputPanel id="panelModalFinalizarAtendimento" layout="inline">
+				<p:outputPanel layout="inline">
+					<ui:include src="/pages/ambulatorio/pacientesagendados/modalFinalizarAtendimento.xhtml" />
+				</p:outputPanel>
+			</p:outputPanel>
+			
+			<p:dialog id="modalExcluirAnamnese" width="400" height="150" autosized="true"
+				modal="true" resizable="false" widgetVar="modalExcluirAnamneseWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText
+							value="#{messages.TITLE_CONFIRMACAO_EXCLUSAO_ANAMNESE}" />
+					</h:panelGroup>
+				</f:facet> #{messages.MSG_CONFIRMACAO_EXCLUSAO_ANAMNESE}
+	          <br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalExcluirAnamnese">
+						<mec:commandButton id="bt_sim_excluir"
+							value="#{messages.LABEL_SIM}"
+							action="#{atenderPacientesAnamneseController.excluir}"
+							oncomplete="PF('modalExcluirAnamneseWG').hide();"
+							process="@this" profile="ok" ajax="true" />
+						<mec:commandButton id="bt_nao_excluir" 
+							value="#{messages.LABEL_NAO}"
+							onclick="PF('modalExcluirAnamneseWG').hide();" profile="cancel"
+							ajax="true" process="@this" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+			
+			<p:dialog id="modalPendente" width="400" autosized="true" modal="true" resizable="false" widgetVar="modalPendenteWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_MOTIVO_PENDENCIA_ANAMNESE}" />
+					</h:panelGroup>
+				</f:facet> #{messages.ATENDIMENTO_FICARA_PENDENTE}
+	          	<br clear="none" />
+				<br clear="none" />  
+	          	#{messages.INFORMAR_MOTIVO_ATENDIMENTO_PENDENTE}
+	          	<h:panelGroup>
+					<h:form prependId="false" id="formModalPendente">
+						<p:selectOneRadio id="radioPendencia" 
+							value="#{atenderPacientesAnamneseController.motivoPendencia}" 
+							layout="pageDirection" unselectable="true">
+							<f:selectItem itemLabel="#{messages.LABEL_PENDENCIA1}" itemValue="EXA" />
+							<f:selectItem itemLabel="#{messages.LABEL_PENDENCIA2}" itemValue="PRE" />
+							<f:selectItem itemLabel="#{messages.LABEL_PENDENCIA3}" itemValue="POS" />
+							<f:selectItem itemLabel="#{messages.LABEL_PENDENCIA4}" itemValue="OUT" />
+						</p:selectOneRadio>
+						<br clear="none" />
+						<mec:commandButton id="bt_confirmar_gravar"
+							value="#{messages.LABEL_GRAVAR}"
+							action="#{atenderPacientesAnamneseController.gravarMotivoPendencia}"
+							profile="ok" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+	
+			<p:dialog id="modalConfirmaExclNotaAnamnese" width="400" height="150"
+				modal="true" resizable="false"
+				widgetVar="modalConfirmaExclNotaAnamneseWG">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_EXCLUIR_NOTA_ADICIONAL}" />
+				</f:facet> #{messages.LABEL_EXCLUIR_CONFIRMA} #{messages.LABEL_EXCLUIR_NOTA_ADICIONAL}? 
+			    <br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalConfirmaExclNotaAnamnese">
+						<mec:commandButton
+							action="#{atenderPacientesAnamneseController.excluirNotaAdicionalAnamnese}"
+							oncomplete="PF('modalConfirmaExclNotaAnamneseWG').hide();"
+							value="#{messages.LABEL_SIM}" profile="ok" ajax="true"
+							render="texto_notaAdicional2_output, bt_insere_ev_adc, listNotasAdicionais2"
+							process="@this" />
+						<mec:commandButton value="#{messages.LABEL_NAO}"
+							onclick="PF('modalConfirmaExclNotaAnamneseWG').hide();"
+							profile="cancel" ajax="true" process="@this" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+		</ui:define>
+	</ui:composition>
+</html>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_ENCAMINHAR_SC_PONTO_PARADA}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{encaminharScPontoParadaController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{encaminharScPontoParadaController}"/>  
+      <h:form prependId="true"> 
+        <pe:remoteCommand name="selecionarPontoParada" update="tabelaScPontoParada,bt_comprador,bt_gravar,bt_cancelarEncaminharComprador,bt_cancelar" actionListener="#{encaminharScPontoParadaController.obterPontoParadaVerificarAcaoPermitida()}"> 
+          <pe:assignableParam name="param1" assignTo="#{encaminharScPontoParadaController.numeroScoPontoParadaSolicitacao}"/> 
+        </pe:remoteCommand>  
+        <pe:remoteCommand name="selecionarComprador" update="tabelaScPontoParadaComprador" actionListener="#{encaminharScPontoParadaController.obterRapServidorAcaoPermitida()}"> 
+          <pe:assignableParam name="param2" assignTo="#{encaminharScPontoParadaController.vinCodigo}"/>  
+          <pe:assignableParam name="param3" assignTo="#{encaminharScPontoParadaController.matricula}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <h:form prependId="true" id="encaminharSCPontoParadaForm"> 
+        <p:outputPanel id="panelEncaminhamento" rendered="#{encaminharScPontoParadaController.desabilitaTabelaComprador}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral style="margin-left: 4px !important; margin-right: 4px !important;" legend="#{messages.LABEL_ENCAMINHAR_SC_PONTO_PARADA}"> 
+            <p:outputPanel layout="block" style="overflow-x:hidden; overflow-y:scroll; height:300px"> 
+              <mec:serverDataTable id="tabelaScPontoParada" list="#{encaminharScPontoParadaController.scoPontoParadaSolicitacaos}" scrollable="true"> 
+                <c:set var="_pps" value="#{item}"/>  
+                <p:column style="width:1%; text-align:center;"> 
+                  <p:outputPanel rendered="#{_pps.codigo.equals(encaminharScPontoParadaController.numeroScoPontoParadaSolicitacao)}" layout="inline"> 
+                    <input type="radio" id="#{_pps.codigo}" name="group1" onchange="selecionarPontoParada('#{_pps.codigo}')" checked="checked"/> 
+                  </p:outputPanel>  
+                  <p:outputPanel rendered="#{!_pps.codigo.equals(encaminharScPontoParadaController.numeroScoPontoParadaSolicitacao)}" layout="inline"> 
+                    <input type="radio" id="#{_pps.codigo}" onchange="selecionarPontoParada('#{_pps.codigo}')" name="group1"/> 
+                  </p:outputPanel> 
+                </p:column>  
+                <p:column style="width:99%"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PONTO_PARADA_ENCAMINHAR_SC_PONTO_PARADA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_pps.codigoDescricao}"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{_pps.codigoDescricao}"/> 
+                  </p:tooltip> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </p:outputPanel> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelEncaminhamentoComprador" rendered="#{!encaminharScPontoParadaController.desabilitaTabelaComprador}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral style="margin-left: 4px !important; margin-right: 4px !important;" legend="#{messages.LABEL_ENCAMINHAR_COMPRADOR_SC_PONTO_PARADA}"> 
+            <p:outputPanel layout="block" style="overflow-x:hidden; overflow-y:scroll; height:300px"> 
+              <mec:serverDataTable id="tabelaScPontoParadaComprador" list="#{encaminharScPontoParadaController.rapServidores}" scrollable="true"> 
+                <c:set var="_servidores" value="#{item}"/>  
+                <p:column style="width:1%; text-align:center;"> 
+                  <p:outputPanel rendered="#{_servidores.id.equals(encaminharScPontoParadaController.rapServidor.id)}" layout="inline"> 
+                    <input type="radio" id="#{_servidores.id}" name="group2" onchange="selecionarComprador('#{_servidores.id}')" checked="checked"/> 
+                  </p:outputPanel>  
+                  <p:outputPanel rendered="#{!_servidores.id.equals(encaminharScPontoParadaController.rapServidor.id)}" layout="inline"> 
+                    <input type="radio" id="#{_servidores.id}" onchange="selecionarComprador('#{_servidores.id.vinCodigo}','#{_servidores.id.matricula}')" name="group2"/> 
+                  </p:outputPanel> 
+                </p:column>  
+                <p:column style="width:5%"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MATRICULA_ENCAMINHAR_SC_PONTO_PARADA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_servidores.id.matricula}"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{_servidores.id.matricula}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column style="width:5%"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VINCULO_ENCAMINHAR_SC_PONTO_PARADA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_servidores.id.vinCodigo}"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{_servidores.id.vinCodigo}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column style="width:89%"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME_COMPRADOR_ENCAMINHAR_SC_PONTO_PARADA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_servidores.pessoaFisica.nome}"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{_servidores.pessoaFisica.nome}"/> 
+                  </p:tooltip> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </p:outputPanel> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <aghu:linha> 
+          <mec:commandButton value="#{messages.LABEL_GRAVAR}" id="bt_gravar" block="true" disabled="#{!encaminharScPontoParadaController.desabilitaBotaoComprador and encaminharScPontoParadaController.desabilitaTabelaComprador}" action="#{encaminharScPontoParadaController.gravar}" profile="ok"/>  
+          <mec:commandButton value="#{messages.LABEL_COMPRADOR_ENCAMINHAR_SC_PONTO_PARADA}" id="bt_comprador" rendered="#{encaminharScPontoParadaController.desabilitaTabelaComprador}" disabled="#{encaminharScPontoParadaController.desabilitaBotaoComprador}" action="#{encaminharScPontoParadaController.ativarTabelaComprador}" styleClass="bt_cinza"/>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" immediate="true" id="bt_cancelar" rendered="#{encaminharScPontoParadaController.desabilitaTabelaComprador}" action="#{encaminharScPontoParadaController.cancelar}" profile="cancel" ajax="true"/>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" id="bt_cancelarEncaminharComprador" rendered="#{!encaminharScPontoParadaController.desabilitaTabelaComprador}" action="#{encaminharScPontoParadaController.cancelarEncaminharComprador}" profile="cancel" styleClass="  alinha-direita"/> 
+        </aghu:linha> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

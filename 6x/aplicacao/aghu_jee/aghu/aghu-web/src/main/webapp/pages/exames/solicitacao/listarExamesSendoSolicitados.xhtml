@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition>
+	<style>
+.myTable table {
+	table-layout: auto !important;
+}
+</style>
+	<aghu:linha>
+		<p:focus for="sbExames" />
+		
+	<aghu:linha>
+		<mec:selectOneRadio enum="DominioTipoPesquisaExame"
+			value="#{listarExamesSendoSolicitadosController.tipoPesquisa}" id="tipoPesquisa"> 
+			<p:ajax process="@this" event="change"/>
+		</mec:selectOneRadio>
+	</aghu:linha>
+
+		<p:outputPanel id="panelSbExames">
+			<mec:suggestionBox label="#{messages.LABEL_SB_EXAME}"
+				title="#{messages.LABEL_TITLE_EXAME}" maxlength="50"
+				suggestionAction="obterExames"
+				posDeleteAction="posDeleteActionSbExames"
+				descricaoInput="idExameFormatado"
+				descricaoLabel="descricaoExameFormatada" requiredFake="true"
+				readonly="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.emEdicao or not solicitacaoExameController.existeUnidadeFuncional or solicitacaoExameController.inibeSolicExame}"
+				width="900px" style="text-transform:uppercase" id="sbExames"
+				controller="#{listarExamesSendoSolicitadosController}"
+				value="#{listarExamesSendoSolicitadosController.exameSuggestionVO}"
+				render="panelSolicitacaoExame" var="itemSbExames"
+				itemValue="#{itemSbExames}" panelStyleClass="myTable"
+				cache="false">
+
+				<p:column style="width:32% !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_NOME_USUAL_EXAME}" />
+					</f:facet>
+					<h:outputText value="#{itemSbExames.sinonimosComAcento != null ? itemSbExames.sinonimosComAcento : itemSbExames.sinonimoExameNome}"
+						style="white-space:pre-line;" />
+				</p:column>
+				<p:column style="width:12% !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MATERIAL}" />
+					</f:facet>
+					<h:outputText value="#{itemSbExames.manDescricao}" />
+				</p:column>
+				<p:column style="width:12% !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_UNIDADE}" />
+					</f:facet>
+					<h:outputText value="#{itemSbExames.ufeUnfDescricao}" />
+				</p:column>
+				<p:column style="width:6% !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_SIGLA}" />
+					</f:facet>
+					<h:outputText value="#{itemSbExames.exameSigla}"
+						style="white-space:pre-line;" />
+				</p:column>
+				<p:column style="width:28% !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_NOME}" />
+					</f:facet>
+					<h:outputText value="#{itemSbExames.exaDescricao}" />
+				</p:column>
+			</mec:suggestionBox>
+
+		</p:outputPanel>
+		<br clear="none" />
+		<p:outputPanel layout="block" style="float:left;font-style:italic"
+			rendered="#{not solicitacaoExameController.existeUnidadeFuncional}">
+			<h:outputText
+				value="#{messages.LABEL_INFORME_UNIDADE_FUNCIONAL_EXIBIR_EXAME}" />
+		</p:outputPanel>
+	</aghu:linha>
+	<aghu:linha>
+		<p:outputPanel id="panelCamposItem" layout="inline">
+			<mec:field label="#{messages.LABEL_EXAME_URGENTE}" 
+        		showLabel="true" title="#{messages.LABEL_TITLE_EXAME_URGENTE}"
+        		posicaoLabel="acima" readonly="#{!listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.permiteUrgente}" 
+        		escape="true">
+					<h:selectBooleanCheckbox label="#{messages.LABEL_EXAME_URGENTE}" 
+					disabled="#{!listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.permiteUrgente}"
+					value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.urgente}"
+					id="ehAntiCoagulante">
+						<p:ajax event="change"
+								update="@(#panelDataHoraProgramada) @(#comboSituacaoItem)"
+								process="@this"
+								listener="#{listarExamesSendoSolicitadosController.checkUrgente}" />
+					</h:selectBooleanCheckbox>
+			</mec:field>
+			<p:outputPanel id="panelDataHoraProgramada" layout="inline">
+				<mec:inputTextData label="#{messages.LABEL_DATA_HORA_EXAME}"
+					title="#{messages.LABEL_TITLE_DATA_HORA_EXAME}"
+                    requiredFake="true"
+                    readonly="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.urgente or listarExamesSendoSolicitadosController.bloqueiaCalendar}"
+					value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.dataProgramada}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.calendar and mf:hasPermission(securityController,'informarHorarioColeta,executar')}"
+					id="dataProgramada" tipo="datahora">
+					<p:ajax event="change"
+						update="@(#panelDataHoraProgramada)"
+						process="@this"
+						listener="#{listarExamesSendoSolicitadosController.validaDataProgramadaUsuario}" />
+						
+					<p:ajax event="dateSelect"
+						update="@(#panelDataHoraProgramada)"
+						process="@this"
+						listener="#{listarExamesSendoSolicitadosController.validaDataProgramadaUsuario}" />
+						
+				</mec:inputTextData>
+				<mec:selectOneMenu label="#{messages.LABEL_DATA_HORA_EXAME}"
+					title="#{messages.LABEL_TITLE_DATA_HORA_EXAME_COMBO}"
+					requiredFake="true" style="width: 180px"
+					items="#{listarExamesSendoSolicitadosController.listaDataHoraProgramada}"
+					itemLabel="formattedDate" itemValue="date"
+					value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.dataProgramada}"
+					rendered="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.calendar and mf:hasPermission(securityController,'informarHorarioColeta,executar')}"
+					id="comboDataProgramada">
+					<f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm"
+						for="comboDataProgramada" />
+				</mec:selectOneMenu>
+			</p:outputPanel>
+			<mec:selectOneMenu label="#{messages.LABEL_SITUACAO_EXAME}"
+				itemLabel="descricao"
+				items="#{listarExamesSendoSolicitadosController.situacaoItemSolicitacoes}"
+				title="#{messages.LABEL_TITLE_SITUACAO_EXAME}"
+				id="comboSituacaoItem" style="width: 180px" noSelectionOption="false"
+				readonly="#{solicitacaoExameController.usuarioEstudanteMedicina}"
+				value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.situacaoCodigo}">
+				<p:ajax event="change" update="@(#panelDataHoraProgramada)"
+					process="@this"
+					listener="#{listarExamesSendoSolicitadosController.reLoadDataHoraProgramada}" />
+			</mec:selectOneMenu>
+		</p:outputPanel>
+	</aghu:linha>
+	<aghu:linha>
+		<p:outputPanel id="panelContentInternalTabs" >
+			<p:tabView id="tapPanel" activeIndex="#{listarExamesSendoSolicitadosController.indexAbaAtiva}"
+				rendered="#{listarExamesSendoSolicitadosController.existeAbaAtiva()}"
+				dynamic="false" prependId="false">
+				<p:tab title="#{messages.LABEL_RECOMENDACOES}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaRecomendacoes and not empty listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.recomendacaoExameList}">
+					<f:facet name="label">
+						<h:outputText value="#{messages.LABEL_RECOMENDACOES}" />
+					</f:facet>
+					<p:outputPanel layout="block" style="min-height: 60px;">
+						<aghu:linha>
+							<mec:serverDataTable name="tabelaRecomendacoes"
+								rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaRecomendacoes}"
+								list="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.recomendacaoExameList}"
+								scrollable="true" 
+              					scrollHeight="50" >
+								<c:set var="_obj" value="#{item}" />
+								<p:column width="10%">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_RESPONSAVEIS}" />
+									</f:facet>
+									<h:outputText value="#{_obj.responsavel.descricao}" />
+								</p:column>
+								<p:column style="width:90%;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_RECOMENDACOES}" />
+									</f:facet>
+									<h:outputText value="#{_obj.descricao}" />
+								</p:column>
+							</mec:serverDataTable>
+						</aghu:linha>
+					</p:outputPanel>
+				</p:tab>
+				<p:tab title="#{messages.LABEL_ABA_TIPO_TRANSPORTE}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaTipoTransporte}">
+					<f:facet name="label">
+						<h:outputText value="#{messages.LABEL_ABA_TIPO_TRANSPORTE}" />
+					</f:facet>
+					<p:outputPanel layout="block" style="min-height: 50px;">
+						<aghu:linha>
+							<mec:selectOneMenu label="#{messages.LABEL_TRANSPORTE_PACIENTE}"
+								title="#{messages.TITLE_TRANSPORTE_PACIENTE}" requiredFake="true"
+								enum="DominioTipoTransporte"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.tipoTransporte}"
+								id="tipoTransporte">
+								<p:ajax event="change"
+									update="@(#panelContentInternalTabs)"
+									process="@this"
+									listener="#{listarExamesSendoSolicitadosController.pesquisarQuestionarioPorExame}" />
+							</mec:selectOneMenu>
+							<mec:selectOneMenu label="#{messages.LABEL_OXIGENIO_TRANSPORTE}"
+								title="#{messages.TITLE_OXIGENIO_TRANSPORTE}" requiredFake="true"
+								enum="DominioSimNao"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.oxigenioTransporte}"
+								id="usoO2" />
+						</aghu:linha>
+					</p:outputPanel>
+				</p:tab>
+				<p:tab title="#{messages.LABEL_ABA_INTERVALO_COLETA}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaIntervColeta}">
+					<f:facet name="label">
+						<h:outputText value="#{messages.LABEL_ABA_INTERVALO_COLETA}" />
+					</f:facet>
+					<p:outputPanel layout="block" style="min-height: 50px;">
+						<aghu:linha>
+							<mec:suggestionBox
+								var="_itemIntervalo" itemValue="#{_itemIntervalo}"
+								label="#{messages.LABEL_INTERVALO_COLETA_CADASTRADO}"
+								title="#{messages.TITLE_INTERVALO_COLETA_CADASTRADO}"
+								required="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaIntervColeta}"
+								suggestionAction="sbObterIntervaloColeta"
+								descricaoInput="intervaloColeta.seq"
+								descricaoLabel="intervaloColeta.descricao" requiredFake="true"
+								size="70" maxlength="45" width="800" id="sbConvenio"
+								controller="#{listarExamesSendoSolicitadosController}"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.tmpIntervaloColeta}">
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+									</f:facet><h:outputText value="#{_itemIntervalo.intervaloColeta.descricao}" />
+		              			</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_COLETAS}" />
+									</f:facet><h:outputText value="#{_itemIntervalo.intervaloColeta.nroColetas}" />
+		             			</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_VOLUME}" />
+									</f:facet><h:outputText value="#{_itemIntervalo.intervaloColeta.volumeIngerido}" />
+		              			</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_UNIDADE}" />
+									</f:facet><h:outputText value="#{_itemIntervalo.intervaloColeta.unidMedidaVolume}" />
+		              			</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_SUBSTANCIA}" />
+									</f:facet><h:outputText  value="#{_itemIntervalo.intervaloColeta.tipoSubstancia}" />
+		              			</p:column>
+							</mec:suggestionBox>
+						</aghu:linha>
+					</p:outputPanel>
+				</p:tab>
+				<p:tab title="#{messages.LABEL_ABA_NO_AMOSTRAS}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaNoAmostras}">
+					<f:facet name="label">
+						<h:outputText value="#{messages.LABEL_ABA_NO_AMOSTRAS}" />
+					</f:facet>
+					<p:outputPanel layout="block" style="min-height: 50px;">
+						<aghu:linha>
+							<mec:inputNumero title="#{messages.TITLE_NUMERO_AMOSTRA}"
+								label="#{messages.LABEL_NUMERO_AMOSTRA}"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.numeroAmostra}"
+								requiredFake="true" maxlength="3" size="6" id="numeroAmostra" />
+							<mec:inputText label="#{messages.LABEL_INTERVALO_HORAS}"
+								title="#{messages.TITLE_INTERVALO_HORAS}"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.intervaloHoras}"
+								incluirMascaraHora="true" size="5" maxlength="5"
+								converter="horaMinutoConverter" requiredFake="true"
+								readonly="#{not listarExamesSendoSolicitadosController.intervaloHorasObrigatorio}"
+								rendered="#{listarExamesSendoSolicitadosController.intervaloHorasObrigatorio}"
+								removerCaratersEspeciais="false" id="intervaloHoraObrig" />
+							<mec:inputText label="#{messages.LABEL_INTERVALO_HORAS}"
+								title="#{messages.TITLE_INTERVALO_HORAS}"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.intervaloHoras}"
+								incluirMascaraHora="true" size="5" maxlength="5"
+								converter="horaMinutoConverter" ajaxValidation="true"
+								rendered="#{not listarExamesSendoSolicitadosController.intervaloHorasObrigatorio}"
+								readonly="#{not listarExamesSendoSolicitadosController.intervaloHorasObrigatorio}"
+								removerCaratersEspeciais="false" id="intervaloHora" />
+							<mec:inputNumero title="#{messages.TITLE_INTERVALO_DIAS}"
+								label="#{messages.LABEL_INTERVALO_DIAS}" requiredFake="true"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.intervaloDias}"
+								maxlength="3"
+								rendered="#{not listarExamesSendoSolicitadosController.intervaloHorasObrigatorio}"
+								readonly="#{listarExamesSendoSolicitadosController.intervaloHorasObrigatorio}"
+								size="6" id="intervaloDiasObrig" />
+							<mec:inputNumero title="#{messages.TITLE_INTERVALO_DIAS}"
+								label="#{messages.LABEL_INTERVALO_DIAS}"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.intervaloDias}"
+								maxlength="3"
+								rendered="#{listarExamesSendoSolicitadosController.intervaloHorasObrigatorio}"
+								readonly="#{listarExamesSendoSolicitadosController.intervaloHorasObrigatorio}"
+								size="6" id="intervaloDias" />
+						</aghu:linha>
+					</p:outputPanel>
+				</p:tab>
+				<p:tab title="#{messages.LABEL_ABA_CONCENT_O2}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaConcentO2}">
+					<f:facet name="label">
+						<h:outputText value="#{messages.LABEL_ABA_CONCENT_O2}" />
+					</f:facet>
+					<p:outputPanel layout="block" style="min-height: 50px;">
+						<mec:selectOneMenu label="#{messages.LABEL_CONCENTRACAO_OXIGENIO}"
+							title="#{messages.TITLE_CONCENTRACAO_OXIGENIO}"
+							value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.formaRespiracao}"
+							enum="DominioFormaRespiracao" id="formaRespiracao">
+							<p:ajax event="change" update="@(#panelCampos)" process="@this"
+								listener="#{listarExamesSendoSolicitadosController.changeFormaRespiracao}" />
+						</mec:selectOneMenu>
+						<p:outputPanel id="panelCampos" layout="inline">
+							<mec:inputNumero label="#{messages.LABEL_LITRO_OXIGENIO}"
+								title="#{messages.TITLE_LITRO_OXIGENIO}" decimais="1"
+								inteiros="2" requiredFake="true" maxlength="4"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.litrosOxigenio}"
+								rendered="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyLitroOxigenios}"
+								readonly="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyLitroOxigenios}"
+								id="litrosOxigenioObrig" />
+							<mec:inputNumero label="#{messages.LABEL_LITRO_OXIGENIO}"
+								title="#{messages.TITLE_LITRO_OXIGENIO}" decimais="1"
+								inteiros="2" maxlength="4"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.litrosOxigenio}"
+								rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyLitroOxigenios}"
+								readonly="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyLitroOxigenios}"
+								style="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyPercOxigenios ? 'position:relative;bottom:-6px;' : ''}"
+								id="litrosOxigenio" />
+							<mec:inputNumero title="#{messages.TITLE_PERC_OXIGENIO}"
+								label="#{messages.LABEL_PERC_OXIGENIO}" requiredFake="true"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.percOxigenio}"
+								maxlength="4"
+								rendered="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyPercOxigenios}"
+								readonly="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyPercOxigenios}"
+								size="10" id="percOxigenioObrig" />
+							<mec:inputNumero title="#{messages.TITLE_PERC_OXIGENIO}"
+								label="#{messages.LABEL_PERC_OXIGENIO}"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.percOxigenio}"
+								maxlength="4"
+								rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyPercOxigenios}"
+								readonly="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyPercOxigenios}"
+								size="10"
+								style="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.readOnlyLitroOxigenios ? 'position:relative;bottom:-6px;' : ''}"
+								id="percOxigenio" />
+						</p:outputPanel>
+					</p:outputPanel>
+				</p:tab>
+				<p:tab id="tabMatAnalise"
+					title="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeRegiaoAnatomica ? (messages.LABEL_ABA_REG_MAT_ANALISE) : (messages.LABEL_MAT_ANALISE)}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaRegMatAnalise}">
+					<f:facet name="label">
+						<h:outputText
+							value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeRegiaoAnatomica ? (messages.LABEL_ABA_REG_MAT_ANALISE) : (messages.LABEL_MAT_ANALISE)}" />
+					</f:facet>
+					<p:outputPanel style="min-height:110px;" id="panelCamposMaterialAnalise" layout="block">
+						<aghu:linha>
+							<p:outputPanel layout="block"
+								rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeRegiaoAnatomica}">
+								<mec:selectOneRadio enum="DominioOutrosFarmacos"
+									label="#{messages.LABEL_CADASTRO_REGIAO_ANATOMICA}"
+									title="#{messages.TITLE_CADASTRO_REGIAO_ANATOMICA}"
+									value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.cadastroRegiaoAnatomica}"
+									id="cadastroRegiaoAnatomica">
+									<p:ajax event="change" update="@(#panelCamposMaterialAnalise)"
+										process="@this"
+										listener="#{listarExamesSendoSolicitadosController.verificarStatusCadastroRegiaoAnatomica}" />
+								</mec:selectOneRadio>
+								<mec:suggestionBox label="#{messages.LABEL_REGIAO}"
+									title="#{messages.TITLE_REGIAO}"
+									suggestionAction="sbObterRegiaoAnatomica" descricaoInput="seq"
+									descricaoLabel="descricao"
+									styleClassField="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeRegiaoAnatomica ? 'frm_obrigatorio' : ''}"
+									size="70" maxlength="45" width="400"
+									readonly="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeRegiaoAnatomica}"
+									rendered="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isCadastroRegiaoAnatomica}"
+									id="sbRegiaoAnatomica"
+									controller="#{listarExamesSendoSolicitadosController}"
+									value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.regiaoAnatomica}"
+									var="_itemSbRegiaoAnatomica"
+									itemValue="#{_itemSbRegiaoAnatomica}">
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+										</f:facet><h:outputText value="#{_itemSbRegiaoAnatomica.descricao}" />
+	                  				</p:column>
+								</mec:suggestionBox>
+								<mec:inputText id="descRegiaoAnatomica"
+									label="#{messages.LABEL_REGIAO}"
+									title="#{messages.TITLE_REGIAO_ANATOMICA}" size="60"
+									maxlength="100"
+									styleClassField="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeRegiaoAnatomica ? 'frm_obrigatorio' : ''}"
+									rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isCadastroRegiaoAnatomica}"
+									readonly="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeRegiaoAnatomica}"
+									value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.descRegiaoAnatomica}"
+									style="text-transform:uppercase" />
+							</p:outputPanel>
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputText id="descMaterialAnalise"
+								label="#{messages.LABEL_DESC_MATERIAL_ANALISE}"
+								title="#{messages.TITLE_DESC_MATERIAL_ANALISE}" size="60"
+								maxlength="100"
+								styleClassField="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeDescMatAnls ? 'frm_obrigatorio' : ''}"
+								readonly="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.isExigeDescMatAnls}"
+								value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.descMaterialAnalise}"
+								style="text-transform:uppercase" />
+						</aghu:linha>
+					</p:outputPanel>
+				</p:tab>
+				<p:tab title="#{messages.LABEL_ABA_EXAMES_OPCIONAIS}"
+				       rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaExamesOpcionais}">
+					<f:facet name="label">
+						<h:outputText value="#{messages.LABEL_ABA_EXAMES_OPCIONAIS}" />
+					</f:facet>
+					<p:dataTable style="width:99%;"
+						name="tblistaExamesOpcionais"
+                           var="_exame"
+						value="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.dependentesOpcionais}"
+						scrollable="true">
+						<p:column styleClass="first-column auto-adjust">
+							<h:selectBooleanCheckbox name="exameOpcionalSelecionado"
+								id="exameOpcionalSelecionado"
+								value="#{_exame.exameOpcionalSelecionado}"
+								checked="#{_exame.exameOpcionalSelecionado}"
+								rendered="#{mf:hasPermission(securityController,'selecionarExamesDependentesOpcionais,executar')}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.LABEL_COLUNA_EXAME_EXAMES_OPCIONAIS}" />
+							</f:facet>
+							<h:outputText
+								value="#{_exame.unfExecutaExame.descricaoExameUsualFormatada}" />
+						</p:column>
+					</p:dataTable>
+				</p:tab>			 
+				<p:tab title="#{messages.LABEL_ABA_QUESTIONARIO}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaQuestionario}">
+					<f:facet name="label">
+						<h:outputText value="#{messages.LABEL_ABA_QUESTIONARIO}" />
+					</f:facet>
+					<c:if test="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaQuestionario}">
+						<ui:include
+							src="/pages/exames/solicitacao/questionarioSolicitacaoExames.xhtml">
+							<ui:param name="controller"
+								value="#{listarExamesSendoSolicitadosController}" />
+							<ui:param name="aba" value="0" />
+						</ui:include>
+					</c:if>
+				</p:tab>
+				<p:tab id="abaQuestionarioSismama"
+					title="#{messages.LABEL_ABA_QUESTIONARIO_SISMAMA_MAMOGRAFIA}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaQuestionarioSismama}">
+					<f:facet name="label">
+						<h:outputText
+							value="#{messages.LABEL_ABA_QUESTIONARIO_SISMAMA_MAMOGRAFIA}" />
+					</f:facet>
+					<c:if test="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaQuestionarioSismama}">
+						<ui:include
+							src="/pages/exames/solicitacao/questionarioSismamaSolicitacaoExames.xhtml">
+							<ui:param name="tabIndex" value="0" />
+						</ui:include>
+					</c:if>
+				</p:tab>
+				<p:tab title="#{messages.LABEL_ABA_QUESTIONARIO_SISMAMA}"
+					rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaQuestionarioSismamaBiopsia}">
+					<f:facet name="label">
+						<h:outputText
+							value="#{messages.LABEL_ABA_QUESTIONARIO_SISMAMA_HISTOPATOLOGICO}" />
+					</f:facet>
+					<c:if test="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaQuestionarioSismamaBiopsia}">
+						<ui:include
+							src="/pages/exames/solicitacao/questionarioSismamaSolicitacaoMamaBiopsia.xhtml">
+							<ui:param name="controller"
+								value="#{listarExamesSendoSolicitadosController}" />
+						</ui:include>
+					</c:if>
+				</p:tab>
+				<p:tab title="#{messages.LABEL_ABAS_NENHUMA_SELECIONADA}"
+					rendered="#{listarExamesSendoSolicitadosController.nenhumaAbaAtiva()}">
+					<f:facet name="label">
+						<h:outputText value="#{messages.LABEL_ABAS_NENHUMA_SELECIONADA}" />
+					</f:facet><h:outputText value="#{messages.LABEL_ABAS_NENHUMA_SELECIONADA}" />
+		 		</p:tab>
+			</p:tabView>
+		</p:outputPanel>
+	</aghu:linha>
+	<p:outputPanel id="panelBotoes">
+		<p:commandButton id="btAdicionar"
+				value="#{messages.LABEL_ADICIONAR}" styleClass="bt_cinza button-acao" icon="aghu-icons-16x16 aghu-icon-circle-plus-aghu"
+				rendered="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.emEdicao and mf:hasPermission(securityController,'listarExamesSendoSolicitados,executar')}"
+				action="#{listarExamesSendoSolicitadosController.acaoAdicionarItemSolicitacaoExame}"
+				update="@form" />
+		<p:commandButton value="#{messages.LABEL_ADICIONAR_COPIAR}"
+				id="btAddRegMatAnalise"
+				action="#{listarExamesSendoSolicitadosController.acaoAdicionarMaterialAnaliseCopia}"
+				rendered="#{not listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.emEdicao and listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.mostrarAbaRegMatAnalise and mf:hasPermission(securityController,'listarExamesSendoSolicitados,executar')}"
+				styleClass="bt_cinza button-acao" icon="icon-copy"  update="@form" />		 
+		<p:commandButton value="#{messages.LABEL_ALTERAR}"
+				id="btAlterarItem" styleClass="bt_cinza button-acao"
+				rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.emEdicao and mf:hasPermission(securityController,'listarExamesSendoSolicitados,executar')}"
+				action="#{listarExamesSendoSolicitadosController.alterarItemSolicitacaoExame}" icon="aghu-icons-16x16 aghu-icon-check-aghu"
+				update="@form" />
+		<p:commandButton value="#{messages.LABEL_CANCELAR_EDICAO}"
+				id="btCancelarEdicaoItem" styleClass="bt_cinza button-acao"
+				rendered="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.emEdicao and mf:hasPermission(securityController,'listarExamesSendoSolicitados,executar')}"
+				action="#{listarExamesSendoSolicitadosController.cancelarEdicaoItemSolicitacaoExame}" icon="aghu-icons-16x16 aghu-icon-cancel"
+				immediate="true" update="@form" />		 
+	</p:outputPanel>
+</ui:composition>
+</html>

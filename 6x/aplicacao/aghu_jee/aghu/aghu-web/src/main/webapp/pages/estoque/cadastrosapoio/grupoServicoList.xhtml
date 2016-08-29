@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_GR_SERVICOS}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{grupoServicoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{grupoServicoPaginatorController}" rendered="#{grupoServicoPaginatorController.dataModel.pesquisaAtiva}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_GR_SERVICOS}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="tfCodigo" label="#{messages.LABEL_CODIGO_SERVICO}" title="#{messages.TITLE_COD_GRS}" value="#{grupoServicoPaginatorController.codigo}" size="6" maxlength="6"/>  
+            <mec:inputText id="tfNome" label="#{messages.LABEL_MANTER_MATERIAL_DESC}" title="#{messages.TITLE_DESCRICAO_GSV}" value="#{grupoServicoPaginatorController.descricao}" maxlength="60" size="60" style="text-transform: uppercase"/>  
+            <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_ENGENHARIA}" value="#{grupoServicoPaginatorController.engenharia}" title="#{messages.TITLE_GSV_ENGENHARIA}" id="situacaoEngenharia"/> 
+          	<mec:selectBooleanCheckbox id="addTituloAvulso" label="#{messages.LABEL_GERA_TITULO_AVULSO}" title="#{messages.TITLE_GERA_TITULO_AVULSO}" value="#{grupoServicoPaginatorController.indTituloAvulso}"/>
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" block="true" action="#{grupoServicoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{grupoServicoPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelGeral" rendered="#{grupoServicoPaginatorController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.LABEL_GR_SERVICOS}"> 
+          <h:form prependId="false" id="formAdd" rendered="#{grupoServicoPaginatorController.dataModel.pesquisaAtiva}"> 
+            <p:outputPanel id="panelAddGrupo" layout="inline"> 
+              <aghu:linha> 
+                <mec:inputText id="tfdescricaoMat" label="#{messages.LABEL_MANTER_MATERIAL_DESC}" title="#{messages.TITLE_DESCRICAO_GSV}" required="true" value="#{grupoServicoPaginatorController.grupoServico.descricao}" maxlength="60" size="60" style="text-transform: uppercase"/>  
+                <mec:selectBooleanCheckbox id="addEngenharia" label="#{messages.LABEL_ENGENHARIA}" title="#{messages.TITLE_GSV_ENGENHARIA}" value="#{grupoServicoPaginatorController.grupoServico.indEngenharia}"/>  
+                <mec:selectBooleanCheckbox id="TituloAvulso" label="#{messages.LABEL_GERA_TITULO_AVULSO}" title="#{messages.TITLE_GERA_TITULO_AVULSO}" value="#{grupoServicoPaginatorController.grupoServico.indGeraTituloAvulso}"/>
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton value="#{messages.LABEL_ADICIONAR}" id="bt_adicionar" block="true" rendered="#{grupoServicoPaginatorController.exibirBotaoAdicionar and mf:hasPermission(securityController,'cadastarApoioEstoque,executar')}" action="#{grupoServicoPaginatorController.salvar}" profile="add"/>  
+                  <mec:commandButton value="#{messages.LABEL_ALTERAR}" id="bt_alterar" block="true" rendered="#{!grupoServicoPaginatorController.exibirBotaoAdicionar and mf:hasPermission(securityController,'cadastarApoioEstoque,executar')}" action="#{grupoServicoPaginatorController.salvar}" profile="ok"/>  
+                  <mec:commandButton id="bt_cancelarEdic" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{grupoServicoPaginatorController.cancelarEdicao}" rendered="#{mf:hasPermission(securityController,'cadastarApoioEstoque,executar') and !grupoServicoPaginatorController.exibirBotaoAdicionar}" immediate="true" styleClass="bt_cancel_edit bt_cinza"/> 
+                </aghu:acao> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </h:form>  
+          <h:form prependId="false" id="formLista" rendered="#{grupoServicoPaginatorController.dataModel.pesquisaAtiva}"> 
+            <p:outputPanel id="tabelaAcao" rendered="#{grupoServicoPaginatorController.dataModel.pesquisaAtiva}" layout="inline"> 
+              <aghu:linha> 
+                <mec:serverDataTable dataModel="dataModel" value="#{grupoServicoPaginatorController}" id="tabelaServicos" controller="#{grupoServicoPaginatorController}"> 
+                  <c:set var="item" value="#{item}"/>  
+                  <p:column styleClass="first-column auto-adjust"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="bt_editar" title="#{messages.LABEL_EDITAR}" action="#{grupoServicoPaginatorController.editar(item)}" rendered="#{mf:hasPermission(securityController,'cadastarApoioEstoque,executar')}" immediate="true" includePageParams="false" profile="edit" ajax="true"/>  
+                    <mec:commandLink rendered="#{mf:hasPermission(securityController,'cadastarApoioEstoque,executar')}" title="#{messages.LABEL_EXCLUIR}" onclick="excluir('#{item.codigo}'); PF('modalConfirmacaoExclusaoWG').show();;" profile="delete" ajax="true" process="@this"/> 
+                  </p:column>  
+                  <p:column width="80" sortable="true" sortBy="#{item.codigo}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.codigo}"/> 
+                  </p:column>  
+                  <p:column sortable="true" sortBy="#{item.descricao}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MANTER_MATERIAL_DESC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.descricao}"/> 
+                  </p:column>  
+                  <p:column sortable="true" sortBy="#{item.indEngenharia}" width="90"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ENGENHARIA_GRUPO_MATERIAIS}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.indEngenharia}"> 
+                      <f:converter converterId="simNaoConverter"/> 
+                    </h:outputText> 
+                  </p:column> 
+                  <p:column sortable="true" sortBy="#{item.indGeraTituloAvulso}" width="100"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GERA_TITULO_AVULSO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.indGeraTituloAvulso}"> 
+                      <f:converter converterId="simNaoConverter"/> 
+                    </h:outputText> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </h:form> 
+        </aghu:panelGeral> 
+      </p:outputPanel>  
+      <h:form> 
+        <pe:remoteCommand name="excluir"> 
+          <pe:assignableParam name="param1" assignTo="#{grupoServicoPaginatorController.codigoExcluir}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUIR}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <mec:commandButton id="bt_ConfirmaExclusao" block="true" value="#{messages.LABEL_SIM}" action="#{grupoServicoPaginatorController.excluir}" profile="search"/>  
+            <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

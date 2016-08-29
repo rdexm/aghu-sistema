@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_TRATAR_OCORRENCIAS']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{tratarOcorrenciasPaginatorController.iniciarPagina}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <script type="text/javascript" xml:space="preserve">	
+	    //<![CDATA[	
+			window.onload = function() {
+				focusEtiqueta();
+			}
+			
+			function focusEtiqueta() {
+				var element_etiqueta = document.getElementById('etiqueta:etiqueta:inputId');
+				element_etiqueta.focus();
+			}
+			
+			function capturarEnter(Event) {
+		        if(document.all){
+		                Tecla = Event.keyCode; // Internet Explorer
+		        }else{
+		                Tecla = Event.which; // Mozilla, etc.
+		        }
+		        if(Tecla == 13){
+		        	return true;
+		        }   
+		        return false;
+			}
+			
+			function validateEtiqueta(Event) {
+	     		var element = document.getElementById('etiqueta:etiqueta:inputId');
+	     			if(capturarEnter(Event)){
+	     				$('.laudoCodigoBarraClass').click();
+	     			}      			
+			}
+			
+			function verificarSeEtiquetaDesmarcada(checkBox, seqAfaDispSelecionadaCheckBox, codPaciente){
+				document.getElementById('seqAfaDispSelecionadaCheckBox').value = seqAfaDispSelecionadaCheckBox;
+				document.getElementById('seqAfaDispSelecionadaCheckBox').defaultValue = seqAfaDispSelecionadaCheckBox;
+				document.getElementById('codigoPacienteCheckBox').value = codPaciente;
+				document.getElementById('codigoPacienteCheckBox').defaultValue = codPaciente;
+				if(!checkBox.checked){
+					PF('modalConfirmacaoGoEstornarMedicamentoWG').show();
+					return false;
+				}
+				return true;
+			}
+			
+			//]]> 
+		</script>  
+      <mec:pageConfig controller="#{tratarOcorrenciasPaginatorController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formPesquisaOcorrencias"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_OCORRENCIAS}"> 
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_DATA_TRIAGEM}" title="#{messages.TITLE_DATA_TRATAR_OCORRENCIA}" required="true" value="#{tratarOcorrenciasPaginatorController.data}" readonly="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" id="dtaReferencia" tipo="data"/>  
+            <mec:field name="prontuarioEdicao" label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_LIST_PRONTUARIO_CONTA_HOPS}"> 
+              <p:inputText id="prontuario" styleClass="mask_prontuario" readonly="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" size="9" maxlength="9" value="#{tratarOcorrenciasPaginatorController.prontuario}" converter="#{prontuarioConverter}"> 
+                <p:ajax event="change" update="@(#prontuario) @(#codigoPaciente) @(#nome)" process="@this" listener="#{tratarOcorrenciasPaginatorController.limpaEProcessaBuscaPacProntuario()}"/> 
+              </p:inputText> 
+            </mec:field>  
+            <mec:field name="pacCodigoEdicao" label="#{messages.LABEL_PAC_CODIGO}" title="#{messages.TITLE_CODIGO_CONSULTA_GRADE}"> 
+              <p:inputText id="codigoPaciente" styleClass="numerico" size="10" maxlength="9" readonly="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" value="#{tratarOcorrenciasPaginatorController.codigoPaciente}"> 
+                <p:ajax event="change" update="@(#prontuario) @(#codigoPaciente) @(#nome)" process="@this" listener="#{tratarOcorrenciasPaginatorController.limpaEProcessaBuscaPacCodigo()}"/> 
+              </p:inputText> 
+            </mec:field>  
+            <mec:inputText value="#{tratarOcorrenciasPaginatorController.paciente.nome}" label="#{messages.LABEL_NOME_PACIENTE}" size="50" readonly="true" id="nome"/>  
+            <br clear="none"/>  
+            <mec:commandButton id="bt_pesquisaPaciente" value="#{messages.LABEL_PESQUISA_FONETICA}" 
+            	immediate="true" 
+            	disabled="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" 
+            	action="#{tratarOcorrenciasPaginatorController.chamarTelaPesquisaFonetica}" 
+            	styleClass=" bt_cinza icon-pesquisa-fonetica"> 
+              <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="farmacia-tratarOcorrenciasList" for="command"/>  
+              <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+            </mec:commandButton> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_OCORRENCIA}" title="#{messages.TITLE_TRATAR_OCORRENCIA_OCORRENCIA}" required="true" descricaoInput="seq" descricaoLabel="descricao" readonly="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" suggestionAction="pesquisarTodosMotivosOcorrenciaDispensacao" width="500" id="tipoOcorDispensacao" controller="#{tratarOcorrenciasPaginatorController}" value="#{tratarOcorrenciasPaginatorController.tipoOcorDispensacao}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO_TIPO_OCORRENCIA_DISPENSACAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_FARMACIA}" title="#{messages.TITLE_TRATAR_OCORRENCIAS_FARMACIA_DISPENSADORA}" descricaoInput="seq" descricaoLabel="andarAlaDescricao" suggestionAction="pesquisarFarmacias" readonly="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" width="500" id="farmacia" controller="#{tratarOcorrenciasPaginatorController}" value="#{tratarOcorrenciasPaginatorController.farmacia}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO_UNIDADE}" style="font-weight: bold;"/> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ANDAR}" style="font-weight: bold;"/> 
+                </f:facet> #{item.andar}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ALA}" style="font-weight: bold;"/> 
+                </f:facet> #{item.indAla}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_UNIDADE_FUNCIONAL_TRATAR_OCORRENCIA}" descricaoInput="seq" descricaoLabel="andarAlaDescricao" suggestionAction="pesquisarUnidadeFuncionalPorCodigoEDescricao" readonly="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" width="600" id="unidade" controller="#{tratarOcorrenciasPaginatorController}" value="#{tratarOcorrenciasPaginatorController.unidadeFuncional}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO_UNIDADE}" style="font-weight: bold;"/> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ANDAR}" style="font-weight: bold;"/> 
+                </f:facet> #{item.andar}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ALA}" style="font-weight: bold;"/> 
+                </f:facet> #{item.indAla}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox label="#{messages.LABEL_LEITO}" title="#{messages.TITLE_PESQ_PAC_DISP_LEITO}" descricaoInput="leitoID" descricaoLabel="unidadeFuncional.andarAlaDescricao" suggestionAction="pesquisarLeitos" readonly="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" width="500" id="leito" controller="#{tratarOcorrenciasPaginatorController}" value="#{tratarOcorrenciasPaginatorController.leito}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.leitoID}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_LEITO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.leito}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ANDAR}" style="font-weight: bold;"/> 
+                </f:facet> #{item.unidadeFuncional.andar}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{LABEL_ALA}" style="font-weight: bold;"/> 
+                </f:facet> #{item.unidadeFuncional.indAla}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.unidadeFuncional.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" 
+          		disabled="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" 
+          		action="#{tratarOcorrenciasPaginatorController.efetuarPesquisa}" 
+          		render="formPesquisaOcorrencias, panelList" 
+          		profile="search"
+          		defaultCommand="true"/>  
+          <mec:commandButton id="bt_limpar" immediate="true" 
+          		action="#{tratarOcorrenciasPaginatorController.limpar}" 
+          		value="#{messages.LABEL_LIMPAR}" 
+          		disabled="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}"
+          		render="formPesquisaOcorrencias, panelList"  
+          		profile="clear"/>  
+          <mec:commandButton id="btn_lista_ocorrencia" 
+          		value="#{messages.LABEL_LISTA_OCORRENCIA}" 
+          		disabled="#{tratarOcorrenciasPaginatorController.origemTelaRealizarTriagem}" 
+          		action="#{tratarOcorrenciasPaginatorController.listarOcorrencia}" 
+          		styleClass="bt_cinza"/>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" 
+          		title="#{messages.LABEL_VOLTAR}" 
+          		immediate="true" 
+          		action="#{tratarOcorrenciasPaginatorController.voltar}" 
+          		rendered="#{tratarOcorrenciasPaginatorController.btVoltarOuFechar}" 
+          		styleClass=" alinha-direita bt_cinza" 
+          		ajax="true" 
+          		profile="back"/> 
+        </aghu:acao>  
+        <br clear="none"/>
+      </h:form>
+      
+      <p:outputPanel id="panelList" rendered="#{tratarOcorrenciasPaginatorController.ativo}" styleClass="aghu-panel-geral"> 
+      	<p:outputPanel id="panelSemRegistro" rendered="#{empty tratarOcorrenciasPaginatorController.listaOcorrenciasMdtosDispensados}" 
+      		styleClass="aghu-panel-geral">
+      		<h:outputText value="#{messages.REGISTRO_NAO_ENCONTRADO}" />
+      	</p:outputPanel> 
+      	<p:outputPanel id="panelComRegistro" rendered="#{not empty tratarOcorrenciasPaginatorController.listaOcorrenciasMdtosDispensados}" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral style="padding-left: 10px; padding-right: 10px;" legend="#{messages.TITLE_TRATAR_OCORRENCIAS}">
+          
+          	<h:form prependId="false" id="formCodBarras">
+			<aghu:linha>
+				<mec:inputText id="etiqueta"
+					label="#{messages.LABEL_NUMERO_ETIQUETA}"
+					title="#{messages.HINT_DISPMDTO_CB_ETIQUETA}" size="18"
+					maxlength="15" onkeyup="validateEtiqueta(event);"
+					value="#{tratarOcorrenciasPaginatorController.etiqueta}">
+				</mec:inputText>
+				<mec:commandButton id="codigoBarra" 
+					styleClass="laudoCodigoBarraClass" style="display:none;"
+					action="#{tratarOcorrenciasPaginatorController.pesquisaEtiquetaComCbMedicamento()}"
+					value="Cod. Barras oculto"
+					block="true"
+					render="idColumnSinaleiro, idColumnDisp, idCorSinaleiro, tabelaResultadosPanel"
+				/>
+			</aghu:linha>
+			</h:form>
+			
+			<p:outputPanel id="tabelaResultadosPanel" layout="inline"> 
+                <h:form prependId="false" id="formList">
+                <mec:serverDataTable id="tabela_resultados" list="#{tratarOcorrenciasPaginatorController.listaOcorrenciasMdtosDispensados}" scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column width="3%" sortable="false" id="idColumnSinaleiro"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <h:graphicImage styleClass="silk-icon silk-marcador-#{_item.corSinaleiro.descricao}" id="idCorSinaleiro"/> 
+                    <p:tooltip for="idCorSinaleiro" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{_item.corSinaleiro.legenda}"/> 
+                    </p:tooltip>  
+                  </p:column>  
+                  <p:column width="5%" sortable="true" sortBy="#{_item.localProntuarioMdto}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_LOCAL}"/> 
+                    </f:facet>  
+                    <h:outputText id="aincLocalInt" value="#{_item.atendimento.aincLocalInt}"/> 
+                    <p:tooltip for="aincLocalInt" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{_item.atendimento.aincLocalInt}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column width="20%" sortable="true" sortBy="#{_item.mdtoNomeProntuario}"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_MEDICAMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText id="itemMedicamento" value="#{_item.medicamento.getCodigoDescricaoTrunc(30)}"/>  
+                    <p:tooltip for="itemMedicamento" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{_item.medicamento.codigoDescricao}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column width="5%" sortable="true" sortBy="#{_item.apresNomeMdtoProntuario}"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_APRES}"/> 
+                    </f:facet>  
+                    <h:outputText id="siglaDescricao" value="#{_item.medicamento.tipoApresentacaoMedicamento.sigla}" /> 
+                  	<p:tooltip for="siglaDescricao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{_item.medicamento.tipoApresentacaoMedicamento.siglaDescricao}"/> 
+                    </p:tooltip>
+                  </p:column>  
+                  <p:column width="6%" sortable="true" sortBy="#{_item.farmaciaNomeProntuarioMdto}"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_FARMACIA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.unidadeFuncional.seq}" id="descUnf"/> 
+                    <p:tooltip for="descUnf" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{_item.unidadeFuncional.seqEDescricao}"/> 
+                    </p:tooltip>  
+                  </p:column>  
+                  <p:column width="6%" sortable="false"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_PRONTUARIO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.prescricaoMedica.atendimento.paciente.prontuario}" styleClass="mask_prontuario}"> 
+                      <f:converter converterId="prontuarioConverter"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column width="15%" sortable="false"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText id="prescricaoMedica" value="#{_item.prescricaoMedica.atendimento.paciente.getCodigoNomeTrunc(24)}"/>  
+                    <p:tooltip for="prescricaoMedica" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{_item.prescricaoMedica.atendimento.paciente.codigoNome}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column width="8%" sortable="false"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_INICIO_PRES}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.prescricaoMedica.dthrInicio}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column width="8%" sortable="false"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_FIM_PRES}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.prescricaoMedica.dthrFim}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column width="4%" sortable="false"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_QTD}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.qtdeDispensada}"> 
+                      <f:converter converterId="bigDecimalPrecisao4Converter"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column width="5%" sortable="false" id="idColumnDisp"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_DISPENSADO}"/> 
+                    </f:facet>  
+                    <h:selectBooleanCheckbox value="#{_item.itemDispensadoSemEtiqueta}" required="false" id="itemDispensadoSemEtiqueta" title="#{_item.mensagem}" onclick="return verificarSeEtiquetaDesmarcada(this, #{_item.seq}, #{_item.prescricaoMedica.atendimento.paciente.codigo});" disabled="#{!_item.permiteDispensacaoSemEtiqueta}"> 
+                      <p:ajax event="change" onsubmit="PF('loadDialogWG').show();" oncomplete="PF('loadDialogWG').hide();" update="@(#idColumnSinaleiro) @(#idColumnDisp) @(#idCorSinaleiro) @(#itemDispensadoSemEtiqueta) @(#tabela_resultados)" process="@this" listener="#{tratarOcorrenciasPaginatorController.assinaMedicamento(_item)}"/> 
+                    </h:selectBooleanCheckbox> 
+                  </p:column> 
+                </mec:serverDataTable>
+                </h:form> 
+            </p:outputPanel> 
+          </aghu:panelGeral>
+      	</p:outputPanel> 
+      </p:outputPanel>
+      
+      <p:dialog id="modalConfirmacaoGoEstornarMedicamento" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoGoEstornarMedicamentoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_ESTORNAR_MEDICAMENTO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:outputText value="#{messages.MSG_CONFIRMACAO_ESTORNO_MEDICAMENTO_EM_DISPENSACAO}"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponente_1"> 
+            <h:inputHidden value="#{tratarOcorrenciasPaginatorController.seqAfaDispSelecionadaCheckBox}" id="seqAfaDispSelecionadaCheckBox"/>  
+            <h:inputHidden value="#{tratarOcorrenciasPaginatorController.codigoPacienteParaEstorno}" id="codigoPacienteCheckBox"/>  
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacao_estorno2" value="#{messages.LABEL_CONTINUAR}" action="#{tratarOcorrenciasPaginatorController.gotoEstornoMedicamentosDispensados}" profile="search" ajax="true"/>  
+              <mec:commandButton id="bt_cancelar_operacao_estorno" value="#{messages.LABEL_FECHAR}" onclick="PF('modalConfirmacaoGoEstornarMedicamentoWG').hide(); return false;" styleClass="bt_fechar silk-application-form-delete bt_cinza"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

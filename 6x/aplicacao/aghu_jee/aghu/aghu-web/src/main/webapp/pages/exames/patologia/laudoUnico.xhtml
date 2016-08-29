@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"	 > 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_LAUDO_UNICO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{laudoUnicoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{laudoUnicoController}" ignoreEnter="true"/>  
+      <p:outputPanel id="panelLaudoUnico" layout="inline"> 
+        <h:form id="formFiltros" prependId="false">
+          <p:accordionPanel id="filtroToggle" style="width:100%;" activeIndex="#{laudoUnicoController.accordionIndexLaudoUnico}" styleClass="uniqueClassName" prependId="false"> 
+            <p:tab title="#{laudoUnicoController.labelFiltro}" prependId="false"> 
+              <aghu:linha> 
+                <p:outputPanel id="codigoBarrasPanel" layout="inline"> 
+                  <mec:inputText id="codigoBarras" 
+                  		required="false" 
+                  		label="#{messages.LABEL_EXAME_CODIGO_BARRAS}" 
+                  		title="#{messages.TITLE_EXAME_CODIGO_BARRAS}" 
+                  		size="25" 
+                  		maxlength="25" 
+                  		value="#{laudoUnicoController.codigoBarras}" 
+                  		styleClass="bindPaste" />
+                </p:outputPanel>
+                <mec:suggestionBox id="exame" 
+                	label="#{messages.LABEL_EXAME_PATOLOGIA_CIRURGICA}" 
+                	title="#{messages.TITLE_EXAME_PATOLOGIA_CIRURGICA}" 
+                	requiredFake="true" 
+                	suggestionAction="pesquisarAelConfigExLaudoUnico" 
+                	width="500" 
+                	descricaoInput="sigla" 
+                	descricaoLabel="nome" 
+                	maxlength="200" 
+                	block="true" 
+                	readonly="#{not empty laudoUnicoController.telaVo.aelAnatomoPatologico}" 
+                	posDeleteAction="limpar" 
+                	controller="#{laudoUnicoController}" 
+                	value="#{laudoUnicoController.configExame}"
+                	var="_itemAelConfigExLaudoUnico"
+					itemValue="#{_itemAelConfigExLaudoUnico}" 
+                	render="panelAbas">
+                	<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_SIGLA}" />
+						</f:facet>
+						<h:outputText value="#{_itemAelConfigExLaudoUnico.sigla}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_NOME}" />
+						</f:facet>
+						<h:outputText value="#{_itemAelConfigExLaudoUnico.nome}" />
+					</p:column>
+                </mec:suggestionBox>
+                <mec:inputText id="numeroAp" 
+			       	requiredFake="true"
+			       	label="#{messages.LABEL_NUMERO_EXAME_PATOLOGIA_CIRURGICA}"
+			       	title="#{messages.TITLE_NUMERO_EXAME_PATOLOGIA_CIRURGICA}" 
+			       	size="10" 
+                   	maxlength="9"
+			       	jsfConverter="numeroApConverter"
+			       	value="#{laudoUnicoController.numeroAp}"
+			       	readonly="#{not empty laudoUnicoController.telaVo.aelAnatomoPatologico}">
+			      <p:ajax action="#{laudoUnicoController.inicio}" event="change" update="@(#formFiltros) @(#panelAbas)"/>
+				</mec:inputText>
+              </aghu:linha>  
+              <aghu:linha> 
+                  <p:outputPanel id="panelInfo" layout="inline"> 
+                    <mec:inputTextProntuario readonly="true" 
+                    		size="9" 
+                    		label="#{messages.LABEL_PRONTUARIO}" 
+                    		value="#{laudoUnicoController.telaVo.prontuario}" 
+                    		id="prontuario"/>  
+                    <mec:inputText readonly="true" 
+                    		size="65" 
+                    		label="#{messages.LABEL_NOME_PACIENTE}" 
+                    		value="#{laudoUnicoController.telaVo.nomePaciente}" 
+                    		style="text-transform:uppercase" 
+                    		id="nmPaciente"/>  
+                    <mec:inputText readonly="true" 
+                    		size="45" 
+                    		label="#{messages.LABEL_CONVENIO_PLANO}" 
+                    		value="#{laudoUnicoController.telaVo.convenioPlano}" 
+                    		style="text-transform:uppercase" 
+                    		id="convenioPlano"/> 
+                  </p:outputPanel> 
+              </aghu:linha>  
+              <aghu:acao> 
+                <mec:commandButton value="#{messages.LABEL_PESQUISAR}" 
+                		id="bt_pesquisar" 
+                		block="true" 
+                		process="@this @(#codigoBarras) @(#exame) @(#numeroAp)"
+                		ajax="true"
+                		action="#{laudoUnicoController.pesquisaInicio()}" 
+                		render="filtroToggle, panelAbas"
+                		profile="search"/>  
+                <mec:commandButton value="#{messages.LABEL_LIMPAR}" 
+                		id="bt_limpar" 
+                		block="true" 
+                		oncomplete="Document.getElementById('codigoBarras:codigoBarras').focus();" 
+                		action="#{laudoUnicoController.limpar}" 
+                		render="panelLaudoUnico,codigoBarrasPanel" 
+                		profile="clear"/> 
+              </aghu:acao> 
+            </p:tab> 
+          </p:accordionPanel> 
+        </h:form>  
+        <p:outputPanel id="panelAbas" layout="inline">
+          <p:outputPanel rendered="#{laudoUnicoController.telaVo.aelAnatomoPatologico != null}" layout="inline">
+          <h:form prependId="false" id="formGeralAbas"> 
+            <p:outputPanel layout="block" id="tabs11" style="overflow:hidden; height:487px">
+              <aghu:linha>               
+                <p:tabView id="resultTab" widgetVar="resultTab" dynamic="true" activeIndex="#{laudoUnicoController.selectedTab}" prependId="false">
+                  <p:ajax event="tabChange" ajax="true" listener="#{laudoUnicoController.onTabChange}" process="@this" update="@(#btnsLaudoUnico) @(#formConclusaoLaudoUnico)"/>
+                  <p:tab id="aba0" title="#{messages.ABA_LAUDO_LAUDO_UNICO}"> 
+                    <p:outputPanel id="tabs-0" rendered="#{laudoUnicoController.renderLaudo}" layout="inline">                     
+                      <p:outputPanel layout="block" style="overflow:auto; height:415px"> 
+                        <ui:include src="/pages/exames/patologia/abaLaudoLaudoUnico.xhtml"/> 
+                      </p:outputPanel>                       
+                    </p:outputPanel>
+                  </p:tab>
+
+                  <p:tab  id="aba1" title="#{messages.ABA_CADASTRO_LAUDO_UNICO}" > 
+                    <p:outputPanel id="tabs-1" rendered="#{laudoUnicoController.renderCadastro}" layout="inline"> 
+                      <p:outputPanel layout="block" style="overflow:auto; height:415px"> 
+                        <ui:include src="/pages/exames/patologia/abaCadastroLaudoUnico.xhtml"/> 
+                      </p:outputPanel> 
+                    </p:outputPanel> 
+                  </p:tab>
+                   
+                  <p:tab id="aba3" 
+                  		 disabled="#{!laudoUnicoController.telaVo.renderLamina or !laudoUnicoController.telaVo.exibeIndiceBlocos}"
+                  		 title="#{messages.ABA_INDICE_BLOCO_LAUDO_UNICO}" > 
+                    <p:outputPanel id="tabs-3" rendered="#{laudoUnicoController.renderLamina}" layout="inline"> 
+                      <p:outputPanel layout="block" style="overflow:auto; height:415px"> 
+                        <ui:include src="/pages/exames/patologia/abaLaminaLaudoUnico.xhtml"/> 
+                      </p:outputPanel> 
+                    </p:outputPanel> 
+                  </p:tab>  
+                  
+                  <p:tab id="aba4" disabled="true" title="#{messages.ABA_IMAGEM_LAUDO_UNICO}" > 
+                   
+                  </p:tab>
+
+                  <p:tab  id="aba5" title="#{messages.ABA_NOTA_ADICIONAL_LAUDO_UNICO}"  disabled="#{not laudoUnicoController.telaVo.laudoAssinado}"> 
+                    <p:outputPanel id="tabs-5" rendered="#{laudoUnicoController.renderNotaAdicional}" layout="inline"> 
+                      <p:outputPanel layout="block" style="overflow:auto; height:415px"> 
+                        <ui:include src="/pages/exames/patologia/abaNotaAdicionalLaudoUnico.xhtml"/> 
+                      </p:outputPanel> 
+                    </p:outputPanel> 
+                  </p:tab>  
+                  
+                  <p:tab  id="aba6" title="#{messages.ABA_LIBERAR_LAUDO}"> 
+                    <p:outputPanel id="tabs-6" rendered="#{laudoUnicoController.renderConclusao}" layout="inline"> 
+                      <p:outputPanel layout="block" style="overflow:auto; height:415px"> 
+                        <ui:include src="/pages/exames/consultarResultadoNotaAdicionalInclude.xhtml"/> 
+                      </p:outputPanel> 
+                    </p:outputPanel> 
+                  </p:tab> 
+                </p:tabView>
+              </aghu:linha> 
+            </p:outputPanel>  
+            </h:form>
+            <h:form prependId="false" id="formBotoesLaudo"> 
+              <p:outputPanel id="btnsLaudoUnico" layout="inline"> 
+                <aghu:linha style="min-height: 25px! important; margin-right: 0px! important; "> 
+                  <c:choose xmlns:c="http://java.sun.com/jstl/core">  
+                    <c:when test="#{laudoUnicoController.selectedTab == 5}"> 
+                      <c:choose> 
+                        <c:when test="#{laudoUnicoController.telaVo.assinarLaudo}"> 
+                          <mec:commandButton value="#{messages.LABEL_LIBERAR_LAUDO}" 
+                          		action="#{laudoUnicoController.liberarLaudo}" 
+                          		rendered="#{mf:hasPermission(securityController,'assinarLaudoUnico,executar')}" 
+                          		styleClass=" alinha-esquerda bt_cinza"
+                          		process="@this" 
+                          		ajax="true" 
+                          		render="panelLaudoUnico" /> 
+                        </c:when>
+                        <c:otherwise> 
+                          <mec:commandButton value="#{messages.LABEL_REABRIR_LAUDO}" 
+                          		onclick="PF('modalReabrirLaudoWG').show();return false;" 
+                          		disabled="#{!laudoUnicoController.telaVo.stAssinaLaudo}" 
+                          		rendered="#{mf:hasPermission(securityController,'assinarLaudoUnico,executar')}" 
+                          		styleClass=" alinha-esquerda bt_cinza"
+                          		process="@this" 
+                          		ajax="true"
+                          		render="panelLaudoUnico" /> 
+                        </c:otherwise> 
+                      </c:choose> 
+                    </c:when>
+                    <c:otherwise>
+                      <mec:commandButton value="#{messages.LABEL_VISUALIZAR_LAUDO}" 
+                      		action="#{laudoUnicoController.concluirLaudo}"
+                      		process="@this"
+                      		ajax="true"
+                      		render="resultTab, btnsLaudoUnico"
+                      		styleClass="bt_cinza"/> 
+                    </c:otherwise> 
+                  </c:choose>  
+                  <mec:commandButton value="#{messages.LABEL_LAUDO_UNICO_LIBERAR_TECNICA}" 
+                  		action="#{laudoUnicoController.executaLiberarTecnica}"
+                  		process="@this"
+                  		ajax="true" 
+                  		rendered="#{laudoUnicoController.habilitaBotaoLiberarTecnica}" 
+                  		disabled="#{!(mf:hasPermission(securityController,'liberarTecnica,liberar'))}" 
+                  		styleClass="bt_cinza"/>  
+                  <mec:commandButton value="#{messages.LABEL_LAUDO_UNICO_TECNICA_CONCLUIDA}" 
+                  		action="#{laudoUnicoController.executaConcluirTecnica}"
+                  		process="@this"
+                  		ajax="true" 
+                  		rendered="#{laudoUnicoController.habilitaBotaoConcluirTecnica }" 
+                  		disabled="#{!(mf:hasPermission(securityController,'concluirTecnica,concluir'))}" 
+                  		styleClass="bt_cinza"/>  
+                  <mec:commandButton value="#{messages.LABEL_RESULTADO_SISMAMA}" action="#{laudoUnicoController.exibirModalExamesSismama}" disabled="#{(not laudoUnicoController.habilitaBotaoSismama) or (not mf:hasPermission(securityController,'manterResultadoExameHistopatologico,pesquisar')) or (not mf:hasPermission(securityController,'manterResultadoExameHistopatologico,executar'))}" reRender="panelModalExamesSismama" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{resultadoExameHistopatologicoController.prontuario}" value="#{laudoUnicoController.telaVo.prontuario}" for="command"/>  
+                    <f:setPropertyActionListener target="#{resultadoExameHistopatologicoController.nomePaciente}" value="#{laudoUnicoController.telaVo.nomePaciente}" for="command"/>  
+                    <f:setPropertyActionListener target="#{resultadoExameHistopatologicoController.numeroAp}" value="#{laudoUnicoController.telaVo.numeroAp}" for="command"/>  
+                    <f:setPropertyActionListener target="#{resultadoExameHistopatologicoController.etapaLaudo}" value="#{laudoUnicoController.telaVo.aelExameAp.etapasLaudo}" for="command"/>  
+                    <f:setPropertyActionListener target="#{resultadoExameHistopatologicoController.lu2Seq}" value="#{laudoUnicoController.telaVo.configExame.seq}" for="command"/> 
+                  </mec:commandButton>  
+                  <mec:commandButton id="bt_detalharSolicitacaoExame" value="#{messages.LABEL_SOLICITACAO_EXAME}" action="#{laudoUnicoController.detalharItemSolicitacaoExame}" styleClass="bt_cinza"/>  
+                  
+                  <mec:commandButton id="bt_cancelarExame" value="#{messages.LABEL_CANCELAR_EXAMES}" action="#{laudoUnicoController.cancelarExame}" styleClass="bt_cinza"/>  
+                  
+                  <mec:commandButton id="bt_pol" value="#{messages.LABEL_POL}"
+                                 rendered="#{not empty laudoUnicoController.telaVo.prontuario and mf:hasPermission(securityController, '/paciente/prontuarioonline/arvorePOL.xhtml,render')}"
+                                 onclick="parent.addExpandedPOLProntuario(#{laudoUnicoController.telaVo.prontuarioSemBarra}, 'Exames,Laboratório/Serviços,Patologia Cirúrgica')" immediate="true"/>
+
+                  <mec:commandButton propagation="end" value="#{messages.LABEL_VOLTAR}" rendered="#{laudoUnicoController.voltarPara != null}" action="#{laudoUnicoController.voltarPara}" styleClass=" bt_voltar bt_cinza" profile="back"/>  
+                  <h:outputText value="#{messages.MSG_LAUDO_ANTERIOR_POL}" style="font-style:italic !important"/> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </h:form> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <ui:include src="/pages/exames/patologia/modalDescricaoMaterialLaudoLaudoUnico.xhtml"/>  
+        <ui:include src="/pages/exames/patologia/modalMacroscopiaLaudoUnico.xhtml"/>  
+        <ui:include src="/pages/exames/patologia/modalDiagnosticoLaudoUnico.xhtml"/>  
+        <ui:include src="/pages/exames/patologia/modalExamesSismama.xhtml"/> 
+      </p:outputPanel>  
+      <p:dialog id="modalReabrirLaudo" width="400" height="150" modal="true" resizable="false" widgetVar="modalReabrirLaudoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_MODAL_REABRIR_LAUDO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_MODAL_REABRIR_LAUDO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="form" name="modalReabrirLaudo"> 
+          	<aghu:acao>
+              <mec:commandButton id="bt_simEfetivacao" 
+              		value="#{messages.LABEL_SIM}" 
+              		oncomplete="PF('modalEfetivarWG').hide();return false;" 
+              		action="#{laudoUnicoController.reabrirLaudo}" 
+              		profile="ok"/>  
+              <mec:commandButton id="bt_naoEfetivacao" 
+              		value="#{messages.LABEL_NAO}" 
+              		ajax="true"
+              		onclick="PF('modalEfetivarWG').hide();return false;" 
+              		profile="cancel"/>
+            </aghu:acao> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

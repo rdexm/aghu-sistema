@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:ff="http://www.mec.gov.br/taglib"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+	  xmlns:aghu="http://xmlns.jcp.org/jsf/component">
+
+    <h:head>
+        <title>mec:modalAutenticacao</title>
+    </h:head>
+	
+	<ui:remove>	
+		COMPONENTE MODALAUTENTICACAO
+		============================
+		Autor: Luis Moura (2014)
+		
+		Apresenta uma modal para autenticaÃ§Ã£o do usuÃ¡rio, em caso de sucesso executa 'nextAction', passada por parÃ¢metro 
+		
+		Propriedades:
+		
+		id(required): id do componente.
+		controller(required): nome da classe controladora da tela.
+		value(required): nome da propriedade do tipo ServidorIdVO na controller que receberÃ¡ o mesmo como retorno.
+		nextAction(required): mÃ©todo da controller que serÃ¡ executada em caso de sucesso de autenticacao.
+		validarSenha: se false nÃ£o faz a autenticaÃ§Ã£o. Utilizado para testes onde nÃ£o tem AD.
+		reRender: renderiza via ajax os componentes apÃ³s rodar o mÃ©todo nextAction.
+		
+		Exemplo de uso:
+		
+	</ui:remove>	
+
+
+    <h:body>
+        <cc:interface name="modalAutenticacao" displayName="Apresenta uma modal para autenticação do usuário">        
+	        <cc:attribute name="controller"/>
+	        <cc:attribute name="value"/>
+	        <cc:attribute name="width" default="210"/>
+	        <cc:attribute name="height" default="160"/>
+	        <cc:attribute name="oncomplete"/>
+	        <cc:attribute name="rendered"/>
+	        <cc:attribute name="reRender"/>
+	        <cc:attribute name="validarSenha"/>
+	        <cc:attribute name="nextAction"/>
+        </cc:interface>
+
+        <cc:implementation>
+			<p:dialog
+				id="#{cc.clientId}"
+				widgetVar="#{cc.clientId}WG"
+				width="#{cc.attrs.width}" 
+				height="#{cc.attrs.height}"
+				onShow="autofocus('formAuth#{cc.clientId}')"
+				closable="true"
+				resizable="false"
+				rendered="#{cc.attrs.rendered}">
+
+				<f:facet name="header">
+			    	<h:panelGroup>
+			        	<h:outputText value="#{messages.LABEL_AUTENTICACAO_LOGON}"></h:outputText>
+			        </h:panelGroup>
+			    </f:facet>
+						  
+				<aghu:linha>
+					<h:form prependId="false" id="formAuth#{cc.clientId}">
+
+			    		<pe:remoteCommand name="jsFinalizarAutenticacao" action="#{cc.attrs.controller.setProperty(cc.attrs.value, autenticacaoController.servidorIdVO)}" 
+	    						oncomplete="PF('#{cc.clientId}WG').hide(); jsExecutarMetodo();" />
+		
+			    		<pe:remoteCommand name="jsExecutarMetodo" update="#{cc.attrs.reRender}" action="#{cc.attrs.controller[cc.attrs.nextAction]}" 
+	    						oncomplete="#{cc.attrs.oncomplete}" />
+
+						<aghu:linha>	
+							<mec:inputText
+								required="true" 
+								name="fieldUsuario#{cc.clientId}"
+								label="#{messages.LABEL_AUTENTICACAO_USUARIO}"
+								title="#{messages.TITLE_AUTENTICACAO_USUARIO}" 
+								maxlength="30"						
+								value="#{autenticacaoController.username}"
+								style="text-transform:uppercase;">	
+							</mec:inputText>
+						</aghu:linha>
+						<aghu:linha>
+							<mec:field id="fieldPassword#{cc.clientId}"
+								required="true" 
+								label="#{messages.LABEL_AUTENTICACAO_SENHA}" 
+								title="#{messages.TITLE_AUTENTICACAO_SENHA}">
+	  							<p:password id="passwordInput#{cc.clientId}" value="#{autenticacaoController.password}"  size="25" maxlength="50" />						
+							</mec:field>
+						</aghu:linha>
+		
+						<aghu:linha>
+							<p:outputPanel layout="block" style="text-align:left;padding-top:10px;">
+								<p:commandButton id="bt_autenticar#{cc.clientId}"
+									value="#{messages.LABEL_AUTENTICACAO_AUTENTICAR}" ajax="true"
+									action="#{autenticacaoController.autenticar(not empty cc.attrs.validarSenha ? cc.attrs.validarSenha : true)}"
+									styleClass="button-acao bt_cinza">
+										<f:attribute name="icon" value="aghu-icons-16x16 aghu-icon-check-aghu" />
+								</p:commandButton>
+							</p:outputPanel>
+						</aghu:linha>
+					</h:form>
+				</aghu:linha>		
+		
+				<script>
+					form.disableEnter=false;
+				</script>
+				
+				<script language="JavaScript" type="text/javascript">
+					function autofocus(containerId) {
+				  		var element = jQuery(":input:not(:button):visible:enabled:first", '#'+containerId);
+				  		if (element != null) {
+				    		element.focus().select();
+				 	 	}
+					}
+				</script>
+			</p:dialog>
+        </cc:implementation>
+    </h:body>
+</html>

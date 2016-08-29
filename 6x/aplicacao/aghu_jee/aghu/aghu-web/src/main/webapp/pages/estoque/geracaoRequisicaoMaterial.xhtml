@@ -1,0 +1,912 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_GERACAO_REQUISICAO_MATERIAL}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{geracaoRequisicaoMaterialController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{geracaoRequisicaoMaterialController}"	 />
+						
+		<script type="text/javascript" xml:space="preserve">
+			window.onload = function() {
+				focusEtiqueta();
+			}
+	
+			function capturarEnter(Event) {
+				if (document.all) {
+				        Tecla = Event.keyCode; // Internet Explorer
+				} else {
+				        Tecla = Event.which; // Mozilla, etc.
+				}
+				if (Tecla == 13) {
+					return true;
+				}   
+				return false;
+			}
+			
+			function validateEtiqueta(Event) {
+		     		var element = document.getElementById('etiqueta:etiqueta:inputId');
+		     		if (capturarEnter(Event)) {
+		     			$('.laudoCodigoBarraClass').click();
+		     		}      			
+			}
+			
+			function focusEtiqueta() {
+				var element_etiqueta = document.getElementById('etiqueta:etiqueta:inputId');
+				setTimeout(element_etiqueta.focus(), 1000);
+			}
+				
+		</script>
+		<!-- form principal -->
+		<h:form prependId="false" id="formRequisicaoMaterial" name="formRequisicaoMaterial">
+		
+			<pe:remoteCommand name="selecionarAtendimento"
+				update="@(#botoesModalVincularAtendimento)" process="@this">
+			<pe:assignableParam name="atdSeqSelecionado"
+					assignTo="#{geracaoRequisicaoMaterialController.atdSeqSelecionado}" />
+			</pe:remoteCommand>
+			<!-- fieldset unidade executora -->
+			<aghu:panelGeral legend="#{messages.LABEL_GERAR_REQUISICAO_MATERIAL}">
+				<aghu:linha>
+				<p:outputPanel id="panelCampos" layout="inline">				
+					<aghu:linha>
+						<mec:inputText label="#{messages.LABEL_NUMERO_RM}" readonly="true"
+							id="fdNumRm"
+							value="#{geracaoRequisicaoMaterialController.reqMaterial.seq}" />
+						<mec:inputTextData label="#{messages.LABEL_DATA_GERACAO}"
+							readonly="true"
+							value="#{geracaoRequisicaoMaterialController.reqMaterial.dtGeracao}"
+							id="dataGeracao" tipo="data" />
+						<mec:inputText label="#{messages.LABEL_SITUACAO}" readonly="true"
+							value="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao.descricao}"
+							id="situacao" />
+						<mec:inputText label="#{messages.LABEL_IMPRESSAO}" readonly="true"
+							value="#{geracaoRequisicaoMaterialController.reqMaterial.indImpresso.descricao}"
+							id="impressao" />
+
+						<mec:inputText label="#{messages.LABEL_AUTOMATICA_GERAR_REQ_MATERIAL}"
+								id="automatica_field1"
+								readonly="true" disabled="true" 
+								size="10"
+								value="#{geracaoRequisicaoMaterialController.reqMaterial.automatica}" converter="simNaoConverter">
+						</mec:inputText>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox id="sbCCReq" label="#{messages.LABEL_CC_REQ}"
+							title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E')?(messages.TITLE_CC_REQ):null}"
+							suggestionAction="obterFccCentroCustosReq"
+							descricaoInput="codigo" descricaoLabel="descricao"
+							required="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E') or (geracaoRequisicaoMaterialController.habilitarEdicao())}"
+							readonly="#{(not geracaoRequisicaoMaterialController.habilitarEdicao()) or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+							maxlength="30"
+							controller="#{geracaoRequisicaoMaterialController}"
+							value="#{geracaoRequisicaoMaterialController.reqMaterial.centroCusto}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{item.codigo}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.descricao}
+                			</p:column>
+						</mec:suggestionBox>
+						<p:outputPanel id="panelCcAplic" layout="inline">
+							<mec:suggestionBox id="sbCCAplicacao"
+								label="#{messages.LABEL_CC_APLICACAO}"
+								title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E')?(messages.TITLE_CC_APLICACAO):null}"
+								suggestionAction="obterFccCentroCustosAplicacao"
+								descricaoInput="codigo" descricaoLabel="descricao"
+								required="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E') or (geracaoRequisicaoMaterialController.habilitarEdicao())}"
+								readonly="#{(not geracaoRequisicaoMaterialController.habilitarEdicao()) or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+								maxlength="30"
+								controller="#{geracaoRequisicaoMaterialController}"
+								value="#{geracaoRequisicaoMaterialController.reqMaterial.centroCustoAplica}">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{item.codigo}
+                 		 		</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet> #{item.descricao}
+                  				</p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox id="sbAlmoxarifado"
+							label="#{messages.LABEL_ALMOXARIFADO}"
+							title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E')?(messages.TITLE_ALMOXARIFADO):null}"
+							suggestionAction="obterSceAlmoxarifado"
+							posDeleteAction="limparItemEstoqueAlmoxarifado"
+							descricaoInput="seq" descricaoLabel="descricao"
+							required="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E'}"
+							readonly="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'G'}"
+							maxlength="30"
+							controller="#{geracaoRequisicaoMaterialController}"
+							value="#{geracaoRequisicaoMaterialController.reqMaterial.almoxarifado}"
+							render="panelSBQuantidade">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{item.seq}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.descricao}
+                			</p:column>
+						</mec:suggestionBox>
+						<mec:suggestionBox id="sbGrupoMaterial"
+							label="#{messages.LABEL_GRP_MATERIAL}"
+							title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E')?(messages.TITLE_GRP_MATERIAL):null}"
+							suggestionAction="obterScoGrupoMaterial"
+							posDeleteAction="limparPacote" descricaoInput="codigo"
+							descricaoLabel="descricao"
+							readonly="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+							maxlength="30" cache ="false"
+							controller="#{geracaoRequisicaoMaterialController}"
+							value="#{geracaoRequisicaoMaterialController.reqMaterial.grupoMaterial}"
+							render="sbGrupoMaterial,sbGrupoMaterial">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{item.codigo}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.descricao}
+                			</p:column>
+						</mec:suggestionBox>
+						<mec:suggestionBox id="sbPacoteMaterial"
+							label="#{messages.LABEL_PACOTE}"
+							title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E')?(messages.TITLE_PACOTE):null}"
+							suggestionAction="obterScePacoteMaterial"
+							descricaoInput="id.numero" descricaoLabel="descricao" width="550"
+							readonly="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E' or (not empty geracaoRequisicaoMaterialController.sceItemRmses)}"
+							maxlength="30"
+							controller="#{geracaoRequisicaoMaterialController}"
+							value="#{geracaoRequisicaoMaterialController.reqMaterial.pacoteMaterial}"
+							render="tabelaAcao, acaoBotoes">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CC}</b>
+								</f:facet> #{item.centroCustoProprietario.descricao}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CC_APLICACAO}</b>
+								</f:facet> #{item.centroCustoAplicacao.descricao}
+                			</p:column>
+                			<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CC_DESCRICAO}</b>
+								</f:facet> #{item.descricao.toUpperCase()}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_NUMERO}</b>
+								</f:facet> #{item.id.numero}
+                			</p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+				</p:outputPanel>				
+				</aghu:linha>
+				<aghu:linha>			
+					<p:fieldset toggleable="true" collapsed="true" toggleSpeed="500" legend="#{messages.LABEL_VINCULAR_ATENDIMENTO_REQUISICAO_MATERIAL}">
+						<aghu:panelGeral>
+							<aghu:linha>
+								<p:outputPanel id="selecionaPaciente" layout="block">
+									<mec:inputText label="#{messages.LABEL_PRONTUARIO}"
+										title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E') ? '' : messages.TITLE_PRONTUARIO_REQUISICAO_MATERIAL}"
+										readonly="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+										id="prontuarioEdicao" size="10" styleClass="numerico"
+										maxlength="10"
+										value="#{geracaoRequisicaoMaterialController.prontuario}">
+										<p:ajax event="change" update="@(#selecionaPaciente)"
+											process="@this"
+											listener="#{geracaoRequisicaoMaterialController.selecionarPacienteConsultaManual}" />
+									</mec:inputText>
+									<mec:inputText value="#{geracaoRequisicaoMaterialController.pacCodigo}" id="pacCodigoEdicao" size="10" maxlength="9" styleClass="numerico" label="#{messages.LABEL_CODIGO}" title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E') ? '' : messages.TITLE_CODIGO_PACIENTE_REQUISICAO_MATERIAL}" readonly="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}" >
+											<p:ajax event="change" update="@(#selecionaPaciente)"
+												process="@this"
+												listener="#{geracaoRequisicaoMaterialController.selecionarPacienteConsultaManual}" />
+									</mec:inputText>
+									<mec:inputText label="#{messages.LABEL_NOME}" id="pacNomeEdicao"
+										maxlength="50"
+										value="#{geracaoRequisicaoMaterialController.pacNome}"
+										style="text-transform:uppercase" size="50"
+										styleclass="suggestion_input" readonly="true" />
+									<div style="margin-top: 8px; float: left;">
+										<aghu:acao>
+											<mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}"
+												immediate="true"
+												disabled="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+												action="#{geracaoRequisicaoMaterialController.redirecionarPesquisaFonetica}"
+												styleClass=" bt_cinza icon-pesquisa-fonetica">
+												<f:setPropertyActionListener
+													target="#{pesquisaPacienteController.cameFrom}"
+													value="estoque-geracaoRequisicaoMaterial" for="command" />
+												<f:setPropertyActionListener
+													target="#{pesquisaPacienteController.exibeBotaoEditar}"
+													value="false" for="command" />
+												<f:setPropertyActionListener
+													target="#{pesquisaPacienteController.paramExibeBotaoIncluir}"
+													value="false" for="command" />
+											</mec:commandButton>
+										</aghu:acao>
+									</div>
+									<p:outputPanel id="atendimentoPanel" layout="inline">
+										<mec:inputText label="#{messages.LABEL_ATENDIMENTO}"
+											id="atendimento" maxlength="9"
+											value="#{geracaoRequisicaoMaterialController.atdSeq}"
+											style="text-transform:uppercase" size="12"
+											styleclass="suggestion_input" readonly="true" />
+									</p:outputPanel>	
+									<div style="margin-top: 15px; float: left;">
+										<mec:commandButton 
+											disabled="#{geracaoRequisicaoMaterialController.pacCodigo==null}"
+											value="#{messages.LABEL_BUSCAR}"
+											action="#{geracaoRequisicaoMaterialController.listarAtendimentosPaciente}"
+											readonly="#{geracaoRequisicaoMaterialController.verificaDisableSB or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+											ajax="true"
+											render="panelCcAplic, selecionaPaciente, modalVincularAtendimentoRM, Messages"
+											process="@this" styleClass="bt_cinza" />
+									</div>
+									<div style="margin-top: 15px; float: left;">
+										<mec:commandButton value="#{messages.LABEL_LIMPAR}"
+											disabled="#{geracaoRequisicaoMaterialController.pacCodigo==null}"
+											readonly="#{geracaoRequisicaoMaterialController.verificaDisableSB or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+											action="#{geracaoRequisicaoMaterialController.limparPaciente}"
+											profile="clear" ajax="true" render="selecionaPaciente"
+											process="@this" />
+									</div>
+								</p:outputPanel>
+							</aghu:linha>
+						</aghu:panelGeral>
+							 
+					</p:fieldset>
+				</aghu:linha>
+			</aghu:panelGeral>
+		</h:form>
+		<p:outputPanel id="acaoBotoes" name="acaoBotoes" layout="inline">
+			<h:form prependId="false" id="formBotoes" name="formBotoes">
+				<aghu:acao>
+					<aghu:linha>
+						<mec:commandButton id="bt_gravar"
+							value="#{messages.LABEL_GRAVAR_ITENS_PACOTE}"
+							rendered="#{geracaoRequisicaoMaterialController.reqMaterial.pacoteMaterial != null and geracaoRequisicaoMaterialController.reqMaterial.seq == null}"
+							block="true"
+							action="#{geracaoRequisicaoMaterialController.gravarAtualizarRequisicaoMaterial}"
+							profile="ok" />
+						<mec:commandButton id="bt_alterar"
+							value="#{messages.LABEL_ALTERAR}"
+							rendered="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'G' or (geracaoRequisicaoMaterialController.habilitarEdicao() and geracaoRequisicaoMaterialController.reqMaterial.indSituacao != null)}"
+							block="true"
+							action="#{geracaoRequisicaoMaterialController.gravarAtualizarRequisicaoMaterial}"
+							profile="ok" />
+						<mec:commandButton includePageParams="false" id="bt_confirmar"
+							onclick="PF('modalConfirmacaoWG').show();;return false;"
+							rendered="#{not empty geracaoRequisicaoMaterialController.reqMaterial.seq and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E'}"
+							value="#{messages.LABEL_CONFIRMAR}" profile="ok" />
+							
+						<mec:commandButton id="bt_efetivar"
+							rendered="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' and mf:hasPermission(securityController,'geracaoRequisicaoMaterial, efetivar') and not geracaoRequisicaoMaterialController.reqMaterial.automatica}"
+							value="#{messages.LABEL_ACESSO_EFETIVAR_RM}"
+							action="#{geracaoRequisicaoMaterialController.efetivar}"
+							styleClass="bt_cinza" >							
+							<f:setPropertyActionListener
+								target="#{efetivarRequisicaoMaterialController.rmsSeq}"
+								value="#{geracaoRequisicaoMaterialController.reqMaterial.seq}" for="command" />
+								<f:setPropertyActionListener
+								target="#{efetivarRequisicaoMaterialController.voltarPara}"
+								value="gerarRequisicaoMaterial" for="command" />
+						</mec:commandButton>	
+							
+						<mec:commandButton id="bt_visualizar"
+							rendered="#{not empty geracaoRequisicaoMaterialController.reqMaterial.indSituacao}"
+							value="#{messages.LABEL_VISUALIZAR}" block="true"
+							action="#{geracaoRequisicaoMaterialController.visualizar}"
+							profle="view"/>
+						<mec:commandButton id="bt_imprimir"
+							rendered="#{not empty geracaoRequisicaoMaterialController.reqMaterial.indSituacao}"
+							block="true" value="#{messages.LABEL_IMPRIMIR}"
+							action="#{geracaoRequisicaoMaterialController.directPrint}"
+							profile="print"/>
+						<mec:commandButton includePageParams="false"
+							value="#{messages.LABEL_NOVA_REQUISICAO_MATERIAL}"
+							rendered="#{not empty geracaoRequisicaoMaterialController.reqMaterial.indSituacao}"
+							action="#{geracaoRequisicaoMaterialController.iniciarRequisicao}"
+							profile="ok" />	
+							<mec:commandButton id="bt_preferencias"
+							value="#{messages.LABEL_PREFERENCIA_SC}"
+							onclick="PF('panelModalPreferenciaRMWG').show();;return false;"
+							ajax="true"	/>													
+						<mec:commandButton id="bt_voltar"
+							value="#{messages.LABEL_VOLTAR}"
+							onclick="PF('modalVoltarConfirmarWG').show();;return false;"
+							action="#{geracaoRequisicaoMaterialController.cancelar(false)}"
+							immediate="true"
+							profile="back"
+							rendered="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'G'}"
+							 />
+						<mec:commandButton includePageParams="false" id="bt_voltar2"
+							immediate="true"
+							rendered="#{geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'G'}"
+							action="#{geracaoRequisicaoMaterialController.cancelar(false)}"
+							profile="back"
+							value="#{messages.LABEL_VOLTAR}"
+							 />
+					</aghu:linha>
+				</aghu:acao>
+			</h:form>
+		</p:outputPanel>
+		<aghu:panelGeral legend="#{messages.LABEL_ITENS}">
+			<aghu:linha>
+				<h:form prependId="false" id="formEtiquetaCodigoBarra"
+					name="formEtiquetaCodigoBarra">
+					<p:outputPanel id="panelEtiquetaCodigoBarra"
+						name="panelEtiquetaCodigoBarra"
+						rendered="#{mf:hasPermission(securityController,'exibeNumEtiqRM, exibir')}"
+						layout="inline">
+
+						<!-- Leitura Através do Código de Barras 			-->
+						<mec:inputText id="etiqueta"
+							title="#{messages.TITLE_GERAR_RM_ETIQUETA}"
+							label="#{messages.LABEL_NUMERO_ETIQUETA}"
+                			size="18"
+                			maxlength="15"	onkeyup="validateEtiqueta(event);"
+	                  		value="#{geracaoRequisicaoMaterialController.numeroEtiqueta}"
+	                  		readonly="#{(not geracaoRequisicaoMaterialController.habilitarEdicao()) or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+	                  		rendered="#{geracaoRequisicaoMaterialController.rmsSeq == null and geracaoRequisicaoMaterialController.ealSeq ==null}"
+	                  		>
+                		</mec:inputText>                		
+                		<mec:commandButton id="codigoBarra" styleClass="laudoCodigoBarraClass" style="display:none;"
+							action="#{geracaoRequisicaoMaterialController.adicionarCodigoBarras()}"
+							value="Cod. Barras oculto"
+							block="true"
+							render="panelEtiquetaCodigoBarra, panelBtAdicionar, tabelaAcao, acaoBotoes"
+						/>
+						
+					</p:outputPanel>
+				</h:form>
+			</aghu:linha>
+			<aghu:linha>
+				<h:form prependId="false" id="formItens" name="formItens">
+				
+					<p:outputPanel id="panelSBQuantidade" layout="inline">
+						 
+						 <p:panelGrid>
+				         <p:row>
+				            <p:column style="border-width: 0px;">						
+								<p:outputPanel id="panelMaterial" layout="inline">
+									<mec:suggestionBox id="sbMaterial"
+										label="#{messages.LABEL_CODIGO_ITEM_RM}"
+										title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E')?(messages.TITLE_ITEM_RM):null}"
+										descricaoInput="codigo" descricaoLabel="nome" 
+										suggestionAction="listarMateriais"
+										posSelectionAction="verificarMaterialSelecionado"
+										posDeleteAction="limparEstoqueAlmoarifado"
+										required="#{(not geracaoRequisicaoMaterialController.verificaDisableSB and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E') or (geracaoRequisicaoMaterialController.habilitarEdicao())}"
+										width="820"
+										readonly="#{((geracaoRequisicaoMaterialController.verificaDisableSB or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C') and not geracaoRequisicaoMaterialController.habilitarEdicao()) or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E'}"
+										controller="#{geracaoRequisicaoMaterialController}"
+										value="#{geracaoRequisicaoMaterialController.material}"
+										render="panelBtAdicionar,panelAvisoAlmox,qtd, qtdMaterial">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_CODIGO}</b>
+											</f:facet> #{item.codigo}
+		                  				</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_NOME}</b>
+											</f:facet> #{item.nome}
+		                  				</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_UNIDADE_MEDIDA_SUG}</b>
+											</f:facet>
+											<h:outputText id="umdCodigo" value="#{item.umdCodigo}" />
+											<p:tooltip id="umdToolTip" for="umdCodigo" direction="top-right">
+												<h:outputText value="#{item.unidadeMedida.descricao}" escape="false" />
+											</p:tooltip>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_SC_ESTOCAVEL}</b>
+											</f:facet>
+											<h:outputText value="#{item.estocavel}">
+												<f:converter converterId="simNaoConverter" />
+											</h:outputText>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_GRUPO_SUG}</b>
+											</f:facet>
+											<h:outputText id="gmtCodigo" value="#{item.gmtCodigo}" />
+											<p:tooltip 	id="gmtToolTip" for="gmtCodigo" styleClass="tooltip" layout="block" direction="top-right">
+												<h:outputText value="#{item.grupoMaterial.descricao}" escape="false" />
+											</p:tooltip>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_LOCAL_ESTOQUE_SUG}</b>
+											</f:facet>
+											<h:outputText id="almSeq" value="#{item.almoxarifado.seq}" />
+											<p:tooltip id="almToolTip" for="almSeq" styleClass="tooltip" layout="block" direction="top-right">
+												<h:outputText value="#{item.almoxarifado.descricao}" escape="false" />
+											</p:tooltip>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_PRODUCAO_INTERNA_SUG}</b>
+											</f:facet> #{item.indProducaoInterna.descricao}
+										</p:column>
+									</mec:suggestionBox>
+								</p:outputPanel>
+							</p:column>
+							<p:column style="border-width: 0px;">
+								<h:commandLink
+									id="catalogoMaterial"
+									action="#{geracaoRequisicaoMaterialController.selecionarMaterial}"
+									title="#{messages.LABEL_CATALOGO_DE_MATERIAIS}" immediate="true"
+									tabindex="-1"
+									rendered="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C' and geracaoRequisicaoMaterialController.isAlmoxarife()) or geracaoRequisicaoMaterialController.habilitarEdicao() or (geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'G')}"
+									style="margin-top: 15px;" styleClass=" silk-materiais silk-icon"
+									ajax="true">
+										<f:setPropertyActionListener
+										target="#{consultaCatalogoMaterialPaginatorController.origem}"
+										value="estoque-geracaoRequisicaoMaterial" for="command" />	
+										<f:setPropertyActionListener
+										target="#{consultaCatalogoMaterialPaginatorController.origemSolicitacaoCompra}"
+										value="#{true}" for="command" />							
+								</h:commandLink>
+							</p:column>
+							<p:column style="border-width: 0px;">
+								<p:outputPanel id="qtdMaterial" layout="inline">
+									<mec:inputNumero label="#{messages.LABEL_QUANTIDADE_MATERIAL}"
+										title="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E')?(messages.TITLE_QUANTIDADE_MATERIAL):('')}"
+										required="#{(not geracaoRequisicaoMaterialController.verificaDisableSB and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E') or (geracaoRequisicaoMaterialController.habilitarEdicao())}"
+										readonly="#{((geracaoRequisicaoMaterialController.verificaDisableSB or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'C') and not geracaoRequisicaoMaterialController.habilitarEdicao()) or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'A' or geracaoRequisicaoMaterialController.reqMaterial.indSituacao eq 'E' or geracaoRequisicaoMaterialController.material.nome eq null}"
+										maxlength="7"
+										value="#{geracaoRequisicaoMaterialController.quantidade}"
+										id="qtd" />
+									<p:focus id="focoQuantidade" for="qtd" rendered="#{geracaoRequisicaoMaterialController.material != null}" />
+								</p:outputPanel>
+							</p:column>
+							<p:column style="border-width: 0px;">
+								<p:outputPanel id="panelBtAdicionar"
+									style="float:left; margin-top:10px;" layout="inline">
+									
+									<mec:commandButton value="#{messages.LABEL_GRAVAR}"
+										id="btGravarItem"
+										action="#{geracaoRequisicaoMaterialController.adicionar}"
+										rendered="#{geracaoRequisicaoMaterialController.rmsSeq ==null and geracaoRequisicaoMaterialController.ealSeq ==null and geracaoRequisicaoMaterialController.habilitarEdicao()}"
+										oncomplete="jQuery('#sbMaterial\\:sbMaterial\\:suggestion_input').focus();"
+										disabled="#{geracaoRequisicaoMaterialController.material.nome eq null}"
+										profile="ok" 
+										render="tabelaAcao,panelBtAdicionar,panelEtiquetaCodigoBarra,acaoBotoes,panelCampos, panelAvisoAlmox, panelMaterial, qtdMaterial"
+										 />
+										
+									<mec:commandButton value="#{messages.LABEL_ALTERAR}"
+										id="btAlterarItem"
+										action="#{geracaoRequisicaoMaterialController.alterarItemRequisicaoMaterial}"
+										rendered="#{geracaoRequisicaoMaterialController.rmsSeq !=null and geracaoRequisicaoMaterialController.ealSeq !=null}"
+										disabled="#{geracaoRequisicaoMaterialController.estoqueAlmo == null}"
+										block="true" profile="ok" 
+										render="tabelaAcao,panelBtAdicionar,panelEtiquetaCodigoBarra,acaoBotoes,panelCampos,panelAvisoAlmox, panelMaterial, qtdMaterial"
+										/>
+									<mec:commandButton id="btCancelar"
+										rendered="#{geracaoRequisicaoMaterialController.rmsSeq !=null and geracaoRequisicaoMaterialController.ealSeq !=null}"
+										action="#{geracaoRequisicaoMaterialController.cancelarEdicao}"
+										value="#{messages.LABEL_CANCELAR_EDICAO}"
+										styleClass="bt_cancel_edit bt_cinza" ajax="true"
+										render="tabelaAcao,panelBtAdicionar,panelEtiquetaCodigoBarra,acaoBotoes,panelCampos,panelAvisoAlmox, panelMaterial, qtdMaterial" />
+									
+									
+								</p:outputPanel>
+							</p:column>
+						</p:row>
+						</p:panelGrid>
+					</p:outputPanel>
+				</h:form>
+			</aghu:linha>
+			<aghu:linha>
+				<h:form prependId="false" id="formRequisicaoMaterialItens"
+					name="formRequisicaoMaterialItens">
+								<mec:serverDataTable
+									list="#{geracaoRequisicaoMaterialController.sceItemRmses}">
+									<c:set var="_material" value="#{item}" />
+									<p:column width="50">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACAO}" />
+										</f:facet>
+										<mec:commandLink
+											action="#{geracaoRequisicaoMaterialController.editar}"
+											rendered="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E') or (geracaoRequisicaoMaterialController.habilitarEdicao())}"
+											title="#{messages.LABEL_EDITAR}" profile="edit" ajax="true"
+											render="panelEtiquetaCodigoBarra, panelSBQuantidade, panelBtAdicionar, formItens"
+											process="@this">
+											<f:setPropertyActionListener
+												target="#{geracaoRequisicaoMaterialController.rmsSeq}"
+												value="#{_material.id.rmsSeq}" for="command" />
+											<f:setPropertyActionListener
+												target="#{geracaoRequisicaoMaterialController.ealSeq}"
+												value="#{_material.id.ealSeq}" for="command" />
+										</mec:commandLink>
+										<mec:commandLink
+											rendered="#{(geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'C' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'A' and geracaoRequisicaoMaterialController.reqMaterial.indSituacao ne 'E')  or (geracaoRequisicaoMaterialController.habilitarEdicao())}"
+											title="#{messages.LABEL_EXCLUIR}"
+											action="#{geracaoRequisicaoMaterialController.excluir}"
+											profile="delete" ajax="true"
+											render="panelEtiquetaCodigoBarra, tabelaAcao">
+											<f:setPropertyActionListener
+												target="#{geracaoRequisicaoMaterialController.rmsSeqEx}"
+												value="#{_material.id.rmsSeq}" for="command" />
+											<f:setPropertyActionListener
+												target="#{geracaoRequisicaoMaterialController.ealSeqEx}"
+												value="#{_material.id.ealSeq}" for="command" />
+										</mec:commandLink>	
+									</p:column>
+									<p:column width="250">
+										<f:facet name="header" >
+											<h:outputText value="#{messages.LABEL_MATERIAL}" />
+										</f:facet>
+										<h:outputText
+											value="#{_material.estoqueAlmoxarifado.material.codigo} - #{_material.estoqueAlmoxarifado.material.nome}" />
+									</p:column>
+									<p:column width="250">
+										<f:facet name="header" >
+											<h:outputText value="#{messages.LABEL_GRUPO}" />
+										</f:facet>
+										<h:outputText
+											value="#{_material.estoqueAlmoxarifado.material.grupoMaterial.descricao}" />
+									</p:column>
+									<p:column width="50">
+										<f:facet name="header" >
+											<h:outputText value="#{messages.LABEL_QUANTIDADE_MATERIAL}" />
+										</f:facet>
+										<h:outputText value="#{_material.qtdeRequisitada}" />
+									</p:column>
+									<p:column width="100">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_UNIDADE_MEDIDA}" />
+										</f:facet>
+										<h:outputText value="#{_material.scoUnidadeMedida.descricao}" />
+									</p:column>
+									<p:column width="50">
+										<f:facet name="header" >
+											<h:outputText
+												value="#{messages.LABEL_MANTER_MATERIAL_ESTOCAVEL}" />
+										</f:facet>
+										<h:outputText
+											value="#{_material.estoqueAlmoxarifado.material.indEstocavel.descricao}" />
+									</p:column>
+									<p:column width="100">
+										<f:facet name="header" >
+											<h:outputText value="#{messages.LABEL_CONS_MED_SEM}" />
+										</f:facet>
+										<h:outputText value="#{_material.mediaSemestre}" />
+									</p:column>
+									<p:column width="100">
+										<f:facet name="header" >
+											<h:outputText value="#{messages.LABEL_CONS_TRINTA_DIAS}" />
+										</f:facet>
+										<h:outputText value="#{_material.mediaTrintaDias}" />
+									</p:column>
+								</mec:serverDataTable>
+				</h:form>
+			</aghu:linha>
+		</aghu:panelGeral>
+		<h:form id="editarForm">
+			<pe:remoteCommand name="editarItem"
+				update="@(#tabelaAcao) @(#panelSBQuantidade) @(#panelBtAdicionar)"
+				actionListener="#{geracaoRequisicaoMaterialController.editar}">
+				<pe:assignableParam name="param1"
+					assignTo="#{geracaoRequisicaoMaterialController.rmsSeq}" />
+				<pe:assignableParam name="param2"
+					assignTo="#{geracaoRequisicaoMaterialController.ealSeq}" />
+			</pe:remoteCommand>
+		</h:form>
+		<h:form id="excluirForm">
+			<pe:remoteCommand name="excluir" immediate="true"
+				update="@(#tabelaAcao) @(#panelSBQuantidade) @(#panelBtAdicionar)"
+				process="@this">
+				<pe:assignableParam name="param1"
+					assignTo="#{geracaoRequisicaoMaterialController.rmsSeqEx}" />
+				<pe:assignableParam name="param2"
+					assignTo="#{geracaoRequisicaoMaterialController.ealSeqEx}" />
+			</pe:remoteCommand>
+		</h:form>
+		<p:dialog id="modalConfirmacaoExclusao" width="400" height="150"
+			modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.LABEL_CONFIRMACAO}" />
+				</h:panelGroup>
+			</f:facet> #{messages.LABEL_EXCLUSAO_MATERIAL_RM} 
+        <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalExclusao"
+					name="formModalExclusao">
+					<mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir"
+						block="true"
+						action="#{geracaoRequisicaoMaterialController.excluir}"
+						profile="ok" />
+					<mec:commandButton value="#{messages.LABEL_NAO}"
+						onclick="PF('modalConfirmacaoExclusaoWG').hide();"
+						id="bt_cancelarExcluir" profile="cancel" ajax="true" />
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+		<p:dialog id="modalConfirmacao" width="400" height="150" modal="true"
+			resizable="false" widgetVar="modalConfirmacaoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText
+						value="#{messages.LABEL_CONFIRMACAO_REQUISICAO_MATERIAL}" />
+				</h:panelGroup>
+			</f:facet> #{messages.MENSAGEM_CONFIRMA_CONFIRMACAO} 
+        <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formmodalConfirmacao"
+					name="formmodalConfirmacao">
+					<mec:commandButton includePageParams="false" id="bt_sim"
+						onclick="PF('modalConfirmacaoWG').hide();;PF('modalConfirmacaoImpressaoWG').show();;return false;"
+						value="#{messages.LABEL_SIM}"  profile="ok" />
+					<mec:commandButton value="#{messages.LABEL_NAO}"
+						onclick="PF('modalConfirmacaoWG').hide();" id="bt_nao"
+						profile="cancel" ajax="true" />
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+		
+		<p:dialog id="modalConfirmacaoImpressao" width="400" height="150" modal="true"
+			resizable="false" widgetVar="modalConfirmacaoImpressaoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText
+						value="#{messages.LABEL_CONFIRMACAO_REQUISICAO_MATERIAL}" />
+				</h:panelGroup>
+			</f:facet> #{messages.MENSAGEM_CONFIRMA_IMPRESSAO} 
+			<br />
+			<h:outputText value="#{geracaoRequisicaoMaterialController.reqMaterial.almoxarifado.descricao}?" />
+			
+        <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formmodalConfirmacaoImpressao"
+					name="formmodalConfirmacaoImpressao">
+					<mec:commandButton value="#{messages.LABEL_SIM}" id="bt_simImpressao"
+						block="true"
+						action="#{geracaoRequisicaoMaterialController.confirmarEImprimir}"
+						profile="ok" />
+					<mec:commandButton value="#{messages.LABEL_NAO}"
+						block="true"
+						onclick="PF('modalConfirmacaoImpressaoWG').hide();" id="bt_naoImpressao"
+						action="#{geracaoRequisicaoMaterialController.confirmar}"
+						profile="cancel"/>
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+		
+		<p:dialog id="modalVoltarConfirmar" width="400" height="150"
+			modal="true" resizable="false" widgetVar="modalVoltarConfirmarWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText
+						value="#{messages.LABEL_CONFIRMACAO_REQUISICAO_MATERIAL}" />
+				</h:panelGroup>
+			</f:facet> #{messages.MENSAGEM_CONFIRMAR_E_VOLTAR} 
+        <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formmodalConfirmacaoVoltar"
+					name="formmodalConfirmacaoVoltar">
+					<mec:commandButton value="#{messages.LABEL_SIM}"
+						action="#{geracaoRequisicaoMaterialController.cancelar(true)}"
+						id="bt_sim2" profile="ok" ajax="true" />
+					<mec:commandButton value="#{messages.LABEL_NAO}"
+						action="#{geracaoRequisicaoMaterialController.cancelar(false)}"
+						onclick="PF('modalVoltarConfirmarWG').hide();" id="bt_nao2"
+						profile="cancel" ajax="true" />
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+		<p:dialog id="panelModalPreferenciaRM" width="480" height="170"
+			modal="true" widgetVar="panelModalPreferenciaRMWG" resizable="false">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.TITLE_PREFERENCIA_RM}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form prependId="false" id="modalPrefsAtendimentoForm">
+				<aghu:linha>
+					<mec:selectBooleanCheckbox name="chkCcSolic" id="chkCcSolic"
+						value="#{geracaoRequisicaoMaterialController.chkCcSolic}"
+						label="#{messages.LABEL_CHECK_CC_SOLIC}"
+						title="#{messages.TITLE_CHECK_CC_SOLIC}">
+						<p:ajax event="change"
+							listener="#{geracaoRequisicaoMaterialController.atualizarPreferenciaSugestaoCc(false)}" />
+					</mec:selectBooleanCheckbox>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:selectBooleanCheckbox name="chkCcAplic" id="chkCcAplic"
+						value="#{geracaoRequisicaoMaterialController.chkCcAplic}"
+						label="#{messages.LABEL_CHECK_CC_APLIC}"
+						title="#{messages.TITLE_CHECK_CC_APLIC}" 
+						process="@this">
+						<p:ajax event="change"
+							listener="#{geracaoRequisicaoMaterialController.atualizarPreferenciaSugestaoCc(true)}" />
+					</mec:selectBooleanCheckbox>
+				</aghu:linha>
+			</h:form>
+		</p:dialog>
+		<p:dialog resizeable="false" id="modalVincularAtendimentoRM"
+			zindex="2" width="630" height="280" modal="true" resizable="false"
+			widgetVar="modalVincularAtendimentoRMWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText
+						value="#{messages.TITLE_SELECIONAR_ATENDIMENTO_PACIENTE}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form prependId="false" id="modalVincularAtendimentoForm">
+				<br clear="none" />
+				<h:outputText
+					value="#{messages.LABEL_SELECIONAR_ATENDIMENTO_PACIENTE_PRONTUARIO}"
+					style="font-weight:bold;padding-right:7px;" />
+				<h:outputText
+					value="#{geracaoRequisicaoMaterialController.prontuario}"
+					style="padding-right:30px;" />
+				<h:outputText
+					value="#{messages.LABEL_SELECIONAR_ATENDIMENTO_PACIENTE_NOME}"
+					style="font-weight:bold;padding-right:7px;" />
+				<h:outputText value="#{geracaoRequisicaoMaterialController.pacNome}" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:linha>
+					<p:outputPanel id="modalVincularAtendimentoPanel" layout="inline">
+						<aghu:linha>	
+							<p:outputPanel layout="block"
+								style="width:100%; height:150px; overflow-y:scroll;">
+								<mec:serverDataTable id="tabelaVincularAtendimento"
+									list="#{geracaoRequisicaoMaterialController.atendimentosPaciente}"
+									scrollable="true">
+									<c:set var="_atendimentoPaciente" value="#{item}" />
+									<p:column width="10%" style="text-align:center;">
+										<p:outputPanel id="panelVinculoAtendimento"
+											rendered="#{_atendimentoPaciente.seq.equals(geracaoRequisicaoMaterialController.atdSeqSelecionado)}"
+											layout="inline">
+											<input type="radio" id="#{_atendimentoPaciente.seq}"
+												name="group2" class="serverDataTable"
+												onchange="selecionarAtendimento(#{_atendimentoPaciente.seq})"
+												checked="checked" />
+										</p:outputPanel>
+										<p:outputPanel id="panelVinculoAtendimentoAux"
+											rendered="#{not _atendimentoPaciente.seq.equals(geracaoRequisicaoMaterialController.atdSeqSelecionado) and _atendimentoPaciente.seq != null}"
+											layout="inline">
+											<input type="radio" id="#{_atendimentoPaciente.seq}"
+												class="serverDataTable"
+												onchange="selecionarAtendimento(#{_atendimentoPaciente.seq})"
+												name="group2" />
+										</p:outputPanel>
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_CODIGO_ATENDIMENTO}" />
+										</f:facet>
+										<h:outputText value="#{_atendimentoPaciente.seq}" />
+										<p:tooltip rendered="#{_atendimentoPaciente.seq == null}"
+											styleClass="tooltip" layout="block">
+											<h:outputText
+												value="#{messages.LABEL_SEM_REGISTRO_ATENDIMENTO_PACIENTE}" />
+										</p:tooltip>
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText
+												value="#{messages.LABEL_DATA_ATENDIMENTO_PACIENTE}" />
+										</f:facet>
+										<h:outputText value="#{_atendimentoPaciente.dthrInicio}"
+											isDate="true">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText
+												value="#{messages.LABEL_UNIDADE_FUNCIONAL_ATENDIMENTO}" />
+										</f:facet>
+										<h:outputText
+											value="#{_atendimentoPaciente.unidadeFuncional.andarAlaDescricao}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText
+												value="#{messages.LABEL_ORIGEM_ATENDIMENTO_PACIENTE}" />
+										</f:facet>
+										<h:outputText
+											value="#{_atendimentoPaciente.origemAtendimento}" />
+									</p:column>
+								</mec:serverDataTable>
+							</p:outputPanel>
+						</aghu:linha>
+					</p:outputPanel>
+				</aghu:linha>	
+				<aghu:linha>				
+					<p:outputPanel id="botoesModalVincularAtendimento" layout="inline">
+						<p:outputPanel layout="block"
+							style="width:60%;float:left;margin-top:6px;">
+							<aghu:linha>
+								<mec:commandButton
+									value="#{messages.LABEL_SELECIONAR_ATENDIMENTO}"
+									disabled="#{geracaoRequisicaoMaterialController.atdSeqSelecionado==null}"
+									action="#{geracaoRequisicaoMaterialController.selecionaAtendimento}"
+									oncomplete="PF('modalVincularAtendimentoRMWG').hide();"
+									ajax="true"
+									render="atendimentoPanel,panelCcAplic,atendimento,atendimentoPanel"
+									process="@this" styleClass="bt_cinza" />
+							</aghu:linha>
+						</p:outputPanel>
+						<p:outputPanel layout="block"
+							style="width:40%;float:right;margin-top:6px;">
+							<aghu:linha>
+								<mec:commandButton value="#{messages.LABEL_FECHAR}"
+									immediate="true"
+									action="#{geracaoRequisicaoMaterialController.limparAtendimento}"
+									oncomplete="PF('modalVincularAtendimentoRMWG').hide();"
+									styleClass="bt_vermelho icon-close bt_cinza" ajax="true"
+									process="@this" />
+							</aghu:linha>
+						</p:outputPanel>
+					</p:outputPanel>
+				</aghu:linha>	
+			</h:form>
+		</p:dialog>		
+		<!-- Modal de espera -->
+		<p:dialog id="LoadingModalBoxCheck" style="text-align:center;"
+			height="200" top="200" resizeable="false" moveable="false"
+			width="400" zindex="2000" modal="true" resizable="false"
+			widgetVar="LoadingModalBoxCheckWG">
+			<f:facet name="header">
+				<h:outputText value="Em Andamento" />
+			</f:facet>
+			<div style="text-align: center;">
+				<br clear="none" /> <br clear="none" />
+				<h:graphicImage value="/img/loading.gif" />
+				<br clear="none" /> <br clear="none" />
+				<h:outputText
+					value="#{mf:getDefaultValue(blockMsg,'Processando, por favor aguarde.')}" />
+			</div>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

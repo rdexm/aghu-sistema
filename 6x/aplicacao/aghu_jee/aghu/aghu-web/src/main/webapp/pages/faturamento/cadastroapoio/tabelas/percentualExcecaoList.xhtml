@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="body">
+      <script type="text/javascript" xml:space="preserve">		
+				function Pesquisar(Event)
+				{
+				        if(document.all)
+				        {
+				                Tecla = Event.keyCode; // Internet Explorer
+				        }
+				        else
+				        {
+				                Tecla = Event.which; // Mozilla, etc.
+				        }
+
+				        if(Tecla == 9) document.getElementById('bt_pesquisar:button').click();
+				        if(Tecla == 13) document.getElementById('bt_pesquisar:button').click();
+				}
+				</script>  
+		<mec:pageConfig controller="#{percentualExcecaoPaginatorController}" />
+
+		<h:form prependId="false" id="formPesquisa"  >
+			<aghu:panelGeral
+				legend="#{messages.LABEL_PESQUISAR_PERCENTUAL_EXCECAO_PROCEDIMENTOS}">
+				<aghu:linha>
+					<p:outputPanel id="panelCodigo" layout="inline">
+					<mec:suggestionBox
+						label="#{messages.LABEL_TABELA_PERCENTUAL_EXCECAO}"
+						title="#{messages.TITLE_TABELA_PERCENTUAL_EXCECAO}"
+						suggestionAction="pesquisarFaturamentoProcedimentosHospitalares"
+						descricaoInput="seq" descricaoLabel="descricao" size="5"
+						maxlength="4" required="true" id="suggestionTabela"
+						immediate="false" onkeypress="Pesquisar(event);"
+						controller="#{percentualExcecaoPaginatorController}"
+						value="#{percentualExcecaoPaginatorController.tabelaSuggestion}">
+						<p:column>#{item.seq}</p:column>
+						<p:column>#{item.descricao}</p:column>
+					</mec:suggestionBox>
+					</p:outputPanel>
+
+					<mec:inputNumero name="item" size="8" maxlength="8"
+						value="#{percentualExcecaoPaginatorController.fatItensProcedHospitalarId.seq}"
+						label="#{messages.LABEL_ITEM_PERCENTUAL_EXCECAO}"
+						escape="false"
+						title="#{messages.TITLE_ITEM_PERCENTUAL_EXCECAO}" onkeypress="Pesquisar(event);">
+					</mec:inputNumero>
+
+					<mec:inputNumero name="codigoSus" size="10" maxlength="10"
+						value="#{percentualExcecaoPaginatorController.fatItensProcedHospitalarFiltro.codTabela}"
+						label="#{messages.LABEL_CODIGO_SUS_PERCENTUAL_EXCECAO}"
+						title="#{messages.TITLE_CODIGO_SUS_PERCENTUAL_EXCECAO}"
+						onkeypress="Pesquisar(event);">
+					</mec:inputNumero>
+
+					<mec:inputText name="descricao" size="65" maxlength="250"
+						value="#{percentualExcecaoPaginatorController.fatItensProcedHospitalarFiltro.descricao}"
+						label="#{messages.LABEL_DESCRICAO_PERCENTUAL_EXCECAO}"
+						style="text-transform: uppercase" onkeypress="Pesquisar(event);">
+					</mec:inputText>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR_PERCENTUAL_EXCECAO}"
+					action="#{percentualExcecaoPaginatorController.pesquisar}"
+					profile="search">
+				</mec:commandButton>
+
+				<mec:commandButton id="bt_limpar"
+					value="#{messages.LABEL_LIMPAR_PERCENTUAL_EXCECAO}"
+					action="#{percentualExcecaoPaginatorController.limparPesquisa}"
+					ajax="true" process="@this" render="formPesquisa, formResultado"
+					immediate="true"
+					profile="clear">
+				</mec:commandButton>
+			</aghu:acao>
+		</h:form>
+		
+		<h:form prependId="false" id="formResultado">
+			<h:panelGroup rendered="#{percentualExcecaoPaginatorController.dataModel.pesquisaAtiva}">
+				<aghu:panelGeral legend="#{messages.LABEL_PERCENTUAL_EXCECAO}">
+					<aghu:linha>
+						<p:outputPanel id="painelAtivo" layout="inline">
+							<mec:serverDataTable id="tblFatItens" dataModel="dataModel" controller="#{percentualExcecaoPaginatorController}" 
+								scrollable="false"
+								selection="fatItensProcedHospitalarSelection">
+								<c:set value="#{item}" var="item" />
+								
+								<p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"
+								rendered="#{mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}"> 
+						            <mec:commandLink id="tabela_link_editar" profile="edit" title="#{messages.TITLE_EDITAR_PERCENTUAL_EXCECAO}" action="#{percentualExcecaoPaginatorController.editar}"> 
+						              <f:setPropertyActionListener target="#{percentualExcecaoController.fatItensProcedHospitalar}" value="#{item}" for="command"/>  
+						            </mec:commandLink>  
+					         	</p:column> 
+
+								<p:column>
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_TABELA_PERCENTUAL_EXCECAO}" />
+									</f:facet>
+									<h:outputText value="#{item.id.phoSeq}" />
+								</p:column>
+
+								<p:column>
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_ITEM_PERCENTUAL_EXCECAO}" />
+									</f:facet>
+									<h:outputText value="#{item.seq}" />
+								</p:column>
+
+								<p:column>
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_CODIGO_SUS_PERCENTUAL_EXCECAO}" />
+									</f:facet>
+									<h:outputText value="#{item.codTabela}" />
+								</p:column>
+
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DESCRICAO_PERCENTUAL_EXCECAO}" />
+									</f:facet>
+									<h:outputText title="#{item.descricao.length() > 50 ? item.descricao : ''}" id="txtDescricaoEditada" value="#{percentualExcecaoPaginatorController.obterHint(item.descricao, 50)}"/>  
+								</p:column>
+							</mec:serverDataTable>
+						</p:outputPanel>
+					</aghu:linha>
+				</aghu:panelGeral>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

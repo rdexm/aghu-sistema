@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CONSULTAS_DA_GRADE} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{listarConsultasPorGradeController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{listarConsultasPorGradeController}" ignoreEnter="true"/>
+	    <p:outputPanel id="panelConvenios" layout="inline">
+	    <h:form prependId="false" id="frmModal"> 
+	        <p:dialog id="modalConvenios" style="text-align:center;" resizeable="false" moveable="false" width="700" 
+				modal="true" resizable="false" widgetVar="modalConveniosWG" closable="true"> 
+				<f:facet name="header"> 
+                  <h:outputText value="#{messages.TITLE_MODAL_CONVENIOS}"/> 
+                </f:facet>
+				<aghu:linha>
+					<p:outputPanel id="listConvenios" layout="inline" >
+             			 <mec:serverDataTable id="listConveniosResult" 
+             			 list="#{listarConsultasPorGradeController.listaConvenios}"
+             			 scrollable="true" ajax="true"> 
+            			    <c:set var="_convenios" value="#{item}"/>
+				                <p:column  styleClass="first-column auto-adjust"> 
+				                  <f:facet name="header"> 
+				                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+				                  </f:facet>  
+				                  <mec:commandLink action="#{listarConsultasPorGradeController.selecionarConvenio()}" render="@(#listConsultasGrade), @(#toolTipDescricaoConvenio)" title="#{messages.SELECIONAR_CONVENIO}" style="padding-bottom: 0px; height:16px;" styleClass="silk-icon silk-checked" ajax="true"> 
+				                    <f:setPropertyActionListener target="#{listarConsultasPorGradeController.convenioPlanoSelecionado}" value="#{_convenios}" for="command"/>  
+				                  </mec:commandLink>
+				                  </p:column>			                    
+				                    <p:column style="width:35px;">
+				                      <f:facet name="header"> 
+				                        <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+				                      </f:facet>
+				                      <h:outputText value="#{_convenios.id.cnvCodigo}" />  
+				                    </p:column>  
+				                    <p:column style="width:25px;">
+				                      <f:facet name="header"> 
+				                        <h:outputText value="#{messages.LABEL_PLANO}"/> 
+				                      </f:facet>
+				                      <h:outputText value="#{_convenios.id.plano}" />  
+				                    </p:column>  
+				                    <p:column>
+				                      <f:facet name="header"> 
+				                        <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+				                      </f:facet>
+				                      <h:outputText value="#{_convenios.convenioPlano}" />  
+				                    </p:column>  
+							</mec:serverDataTable>
+					</p:outputPanel>
+				</aghu:linha>
+			</p:dialog>
+			</h:form>
+		</p:outputPanel>
+      <p:outputPanel id="panelGeral" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral id="ffdl_consultas" style="padding:15px;margin:15px" legend="#{messages.TITLE_CONSULTAS_DA_GRADE}"> 
+          <h:form prependId="false" id="consulta"> 
+            <p:outputPanel id="consultaOutput" layout="inline"> 
+              <p:outputPanel id="manterconsulta" 
+              rendered="#{listarConsultasPorGradeController.editar or listarConsultasPorGradeController.consultaExcedente}" 
+              layout="inline"> 
+                <aghu:linha> 
+                  <mec:inputNumero readonly="true" id="consultaEdicao" 
+                  label="#{messages.LABEL_MANTER_HORARIO_CONSULTA_NUMERO}" 
+                  value="#{listarConsultasPorGradeController.consulta.numero}"/>  
+                  <mec:inputTextData label="#{messages.LABEL_DT_CONSULTA}" 
+                  title="#{messages.TITLE_DT_CONSULTA}" id="dataHora"
+					value="#{listarConsultasPorGradeController.consulta.dtConsulta}" 
+					readonly="#{!listarConsultasPorGradeController.consultaExcedente}"
+					ajax="true" tipo="datahora" required="true">
+				  	<p:ajax event="dateSelect" process="@this"/>
+				  </mec:inputTextData>
+				  <p:outputPanel id="panelSgbConvenio">
+	                  <mec:suggestionBox id="sgbConvenio" label="#{messages.LABEL_CONVENIO}" 
+	                  title="#{messages.TITLE_CONVENIO_PLANO_SGB}" 
+					  suggestionAction="obterCovenioPlanoSGB"	
+					  descricaoInput="id.plano" descricaoLabel="convenioPlano"
+					  width="350" maxlength="30" descricaoLimite="30" 
+					  controller="#{listarConsultasPorGradeController}"
+					  value="#{listarConsultasPorGradeController.convenioPlanoSGB}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_PLANO}</b>
+							</f:facet>#{item.id.plano}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet>#{item.convenioPlano}
+						</p:column>
+					</mec:suggestionBox>
+				</p:outputPanel>
+                </aghu:linha>  
+                <aghu:linha> 
+                  <p:outputPanel id="selecionaPaciente" layout="inline"> 
+                      <mec:inputText name="fieldProntuarioEdicao" label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO_CONSULTA_GRADE}" id="prontuarioEdicao" styleClass="numerico" readonly="#{listarConsultasPorGradeController.origemSumarioAlta}" size="10" maxlength="10" value="#{listarConsultasPorGradeController.prontuario}"> 
+                        <p:ajax event="change" update="@(#selecionaPaciente)" process="@this" disabled="#{mf:hasPermission(securityController,'ambulatorio,somenteLeitura')}" listener="#{listarConsultasPorGradeController.selecionarPacienteConsultaEdicao}"/> 
+                      </mec:inputText>  
+
+                      <mec:inputText name="fPacCodigoEdicao" id="pacCodigoEdicao" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_CONSULTA_GRADE}" disabled="#{mf:hasPermission(securityController,'ambulatorio,somenteLeitura')}" styleClass="numerico" readonly="#{listarConsultasPorGradeController.origemSumarioAlta}" size="10" maxlength="9" value="#{listarConsultasPorGradeController.pacCodigo}"> 
+                        <p:ajax event="change" update="@(#selecionaPaciente)" process="@this" listener="#{listarConsultasPorGradeController.selecionarPacienteConsultaEdicao}"/> 
+                      </mec:inputText> 
+      
+                    <mec:inputText label="#{messages.LABEL_NOME}" maxlength="50" value="#{listarConsultasPorGradeController.pacNome}" style="text-transform:uppercase" title="#{messages.TITLE_NOME_CONSULTA_PACIENTE}" size="50" styleclass="suggestion_input" readonly="true" id="pacNomeEdicao"/>  
+                    <br clear="none"/>  
+                    <mec:commandLink id="linkLimparPac" rendered="#{listarConsultasPorGradeController.pacNome!=null and !listarConsultasPorGradeController.origemSumarioAlta}" action="#{listarConsultasPorGradeController.limparPaciente()}" ajax="true" render="selecionaPaciente" process="@this"> 
+                      <h:graphicImage value="/resources/img/icons/tool_eraser.png" style="margin-top:11px;"/> 
+                    </mec:commandLink> 
+                  </p:outputPanel> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" readonly="#{mf:hasPermission(securityController,'ambulatorio,somenteLeitura')}" immediate="true" action="#{listarConsultasPorGradeController.redirecionarPesquisaFonetica}" styleClass=" icon-pesquisa-fonetica bt_cinza"> 
+                    <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="ambulatorio-listarConsultasPorGrade" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="true" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisaPacienteController.geraProntuarioVirtual}" value="#{listarConsultasPorGradeController.emergencia}" for="command"/> 
+                  </mec:commandButton> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:inputNumero ajaxValidation="true" label="#{messages.LABEL_CODIGO_CENTRAL}" title="#{messages.TITLE_COD_CENTRAL_CONSULTA_GRADE}" size="12" maxlength="12" value="#{listarConsultasPorGradeController.consulta.codCentral}" id="codCentralEdicao"/>
+                  
+                  <p:outputPanel id="panelFormaAgendamento">		  
+	                  <mec:suggestionBox label="#{messages.LABEL_FORMA_AGENDAMENTO}" 
+	                  	readonly="#{listarConsultasPorGradeController.origemSumarioAlta}" 
+	                  	title="#{messages.TITLE_FORMA_AGENDAMENTO_CONSULTA_GRADE}" 
+	                  	descricaoInput="pagador.descricao" 
+	                  	size="40" maxlength="40" width="400" 
+	                  	descricaoLabel="descCondicaoTipo" 
+	                  	suggestionAction="obterFormasAgendamento" 
+	                  	id="formaAgendamento" 
+	                  	controller="#{listarConsultasPorGradeController}" 
+	                  	value="#{listarConsultasPorGradeController.formaAgendamento}" 
+	                  	posSelectionAction="sugerirConvenioConsultaPorFormaAgendamento" 
+	                  	posDeleteAction="limparConvenioConsulta" 
+	                  	render="sgbConvenio"> 
+	                    <p:column> 
+	                      <f:facet name="header"> 
+	                        <b>#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_PAGADOR}</b> 
+	                      </f:facet> #{item.pagador.descricao}
+	                    </p:column>  
+	                    <p:column> 
+	                      <f:facet name="header"> 
+	                        <b>#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_TIPO}</b> 
+	                      </f:facet> #{item.tipoAgendamento.descricao}
+	                    </p:column>  
+	                    <p:column> 
+	                      <f:facet name="header"> 
+	                        <b>#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_CONDICAO}</b> 
+	                      </f:facet> #{item.condicaoAtendimento.descricao}
+	                    </p:column> 
+	                  </mec:suggestionBox> 
+                  </p:outputPanel>
+                </aghu:linha>  
+                <aghu:acao> 
+				  <mec:commandButton id="bt_salvar_edicao"
+						value="#{messages.LABEL_GRAVAR}"
+						action="#{listarConsultasPorGradeController.verificarDiaNaoProgramado}"
+						disabled="#{mf:hasPermission(securityController,'ambulatorio,somenteLeitura')}"
+						profile="ok-print"
+						render="consultaOutput, listConsultasGrade, panel_consulta_excedente"
+						process="@this" />
+                  <mec:commandButton value="#{messages.LABEL_LIMPAR}" immediate="true" 
+                  		action="#{listarConsultasPorGradeController.limpar}" profile="clear"/>  
+                  <mec:commandButton value="#{messages.LABEL_CANCELAR}" immediate="true" reRender="consultaOutput" 
+                  		action="#{listarConsultasPorGradeController.cancelar}" profile="cancel"/> 
+                </aghu:acao>  
+                <br clear="none"/> 
+              </p:outputPanel> 
+            </p:outputPanel>  
+            
+            <!-- MODAL DATA NÃO PROGRAMADA -->
+			<p:outputPanel id="panelModalDataNaoProgramada">
+				<p:dialog id="modalDataNaoProgramada" width="400" height="150" modal="true" resizable="false" widgetVar="modalDataNaoProgramadaWG">
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="#{messages.LABEL_DATA_NAO_PROGRAMADA}"></h:outputText>
+						</h:panelGroup>
+					</f:facet>
+				
+				#{messages.MENSAGEM_DATA_NAO_PROGRAMADA}
+				
+		       	<br />
+					<br />
+					<br />
+					<h:panelGroup>
+						<mec:commandButton id="bt_modalNaoProg" profile="ok"
+							value="#{messages.LABEL_SIM}"
+							action="#{listarConsultasPorGradeController.verificarConfirmacaoImpressao}"
+							oncomplete="content.donwloadAutomaticoRelatorios('#{sistemaImpressao.usarCliente() and not sistemaImpressaoClienteManager.isEmpty()}');"
+							reRender="panelModalConfirmacao, consultaOutput, listConsultasGrade, panel_consulta_excedente"
+							onclick="Richfaces.hideModalPanel('modalDataNaoProgramada')">
+						</mec:commandButton>
+						<mec:commandButton profile="cancel"
+							value="#{messages.LABEL_NAO}"
+							action="#{listarConsultasPorGradeController.desabilitarModal}"
+							onclick="Richfaces.hideModalPanel('modalDataNaoProgramada')"
+							id="bt_cancelarModalNaoProg">
+						</mec:commandButton>
+					</h:panelGroup>
+				</p:dialog>
+			</p:outputPanel>
+            
+            <p:outputPanel id="panelModalConfirmacao" layout="inline"> 
+              <p:dialog id="modalConfirmacaoImpressaoFormulario" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoImpressaoFormularioWG"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.TITLE_CONFIRMACAO_IMPRESSAO}"/> 
+                </f:facet> #{messages.IMPRIMIR_TICKET_HOJE_ANTERIOR} 
+                <br clear="none"/>  
+                <br clear="none"/>  
+                <br clear="none"/>  
+                <h:panelGroup> 
+                  <mec:commandButton id="bt_sim1" value="#{messages.LABEL_SIM}" action="#{listarConsultasPorGradeController.salvarMarcacaoConsultaFormulario}" oncomplete="PF('modalConfirmacaoImpressaoFormularioWG').hide();" profile="ok-print" ajax="true" render="consultaOutput, listConsultasGrade, panel_consulta_excedente" process="@this"/>  
+                  <mec:commandButton id="bt_nao1" value="#{messages.LABEL_NAO}" action="#{listarConsultasPorGradeController.salvarMarcacaoConsultaFormularioSemImprimir}" oncomplete="PF('modalConfirmacaoImpressaoFormularioWG').hide();" profile="cancel" ajax="true" render="consultaOutput, listConsultasGrade, panel_consulta_excedente" process="@this"/> 
+                </h:panelGroup> 
+              </p:dialog> 
+            </p:outputPanel>  
+            <aghu:linha id="cabecalho"> 
+              <h:outputText value="#{listarConsultasPorGradeController.obterCabecalho()}" escape="false"/> 
+            </aghu:linha> 
+          </h:form>  
+          <h:form prependId="false" id="resultados"> 
+                  <mec:serverDataTable id="listConsultasGrade" list="#{listarConsultasPorGradeController.obterConsultas()}" scrollable="true" scrollHeight="400" selection="consultaSelecionada" controller="#{listarConsultasPorGradeController}"> 
+					<p:ajax event="rowSelect"
+								listener="#{listarConsultasPorGradeController.selecionarConsulta}" process="@this" partialSubmit="true"
+								update="@(#resultados)" />
+                    <c:set var="_consulta" value="#{item}"/>  
+                    <p:column width="19"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink action="#{listarConsultasPorGradeController.setConsulta(_consulta)}" partialSubmit="true" process="@this" render="consultaOutput" title="#{messages.LABEL_EDITAR}" styleClass=" silk-book silk-icon" ajax="true"/> 
+                    </p:column>  
+                    <p:column width="50"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DATA_HORA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_consulta.dtConsulta}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column width="20px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DIA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{listarConsultasPorGradeController.obterDiaSemana(_consulta.dtConsulta)}"/> 
+                    </p:column>  
+                    <p:column width="43" rendered="#{!listarConsultasPorGradeController.origemSumarioAlta}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CONSULTA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_consulta.numero}"/> 
+                    </p:column>  
+                    <p:column width="55"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                      </f:facet>  
+                      <p:inputText id="prontuario_pac" styleClass="prontuario-input" 
+                      	disabled="#{not empty _consulta.complemento.nomePaciente or listarConsultasPorGradeController.origemSumarioAlta}" 
+                      	readonly="#{not empty _consulta.complemento.nomePaciente or listarConsultasPorGradeController.origemSumarioAlta}" 
+                      	value="#{_consulta.complemento.prontuario}" size="7" maxValue="9" 
+                      	converter="prontuarioConverter"> 
+                        <p:ajax event="blur" update="prontuario_pac, codigo_pac, nome_pac, panelConv, actionPannelButtons" process="@this" 
+                        	listener="#{listarConsultasPorGradeController.selecionarPacienteConsulta(_consulta)}" partialSubmit="true"/> 
+                      </p:inputText> 
+                    </p:column>  
+                    <p:column width="51" rendered="#{!listarConsultasPorGradeController.origemSumarioAlta}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_HISTORICO_CONSULTAS_CODIGOPACIENTE}"/> 
+                      </f:facet>  
+                      <pe:inputNumber styleClass="numerico" id="codigo_pac" disabled="#{not empty _consulta.complemento.nomePaciente}" readonly="#{not empty _consulta.complemento.nomePaciente}" value="#{_consulta.complemento.pacCodigo}" size="6" maxlength="11" thousandSeparator="" decimalPlaces="0"> 
+                        <p:ajax event="change" focus="codigo_central" update="prontuario_pac, codigo_pac, nome_pac, panelConv, actionPannelButtons" process="@this" listener="#{listarConsultasPorGradeController.selecionarPacienteConsulta(_consulta)}" partialSubmit="true"/> 
+                      </pe:inputNumber> 
+                    </p:column>  
+                    <p:column width="#{!listarConsultasPorGradeController.origemSumarioAlta ? 100: 200}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NOME_PACIENTE}"/> 
+                      </f:facet>  
+                      <p:inputText id="nome_pac" name="pacNome" size="#{!listarConsultasPorGradeController.origemSumarioAlta ? 16: 100}" disabled="true" readonly="true" value="#{_consulta.complemento.nomePaciente}" style="text-transform:uppercase"/> 
+                    </p:column>
+                    <p:column width="94" rendered="#{!listarConsultasPorGradeController.origemSumarioAlta}">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CONVENIO}"/> 
+					  </f:facet>
+						<p:outputPanel id="panelConv" layout="inline">
+							<pe:inputNumber styleClass="numerico" id="convenio_pac#{_consulta.numero}"	value="#{_consulta.convenioSaudePlano.id.cnvCodigo}" thousandSeparator="" size="2" maxlength="3" decimalPlaces="0" />
+							<mec:commandLink id="bt_modalConvenio" title="#{messages.LABEL_PESQUISAR}" partialSubmit="true" process="@this"
+								styleClass="silk-icon" ajax="true" render="listConvenios" action="#{listarConsultasPorGradeController.selecionarConsultaConvenio(_consulta)}">
+								<h:graphicImage id="imgSearchConv" value="/resources/img/search.png"/>
+							</mec:commandLink>
+							<p:outputLabel id="descricaoConvenio" value="#{(_consulta.convenioSaudePlano.descricaoPlanoConvenio.length() &gt; 5) ? fn:substring(_consulta.convenioSaudePlano.descricaoPlanoConvenio,0,5) : _consulta.convenioSaudePlano.descricaoPlanoConvenio}#{(_consulta.convenioSaudePlano.descricaoPlanoConvenio.length() &gt; 5) ? '...' : '' }" />
+							<p:overlayPanel id="toolTipDescricaoConvenio" for="descricaoConvenio" showEvent="mouseover" hideEvent="mouseout" rendered="#{_consulta.convenioSaudePlano.descricaoPlanoConvenio.length() &gt; 5}"
+								 appendToBody="true" dynamic="true">
+								<h:outputText id="descricaoTooltipConvenio" value="#{_consulta.convenioSaudePlano.descricaoPlanoConvenio}" />
+							</p:overlayPanel>
+						</p:outputPanel>
+						<p:tooltip for="descricaoConvenio" title="#{messages.TITLE.MODAL.CONVENIOS}" />
+					</p:column>
+                    <p:column width="55" rendered="#{!listarConsultasPorGradeController.origemSumarioAlta}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_PAGADOR}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_consulta.pagador.descricao}"/> 
+                    </p:column>
+                    <p:column width="76" rendered="#{!listarConsultasPorGradeController.origemSumarioAlta}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_AUTORIZACAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_consulta.tipoAgendamento.descricao}"/> 
+                    </p:column>  
+                    <p:column width="68" rendered="#{!listarConsultasPorGradeController.origemSumarioAlta}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CONDICAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_consulta.condicaoAtendimento.descricao}"/> 
+                    </p:column>  
+                    <p:column width="60" rendered="#{!listarConsultasPorGradeController.origemSumarioAlta}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CENTRAL_CONSULTA_PACIENTE}"/> 
+                      </f:facet>  
+                      <p:inputText styleClass="numerico" id="codigo_central" value="#{_consulta.complemento.codCentral}" size="7" maxlength="12" ajaxValidation="true">
+                      	<p:ajax event="change" process="@this" partialSubmit="true" /> 
+                      </p:inputText> 
+                    </p:column>  
+                    <p:column style="width:40px"> 
+                      <p:outputPanel id="actionPannelButtons" layout="inline"> 
+                    	
+							<mec:commandLink styleClass="silk-tick silk-icon"
+								style="padding-left:5px !important"
+								title="#{messages.LABEL_GRAVAR}" print="true"
+								id="marcarConsulta"
+								rendered="#{not empty _consulta.complemento.nomePaciente and !listarConsultasPorGradeController.exibeModal(_consulta)}"
+								action="#{listarConsultasPorGradeController.salvarMarcacaoConsulta(_consulta)}"
+								ajax="true" process="@this" render="panelGeral" partialSubmit="true"
+								disabled="#{mf:hasPermission(securityController,'ambulatorio,somenteLeitura')}">
+							</mec:commandLink>
+								
+							<mec:commandLink styleClass="silk-tick silk-icon"
+								style="padding-left:5px !important"
+								title="#{messages.LABEL_GRAVAR}"
+								id="marcarConsultaModal"
+								rendered="#{not empty _consulta.complemento.nomePaciente and listarConsultasPorGradeController.exibeModal(_consulta)}"
+								oncomplete="PF('modalConfirmacaoImpressaoWG').show();"
+								ajax="true" process="@this" partialSubmit="true"
+								disabled="#{mf:hasPermission(securityController,'ambulatorio,somenteLeitura')}">
+								<f:setPropertyActionListener target="#{listarConsultasPorGradeController.consulta}" value="#{_consulta}" for="command" />
+							</mec:commandLink>
+							
+							<mec:commandLink styleClass="silk-cancel silk-icon"
+								style="padding-left:5px !important"
+								title="#{messages.LABEL_CANCELAR}"
+								rendered="#{not empty _consulta.complemento.nomePaciente}"
+								action="#{listarConsultasPorGradeController.limparMarcacaoConsulta(_consulta)}"
+								ajax="true" process="@this" render="panelGeral" partialSubmit="true"
+								/>
+						</p:outputPanel>
+                    </p:column> 
+               </mec:serverDataTable>
+            </h:form> 
+            
+            <h:form prependId="false" id="formularioNovo">
+	            <aghu:acao> 
+	              <p:outputPanel id="panel_consulta_excedente" layout="inline"> 
+	                <mec:commandButton id="bt_consulta_excedente" value="#{messages.LABEL_CONSULTA_EXCEDENTE}" 
+	                action="#{listarConsultasPorGradeController.inserirConsultaExcedente}" 
+	                rendered="#{not listarConsultasPorGradeController.consultaExcedente}" 
+	                profile="ok" ajax="true" 
+	                render="consulta" 
+	                process="@this"/> 
+	              </p:outputPanel> 
+	            </aghu:acao>  
+	            
+	            <p:outputPanel id="panelModalVoltar" layout="inline"> 
+	              <p:dialog id="modalConfirmacaoImpressao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoImpressaoWG"> 
+	                <f:facet name="header"> 
+	                  <h:panelGroup> 
+	                    <h:outputText value="#{messages.TITLE_CONFIRMACAO_IMPRESSAO}"/> 
+	                  </h:panelGroup> 
+	                </f:facet> #{messages.IMPRIMIR_TICKET_HOJE_ANTERIOR} 
+	                <br clear="none"/>  
+	                <br clear="none"/>  
+	                <br clear="none"/>  
+	                <h:panelGroup> 
+	                  <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{listarConsultasPorGradeController.salvarMarcacaoConsulta}" oncomplete="PF('modalConfirmacaoImpressaoWG').hide();" profile="ok-print" ajax="true" render="consultaOutput, listConsultasGrade" process="@this"/>  
+	                  <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" action="#{listarConsultasPorGradeController.salvarMarcacaoConsultaSemImprimir}" oncomplete="PF('modalConfirmacaoImpressaoWG').hide();" profile="cancel" ajax="true" render="consultaOutput, listConsultasGrade" process="@this"/> 
+	                </h:panelGroup> 
+	              </p:dialog> 
+	            </p:outputPanel> 
+          </h:form> 
+        </aghu:panelGeral>  
+        <h:form prependId="false" id="btnVoltar"> 
+          <aghu:acao> 
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{listarConsultasPorGradeController.voltar}" profile="back"/> 
+          </aghu:acao> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

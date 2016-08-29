@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_TOPOGRAFIA_SISTEMA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterTopografiaSistemasController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_TOPOGRAFIAS}"> 
+          <mec:inputNumero id="seqPesquisa" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_PESQUISA_GRUPO_DIAGNOSTICO}" value="#{manterTopografiaSistemasController.seq}" maxlength="7" size="8"/>  
+          <mec:inputText id="descricaoPesquisa" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_PESQUISA_GRUPO_DIAGNOSTICO}" value="#{manterTopografiaSistemasController.descricao}" size="120" maxlength="500" caixaAlta="false"/>  
+          <mec:selectOneMenu id="situacaoPesquisa" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_PESQUISA_GRUPO_DIAGNOSTICO}" value="#{manterTopografiaSistemasController.situacao}" enum="DominioSituacao"/> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{manterTopografiaSistemasController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{manterTopografiaSistemasController.limpar}" immediate="true" profile="clear"/> 
+        </aghu:linha> 
+      </h:form>  
+      <p:outputPanel id="outputEdicao" rendered="#{manterTopografiaSistemasController.ativo}" layout="inline"> 
+        <h:form prependId="false" id="formDados"> 
+          <aghu:panelGeral legend="#{messages.LABEL_CADASTRAR_TOPOGRAFIAS_SISTEMA}"> 
+            <p:outputPanel id="panelTopografiaSistemas" rendered="#{mf:hasPermission(securityController,'manterTopografias,executar')}" layout="inline"> 
+              <aghu:linha> 
+                <mec:inputNumero id="seq" label="#{messages.LABEL_CODIGO}" value="#{manterTopografiaSistemasController.aelTopografiaSistemas.seq}" maxlength="4" size="4" readonly="true"/>  
+                <mec:inputText id="descricao" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_TOPOGRAFIA}" value="#{manterTopografiaSistemasController.aelTopografiaSistemas.descricao}" readonly="#{manterTopografiaSistemasController.aelTopografiaSistemas.descricao != null}" size="100" maxlength="500" required="true" onkeyup="return disableEnterKey(event)" caixaAlta="false"/>  
+                <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_DO_CADASTRO}" value="#{manterTopografiaSistemasController.aelTopografiaSistemas.indSituacao}" enum="DominioSituacao" noSelectionOption="false"/>  
+                <br clear="none"/>  
+                <mec:commandButton id="bt_salvar" value="#{messages.LABEL_GRAVAR}" action="#{manterTopografiaSistemasController.gravar}" rendered="#{mf:hasPermission(securityController,'manterTopografias,executar')}" profile="ok" ajax="true" render="outputEdicao"/> 
+              </aghu:linha> 
+            </p:outputPanel>  
+            <aghu:linha> 
+              <p:outputPanel id="panelMsgNaoEncontrado" layout="inline"> 
+                <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{empty manterTopografiaSistemasController.lista}"> 
+                  <h:outputText value="#{messages.MESSAGE_TOPOGRAFIA_SISTEMA_NAO_ENCONTRADA}"/> 
+                </p:outputPanel> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelResultado" rendered="#{not empty manterTopografiaSistemasController.lista}" layout="inline"> 
+                <p:outputPanel layout="block" style="width:99%; max-height:310px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;"> 
+                  <mec:serverDataTable name="tabelaProcedimentos" rowKeyVar="_itemId" sortMode="single" style="margin: 0px !important;" width="99%" list="#{manterTopografiaSistemasController.lista}" scrollable="true"> 
+                    <c:set var="_item" value="#{item}"/>  
+                    <p:column style="width: 90px; white-space:nowrap;"> 
+                      <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+                      <mec:commandLink id="deleteTopografiaSistemas" title="#{messages.LABEL_EXCLUIR}" ignoreDupResponses="true" onclick="PF('modalConfirmacaoExclusaoWG').show();;" rendered="#{mf:hasPermission(securityController,'manterTopografias,executar')}" profile="delete" ajax="true" process="@this"> 
+                        <f:setPropertyActionListener target="#{manterTopografiaSistemasController.seqExcluir}" value="#{_item.seq}" for="command"/> 
+                      </mec:commandLink>  
+                      <mec:commandLink id="ativarInativarTopografiaSistemas" title="#{_item.indSituacao eq 'A' ? messages.LABEL_DESATIVAR : messages.LABEL_ATIVAR}" action="#{manterTopografiaSistemasController.ativarInativar(_item)}" rendered="#{mf:hasPermission(securityController,'manterTopografias,executar')}" styleClass=" #{_item.indSituacao eq 'A' ? 'silk-activate' : 'silk-deactivate'} silk-icon" ajax="true" render="outputEdicao" process="@this"/>  
+                      <mec:commandLink id="detalharTopografiaSistemas" action="#{manterTopografiaSistemasController.detalhar}" title="#{messages.LABEL_DETALHES}" immediate="true" rendered="#{mf:hasPermission(securityController,'manterTopografias,pesquisar')}" styleClass=" silk-table silk-icon" ajax="true"> 
+                        <f:setPropertyActionListener target="#{manterTopografiaAparelhosController.seqAelTopografiaSistemas}" value="#{_item.seq}" for="command"/> 
+                      </mec:commandLink> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header">#{messages.LABEL_CODIGO}</f:facet>  
+                      <h:outputText value="#{_item.seq}"/> 
+                    </p:column>  
+                    <p:column style="width: 100%;"> 
+                      <f:facet name="header">#{messages.LABEL_DESCRICAO}</f:facet>  
+                      <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{(_item.descricao.length() &gt; 110)}"> 
+                        <h:outputText value="#{_item.descricao}"/> 
+                      </p:tooltip>  
+                      <h:outputText value="#{(_item.descricao.length() &gt; 110) ? fn:substring(_item.descricao,0,110) : _item.descricao }"/>  
+                      <h:outputText value="#{(_item.descricao.length() &gt; 110) ? ' ...' : '' }"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header">#{messages.LABEL_SITUACAO}</f:facet>  
+                      <h:outputText value="#{_item.indSituacao.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.MENSAGEM_TITLE_CONFIRMACAO_EXCLUSAO}"/> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao" name="formModalExclusao"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{manterTopografiaSistemasController.excluir}" ignoreDupResponses="true" oncomplete="PF('modalConfirmacaoExclusaoWG').hide();" id="bt_excluir" profile="search" ajax="true" render="panelResultado"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();; return false;" id="bt_cancelarExcluir" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

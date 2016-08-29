@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_QUESTAO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroQuestaoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_QUESTAO}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="codigo" label="#{messages.LABEL_CODIGO_QUESTAO}" title="#{messages.TITLE_CODIGO_QUESTAO}" value="#{cadastroQuestaoPaginatorController.questao.seq}" size="20" maxlength="7"/>  
+            <mec:inputText id="descricao" caixaAlta="false" removerCaratersEspeciais="false" label="#{messages.LABEL_DESCRICAO_QUESTAO}" title="#{messages.TITLE_DESCRICAO_QUESTAO}" value="#{cadastroQuestaoPaginatorController.questao.descricao}" size="60" maxlength="240"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectOneMenu id="tipoDado" label="#{messages.LABEL_TIPO_DADO_QUESTAO}" title="#{messages.TITLE_TIPO_DADO_QUESTAO}" enum="DominioTipoDadoQuestionario" value="#{cadastroQuestaoPaginatorController.questao.tipoDados}" noSelection="Selecione"> 
+              <p:ajax event="change" update="@(#panelMascara)" process="@this"/> 
+            </mec:selectOneMenu>  
+            <p:outputPanel id="panelMascara" layout="inline"> 
+              <mec:inputText id="mascara_numerico" styleClass="numerico" rendered="#{cadastroQuestaoPaginatorController.questao.tipoDados eq 'N'}" label="#{messages.LABEL_MASCARA_QUESTAO}" title="#{messages.TITLE_MASCARA_QUESTAO_NUMERICO}" value="#{cadastroQuestaoPaginatorController.questao.mascara}" style="text-transform:uppercase" size="18" maxlength="15"/>  
+              <mec:selectOneMenu id="mascara_data" rendered="#{cadastroQuestaoPaginatorController.questao.tipoDados eq 'D'}" label="#{messages.LABEL_MASCARA_QUESTAO}" title="#{messages.TITLE_MASCARA_QUESTAO_DATA}" enum="DominioMascaraData" value="#{cadastroQuestaoPaginatorController.mascaraData}"/> 
+            </p:outputPanel>  
+            <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO_QUESTAO}" title="#{messages.TITLE_SITUACAO_QUESTAO}" enum="DominioSituacao" value="#{cadastroQuestaoPaginatorController.questao.indSituacao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{cadastroQuestaoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{cadastroQuestaoPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{cadastroQuestaoPaginatorController.inserir}" rendered="#{mf:hasPermission(securityController,'questao,persistir') and cadastroQuestaoPaginatorController.dataModel.pesquisaAtiva}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formProcedimentos"> 
+        <p:outputPanel layout="block" style="width:99%;margin-left:4px !important; margin-right:4px !important;"> 
+          <mec:serverDataTable dataModel="dataModel" id="tabelaQuestoes" controller="#{cadastroQuestaoPaginatorController}"> 
+            <c:set var="_item" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+              <mec:commandLink id="tabelaQuestoes_link_editar" profile="edit" title="editar" action="#{cadastroQuestaoPaginatorController.editar}"> 
+                <f:setPropertyActionListener target="#{cadastroQuestaoController.questao}" value="#{_item}" for="command"/>  
+                <f:setPropertyActionListener for="command" target="#{cadastroQuestaoPaginatorController.selecionado}" value="#{_item}"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="tabelaQuestoes_link_remover" profile="delete" title="excluir" action="#{cadastroQuestaoPaginatorController.excluir}"> 
+                <f:setPropertyActionListener for="command" target="#{cadastroQuestaoPaginatorController.selecionado}" value="#{_item}"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="cadastra_valores_bt" title="#{messages.TITLE_VALORES_VALIDOS}" rendered="#{mf:hasPermission(securityController,'valorValido,valoresValidos')}" action="#{cadastroQuestaoPaginatorController.manterValoresValidos}" styleClass=" silk-valores-validos silk-icon"> 
+                <f:setPropertyActionListener target="#{manutencaoValoresValidosController.seqQuestao}" value="#{_item.seq}" for="command"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_QUESTAO_QUESTAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.seq}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO_QUESTAO}"/> 
+              </f:facet>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{(_item.descricao.length() &gt; 105)}"> 
+                <h:outputText value="#{_item.descricao}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{(_item.descricao.length() &gt; 105) ? fn:substring(_item.descricao,0,105) : _item.descricao }#{(_item.descricao.length() &gt; 105) ? '...' : '' }"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_TIPO_DADO_QUESTAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.tipoDados.descricao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_MASCARA_QUESTAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.mascara}" rendered="#{cadastroQuestaoPaginatorController.questao.tipoDados ne 'D'}"/>  
+              <h:outputText value="#{_item.mascaraData}" rendered="#{cadastroQuestaoPaginatorController.questao.tipoDados eq 'D'}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO_QUESTAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.indSituacao.descricao}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

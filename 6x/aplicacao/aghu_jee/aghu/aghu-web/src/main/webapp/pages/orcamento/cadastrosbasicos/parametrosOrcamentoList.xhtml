@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_PESQUISAR_PARAMETROS_REGRAS_ORCAMENTARIAS']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{parametrosOrcamentoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{parametrosOrcamentoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_PARAMETROS_REGRAS_ORCAMENTARIAS}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="tfRegra" label="#{messages.LABEL_SEQ_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_SEQ_PARAMETRO_ORCAMENTO}" value="#{parametrosOrcamentoPaginatorController.criteria.seq}" size="10" maxlength="6"/>  
+            <mec:inputText value="#{parametrosOrcamentoPaginatorController.criteria.regra}" label="#{messages.LABEL_NOME_REGRA_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_NOME_REGRA_PARAMETRO_ORCAMENTO}" maxlength="50" size="50" id="nomeRegra"/>  
+            <mec:selectOneMenu id="cbAplicacao" label="#{messages.LABEL_APLICACAO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_APLICACAO_PARAMETRO_ORCAMENTO}" value="#{parametrosOrcamentoPaginatorController.criteria.aplicacao}" enum="DominioTipoSolicitacao"> 
+              <p:ajax event="change" update="@(#opMaterialServico) @(#cbIndicador) @(#sbCentroCusto) @(#tpLimite) @(#vlrLimitePatrimonio)" process="@this" listener="#{parametrosOrcamentoPaginatorController.refreshFromAplicacao}"/> 
+            </mec:selectOneMenu>  
+            <mec:selectOneMenu id="cbIndicador" label="#{messages.LABEL_INDICADOR_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_INDICADOR_PARAMETRO_ORCAMENTO}" value="#{parametrosOrcamentoPaginatorController.criteria.indicador}" enum="DominioIndicadorParametrosOrcamento" readonly="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS' or            not empty parametrosOrcamentoPaginatorController.criteria.grupoMaterial or                             not empty parametrosOrcamentoPaginatorController.criteria.material or                             not empty parametrosOrcamentoPaginatorController.criteria.grupoServico or                             not empty parametrosOrcamentoPaginatorController.criteria.servico}"> 
+              <p:ajax event="change" update="@(#sbGrupoMaterial) @(#sbMaterial) @(#sbGrupoServico) @(#sbServico)" process="@this"/> 
+            </mec:selectOneMenu> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="opMaterialServico" layout="inline"> 
+              <mec:suggestionBox id="sbGrupoMaterial" label="#{messages.LABEL_GRUPO_MATERIAL_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_GRUPO_MATERIAL_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarGruposMateriais" readonly="#{not empty parametrosOrcamentoPaginatorController.criteria.indicador or                                not empty parametrosOrcamentoPaginatorController.criteria.material}" rendered="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SC'}" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.grupoMaterial}" render="cbIndicador,sbMaterial"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.descricao}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_INDICADOR_PARAMETRO_ORCAMENTO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.indicador.descricao}
+                </p:column> 
+              </mec:suggestionBox>
+            <mec:suggestionBox var="mat"  itemValue="#{mat}"  id="sbMaterial" label="#{messages.LABEL_MATERIAL_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_MATERIAL_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarMateriais" width="700" rendered="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SC'}" readonly="#{not empty parametrosOrcamentoPaginatorController.criteria.indicador or                                  not empty parametrosOrcamentoPaginatorController.criteria.grupoMaterial}" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.material}" render="cbIndicador,sbGrupoMaterial,materialToolTip">
+                <p:column>
+                    <f:facet name="header" >
+                        <b>#{messages.LABEL_CODIGO}</b>
+                    </f:facet> #{mat.codigo}
+                </p:column>
+                <p:column>
+                    <f:facet name="header">
+                        <b>#{messages.LABEL_NOME}</b>
+                    </f:facet>
+                    <h:outputText value="#{mat.nome}" id="refToolTipnomeMaterial#{item.codigo}"/>
+                </p:column>
+                <p:column>
+                    <f:facet name="header">
+                        <b>#{messages.LABEL_DESCRICAO}</b>
+                    </f:facet>
+                     <h:outputText value="#{(item.descricao.length() &gt; 40) ? fn:substring(item.descricao,0,40) : item.descricao}#{(item.descricao.length() &gt; 40) ? '...' : '' }"/>
+                </p:column>
+            </mec:suggestionBox>
+                <p:tooltip  id="materialToolTip" for="opMaterialServico" mode="ajax" disabled="#{empty parametrosOrcamentoPaginatorController.criteria.material}">
+                <h:outputText value="#{messages.LABEL_NOME}: #{parametrosOrcamentoPaginatorController.criteria.material.nome}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_DESCRICAO}: #{parametrosOrcamentoPaginatorController.criteria.material.descricao}" rendered="#{not empty parametrosOrcamentoPaginatorController.criteria.material.descricao}"/> 
+              </p:tooltip>  
+              <mec:suggestionBox id="sbGrupoServico" label="#{messages.LABEL_GRUPO_SERVICO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_GRUPO_SERVICO_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarGruposServicos" readonly="#{not empty parametrosOrcamentoPaginatorController.criteria.indicador or                                not empty parametrosOrcamentoPaginatorController.criteria.servico}" rendered="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS'}" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.grupoServico}" render="cbIndicador,sbServico"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:suggestionBox id="sbServico" label="#{messages.LABEL_SERVICO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_SERVICO_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarServicos" readonly="#{not empty parametrosOrcamentoPaginatorController.criteria.indicador or                                  not empty parametrosOrcamentoPaginatorController.criteria.grupoServico}" width="700" rendered="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS'}" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.servico}" render="cbIndicador,sbGrupoServico"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.nome}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox id="sbCentroCusto" label="#{messages.LABEL_CENTRO_CUSTO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_CENTRO_CUSTO_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="descricao" readonly="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS'}" suggestionAction="pesquisarCentrosCusto" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.centroCusto}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu id="cbSituacao" label="#{messages.LABEL_SITUACAO_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_SITUACAO_PARAMETRO_ORCAMENTO}" value="#{parametrosOrcamentoPaginatorController.criteria.situacao}" enum="DominioSituacao"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox id="sbCentroCustoAplicacao" label="#{messages.LABEL_CENTRO_CUSTO_REF_PARAMETRO_ORCAMENTO}" title="#{messages.TITLE_CENTRO_CUSTO_REF_PARAMETRO_ORCAMENTO}" descricaoInput="codigo" descricaoLabel="descricao" readonly="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS'}" suggestionAction="pesquisarCentrosCusto" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.centroCustoAplicacao}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox id="sbGrupoNaturezaDespesa" label="#{messages.LABEL_GRUPO_NATUREZA_DESPESA}" title="#{messages.TITLE_GRUPO_NATUREZA_DESPESA_REGRA_ORCAMENTARIA}" descricaoInput="codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarGruposNaturezaDespesa" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.grupoNatureza}" render="sbNaturezaDespesa"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox id="sbNaturezaDespesa" label="#{messages.LABEL_NATUREZA_DESPESA}" title="#{messages.TITLE_NATUREZA_DESPESA_REGRA_ORCAMENTARIA}" descricaoInput="id.codigo" descricaoLabel="descricao" width="700" suggestionAction="pesquisarNaturezasDespesa" readonly="#{empty parametrosOrcamentoPaginatorController.criteria.grupoNatureza}" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.natureza}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.id.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox id="sbVerbaGestao" label="#{messages.LABEL_VERBA_GESTAO}" title="#{messages.TITLE_VERBA_GESTAO_REGRA_ORCAMENTARIA}" descricaoInput="seq" width="700" descricaoLabel="descricao" suggestionAction="pesquisarVerbasGestao" controller="#{parametrosOrcamentoPaginatorController}" value="#{parametrosOrcamentoPaginatorController.criteria.verbaGestao}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+         </aghu:linha>
+           <aghu:linha>
+
+
+
+
+
+               <mec:selectOneMenu id="tpLimite"
+                                  enum="DominioLimiteValorPatrimonio"
+                                  label="#{messages.LABEL_LIMITE_VALOR_PATRIMONIO_PARAMETRO_ORCAMENTO}"
+                                  title="#{messages.TITLE_LIMITE_VALOR_PATRIMONIO_PARAMETRO_ORCAMENTO}"
+                                  value="#{parametrosOrcamentoPaginatorController.criteria.limite}"
+                                  readonly="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS'}"
+                                  disabled="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS'}" >
+                   <p:ajax event="change" update="@(#vlrLimitePatrimonio),@(#tpLimite)" process="@this" listener="#{parametrosOrcamentoPaginatorController.refreshFromTpLimite}"/>
+               </mec:selectOneMenu>
+
+
+               <mec:inputNumero  id="vlrLimitePatrimonio" value="#{parametrosOrcamentoPaginatorController.criteria.valor}" size="20" maxlength="18" inteiros="16" decimais="2"  style="text-align: right" styleClass="mascara(decimal)"
+                              readonly="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS' or empty parametrosOrcamentoPaginatorController.criteria.limite}"
+                              disabled="#{parametrosOrcamentoPaginatorController.criteria.aplicacao == 'SS' or empty parametrosOrcamentoPaginatorController.criteria.limite}">
+                             <f:converter for="vlrLimitePatrimonio" converterId="bigDecimalConverter"/>
+               </mec:inputNumero>
+
+
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{parametrosOrcamentoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton render="formPesquisa, frmLista, teste" ajax="true" value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{parametrosOrcamentoPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/>
+          <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" immediate="true" rendered="#{parametrosOrcamentoPaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" action="#{parametrosOrcamentoPaginatorController.inserir}" profile="add"> 
+            <f:setPropertyActionListener target="#{parametrosOrcamentoController.isReadonly}" value="#{false}" for="command"/>  
+            <f:setPropertyActionListener target="#{parametrosOrcamentoController.isUpdate}" value="#{false}" for="command"/> 
+          </mec:commandButton> 
+        </aghu:acao>
+      </h:form>
+
+      <h:form   prependId="false" id="frmLista">
+
+      <aghu:panelGeral rendered="#{parametrosOrcamentoPaginatorController.dataModel.pesquisaAtiva}">
+        <mec:serverDataTable dataModel="dataModel" id="tabelaParametrosOrcamento" controller="#{parametrosOrcamentoPaginatorController}" >
+          <c:set var="item" value="#{item}" />
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaParametrosOrcamento_link_editar" profile="edit" title="editar" action="#{parametrosOrcamentoPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{parametrosOrcamentoController.isReadonly}" value="#{false}" for="command"/>  
+              <f:setPropertyActionListener target="#{parametrosOrcamentoController.isUpdate}" value="#{true}" for="command"/>  
+              <f:setPropertyActionListener target="#{parametrosOrcamentoController.seqFsoParametrosOrcamento}" value="#{item.seq}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{parametrosOrcamentoPaginatorController.selecionado}" value="#{item}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaParametrosOrcamento_link_remover" profile="delete" title="excluir" action="#{parametrosOrcamentoPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{parametrosOrcamentoPaginatorController.selecionado}" value="#{item}"/> 
+            </mec:commandLink>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink id="bt_visualizar" title="#{messages.LABEL_VISUALIZAR}" rendered="#{not mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" action="#{parametrosOrcamentoPaginatorController.editar}" immediate="true" styleClass=" silk-zoom silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{parametrosOrcamentoController.isReadonly}" value="#{true}" for="command"/>  
+              <f:setPropertyActionListener target="#{parametrosOrcamentoController.isUpdate}" value="#{false}" for="command"/>  
+              <f:setPropertyActionListener target="#{parametrosOrcamentoController.seqFsoParametrosOrcamento}" value="#{item.seq}" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SEQ_PARAMETRO_ORCAMENTO}"/> 
+            </f:facet>  
+            <h:outputText id="regra" value="#{item.seq} #{not empty item.regra ? '-' : null} #{item.regra}"/>
+            <p:tooltip for="regra" >
+              <h:outputText value="#{item.descricaoRegra}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_INDICADOR_PARAMETRO_ORCAMENTO_GRID}" title="#{messages.TITLE_INDICADOR_PARAMETRO_ORCAMENTO_GRID}"/> 
+            </f:facet>  
+            <h:outputText value="#{empty item.indicador ? null : item.indicador.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{parametrosOrcamentoPaginatorController.grupoServicoMaterialLabel}"/> 
+            </f:facet>  
+            <h:outputText value="#{parametrosOrcamentoPaginatorController.getGrupoServicoMaterialValue(item)}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{parametrosOrcamentoPaginatorController.servicoMaterialLabel}"/> 
+            </f:facet>  
+            <h:outputText value="#{parametrosOrcamentoPaginatorController.getServicoMaterialValue(item)}" title="#{parametrosOrcamentoPaginatorController.getServicoMaterialDesc(item)}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_LIMITE_VALOR_PATRIMONIO_PARAMETRO_ORCAMENTO_GRID}" title="#{messages.TITLE_LIMITE_VALOR_PATRIMONIO_PARAMETRO_ORCAMENTO_GRID}"/> 
+            </f:facet>  
+            <h:outputText value="#{empty item.limite ? null : item.limite.descricao} #{empty item.valorLimite ? null : parametrosOrcamentoPaginatorController.format(item.valorLimite)}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.COLUMN_CENTRO_CUSTO_PARAMETRO_ORCAMENTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.centroCustoId}"/>  
+            <p:tooltip mode="ajax" style="width:300px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty item.centroCustoId}"> 
+              <h:outputText value="#{item.centroCustoDesc}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO_PARAMETRO_ORCAMENTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{empty item.situacao ? null : item.situacao.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+        </aghu:panelGeral>
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

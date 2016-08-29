@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+	  <title>#{messages.TITLE_PESQUISAR_EXAMES_AGENDADOS_TRANSFERENCIA_AGENDAMENTO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+	  <f:metadata>
+	    <f:viewAction action="#{transferenciaAgendamentoController.inicio}" />
+	  </f:metadata>
+	</ui:define>
+	<ui:define name="body">
+	  <mec:pageConfig controller="#{transferenciaAgendamentoController}" />
+	  <h:form prependId="false" id="pesquisarExamesAgendadosTransferenciaAgendamento">
+	    <pe:remoteCommand name="selecionarHorario"
+			update="panelTransferir,panelHorarios"
+			actionListener="#{transferenciaAgendamentoController.atribuirHorario}"
+			process="@this">
+		  <pe:assignableParam name="group1" assignTo="#{transferenciaAgendamentoController.idSelecionado}"/>
+		</pe:remoteCommand>
+		<p:outputPanel id="panelExames" layout="inline">
+		  <p:outputPanel id="panelExamesInterno" styleClass="tabela-hachurada aghu-panel-geral" layout="inline">
+			<aghu:panelGeral legend="#{messages.LABEL_EXAMES_AGENDADOS_NO_HORARIO}">
+			  <p:outputPanel layout="block" style="width: 100%; height:200px;">
+			    <mec:serverDataTable id="listaExamesAgendados" 
+			  		list="#{transferenciaAgendamentoController.listaExamesAgendados}"
+					scrollable="true" 
+					scrollHeight="180">
+				  <c:set var="_exameAgendado" value="#{item}" />
+				  <p:column width="5%" style="text-align:center;">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_ACAO}" />
+					</f:facet>
+					<h:selectBooleanCheckbox id="marcador"
+						value="#{_exameAgendado.selecionado}">
+					  <p:ajax event="click" bypassUpdates="false"
+							update="@(#panelExamesInterno) @(#panelHorarios) @(#panelTransferir) @(#panelMsgNaoEncontrado)"
+							process="@this"
+							listener="#{transferenciaAgendamentoController.limparHorarios()}" />
+					</h:selectBooleanCheckbox>
+					<ui:define name="headerCustomizado">
+					  <h:selectBooleanCheckbox id="todosExamesSelecionadosCheck"
+							title="#{messages.TITLE_SELECIONAR_TODOS_EXAMES_AGENDADOS}"
+							value="#{transferenciaAgendamentoController.todosExamesSelecionados}">
+						<p:ajax event="click" bypassUpdates="false" 
+					  		update="@(#panelExamesInterno) @(#panelHorarios) @(#panelTransferir) @(#panelMsgNaoEncontrado)"
+							process="@this"
+							listener="#{transferenciaAgendamentoController.marcarTodosExames()}" />
+				      </h:selectBooleanCheckbox>
+					</ui:define>
+				  </p:column>
+				  <p:column width="10%">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_NRO_SOLICITACAO}" />
+					</f:facet>
+					<h:outputText value="#{_exameAgendado.soeSeq}" />
+				  </p:column>
+				  <p:column width="10%">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_ITEM}" />
+					</f:facet>
+					<h:outputText value="#{_exameAgendado.seqp}" />
+				  </p:column>
+				  <p:column width="10%">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_SITUACAO}" />
+					</f:facet>
+					<h:outputText value="#{_exameAgendado.codigoSituacao}" />
+					  <p:tooltip value="#{_exameAgendado.descricaoSituacao}" styleClass="tooltip" direction="bottom-right" />
+				  </p:column>
+				  <p:column width="25%">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_EXAME}" />
+					</f:facet>
+					<h:outputText value="#{_exameAgendado.descricaoMaterialAnalise}" />
+				  </p:column>
+				  <p:column>
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_ETAPA}" />
+					</f:facet>
+				    <h:outputText value="#{_exameAgendado.nroEtapa}" />
+				  </p:column>
+				  <p:column>
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_DATA_HORA_AGENDA}" />
+					</f:facet>
+					<h:outputText value="#{_exameAgendado.dthrAgenda}">
+					  <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+					</h:outputText>
+				  </p:column>
+				  <p:column>
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_AMOSTRA}" />
+					</f:facet>
+					<h:outputText value="#{_exameAgendado.nroAmostra}" />
+				  </p:column>
+				</mec:serverDataTable>
+			  </p:outputPanel>
+			</aghu:panelGeral>
+		  </p:outputPanel>
+		</p:outputPanel>
+		<aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_HORARIOS_LIVRES_EXAME}">
+		  <p:outputPanel id="panelPesquisaHorarios" layout="inline" styleClass="aghu-panel-geral">
+		    <aghu:linha>
+			  <mec:inputTextData id="data"
+					label="#{messages.LABEL_CONSULTA_HORARIO_LIVRE_DATA}"
+					title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_DATA}" size="10"
+					maxlength="10" value="#{transferenciaAgendamentoController.data}"
+					tipo="data" />
+		 	  <mec:inputText id="hora"
+					label="#{messages.LABEL_CONSULTA_HORARIO_LIVRE_HORA}"
+					title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_HORA}"
+					incluirMascaraHora="true" size="5" maxlength="5"
+					onkeypress="formatar(this, '99:99', event)"
+					ajaxValidation="false" datePattern="HH:mm"
+					removerCaratersEspeciais="false"
+					value="#{transferenciaAgendamentoController.hora}" />
+			  <mec:inputNumero size="5" maxlength="5"
+					label="#{messages.LABEL_GRADE}" title="#{messages.TITLE_GRADE}"
+					value="#{transferenciaAgendamentoController.grade}" id="grade" />
+			</aghu:linha>
+			<aghu:linha>
+			  <mec:suggestionBox id="sbGrupo"
+					label="#{messages.LABEL_CONSULTA_HORARIO_LIVRE_GRUPO_EXAME}"
+					title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_GRUPO_EXAME}"
+					suggestionAction="pesquisarGrupoExame" descricaoInput="seq"
+					descricaoLabel="descricao" width="350" 
+					controller="#{transferenciaAgendamentoController}"
+					value="#{transferenciaAgendamentoController.grupoExame}">
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.LABEL_CODIGO}</b>
+				  </f:facet> #{item.seq}
+                </p:column>
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.LABEL_DESCRICAO}</b>
+				  </f:facet> #{item.descricao}
+                </p:column>
+			  </mec:suggestionBox>
+			  <mec:suggestionBox id="sbSala"
+					label="#{messages.LABEL_SALA}"
+					title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_SALA}"
+					suggestionAction="pesquisarSala" descricaoInput="id.seqp"
+					descricaoLabel="numero" maxlength="20" 
+					controller="#{transferenciaAgendamentoController}"
+					value="#{transferenciaAgendamentoController.salaExecutoraExame}">
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.LABEL_SALA}</b>
+				  </f:facet> #{item.id.seqp}
+                </p:column>
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.LABEL_DESCRICAO}</b>
+				  </f:facet> #{item.numero}
+                </p:column>
+			  </mec:suggestionBox>
+			</aghu:linha>
+			<aghu:linha>
+			  <mec:suggestionBox id="responsavel"
+					label="#{messages.LABEL_RESPONSAVEL}"
+					title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_RESPONSAVEL}"
+					descricaoInput="id.matricula" width="500"
+					descricaoLabel="pessoaFisica.nome"
+					suggestionAction="pesquisarServidor"
+					controller="#{transferenciaAgendamentoController}"
+					value="#{transferenciaAgendamentoController.servidor}">
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.LABEL_MATRICULA}</b>
+				  </f:facet> #{item.id.matricula}
+                </p:column>
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.LABEL_VINCULO}</b>
+				  </f:facet> #{item.id.vinCodigo}
+                </p:column>
+				<p:column>
+				  <f:facet name="header">
+					<b>#{messages.LABEL_NOME}</b>
+				  </f:facet> #{item.pessoaFisica.nome}
+                </p:column>
+			  </mec:suggestionBox>
+			</aghu:linha>
+			<aghu:linha>
+			  <mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}" block="true"
+					action="#{transferenciaAgendamentoController.pesquisar}"
+					render="panelHorarios, panelMsgNaoEncontrado" profile="search" />
+			  <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					action="#{transferenciaAgendamentoController.limparPesquisa}"
+					ajax="true"
+					render="panelPesquisaHorarios, panelHorarios,panelMsgNaoEncontrado,panelTransferir"
+					process="@this" styleClass="bt_cinza" profile="clear" />
+			</aghu:linha>
+		  </p:outputPanel>
+		  <p:outputPanel id="panelMsgNaoEncontrado" layout="inline">
+			<p:outputPanel id="msgNaoEncontrado" layout="block"
+				styleClass="div-alerta"
+				rendered="#{transferenciaAgendamentoController.primeiraPesquisa and (empty transferenciaAgendamentoController.listaHorarios)}">
+			  <h:outputText value="#{messages.NENHUM_HORARIO_LIVRE_ENCONTRADO}" />
+			</p:outputPanel>
+		  </p:outputPanel>
+		  <p:outputPanel id="panelHorarios" layout="inline">
+			<p:outputPanel id="panelHorariosInterno"
+					rendered="#{not empty transferenciaAgendamentoController.listaHorarios}"
+					layout="inline">
+			  <aghu:linha>
+				<p:outputPanel layout="block" style="width: 100%;">
+				  <mec:serverDataTable id="listaHorarios"
+						list="#{transferenciaAgendamentoController.listaHorarios}"
+						scrollable="true" scrollHeight="140">
+					<c:set var="_horario" value="#{item}" />
+					<p:column width="5%" style="text-align:center;">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_ACAO}" />
+					  </f:facet>
+					  <p:outputPanel id="panelRadioHorario"
+							rendered="#{_horario.id.equals(transferenciaAgendamentoController.idSelecionado)}"
+							layout="inline">
+					    <input type="radio" id="#{_horario.id}" name="group1"
+							class="serverDataTable"
+							onchange="selecionarHorario(#{_horario.id})"
+							checked="checked" />
+					  </p:outputPanel>
+					  <p:outputPanel id="panelRadioHorarioAux"
+							rendered="#{not _horario.id.equals(transferenciaAgendamentoController.idSelecionado)}"
+							layout="inline">
+						<input type="radio" id="#{_horario.id}"
+								class="serverDataTable"
+								onchange="selecionarHorario(#{_horario.id})" name="group1" />
+					  </p:outputPanel>
+					</p:column>
+					<p:column width="10%">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_DATA}" />
+					  </f:facet>
+					  <h:outputText value="#{_horario.dtAgenda}" />
+					</p:column>
+					<p:column width="10%">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_HORA}" />
+					  </f:facet>
+					  <h:outputText value="#{_horario.hrAgenda}" />
+					</p:column>
+					<p:column width="10%">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CONSULTA_HORARIO_LIVRE_UNIDADE}" />
+					  </f:facet>
+					  <h:outputText value="#{_horario.grade}" />
+					</p:column>
+					<p:column width="10%">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_GRADE}" />
+					  </f:facet>
+					  <h:outputText value="#{_horario.seqGrade}" />
+					</p:column>
+					<p:column width="25%">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_GRUPO_EXAME}" />
+					  </f:facet>
+					  <h:outputText value="#{_horario.descricaoGrupo}" />
+					</p:column>
+					<p:column width="10%">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_SALA}" />
+					  </f:facet>
+					  <h:outputText value="#{_horario.descricaoSala}" />
+					</p:column>
+					<p:column width="30%">
+					  <f:facet name="header">
+						<h:outputText value="#{messages.LABEL_RESPONSAVEL}" />
+					  </f:facet>
+					  <h:outputText value="#{_horario.responsavel}" />
+					</p:column>
+				  </mec:serverDataTable>
+				</p:outputPanel>
+			  </aghu:linha>
+		 	</p:outputPanel>
+		  </p:outputPanel>
+		</aghu:panelGeral>
+		<aghu:linha>
+		  <p:outputPanel id="panelTransferir" layout="inline">
+		 	<mec:commandButton id="bt_gravar"
+				value="#{messages.LABEL_TRANSFERIR}"
+				rendered="#{transferenciaAgendamentoController.idSelecionado!=null and not empty transferenciaAgendamentoController.listaHorarios}"
+				action="#{transferenciaAgendamentoController.transferir}"
+				disabled="#{not mf:hasPermission(securityController,'transferenciaAgendamento,transferir')}"
+				ajax="true"
+				render="tabelaExames,panelTransferir, panelExames, panelHorarios, panelPesquisaHorarios"
+				process="@this" styleClass="bt_cinza" />
+		  </p:outputPanel>
+		  <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+				action="#{transferenciaAgendamentoController.voltar}"
+				styleClass=" alinha-direita bt_cinza" ajax="true" profile="back" />
+	    </aghu:linha>
+	  </h:form>
+	</ui:define>
+  </ui:composition>
+</html>

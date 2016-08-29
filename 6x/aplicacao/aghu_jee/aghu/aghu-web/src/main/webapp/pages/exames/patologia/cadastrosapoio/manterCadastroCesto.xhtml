@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_CESTO_MATERIAL} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterCadastroCestoController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <p:outputPanel id="panelFields" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_CESTOS_MATERIAL}"> 
+            <mec:inputNumero id="seqPesquisa" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_CESTO_PATOLOGIA}" value="#{manterCadastroCestoController.seq}" maxlength="7" size="8"/>  
+            <mec:inputText id="siglaPesquisa" label="#{messages.LABEL_SIGLA}" title="#{messages.TITLE_SIGLA_PESQUISA_CESTO_PATOL}" value="#{manterCadastroCestoController.sigla}" style="text-transform:uppercase" size="3" maxlength="3"/>  
+            <mec:inputText id="descricaoPesquisa" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_PESQUISA_CESTO_PATOL}" value="#{manterCadastroCestoController.descricao}" style="text-transform:uppercase" size="60" maxlength="60" caixaAlta="false"/>  
+            <mec:selectOneMenu id="situacaoPesquisa" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_PESQUISA_CESTO_PATOL}" value="#{manterCadastroCestoController.situacao}" enum="DominioSituacao"/> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_pesquisar" 
+          		value="#{messages.LABEL_PESQUISAR}" 
+          		block="true" 
+          		action="#{manterCadastroCestoController.pesquisar}" 
+          		profile="search"
+          		process="@this @(#seqPesquisa) @(#siglaPesquisa) @(#descricaoPesquisa) @(#situacaoPesquisa)"
+          		ajax="true"
+          		render="outputEdicao, panelResultado"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{manterCadastroCestoController.limpar}" ajax="true" render="panelFields,outputEdicao" process="@this" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:linha> 
+      </h:form>  
+      <p:outputPanel id="outputEdicao"> 
+        <p:outputPanel rendered="#{manterCadastroCestoController.ativo}"> 
+          <h:form prependId="false" id="formDados"> 
+            <aghu:linha>
+            <aghu:panelGeral legend="#{messages.TITLE_CADASTRAR_CESTO_MATERIAL}"> 
+              <p:outputPanel id="panelCestoPatologia" rendered="#{mf:hasPermission(securityController,'manterCesto,executar')}" layout="inline"> 
+                <aghu:linha> 
+                  <mec:inputNumero id="seq" label="#{messages.LABEL_CODIGO}" value="#{manterCadastroCestoController.aelCestoPatologia.seq}" maxlength="4" size="4" readonly="true" rendered="#{mf:hasPermission(securityController,'manterCesto,executar')}"/>  
+                  <mec:inputText id="sigla" label="#{messages.LABEL_SIGLA}" style="text-transform:uppercase" title="#{messages.TITLE_SIGLA_CESTO_PATOL}" value="#{manterCadastroCestoController.aelCestoPatologia.sigla}" readonly="#{manterCadastroCestoController.aelCestoPatologia.sigla != null}" size="3" maxlength="3" required="true" onkeyup="return disableEnterKey(event)" rendered="#{mf:hasPermission(securityController,'manterCesto,executar')}"/>  
+                  <mec:inputText id="descricao" style="text-transform:uppercase" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_CESTO_PATOL}" value="#{manterCadastroCestoController.aelCestoPatologia.descricao}" readonly="#{manterCadastroCestoController.aelCestoPatologia.descricao != null}" size="60" maxlength="60" required="true" onkeyup="return disableEnterKey(event)" rendered="#{mf:hasPermission(securityController,'manterCesto,executar')}"/>  
+                  <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_CESTO_PATOL}" value="#{manterCadastroCestoController.aelCestoPatologia.indSituacao}" enum="DominioSituacao" noSelectionOption="false" rendered="#{mf:hasPermission(securityController,'manterCesto,executar')}"/>  
+                  <br clear="none"/>  
+                  <mec:commandButton id="bt_salvar" value="#{messages.LABEL_GRAVAR}" action="#{manterCadastroCestoController.gravar}" rendered="#{mf:hasPermission(securityController,'manterCesto,executar')}" profile="ok" ajax="true" render="outputEdicao"/> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <aghu:linha> 
+                <p:outputPanel id="panelMsgNaoEncontrado" layout="inline"> 
+                  <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{empty manterCadastroCestoController.lista}"> 
+                    <h:outputText value="#{messages.MESSAGE_CESTO_MATERIAL_NAO_ENCONTRADO}"/> 
+                  </p:outputPanel> 
+                </p:outputPanel>
+                <p:outputPanel id="panelResultado">   
+                  <p:outputPanel id="panelResultadoCond" rendered="#{not empty manterCadastroCestoController.lista}" layout="inline"> 
+                    <mec:serverDataTable id="tabelaProcedimentos"
+                    		style="margin: 0px !important;" 
+                    		width="99%" 
+                    		scrollHeight="400"
+                    		list="#{manterCadastroCestoController.lista}"
+                    		selection="selecionado"
+                    		controller="#{manterCadastroCestoController}"
+                    		scrollable="true"> 
+                      <c:set var="_item" value="#{item}"/>  
+                      <p:column style="width:50px; white-space:nowrap;" rendered="#{mf:hasPermission(securityController,'manterCesto,executar')}">
+                      	<f:facet name="header"> 
+                  		  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                		</f:facet>  
+                        <mec:commandLink id="ativarInativarCestoPatologia" 
+                        		title="#{_item.indSituacao eq 'A' ? messages.LABEL_DESATIVAR : messages.LABEL_ATIVAR}" 
+                        		action="#{manterCadastroCestoController.ativarInativar(_item)}" 
+                        		styleClass=" #{_item.indSituacao eq 'A' ? 'silk-activate' : 'silk-deactivate'} silk-icon" 
+                        		ajax="true" 
+                        		render="outputEdicao" 
+                        		process="@this">
+                          <f:setPropertyActionListener target="#{manterCadastroCestoController.selecionado}" value="#{_item}" for="command"/>
+                       	</mec:commandLink> 
+                      </p:column>  
+                      <p:column style="white-space:nowrap;width:50px;"> 
+                      	<f:facet name="header"> 
+                  		  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                		</f:facet>   
+                        <h:outputText value="#{_item.seq}"/> 
+                      </p:column>  
+                      <p:column style="width:50px; white-space:nowrap;">
+                      	<f:facet name="header"> 
+                  		  <h:outputText value="#{messages.LABEL_SIGLA}"/> 
+                		</f:facet>   
+                        <h:outputText value="#{_item.sigla}"/> 
+                      </p:column>  
+                      <p:column>
+                      	<f:facet name="header"> 
+                  		  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                		</f:facet>    
+                        <h:outputText value="#{_item.descricao}"/> 
+                      </p:column>  
+                      <p:column style="width:90px; white-space:nowrap;">
+                      	<f:facet name="header"> 
+                  		  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                		</f:facet>     
+                        <h:outputText value="#{_item.indSituacao.descricao}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+            </aghu:linha>
+          </h:form> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

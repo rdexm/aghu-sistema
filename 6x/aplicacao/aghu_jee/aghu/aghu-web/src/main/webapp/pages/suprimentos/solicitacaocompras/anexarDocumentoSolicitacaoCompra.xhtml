@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_ANEXAR_ARQUIVOS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{anexarDocumentoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{anexarDocumentoController}"/>  
+      <h:form id="formEdicaoInclusao" prependId="false">
+	        <aghu:panelGeral legend="#{messages.LABEL_ANEXAR_ARQUIVOS}"> 
+	          <aghu:linha> 
+	            <mec:inputText id="origemSolicitacao" value="#{anexarDocumentoController.origemSolicitacao.getDescricao()}" label="#{messages.LABEL_ORIGEM}" title="#{messages.TITLE_ORIGEM}" size="45" readonly="true"/>  
+	            <mec:inputText id="numeroSolicitacao" value="#{anexarDocumentoController.numeroSolicitacao}" label="#{messages.LABEL_NUMERO}" title="#{messages.TITLE_NUMERO}" size="20" readonly="true"/> 
+	          </aghu:linha> 
+	        </aghu:panelGeral>
+	        <aghu:panelGeral id="panelArquivos">  
+              <aghu:linha> 
+                <mec:inputText id="descricao" rendered="#{anexarDocumentoController.modoEdit}" readonly="#{(not mf:hasPermission(securityController,'anexarDocumentos,gravar') and                mf:hasPermission(securityController,'anexarDocumentos,visualizar')) or                not anexarDocumentoController.modoEdit}" value="#{anexarDocumentoController.descricao}" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_ARQUIVO}" style="text-transform:uppercase; width: 396px" removerCaratersEspeciais="true" requiredFake="true" maxlength="50">
+                <p:ajax event="change" process="@this"/>
+                <p:ajax event="blur" process="@this"/>
+                </mec:inputText>
+                   
+              </aghu:linha>  
+              <aghu:linha>
+                  <p:fileUpload value="#{anexarDocumentoController.UploadedFile}" fileUploadListener="#{anexarDocumentoController.listener}" rendered="#{mf:hasPermission(securityController,'anexarDocumentos,gravar') and anexarDocumentoController.modoEdit}" disabled="#{not anexarDocumentoController.modoEdit}"
+                          label="Selecionar..." dragDropSupport="false" uploadLabel="#{messages.LABEL_GRAVAR}" cancelLabel="#{messages.LABEL_PARAR}" fileLimit="1" update="@(#formEdicaoInclusao), @(#formEdicaoServer)"/>
+              </aghu:linha>  
+              <aghu:acao newLine="false">
+                <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR}" process="@form" rendered="#{anexarDocumentoController.emEdicao}" action="#{anexarDocumentoController.cancelar}" render="formEdicaoInclusao" profile="cancel" /> 
+              </aghu:acao>
+            </aghu:panelGeral>   
+        </h:form>
+         <h:form id="formEdicaoServer" prependId="false">
+	        <aghu:panelGeral id="panelEdicaoInclusao">
+	                   <mec:serverDataTable id="tabelaDocumentos" name="tabelaDocumentos" list="#{anexarDocumentoController.listaDocumentosAnexados}" scrollable="true"> 
+              <c:set var="item" value="#{item}"/>  
+              <p:column style="width:40px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                </f:facet>
+                <mec:commandLink id="bt_Delete" title="#{messages.LABEL_EXCLUIR}" action="#{anexarDocumentoController.excluirDocumento}" rendered="#{anexarDocumentoController.verificarPermissaoPorTipoOrigem(true) and not item.emEdicao and anexarDocumentoController.mostrarLinkAlteracaoExclusao(item)}" profile="delete" ajax="true" render="panelArquivos, panelEdicaoInclusao" process="@this"> 
+                  <f:setPropertyActionListener target="#{anexarDocumentoController.seqArquivo}" value="#{item.seq}" for="command"/>
+                </mec:commandLink>  
+                <mec:commandLink id="btVisualizar" title="#{messages.LABEL_VISUALIZAR_DOCUMENTO}" action="#{anexarDocumentoController.visualizarDocumento(item)}" styleClass=" silk-magnifier silk-icon"/> 
+              </p:column>  
+              <p:column style="white-space:nowrap;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ORIGEM}"/> 
+                </f:facet>  
+                <h:outputText value="#{item.tpOrigem.descricao}"/> ( 
+                <h:outputText value="#{item.numero}"/>)
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{item.descricao}"/>  
+                <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{item.descricao}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ARQUIVO}"/> 
+                </f:facet>  
+                <h:outputText value="#{item.arquivo}"/>  
+                <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{item.arquivo}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column style="width:100px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DATA_INCLUSAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{item.dtInclusao}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_USUARIO}"/> 
+                </f:facet>  
+                <h:outputText value="#{item.usuario.pessoaFisica.nome}"/> 
+              </p:column> 
+            </mec:serverDataTable>	          
+           </aghu:panelGeral>
+           <aghu:acao> 
+           	 	<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{anexarDocumentoController.voltar}" immediate="true" profile="back" /> 
+        	</aghu:acao>	
+        </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

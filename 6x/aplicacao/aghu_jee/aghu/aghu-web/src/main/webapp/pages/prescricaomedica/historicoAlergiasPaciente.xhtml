@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Histórico Alergias :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{historicoAlergiasPacienteController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{HistoricoAlergiasPacienteController}" ignoreEnter="true"/>  
+        <h:form prependId="false" id="formHistorioAlergias"> 
+          <aghu:panelGeral> 
+		   <p:outputPanel id="cabeçalho" layout="inline">
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" 
+				value="#{historicoAlergiasPacienteController.prescricaoMedicaVO.prontuario}" 
+				size="11" maxlength="9" 
+				emptyStringToNullConverter="emptyStringToNullConverter" 
+				readonly="true" 
+				id="prontuarioPaciente" 
+				converter="#{prontuarioConverter}"/>  
+              <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" 
+				value="#{historicoAlergiasPacienteController.prescricaoMedicaVO.nome}" 
+				size="60" 
+				maxlength="60" style="text-transform:uppercase" readonly="true" id="nomePaciente"/>  
+              <mec:inputText label="#{messages.LABEL_LOCAL}" 
+				value="#{historicoAlergiasPacienteController.prescricaoMedicaVO.local}" 
+				size="15" 
+				maxlength="15" 
+				style="text-transform:uppercase" 
+				readonly="true" 
+				id="localPaciente"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}" 
+				value="#{historicoAlergiasPacienteController.prescricaoMedicaVO.dthrInicio}" 
+				readonly="true" 
+				size="15" 
+				datePattern="dd/MM/yyyy HH:mm" 
+				id="dataValidadeInicial"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}" 
+				value="#{historicoAlergiasPacienteController.prescricaoMedicaVO.dthrFim}" 
+				readonly="true" 
+				size="15" 
+				datePattern="dd/MM/yyyy HH:mm" 
+				id="dataValidadeFinal"/> 
+            </aghu:linha>
+			</p:outputPanel>
+		</aghu:panelGeral>
+		<br/> 
+		<aghu:panelGeral> 
+			 <aghu:linha> 
+			<mec:serverDataTable id="tabelaalergias" name="tabelaalergias" controller="#{historicoAlergiasPacienteController}" sortBy="true" list="#{historicoAlergiasPacienteController.aipAlergiaPacientes}" scrollable="true" height="scrollHeight" rowKeyVar="index" selection="alergiaSelecionada" selectionMode="single" > 
+              <c:set var="item" value="#{item}"/>
+			  <p:ajax event="rowSelect" listener="#{historicoAlergiasPacienteController.setarInformadoPorAlteradoPor}" update="@(#informadoPor) @(#canceladoPor)"  />
+              <p:column sortBy="#{item.descricao}" style="width:30%;text-align: left;">
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ALERGIA}"/> 
+                </f:facet>
+                <h:outputText id="descrCam" value="#{item.descricao.length() lt 35 ? item.descricao : item.descricao.substring(0, 32).concat('...')}" />
+				<p:tooltip for="descrCam" direction="bottom-right" styleClass="tooltip" layout="block"
+					rendered="#{item.descricao.length() gt 35}" value="#{item.descricao}" />
+			  </p:column>  
+              <p:column  sortBy="#{item.criadoEm}" style="width:15%;text-align: left;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_INCLUIDO_EM}"/> 
+                </f:facet>   
+                <h:outputText value="#{item.criadoEm}">
+					<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+				</h:outputText>
+              </p:column>  
+              <p:column sortBy="#{item.alteradoEm}" style="width:15%;text-align: left;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CANCELADO_EM}"/> 
+                </f:facet>  
+                <h:outputText value="#{item.alteradoEm}"> 
+					<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />				
+				</h:outputText>
+                <!-- <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{item.descricao}"/> 
+                </p:tooltip>  -->
+              </p:column>  
+              <p:column  style="width:40%;text-align: left;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_MOTIVO_CANCELAMENTO}"/> 
+                </f:facet> 
+                <h:outputText id="motivoIn" style="left;text-transform:uppercase" value="#{item.motivo.length() lt 45 ? item.motivo : item.motivo.substring(0, 42).concat('...')}" />
+				<p:tooltip for="motivoIn" direction="bottom-right" styleClass="tooltip" layout="block"
+					rendered="#{item.motivo.length() gt 42}" value="#{item.motivo}" /> 
+              </p:column>
+            </mec:serverDataTable>	
+            
+			 </aghu:linha>	 
+          </aghu:panelGeral> 
+		  <aghu:linha>	
+		  <aghu:div  id="informadoPor" style="margin-left:1%">	
+				 <mec:inputText label="#{messages.LABEL_INFORMADO_POR}" 
+					value="#{historicoAlergiasPacienteController.informadoPor}" 
+					size="50" maxlength="50" 
+					emptyStringToNullConverter="emptyStringToNullConverter" 
+					readonly="true" 
+					id="informadopor" 
+					/>  
+			 </aghu:div>
+			 <aghu:div style="float:right;margin-right:0%" id="canceladoPor">
+			  <mec:inputText label="#{messages.LABEL_CANCELADO_POR}" 
+					value="#{historicoAlergiasPacienteController.canceladoPor}" 
+					size="50" maxlength="50" 
+					emptyStringToNullConverter="emptyStringToNullConverter" 
+					readonly="true" 
+					id="alteradopor" 
+					/>	 
+			 </aghu:div>
+		</aghu:linha>	
+          <aghu:acao>  
+            <mec:commandButton value="#{messages.LABEL_VOLTAR}" action="#{historicoAlergiasPacienteController.voltar}" styleClass="bt_vermelho icon-back bt_cinza" profile="back">  
+            </mec:commandButton> 
+          </aghu:acao>
+        </h:form>  
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="relatorioPreviaDiariaFaturamento" language="groovy" pageWidth="842" pageHeight="595" columnWidth="840" leftMargin="1" rightMargin="1" topMargin="1" bottomMargin="20" uuid="713d697e-ca53-48d0-92f9-2e664ad82562">
+	<property name="ireport.zoom" value="2.143588810000014"/>
+	<property name="ireport.x" value="71"/>
+	<property name="ireport.y" value="27"/>
+	<scriptlet name="scriptlet1" class="net.sf.jasperreports.engine.JRDefaultScriptlet"/>
+	<parameter name="dataPrevia" class="java.util.Date"/>
+	<parameter name="nomeHospital" class="java.lang.String"/>
+	<parameter name="mes" class="java.lang.Integer"/>
+	<parameter name="ano" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT     SGR.GRP_SEQ grupo
+       ,GRP.DESCRICAO grupoDesc
+       ,SGR.SUB_GRUPO subGrupo
+       ,SGR.DESCRICAO subGrupoDesc
+       ,FOG.CODIGO fogCod
+       ,FOG.DESCRICAO fogDesc
+       ,SUM(AEA.QUANTIDADE) quantidade
+       ,SUM(AEA.VLR_PROC) total
+FROM agh.FAT_GRUPOS GRP
+       ,agh.FAT_SUB_GRUPOS SGR
+       ,agh.FAT_FORMAS_ORGANIZACAO FOG
+     ,agh.FAT_ITENS_GRUPO_PROCED_HOSP IGP
+     ,agh.FAT_ARQ_ESPELHOS_PROCED_AMB AEA
+     left outer join agh.FAT_CARACTS_FINANCIAMENTO FCF on FCF.SEQ = AEA.FCF_SEQ
+     ,agh.FAT_ITENS_PROCED_HOSPITALAR IPH
+     ,agh.FAT_COMPETENCIAS CPE
+WHERE AEA.CPE_DT_HR_INICIO = CPE.DT_HR_INICIO
+AND   AEA.CPE_ANO = CPE.ANO
+AND   AEA.CPE_MES  = CPE.MES
+AND   AEA.CPE_MODULO = CPE.MODULO
+and   IPH.PHO_SEQ = AEA.IPH_PHO_SEQ
+AND   IPH.SEQ = AEA.IPH_SEQ
+and   igp.iph_pho_seq = iph.pho_seq
+and   igp.iph_seq = iph.seq
+AND   FCF.CODIGO = 'PAB'
+AND    CPE.MODULO='AMB'
+AND   CPE.MES = 01 --:P_CPE_MES
+AND   CPE.ANO = 2012 --:P_CPE_ANO
+AND   CPE.DT_HR_INICIO = to_date('31/12/2011 20:00:00', 'dd/mm/yyyy hh24:mi:ss')-- :P_CPE_DT_HR_INICIO
+AND    FOG.SGR_GRP_SEQ = IPH.FOG_SGR_GRP_SEQ
+AND    FOG.SGR_SUB_GRUPO = IPH.FOG_SGR_SUB_GRUPO
+and    fog.codigo = iph.fog_codigo
+AND    SGR.GRP_SEQ = FOG.SGR_GRP_SEQ
+AND    SGR.SUB_GRUPO = FOG.SGR_SUB_GRUPO
+AND   GRP.SEQ = SGR.GRP_SEQ
+GROUP BY  SGR.GRP_SEQ
+       ,GRP.DESCRICAO
+       ,SGR.SUB_GRUPO
+       ,SGR.DESCRICAO
+       ,FOG.CODIGO
+       ,FOG.DESCRICAO
+union
+SELECT    SGR.GRP_SEQ grupo
+       ,GRP.DESCRICAO grupoDesc
+       ,SGR.SUB_GRUPO  subGrupo
+       ,SGR.DESCRICAO subGrupoDesc
+       ,FOG.CODIGO fogCod
+       ,FOG.DESCRICAO fogDesc
+        ,SUM(AEI.QUANTIDADE) quantidade
+        ,SUM(AEI.VLR_PROC) total
+FROM   agh.FAT_GRUPOS GRP
+       ,agh.FAT_SUB_GRUPOS SGR
+       ,agh.FAT_FORMAS_ORGANIZACAO FOG
+       ,agh.FAT_ESPELHOS_CONTA_APAC ECA
+       ,agh.FAT_CARACTS_FINANCIAMENTO FCF
+       left outer join agh.FAT_ARQ_ESPELHOS_ITENS_APAC AEI on FCF.SEQ = AEI.FCF_SEQ
+       ,agh.FAT_ITENS_PROCED_HOSPITALAR IPH
+       ,agh.FAT_ITENS_GRUPO_PROCED_HOSP IGP
+       ,agh.FAT_COMPETENCIAS CPE
+WHERE  IPH.PHO_SEQ = AEI.IPH_PHO_SEQ
+AND   IPH.SEQ = AEI.IPH_SEQ
+AND   IGP.IPH_PHO_SEQ = IPH.PHO_SEQ
+AND   IGP.IPH_SEQ = IPH.SEQ
+AND   AEI.CAP_ATM_NUMERO = ECA.CAP_ATM_NUMERO
+AND   AEI.CAP_SEQP = ECA.CAP_SEQP
+AND   AEI.IEC_SEQP_CONTINUACAO = ECA.SEQP_CONTINUACAO
+AND   ECA.CPE_DT_HR_INICIO =  CPE.DT_HR_INICIO
+AND   ECA.CPE_ANO = CPE.ANO
+AND   ECA.CPE_MES = CPE.MES
+AND   ECA.CPE_MODULO = CPE.MODULO
+AND   CPE.MODULO IN ('APAC','APEX','APAP','APAR','APAF', 'APAT','MAMA')
+AND   CPE.MES = 01
+AND   CPE.ANO = 2012
+AND   FCF.CODIGO = 'PAB'
+AND    FOG.SGR_GRP_SEQ = IPH.FOG_SGR_GRP_SEQ
+AND    FOG.SGR_SUB_GRUPO = IPH.FOG_SGR_SUB_GRUPO
+and    fog.codigo = iph.fog_codigo
+AND    SGR.GRP_SEQ = FOG.SGR_GRP_SEQ
+AND    SGR.SUB_GRUPO = FOG.SGR_SUB_GRUPO
+AND   GRP.SEQ = SGR.GRP_SEQ
+GROUP BY SGR.GRP_SEQ
+       ,GRP.DESCRICAO
+       ,SGR.SUB_GRUPO
+       ,SGR.DESCRICAO
+       ,FOG.CODIGO
+       ,FOG.DESCRICAO
+Order By 1]]>
+	</queryString>
+	<field name="grupo" class="java.lang.Short"/>
+	<field name="grupoDesc" class="java.lang.String"/>
+	<field name="subGrupo" class="java.lang.Byte"/>
+	<field name="subGrupoDesc" class="java.lang.String"/>
+	<field name="fogCod" class="java.lang.Byte"/>
+	<field name="fogDesc" class="java.lang.String"/>
+	<field name="quantidade" class="java.lang.Long"/>
+	<field name="total" class="java.lang.Double"/>
+	<field name="cctCodigoDesc" class="java.lang.String"/>
+	<field name="cctCodigo" class="java.lang.String"/>
+	<field name="quantidadeTeto" class="java.lang.Long"/>
+	<field name="diferencaQuantidadeTeto" class="java.lang.Long"/>
+	<field name="valorTeto" class="java.math.BigDecimal"/>
+	<field name="diferencaValorTeto" class="java.math.BigDecimal"/>
+	<variable name="sumQtde" class="java.lang.Integer" resetType="Group" resetGroup="CCT_CODIGO_PAB" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantidade}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="sumTotal" class="java.lang.Double" resetType="Group" resetGroup="CCT_CODIGO_PAB" calculation="Sum">
+		<variableExpression><![CDATA[$F{total}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="sumQtdeRel" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantidade}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="sumTotalRel" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{total}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="sumQtdeTeto" class="java.lang.Long" resetType="Group" resetGroup="CCT_CODIGO_PAB" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantidadeTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumDifQtdeTeto" class="java.lang.Long" resetType="Group" resetGroup="CCT_CODIGO_PAB" calculation="Sum">
+		<variableExpression><![CDATA[$F{diferencaQuantidadeTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumValorTeto" class="java.math.BigDecimal" resetType="Group" resetGroup="CCT_CODIGO_PAB" calculation="Sum">
+		<variableExpression><![CDATA[$F{valorTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumDifValorTeto" class="java.math.BigDecimal" resetType="Group" resetGroup="CCT_CODIGO_PAB" calculation="Sum">
+		<variableExpression><![CDATA[$F{diferencaValorTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumQtdeTetoRel" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantidadeTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumDifQtdeTetoRel" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{diferencaQuantidadeTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumValorTetoRel" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{valorTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumDifValorTetoRel" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{diferencaValorTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumQtdeForma" class="java.lang.Integer" resetType="Group" resetGroup="FormaOrg" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantidade}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="sumDifQtdeTetoForma" class="java.lang.Long" resetType="Group" resetGroup="FormaOrg" calculation="Sum">
+		<variableExpression><![CDATA[$F{diferencaQuantidadeTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumValorTetoForma" class="java.math.BigDecimal" resetType="Group" resetGroup="FormaOrg" calculation="Sum">
+		<variableExpression><![CDATA[$F{valorTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumDifValorTetoForma" class="java.math.BigDecimal" resetType="Group" resetGroup="FormaOrg" calculation="Sum">
+		<variableExpression><![CDATA[$F{diferencaValorTeto}]]></variableExpression>
+	</variable>
+	<variable name="sumTotalForma" class="java.lang.Double" resetType="Group" resetGroup="FormaOrg" calculation="Sum">
+		<variableExpression><![CDATA[$F{total}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="sumQtdeTetoForma" class="java.lang.Long" resetType="Group" resetGroup="FormaOrg" calculation="Sum">
+		<variableExpression><![CDATA[$F{quantidadeTeto}]]></variableExpression>
+	</variable>
+	<group name="CCT_CODIGO_PAB">
+		<groupExpression><![CDATA[$F{cctCodigo}]]></groupExpression>
+		<groupFooter>
+			<band height="26">
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="f2f6e156-3a93-400e-9100-1e361f1de3a5" stretchType="RelativeToTallestObject" x="20" y="5" width="368" height="15"/>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="11" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{cctCodigoDesc}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="393" y="5" width="44" height="15"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumQtde}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="443" y="5" width="83" height="15"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumTotal}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement uuid="646b82bc-733e-406e-9c93-0dd77819a615" x="20" y="2" width="368" height="1"/>
+				</line>
+				<line>
+					<reportElement uuid="e588701d-3178-4e89-845e-61628918f2a8" x="749" y="2" width="83" height="1"/>
+				</line>
+				<line>
+					<reportElement uuid="200a87bd-b176-4581-90f8-f85967c4b8d0" x="598" y="2" width="55" height="1"/>
+				</line>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="532" y="5" width="60" height="15"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumQtdeTeto}]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="598" y="5" width="55" height="15"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumDifQtdeTeto}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;(#,##0.00)" isBlankWhenNull="true">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="660" y="5" width="83" height="15"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumValorTeto}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00;(#,##0.00)" isBlankWhenNull="true">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="749" y="5" width="83" height="15"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumDifValorTeto}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement uuid="200a87bd-b176-4581-90f8-f85967c4b8d0" x="393" y="2" width="44" height="1"/>
+				</line>
+				<line>
+					<reportElement uuid="e588701d-3178-4e89-845e-61628918f2a8" x="443" y="2" width="83" height="1"/>
+				</line>
+				<line>
+					<reportElement uuid="e588701d-3178-4e89-845e-61628918f2a8" x="532" y="2" width="60" height="1"/>
+				</line>
+				<line>
+					<reportElement uuid="e588701d-3178-4e89-845e-61628918f2a8" x="660" y="2" width="83" height="1"/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Grupo">
+		<groupExpression><![CDATA[$F{grupo}]]></groupExpression>
+		<groupHeader>
+			<band height="21">
+				<staticText>
+					<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="12" y="2" width="68" height="13" isPrintWhenDetailOverflows="true"/>
+					<textElement>
+						<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Grupo]]></text>
+				</staticText>
+				<textField pattern="" isBlankWhenNull="true">
+					<reportElement uuid="1a24626d-a1c6-432b-b018-e3d3f4765f5d" x="84" y="2" width="51" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="10" isBold="false" isItalic="false" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{grupo}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="c53485c9-93d4-4ccd-80dd-5f15f69d3ec0" x="171" y="2" width="661" height="13"/>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{grupoDesc}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="SubGrupo">
+		<groupExpression><![CDATA[$F{subGrupo}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<staticText>
+					<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="20" y="2" width="60" height="13" isPrintWhenDetailOverflows="true"/>
+					<textElement>
+						<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Sub-Grupo]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="f2f6e156-3a93-400e-9100-1e361f1de3a5" stretchType="RelativeToTallestObject" x="171" y="2" width="661" height="13"/>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{subGrupoDesc}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="84" y="2" width="51" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{subGrupo}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="FormaOrg">
+		<groupExpression><![CDATA[$F{fogCod}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField>
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="136" y="2" width="31" height="13"/>
+					<textElement textAlignment="Center">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{fogCod}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement uuid="f2f6e156-3a93-400e-9100-1e361f1de3a5" stretchType="RelativeToTallestObject" x="171" y="2" width="217" height="13"/>
+					<textElement textAlignment="Left">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{fogDesc}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="28" y="2" width="105" height="13" isPrintWhenDetailOverflows="true"/>
+					<textElement>
+						<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+					</textElement>
+					<text><![CDATA[Forma Organização]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="FormaOrg" pattern=" #,##0.00">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="443" y="2" width="83" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumTotalForma}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="FormaOrg">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="393" y="2" width="45" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumQtdeForma}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="FormaOrg" pattern="" isBlankWhenNull="true">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="598" y="2" width="55" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumDifQtdeTetoForma}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="FormaOrg" pattern="#,##0.00;(#,##0.00)" isBlankWhenNull="true">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="660" y="2" width="83" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumValorTetoForma}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="FormaOrg" pattern="#,##0.00;(#,##0.00)" isBlankWhenNull="true">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="749" y="2" width="83" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumDifValorTetoForma}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="FormaOrg" isBlankWhenNull="true">
+					<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="532" y="2" width="60" height="13"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" pdfFontName="Courier"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{sumQtdeTetoForma}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="50" splitType="Stretch">
+			<line>
+				<reportElement uuid="cb6c965e-fe5d-4c86-8746-a3e6ac8be0ce" x="5" y="33" width="827" height="2"/>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="754f9a82-b517-4ddd-870c-489745308c03" x="5" y="1" width="566" height="13"/>
+				<textElement>
+					<font fontName="Courier New" size="11" isBold="true" isItalic="false" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{nomeHospital}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement uuid="c67e7b3c-541e-42e5-963c-fd77b0f4f951" x="719" y="1" width="113" height="13"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="11" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{dataPrevia}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement uuid="b8bd3d39-2e08-4622-9e25-dd69ba5bbda2" x="5" y="19" width="827" height="14"/>
+				<textElement textAlignment="Center">
+					<font fontName="Courier New" size="11" isBold="true" isItalic="false" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA["PRÉVIA DIÁRIA POR GRUPO E FINANCIAMENTO -  "+$P{mes}+" / "+$P{ano}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="99569913-282e-477f-bec9-e5a9386dfc61" x="571" y="1" width="148" height="13" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Data Estimada da Prévia:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="393" y="37" width="45" height="13" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Qtde.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="443" y="37" width="83" height="13" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Valor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="532" y="37" width="60" height="13" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Teto Qtd.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="598" y="37" width="55" height="13" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Dif. Qtd.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="660" y="37" width="83" height="13" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Teto Vlr.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c1b23fae-1987-48f4-8de2-42343b0f0a54" x="749" y="37" width="83" height="13" isPrintWhenDetailOverflows="true"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="10" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[Dif. Vlr.]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<pageFooter>
+		<band height="27" splitType="Stretch">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy HH:mm:ss">
+				<reportElement uuid="de076230-9c3c-4a2b-8bed-042f43b375f5" x="715" y="3" width="117" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="86cd9e2d-2a4e-4f64-a303-b35799efae28" x="5" y="3" width="109" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA["FATR_PRV_GRP_FIN"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="cf3b492c-f19f-42e8-b73d-8b5e1f6477ba" x="1" y="1" width="840" height="2"/>
+			</line>
+			<textField evaluationTime="Report">
+				<reportElement uuid="aadce528-4319-439d-8a96-400c01538c44" x="416" y="3" width="299" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="91ceebe9-735b-4688-9ae8-6fe879393a6d" x="114" y="3" width="302" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Página: "+$V{PAGE_NUMBER}+" / "]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="52">
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="f2f6e156-3a93-400e-9100-1e361f1de3a5" stretchType="RelativeToTallestObject" x="20" y="5" width="368" height="15"/>
+				<textElement textAlignment="Center">
+					<font fontName="Courier New" size="12" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA["T O T A L"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="392" y="5" width="45" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumQtdeRel}]]></textFieldExpression>
+			</textField>
+			<textField pattern=" #,##0.00">
+				<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="443" y="5" width="83" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumTotalRel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="532" y="5" width="60" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumQtdeTetoRel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="600" y="5" width="53" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumDifQtdeTetoRel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;(#,##0.00)" isBlankWhenNull="true">
+				<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="660" y="5" width="83" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumValorTetoRel}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;(#,##0.00)" isBlankWhenNull="true">
+				<reportElement uuid="955fab09-0b35-4503-91d4-5c68a75943b0" x="749" y="5" width="83" height="15"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sumDifValorTetoRel}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement uuid="aadce528-4319-439d-8a96-400c01538c44" x="416" y="31" width="299" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy HH:mm:ss">
+				<reportElement uuid="de076230-9c3c-4a2b-8bed-042f43b375f5" x="715" y="31" width="117" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="91ceebe9-735b-4688-9ae8-6fe879393a6d" x="114" y="31" width="302" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Página: "+$V{PAGE_NUMBER}+" / "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="86cd9e2d-2a4e-4f64-a303-b35799efae28" x="5" y="31" width="109" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Courier New" size="10" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA["FATR_PRV_GRP_FIN"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="cf3b492c-f19f-42e8-b73d-8b5e1f6477ba" x="1" y="29" width="840" height="2"/>
+			</line>
+		</band>
+	</lastPageFooter>
+</jasperReport>

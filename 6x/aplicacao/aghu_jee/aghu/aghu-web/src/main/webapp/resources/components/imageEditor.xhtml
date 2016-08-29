@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:mf="http://www.mec.gov.br/taglib"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+
+    <h:head>
+        <title>imageEditor</title>
+    </h:head>
+    
+	<ui:remove><!-- Comments -->	
+	COMPONENTE IMAGEEDITOR
+	============================
+	Autor: Cristiano Quadros (2015)
+	
+	Renderiza um componente de edição para imagens utilizando o jQuery Plugin wPaint
+	
+	Propriedades:
+	
+	id: identificador do componente (required)
+	value: variavel que armazenará o item selecionado. O valor retornará no formato String em base64
+	controller: nome da instância da classe controladora (mbean) da tela
+	width: largura do painel de edição. 
+	height: altura do painel de edição
+	background: Cor de fundo da imagem. Default: #F0F0F0
+	autoScale: Escala automática da imagem. Default: true.
+	autoCenter: Centralização automática da imagem. Default: true
+	idButtonSave: Id do botão que vai salvar a imagem
+	autoSize: Dimensiona automaticamente o canvas conforme o tamanho da imagem lido
+	
+	</ui:remove>  
+    
+    <h:body>
+        <cc:interface name="imageeditor" displayName="Edição de imagens">        
+        	
+			<cc:attribute name="value" />
+			<cc:attribute name="controller" />
+			<cc:attribute name="width" default="600px"  />
+			<cc:attribute name="height" default="400px"  />
+	        <cc:attribute name="background" default="#F0F0F0" />
+	        <cc:attribute name="autoScale" default="true" />
+	        <cc:attribute name="autoCenter" default="true" />
+	        <cc:attribute name="autoSize" default="false" />
+	        <cc:attribute name="menuOffsetLeft" default="-5" />
+	        <cc:attribute name="menuOffsetTop" default="-45" />
+	        <cc:attribute name="idButtonSave"  />
+        </cc:interface>
+
+        <cc:implementation>
+
+			<h:outputStylesheet name="wColorPicker.min.css"  library="plugin/wPaint/lib" target="head" />
+			<h:outputStylesheet name="wPaint.min.css"  library="plugin/wPaint" target="head" />
+
+			<h:outputScript name="jquery.ui.core.1.10.3.min.js"  library="plugin/wPaint/lib" target="head" />
+			<h:outputScript name="jquery.ui.widget.1.10.3.min.js"  library="plugin/wPaint/lib" target="head" />
+			<h:outputScript name="jquery.ui.mouse.1.10.3.min.js"  library="plugin/wPaint/lib" target="head" />
+			<h:outputScript name="jquery.ui.draggable.1.10.3.min.js"  library="plugin/wPaint/lib" target="head" />
+			
+			<h:outputScript name="wPaint.min.js"  library="plugin/wPaint" target="head" />			
+			<h:outputScript name="wColorPicker.min.js"  library="plugin/wPaint/lib" target="head" />
+			<h:outputScript name="/main/wPaint.menu-pt.main.min.js"  library="plugin/wPaint/plugins" target="head" />
+			<h:outputScript name="/text/wPaint.menu.text.min.js"  library="plugin/wPaint/plugins" target="head" />
+			<h:outputScript name="/shapes/wPaint.menu.main.shapes.min.js"  library="plugin/wPaint/plugins" target="head" />
+
+			<ui:param name="imgData" value="#{cc.clientId}_data" />
+			
+			<div id="#{cc.clientId}" 
+				style="position:relative; width:#{cc.attrs.width}; height:#{cc.attrs.height}; background-color:#7a7a7a; margin:70px auto 20px auto;"></div>
+			<h:inputHidden id="#{imgData}" value="#{cc.attrs.controller[cc.attrs.value]}" />
+			
+			<script>
+				if(#{cc.attrs.autoSize}) {
+					 $('body').append('<img id="hiddenImage" src="#{cc.attrs.controller[cc.attrs.value]}" />');
+		             var i_width = $('#hiddenImage').width();
+		             var i_height = $('#hiddenImage').height();
+		             $('#hiddenImage').remove();                             
+		
+		
+		             $('##{cc.clientId}').css({
+		                     width: i_width,
+		                     height: i_height
+		           })
+		           .wPaint('resize');
+				}
+					
+			 	jQuery(document).ready(function() {
+			 		jQuery('##{cc.clientId}').wPaint({
+					  path : '/aghu/resources/plugin/wPaint/',
+			          menuOffsetTop: #{cc.attrs.menuOffsetTop},
+			          menuOffsetLeft: #{cc.attrs.menuOffsetLeft},
+					  bg: '#{cc.attrs.background}',
+					  image : '#{cc.attrs.controller[cc.attrs.value]}',
+					  autoScaleImage: #{cc.attrs.autoScale},
+					  autoCenterImage: #{cc.attrs.autoCenter}
+			        });
+			 		
+			 		jq('##{cc.attrs.idButtonSave}:button').on('click', function(){
+						var imageData = jQuery("##{cc.clientId}").wPaint("image");
+						jq("##{cc.clientId}:#{imgData}").val(imageData);
+						jQuery('##{cc.clientId}').wPaint('image', imageData);
+			 		});
+			 		
+			 	});	
+			</script>						
+        	
+        </cc:implementation>
+    </h:body>
+</html>

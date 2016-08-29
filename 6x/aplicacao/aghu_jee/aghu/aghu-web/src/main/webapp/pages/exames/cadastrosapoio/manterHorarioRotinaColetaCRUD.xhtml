@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_HORARIO_COLETA}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterHorarioRotinaColetaController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterHorarioRotinaColetaController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISA_HORARIO}"> 
+          <aghu:linha>
+					<mec:suggestionBox id="sbUnidadeFuncionalColeta" var="unf"
+						itemValue="#{unf}"
+						label="#{messages.LABEL_TIPOS_AMOSTRA_EXAME_UNIDADE_COLETA}"
+						title="#{messages.TITLE_TIPOS_AMOSTRA_EXAME_UNIDADE_COLETA}"
+						suggestionAction="obterUnidadeColeta" descricaoInput="seq"
+						descricaoLabel="descricao" length="30" maxlength="30" width="450"
+						controller="#{manterHorarioRotinaColetaController}"
+						value="#{manterHorarioRotinaColetaController.filtro.unidadeColeta}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet>#{unf.descricao}
+              </p:column>
+					</mec:suggestionBox>
+					<mec:suggestionBox
+						label="#{messages.LABEL_UNIDADE_FUNCIONAL_SOLICITANTE}"
+						var="unfSolicitante" itemValue="#{unfSolicitante}"
+						title="#{messages.TITLE_UNIDADE_FUNCIONAL_SOLICITANTE}"
+						suggestionAction="pesquisarUnidadeFuncionalSolicitanteAvisada"
+						descricaoInput="seq" descricaoLabel="andarAlaDescricao"
+						length="30" maxlength="30" width="450"
+						converter="#{aghUnidadesFuncionaisPorAndarAlaDescricaoCaracteristicaUnidadeExecutoraExamesConverter}"
+						id="sbUnidadeFuncionalSolicitante"
+						controller="#{manterHorarioRotinaColetaController}"
+						value="#{manterHorarioRotinaColetaController.filtro.unidadeSolic}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>  
+							</f:facet>#{unfSolicitante.andarAlaDescricao}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet>#{unfSolicitante.seq}	
+						</p:column>
+					</mec:suggestionBox>
+					<mec:inputText label="#{messages.LABEL_HORARIO}" title="#{messages.TITLE_LABEL_HORARIO}" incluirMascaraHora="true" size="5" maxlength="5" onkeypress="formatar( this , '99:99' , event )" ajaxValidation="false" datePattern="HH:mm" removerCaratersEspeciais="true" dateType="time" value="#{manterHorarioRotinaColetaController.filtro.horario}" id="horario"/>  
+            <mec:selectOneMenu id="dia" label="#{messages.LABEL_DIA}" title="#{messages.TITLE_DIA}" noSelectionOption="true" ajaxValidation="false" value="#{manterHorarioRotinaColetaController.filtro.diaSemana}" enum="DominioDiaSemanaFeriado"/>  
+            <mec:selectOneMenu id="ativoInativo" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO_HORARIO_COLETA}" title="#{messages.TITLE_SITUACAO_HORARIO_COLETA}" value="#{manterHorarioRotinaColetaController.filtro.situacaoHorario}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <p:outputPanel id="panelCadastro" layout="inline"> 
+          <aghu:acao> 
+            <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{manterHorarioRotinaColetaController.pesquisar}" profile="search"/>  
+            <mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}" block="true" action="#{manterHorarioRotinaColetaController.limparCamposPesquisa}" profile="clear"/> 
+          </aghu:acao> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:outputPanel id="panelResultados" layout="inline"> 
+        <p:outputPanel layout="block" rendered="#{not empty manterHorarioRotinaColetaController.unidadesColetaPesquisa}"> 
+          <h:form prependId="false" id="formPesquisa2" name="formPesquisa2"> 
+            <aghu:panelGeral legend="#{messages.LABEL_UNIDADES_COLETA}"> 
+              <aghu:linha> 
+                <p:outputPanel id="panelListaUnidadesColeta" layout="block"> 
+
+                    <mec:serverDataTable id="tbListaUnidadesColeta" 
+                                         scrollHeight="100" 
+                                         onRowMouseOver="this.style.backgroundColor='#F1F1F1'" 
+                                         onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'" 
+                                         list="#{manterHorarioRotinaColetaController.unidadesColetaPesquisa}" 
+                                         selection="unidadeColetora"  
+                                         controller="#{manterHorarioRotinaColetaController}" 
+                                         scrollable="true"> 
+                      <c:set var="item" value="#{item}"/> 
+                      <p:ajax event="rowSelect" listener="#{manterHorarioRotinaColetaController.selecionaUnidadeColetora()}" update="@(#panelListaHorarios)"/>   
+                      <p:column width="25%"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.seq}"/> 
+                      </p:column>  
+                      <p:column width="75%"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_UNIDADE_COLETA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.descricao}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+
+                </p:outputPanel> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </h:form>  
+          <p:outputPanel id="panelListaHorarios" layout="block" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.LABEL_HORARIOS_COLETA}"> 
+              <h:form prependId="false" id="formCad" name="formCad"> 
+                <aghu:linha> 
+                  <mec:inputText label="#{messages.LABEL_HORARIO}" title="#{messages.TITLE_LABEL_HORARIO}" incluirMascaraHora="true" size="5" maxlength="5" onkeypress="formatar( this , '99:99' , event )" ajaxValidation="false" datePattern="HH:mm" removerCaratersEspeciais="true" dateType="time" required="true" value="#{manterHorarioRotinaColetaController.horarioCadastro}" rendered="#{mf:hasPermission(securityController,'manterHorarioRotinaColeta,persistir')}" id="horarioCad"/>  
+                  
+                  <mec:selectOneMenu id="diaCad" 
+                                     label="#{messages.LABEL_DIA}" 
+                                     title="#{messages.TITLE_DIA_CADASTRO}" 
+                                     noSelectionOption="true" 
+                                     ajaxValidation="false" 
+                                     required="true" 
+                                     value="#{manterHorarioRotinaColetaController.diaSemanaCadastro}" 
+                                     enum="DominioDiaSemanaFeriado" 
+                                     rendered="#{mf:hasPermission(securityController,'manterHorarioRotinaColeta,persistir')}"/>  
+                  
+                  <mec:suggestionBox label="#{messages.LABEL_UNIDADE_FUNCIONAL_SOLICITANTE}"  var="unfSol2" itemValue="#{unfSol2}" title="#{messages.TITLE_UNIDADE_FUNCIONAL_SOLICITANTE}" suggestionAction="pesquisarUnidadeFuncionalSolicitanteAvisada" posSelectionAction="habilitaBotaoGravar" posDeleteAction="desabilitaBotaoGravar" descricaoInput="seq" descricaoLabel="andarAlaDescricao" length="30" maxlength="30" width="300" required="true" rendered="#{mf:hasPermission(securityController,'manterHorarioRotinaColeta,persistir')}" id="sbUniFuncSolic" controller="#{manterHorarioRotinaColetaController}" value="#{manterHorarioRotinaColetaController.unidadeSolicCadastro}" render="button_Div"> 
+                    <p:column>#{unfSol2.andarAlaDescricao}</p:column>  
+                    <p:column>#{unfSol2.seq}</p:column> 
+                  </mec:suggestionBox>  
+                  <mec:selectOneMenu id="ativoInativoCad" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_HORARIO_COLETA}" required="true" value="#{manterHorarioRotinaColetaController.situacaoHorarioCadastro}" rendered="#{mf:hasPermission(securityController,'manterHorarioRotinaColeta,persistir')}"/> 
+       
+                  <aghu:acao newLine="false"> 
+                    <mec:commandButton id="bt_salvar" 
+                                       value="#{messages.LABEL_GRAVAR}"  
+                                       rendered="#{mf:hasPermission(securityController,'manterHorarioRotinaColeta,persistir') and (empty manterHorarioRotinaColetaController.horarioId or empty manterHorarioRotinaColetaController.horarioId.unfSeq)}" 
+                                       requestDelay="2000" 
+                                       ajaxSingle="true" 
+                                       block="true" 
+                                       action="#{manterHorarioRotinaColetaController.confirmar}" 
+                                       profile="add"/>  
+                    <mec:commandButton id="bt_alterar" 
+                                       value="#{messages.LABEL_ALTERAR}" 
+                                       disabled="#{not manterHorarioRotinaColetaController.habilitaBotao}" 
+                                       rendered="#{mf:hasPermission(securityController,'manterHorarioRotinaColeta,persistir') and (not empty manterHorarioRotinaColetaController.horarioId and not empty manterHorarioRotinaColetaController.horarioId.unfSeq)}" 
+                                       requestDelay="2000" 
+                                       ajaxSingle="true" 
+                                       block="true" 
+                                       action="#{manterHorarioRotinaColetaController.confirmar}" 
+                                       profile="ok"/>  
+                    <mec:commandButton value="#{messages.LABEL_CANCELAR_EDICAO}" 
+                                       rendered="#{mf:hasPermission(securityController,'manterHorarioRotinaColeta,persistir') and (not empty manterHorarioRotinaColetaController.horarioId and not empty manterHorarioRotinaColetaController.horarioId.unfSeq)}" 
+                                       action="#{manterHorarioRotinaColetaController.limparCamposCadastro}" 
+                                       styleClass="bt_cancel_edit bt_cinza" 
+                                       profile="cancel"/> 
+            	  </aghu:acao> 
+                </aghu:linha> 
+              </h:form>  
+              <aghu:linha> 
+                <p:outputPanel layout="block" style="width: 100%; height:250px; overflow:auto;"> 
+                  <h:form prependId="false" id="formList" name="formList"> 
+                    <mec:serverDataTable id="tbListaHorarios" 
+                                        list="#{manterHorarioRotinaColetaController.horariosRotinas}" 
+                                        scrollable="true"> 
+                      <c:set var="item" value="#{item}"/>  
+                      <p:column style="width:80px; #{manterHorarioRotinaColetaController.isHorarioSelecionado(item.id) ? 'background-color:#EEE8AA' : ''}" 
+                                rendered="#{mf:hasPermission(securityController,'manterHorarioRotinaColeta,persistir') and (manterHorarioRotinaColetaController.horarioId == null)}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                        </f:facet>  
+                        <mec:commandLink title="#{messages.LABEL_EDITAR}" 
+                                         action="#{manterHorarioRotinaColetaController.editarHorario(item)}" 
+                                         profile="edit" 
+                                         ajax="true" render="panelListaHorarios" 
+                                         process="@this"/>  
+                        <mec:commandLink title="#{messages.LABEL_EXCLUIR}" 
+                                         action="#{manterHorarioRotinaColetaController.excluir(item.id)}"
+                                         profile="delete" 
+                                         ajax="true" render="tbListaHorarios"> 
+                        </mec:commandLink> 
+                      </p:column>  
+                      <p:column style="width:100px; #{manterHorarioRotinaColetaController.isHorarioSelecionado(item.id) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_HORARIO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.id.horario}"> 
+                          <f:convertDateTime pattern="HH:mm"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column style="width:100px; #{manterHorarioRotinaColetaController.isHorarioSelecionado(item.id) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_DIA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.id.dia.descricao}"/> 
+                      </p:column>  
+                      <p:column style="width:120px; #{manterHorarioRotinaColetaController.isHorarioSelecionado(item.id) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_UNIDADE_FUNCIONAL_SOLICITANTE}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.id.unfSeqSolicitante.seq}"/> 
+                      </p:column>  
+                      <p:column style="#{manterHorarioRotinaColetaController.isHorarioSelecionado(item.id) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.id.unfSeqSolicitante.andarAlaDescricao}"/> 
+                      </p:column>  
+                      <p:column style="width:120px; #{manterHorarioRotinaColetaController.isHorarioSelecionado(item.id) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.indSituacao.descricao}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </h:form> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+      <p:dialog id="modalConfirmacaoAlteracoes" width="400" height="170" modal="true" resizable="false" widgetVar="modalConfirmacaoAlteracoesWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> Existem alterações pendentes que serão perdidas! 
+        <br clear="none"/> Este registro está prestes a ser excluído e não poderá mais ser revertido. 
+        <br clear="none"/> Deseja prosseguir? 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalAlteracoes" name="formModalAlteracoes"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluirSecond" block="true" action="#{manterHorarioRotinaColetaController.excluir}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoAlteracoesWG').hide();" id="bt_cancelarExcluirSecond" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoAlteracoesEdicao" width="400" height="170" modal="true" resizable="false" widgetVar="modalConfirmacaoAlteracoesEdicaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_VOLTAR} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalAlteracoesEdicao" name="formModalAlteracoesEdicao"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{manterHorarioRotinaColetaController.editarHorario()}" onclick="PF('modalConfirmacaoAlteracoesEdicaoWG').hide();" immediate="true" id="bt_editarSecond" block="true" profile="search" ajax="true" render="panelListaHorarios"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoAlteracoesEdicaoWG').hide();" id="bt_cancelarEditarSecond" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

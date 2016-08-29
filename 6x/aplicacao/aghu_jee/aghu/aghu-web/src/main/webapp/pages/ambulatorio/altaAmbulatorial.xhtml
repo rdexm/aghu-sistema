@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages['LABEL_ALTA_AMBULATORIAL']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{altaAmbulatorialController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{altaAmbulatorialController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formHead"> 
+        <aghu:panelGeral legend="#{messages['LABEL_ALTA_AMBULATORIAL']}"> 
+          <aghu:linha> 
+            <p:outputPanel id="pacienteDecorate" layout="inline"> 
+              <mec:pesquisaPaciente id="pesqPaciente" valueChangeListener="#{altaAmbulatorialController.pesquisaPaciente}" value="#{altaAmbulatorialController.paciente}" render="idadeSexoEquipePanel, outPanelAtendimentosModalContent, outPanelAtendimentosModal, panelTabsDecorate, panelTabs, panelBts, pesqPacienteBt, limparCamposBtCancel," readonly="#{altaAmbulatorialController.paciente != null}"/>  
+              <br clear="none"/>  
+              <mec:commandButton id="pesqPacienteBt" value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" readonly="#{altaAmbulatorialController.paciente != null}" action="#{altaAmbulatorialController.redirecionarPesquisaFonetica}" styleClass="bt_cinza icon-pesquisa-fonetica"/> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="idadeSexoEquipePanel" layout="inline"> 
+              <mec:inputText label="#{messages.LABEL_IDADE}" id="idade" size="20" value="#{altaAmbulatorialController.paciente.getIdadeAnoMesFormat()}" readonly="true"/>  
+              <mec:inputText label="#{messages.LABEL_SEXO}" id="sexo" size="12" value="#{altaAmbulatorialController.paciente.sexo.descricao}" readonly="true"/>  
+              <mec:inputText label="#{messages.LABEL_EQUIPE}" id="equipe" size="40" value="#{altaAmbulatorialController.altaSumario.equipe.nome}" readonly="true"/> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <h:form prependId="false" id="formAbas"> 
+        <p:outputPanel id="panelTabs" rendered="#{!altaAmbulatorialController.altaBloqueada}" layout="inline"> 
+          <p:outputPanel id="panelTabsDecorate" rendered="#{altaAmbulatorialController.atendimento != null}" layout="inline"> 
+            <p:tabView id="resultTab" dynamic="false" activeIndex="#{altaAmbulatorialController.selectedTab}" prependId="false"> 
+              <p:tab name="aba1" id="aba1" title="#{messages.LABEL_DIAGNOSTICOS}"> 
+                <p:outputPanel id="panelTabDiagnostico" layout="inline" styleClass="aghu-panel-geral"> 
+                  <aghu:panelGeral legend="#{messages['LABEL_ALTA_AMBULATORIAL_DIAGNOSTICO_ALTA']}"> 
+                    <aghu:linha> 
+                      <mec:suggestionBox id="cid" label="#{messages.LABEL_CID}" title="#{messages.TITLE_ALTA_AMBULATORIAL_CID}" converter="#{aghCidConverter}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarCids" width="350" maxlength="45" requiredFake="true" controller="#{altaAmbulatorialController}" value="#{altaAmbulatorialController.diagnostico.cid}"> 
+                        <p:column>#{item.descricao} (#{item.codigo})</p:column> 
+                      </mec:suggestionBox>  
+                      <aghu:acao newLine="false"> 
+                        <mec:commandButton id="btPesquisaMotivoPrincipalPorCapitulo" name="btPesquisaMotivoPrincipalPorCapitulo" value="#{messages.LABEL_POR_CAPITULO}" action="#{altaAmbulatorialController.pesquisarCidCapitulo}" immediate="true" requiredFake="true" profile="search"/> 
+                      </aghu:acao> 
+                    </aghu:linha>  
+                    <aghu:linha> 
+                      <mec:inputText id="complemento" label="#{messages.LABEL_COMPLEMENTO}" value="#{altaAmbulatorialController.diagnostico.complemento}" title="#{messages.TITLE_ALTA_AMBULATORIAL_COMPLEMENTO}" size="45" maxlength="45"/>  
+                      <aghu:acao newLine="false"> 
+                        <mec:commandButton id="btAddItem" name="btAddItem" value="#{messages.LABEL_ADICIONAR}" rendered="#{!altaAmbulatorialController.cidEmEdicao}" block="true" action="#{altaAmbulatorialController.persistirCid}" render="panelTabDiagnostico" profile="add" styleClass="bt_verde "/>  
+                        <mec:commandButton value="#{messages.LABEL_ALTERAR}" id="btAlterarItem" rendered="#{altaAmbulatorialController.cidEmEdicao}" block="true" action="#{altaAmbulatorialController.persistirCid}" styleClass="bt_cinza"/>  
+                        <mec:commandButton id="bt_cancelarEdic" name="bt_cancelarEdic" includePageParams="true" rendered="#{altaAmbulatorialController.cidEmEdicao}" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{altaAmbulatorialController.cancelarEdicaoCid}" render="panelTabDiagnostico" styleClass="bt_cancel_edit bt_cinza"/> 
+                      </aghu:acao> 
+                    </aghu:linha> 
+                  </aghu:panelGeral>  
+                  <div style="width: 100%; max-height:237px; overflow: auto;"> 
+                    <mec:serverDataTable id="tabelaCid" rendered="#{altaAmbulatorialController.listDiagnosticos ne null and altaAmbulatorialController.listDiagnosticos.size() gt 0}" list="#{altaAmbulatorialController.listDiagnosticos}" scrollable="true"> 
+                      <c:set var="_altaDiagnostico" value="#{item}"/>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                        </f:facet>  
+                        <mec:commandLink title="#{messages.LABEL_EDITAR}" rendered="#{not altaAmbulatorialController.cidEmEdicao}" action="#{altaAmbulatorialController.editarCid(_altaDiagnostico)}" profile="edit" ajax="true" render="panelTabs"/>  
+						<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+							oncomplete="PF('modalConfirmacaoExclusaoCidWG').show();"
+							action="#{altaAmbulatorialController.editarCid(_altaDiagnostico)}"
+							rendered="#{not altaAmbulatorialController.cidEmEdicao}"
+							styleClass="silk-icon silk-delete" ajax="true" />
+					  </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_CID}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_altaDiagnostico.cid.seq}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                        </f:facet>  
+                        <p:outputPanel id="panelDescricao" layout="block"> 
+	                        <h:outputText value="#{(_altaDiagnostico.descricao.length() &gt; 60) ? fn:substring(_altaDiagnostico.descricao,0,60) : _altaDiagnostico.descricao}"/>  
+	                        <h:outputText value="#{(_altaDiagnostico.descricao.length() &gt; 60) ? '...' : '' }"/>  
+                        </p:outputPanel>
+                        <p:tooltip for="panelDescricao" trackMouse="true" rendered="#{(_altaDiagnostico.descricao.length() &gt; 60)}"> 
+                          <h:outputText value="#{_altaDiagnostico.descricao}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_COMPLEMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_altaDiagnostico.complemento}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_SELECIONADO}"/> 
+                        </f:facet>  
+                        <center> 
+                          <h:selectBooleanCheckbox id="selectSelecionadoCid" value="#{_altaDiagnostico.indSelecionado}" onchange="#{altaAmbulatorialController.alterarIndSelecionadoCid(_altaDiagnostico)}"> 
+                            <p:ajax event="change" update="@(#panelTabDiagnostico)" process="@this" listener="#{altaAmbulatorialController.alterarIndSelecionadoCid(_altaDiagnostico)}"/> 
+                          </h:selectBooleanCheckbox> 
+                        </center> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </div> 
+                </p:outputPanel> 
+              </p:tab>  
+              <p:tab name="aba2" id="aba2" title="#{messages.LABEL_EVOLUCAO}"> 
+                <aghu:panelGeral legend="#{messages['LABEL_EVOLUCAO']}"> 
+                  <aghu:linha> 
+                    <mec:inputTextArea id="evolucao" cols="100" rows="10" label="#{messages.LABEL_EVOLUCAO}" value="#{altaAmbulatorialController.descricaoEvolucao}" requiredFake="true" maxlength="4000"/> 
+                  </aghu:linha> 
+                </aghu:panelGeral>  
+                <aghu:acao> 
+                  <mec:commandButton id="btGravarEvolucao" name="btGravarEvolucao" value="#{messages.LABEL_GRAVAR}" block="true" action="#{altaAmbulatorialController.gravarEvolucao}" profile="ok"/> 
+                </aghu:acao> 
+              </p:tab>  
+              <p:tab name="aba3" id="aba3" title="#{messages.LABEL_PRESCRICAO}"> 
+                <p:outputPanel id="panelTabPrescricao" layout="inline" styleClass="aghu-panel-geral"> 
+                  <aghu:panelGeral legend="#{messages['LABEL_ALTA_AMBULATORIAL_PRESCRICAO_DOCUMENTO_ALTA']}"> 
+                    <aghu:linha> 
+                      <mec:inputTextArea id="prescricao" cols="100" rows="5" label="#{messages.LABEL_PRESCRICAO}" value="#{altaAmbulatorialController.prescricao.descricao}" requiredFake="true" maxlength="500"/> 
+                    </aghu:linha> 
+                  </aghu:panelGeral>  
+                  <aghu:acao> 
+                    <mec:commandButton id="btAddItemPrescricao" name="btAddItemPrescricao" value="#{messages.LABEL_ADICIONAR}" rendered="#{not altaAmbulatorialController.prescricaoEmEdicao}" block="true" action="#{altaAmbulatorialController.persistirItemPrescricao}" profile="add" styleClass="bt_verde "/>  
+                    <mec:commandButton id="btAlterarItemPrescricao" name="btAlterarItemPrescricao" value="#{messages.LABEL_ALTERAR}" rendered="#{altaAmbulatorialController.prescricaoEmEdicao}" block="true" action="#{altaAmbulatorialController.persistirItemPrescricao}" styleClass="bt_cinza"/>  
+                    <mec:commandButton id="bt_cancelarEdicPrescricao" name="bt_cancelarEdicPrescricao" includePageParams="true" rendered="#{altaAmbulatorialController.prescricaoEmEdicao}" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{altaAmbulatorialController.cancelarEdicaoItemPrescricao}" styleClass="bt_cancel_edit bt_cinza"/> 
+                  </aghu:acao>  
+                  <div style="width: 100%; max-height:177px; overflow: auto;"> 
+                    <mec:serverDataTable id="tabelaPrescricao" rendered="#{altaAmbulatorialController.listPrescricoes ne null and altaAmbulatorialController.listPrescricoes.size() gt 0}" list="#{altaAmbulatorialController.listPrescricoes}" scrollable="true"> 
+                      <c:set var="_altaPrescricao" value="#{item}"/>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                        </f:facet>  
+                        <mec:commandLink title="#{messages.LABEL_EDITAR}" rendered="#{not altaAmbulatorialController.prescricaoEmEdicao}" action="#{altaAmbulatorialController.editarItemPrescricao(_altaPrescricao)}" profile="edit" ajax="true" render="panelTabPrescricao"/>  
+                        <mec:commandLink title="#{messages.LABEL_EXCLUIR}" oncomplete="PF('modalConfirmacaoExclusaoPrescricaoWG').show();" action="#{altaAmbulatorialController.editarItemPrescricao(_altaPrescricao)}" rendered="#{not altaAmbulatorialController.prescricaoEmEdicao}" styleClass="silk-icon silk-delete" ajax="true"/> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                        </f:facet>  
+                        <p:outputPanel id="panelDescricaoAltaPrescricao" layout="block"> 
+	                        <h:outputText value="#{(_altaPrescricao.descricao.length() &gt; 100) ? fn:substring(_altaPrescricao.descricao,0,100) : _altaPrescricao.descricao}"/>  
+	                        <h:outputText value="#{(_altaPrescricao.descricao.length() &gt; 100) ? '...' : '' }"/>  
+                        </p:outputPanel>
+                        <p:tooltip for="panelDescricaoAltaPrescricao" trackMouse="true" rendered="#{(_altaPrescricao.descricao.length() &gt; 100)}"> 
+                          <h:outputText value="#{_altaPrescricao.descricao}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_SELECIONADO}"/> 
+                        </f:facet>  
+                        <center> 
+                          <h:selectBooleanCheckbox id="selectSelecionadoPrescricao" value="#{_altaPrescricao.indSelecionado}" onchange="#{altaAmbulatorialController.alterarIndSelecionadoPrescricao(_altaPrescricao)}"> 
+                            <p:ajax event="change" update="@(#panelTabPrescricao)" process="@this" listener="#{altaAmbulatorialController.alterarIndSelecionadoPrescricao(_altaPrescricao)}"/> 
+                          </h:selectBooleanCheckbox> 
+                        </center> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </div> 
+                </p:outputPanel> 
+              </p:tab>  
+              <p:tab name="aba4" id="aba4" title="#{messages.LABEL_CONCLUIR}"/> 
+            </p:tabView> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <aghu:acao> 
+          <p:outputPanel id="panelBts" layout="inline"> 
+            <mec:commandButton id="btDesbloquearAlta" name="btDesbloquearAlta" onclick="PF('modalConfirmacaoDesbloqueioWG').show();" rendered="#{altaAmbulatorialController.altaBloqueada}" value="#{messages.LABEL_ALTA_AMBULATORIAL_DESBLOQUEAR_ALTA}" ajax="true" render="idadeSexoEquipePanel, outPanelAtendimentosModalContent, outPanelAtendimentosModal, panelTabsDecorate, panelTabs, panelBts" styleClass="bt_cinza"/>  
+            <mec:backButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" styleClass="bt_secund alinha-direita" block="true" propagation="end" rendered="#{!altaAmbulatorialController.altaBloqueada and altaAmbulatorialController.voltarParaUrl != null}" formId="formAbas" action="#{altaAmbulatorialController.voltar}"/>  
+            <mec:backButton id="bt_cancelar" rendered="#{!altaAmbulatorialController.altaBloqueada and altaAmbulatorialController.voltarParaUrl == null and altaAmbulatorialController.paciente != null}" formId="formAbas" block="true" exibirModalExclusiva="true" action="#{altaAmbulatorialController.voltar}"/> 
+          </p:outputPanel> 
+        </aghu:acao>  
+        <p:outputPanel id="limparCamposBtCancel" layout="inline"> 
+          <script xml:space="preserve">
+			        jQuery(document).ready(function () {
+			            buttonCancel.cache = buttonCancel.loadCacheInput('formAbas');
+			        });
+			    </script> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form ajaxSubmit="false" id="formAtendimentosPrescricao"> 
+        <p:dialog id="modalAtendimentosPrescricao" style="text-align:center;" height="275" resizeable="false" moveable="false" width="580" zindex="2000" modal="true" resizable="false" widgetVar="modalAtendimentosPrescricaoWG" closable="true"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_LISTA_DE_ATENDIMENTOS}"/> 
+          </f:facet>  
+          <p:outputPanel id="outPanelAtendimentosModalContent" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages['LABEL_ATENDIMENTOS']}"> 
+              <aghu:linha> 
+                <p:outputPanel id="panelInputTextProntuarioNomePaciente" layout="block"> 
+                	<mec:inputText id="inputTextProntuarioNomePaciente" value="#{altaAmbulatorialController.getTruncProntuarioNomePaciente(999)}" posicaoLabel="esquerda" size="64" style="text-transform:uppercase" readonly="true"/> 
+                </p:outputPanel>
+                <p:tooltip value="#{altaAmbulatorialController.getTruncProntuarioNomePaciente(999)}" for="panelInputTextProntuarioNomePaciente" trackMouse="true" /> 
+              </aghu:linha>  
+              <aghu:linha> 
+                  <mec:serverDataTable id="dataTableAtds" list="#{altaAmbulatorialController.atendimentos}" scrollable="true" scrollHeight="158"> 
+                    <c:set var="_atdPrecr" value="#{item}"/>  
+                    <p:ajax event="rowSelect" oncomplete="PF('modalAtendimentosPrescricaoWG').hide();" immediate="true" update="@(#panelTabsDecorate) @(#panelTabs) @(#panelBts) @(#limparCamposBtCancel) @(#bt_cancelar)" listener="#{altaAmbulatorialController.processarSelecaoAtendimento(_atdPrecr)}"/>  
+                    <p:column id="tdAcaoAtdPresc"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <h:selectOneRadio id="radioAtdSeqPrescr" value="#{altaAmbulatorialController.atendimento.seq}"> 
+                        <f:selectItem itemValue="#{_atdPrecr.seq}"/> 
+                      </h:selectOneRadio> 
+                    </p:column>  
+                    <p:column id="atdSeqPresc"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ATENDIMENTO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_atdPrecr.seq}"/> 
+                    </p:column>  
+                    <p:column id="atdDtInicioPresc"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DATA_INICIO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_atdPrecr.dthrInicio}" isDate="true"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column id="origemAtdPresc"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ORIGEM}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_atdPrecr.origem.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:dialog> 
+      </h:form>  
+      <p:outputPanel id="outPanelAtendimentosModal" layout="inline"> 
+        <script type="text/javascript" xml:space="preserve">
+				if(#{altaAmbulatorialController.showModalAtendimentos}) {
+					PF('modalAtendimentosPrescricaoWG').show();
+				}
+			</script> 
+      </p:outputPanel>  
+      <p:dialog id="modalConfirmacaoDesbloqueio" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoDesbloqueioWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ALTA_AMBULATORIAL_CONFIRMACAO_DESBLOQUEIO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.LABEL_ALTA_AMBULATORIAL_CONFIRMACAO_DESBLOQUEIO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalDesbloqueio"> 
+            <aghu:linha> 
+              <mec:commandButton id="btConfirmaDesbloqueioAlta" value="#{messages.LABEL_SIM}" action="#{altaAmbulatorialController.desbloquearAlta}" profile="search"/>  
+              <mec:commandButton id="btCancelarDesbloqueioAlta" onclick="PF('modalConfirmacaoDesbloqueioWG').hide();" value="#{messages.LABEL_NAO}" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoExclusaoCid" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoCidWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ALTA_AMBULATORIAL_EXCLUIR_CID}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusaoCid"> 
+            <mec:commandButton id="bt_excluir_cid" value="#{messages.LABEL_SIM}" block="true" action="#{altaAmbulatorialController.excluirCid}" render="panelTabs" profile="ok"/>  
+            <mec:commandButton id="bt_cancelar_cid" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoCidWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoExclusaoPrescricao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoPrescricaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ALTA_AMBULATORIAL_EXCLUIR_PRESCRICAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusaoPrescricao"> 
+            <mec:commandButton id="bt_excluir_prescricao" value="#{messages.LABEL_SIM}" action="#{altaAmbulatorialController.excluirItemPrescricao}" render="panelTabs" profile="ok"/>  
+            <mec:commandButton id="bt_cancelar_prescricao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoPrescricaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+  	<style xml:space="preserve">
+  		.ui-spinner-input{
+			margin-right:20px;
+		}
+  	</style>
+    <h:form prependId="false" id="formMateriaisConsumidos"> 
+      <aghu:acao> 
+        <mec:commandButton id="btJustificativa" 
+        		value="#{messages.LABEL_EDITAR_JUSTIFICATIVA}" 
+        		onclick="PF('modalJustificativaAbaMateriaisConsumidosWG').show();" 
+        		styleClass="bt_vermelho icon-pencil bt_cinza" 
+        		ajax="true"/> 
+      </aghu:acao>  
+      <aghu:linha> 
+        <div id="divTableMateriaisConsumidos" style="height: 300px; overflow: hidden;"> 
+          <mec:serverDataTable id="listaMateriaisConsumidos" 
+          		style="margin: 0px !important;" 
+          		list="#{descricaoCirurgicaMateriaisConsumidosController.listaMateriaisConsumidos}" 
+          		var="_item"
+          		scrollable="true">
+          	<c:set var="_material" value="#{_item}"/> 
+            <p:column id="itemSus" sortBy="#{_material.itemSus}" sortable="true"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ITEM_PROCED_HOSP}"/> 
+              </f:facet> 
+              <h:outputText value="#{_material.itemSus}" /> 
+            </p:column>  
+            <p:column id="autorizado" sortBy="#{_material.qtdeAutorizadaHospital}" sortable="true"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_AUTORIZADO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_material.qtdeAutorizada}" />
+            </p:column>  
+            <p:column id="dispensado" sortBy="#{_material.qtdeDispensada}" sortable="true"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DISPENSADO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_material.qtdeDispensada}"/> 
+            </p:column>  
+            <p:column id="utilizado" sortBy="#{_material.qtdeUtilizada}" sortable="true" style="#{_material.incompativel ? 'background-color:#FF0000' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_UTILIZADO}"/> 
+              </f:facet>  
+              <aghu:linha>
+                <p:spinner name="spinner" id="spinner" value="#{_material.qtdeUtilizada}"> 
+                  <p:ajax event="change" update="@(#listaMateriaisConsumidos)" process="@this" listener="#{descricaoCirurgicaMateriaisConsumidosController.validaQtdeUtilizada(_material)}"/> 
+                </p:spinner>
+              </aghu:linha> 
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" value="#{_material.motivoIncompatibilidade}" rendered="#{_material.motivoIncompatibilidade ne null}"/> 
+            </p:column>  
+            <p:column id="material" sortBy="#{_material.materia}" sortable="true"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SCO_MATERIAL_NOME}"/> 
+              </f:facet>  
+              <h:outputText value="#{_material.material}" />
+            </p:column> 
+          </mec:serverDataTable>
+        </div> 
+      </aghu:linha>  
+      <aghu:linha> 
+        <mec:inputTextArea id="justificativa" 
+        		label="#{messages.LABEL_JUSTIFICAR_INCOMPAT_ENCONSTRADAS}" 
+        		cols="150" rows="4" 
+        		size="200" 
+        		value="#{descricaoCirurgicaMateriaisConsumidosController.justificativa}" 
+        		removerCaratersEspeciais="false" 
+        		readonly="true"/> 
+      </aghu:linha>  
+      <br clear="none"/>  
+      <aghu:acao> 
+        <mec:commandButton id="btConcluir" 
+        		value="#{messages.LABEL_CONCLUIR}" 
+        		action="#{descricaoCirurgicaMateriaisConsumidosController.concluirMateriaisConsumidos}" 
+        		profile="ok"
+        		process="@this"
+        		ajax="true"
+        		render="panelModalAtencao"/> 
+      </aghu:acao> 
+       <p:dialog id="modalAtencao" 
+	    		width="430" 
+	    		height="200"  
+	    		modal="true" 
+	    		resizable="false" 
+	    		widgetVar="modalAtencaoWG" 
+	    		closable="true"> 
+	      <f:facet name="header"> 
+	        <h:panelGroup> 
+	          <h:outputText value="#{messages.LABEL_ATENCAO}"/> 
+	        </h:panelGroup> 
+	      </f:facet>  
+	      <aghu:panelGeral style="padding:10px;"> 
+	        <p:outputPanel id="modalAtencaoPanel" layout="inline"> 
+	          <p style="text-align:center;font-size:13px;"> 
+	            <h:outputText value="#{messages.M01_MSG_JUSTIF}"/> 
+	          </p>  
+	          <br clear="none"/>  
+	          <p style="text-align:center;font-size:13px;"> 
+	            <h:outputText value="#{messages.M01_MSG_JUSTIF_CONT}"/> 
+	          </p>  
+	          <br clear="none"/>  
+	          <br clear="none"/> 
+	        </p:outputPanel> 
+	      </aghu:panelGeral>  
+	      <aghu:acao> 
+	        <mec:commandButton id="btOk" 
+	        	value="#{messages.LABEL_OK}" 
+	        	onclick="PF('modalAtencaoWG').hide();" 
+	        	profile="ok" ajax="true"/> 
+          </aghu:acao> 
+	    </p:dialog>
+    </h:form>  
+    <h:form prependId="false"> 
+      <p:outputPanel layout="inline"> 
+        <ui:decorate template="/pages/blococirurgico/descricaoCirurgicaAbaMateriaisConsumidosModalJustificativa.xhtml"/> 
+      </p:outputPanel> 
+    </h:form>
+  </ui:composition> 
+</html>

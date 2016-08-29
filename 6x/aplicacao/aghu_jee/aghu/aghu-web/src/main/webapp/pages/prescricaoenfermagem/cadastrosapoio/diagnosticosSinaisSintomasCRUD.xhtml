@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages['TITLE_DIAGNOSTICOS_SINAIS_SINTOMAS']} ::
+			#{messages['NOME_ABREVIADO_PROJETO']}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{diagnosticosSinaisSintomasCRUDController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{diagnosticosSinaisSintomasCRUDController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formDadosCabecalho">
+			<aghu:panelGeral
+				legend="#{messages['LABEL_DIAGNOSTICO_MANTER_DIAGNOSTICO_CUIDADOS']}">
+				<aghu:linha>
+					<mec:inputText id="grupo"
+						label="#{messages.LABEL_GRUPO_MANTER_DIAGNOSTICO}"
+						value="#{diagnosticosSinaisSintomasCRUDController.grupo.descricao}"
+						size="50" readonly="true" />
+					<mec:inputText id="subGrupo"
+						label="#{messages.LABEL_SUBGRUPO_MANTER_DIAGNOSTICO}"
+						value="#{diagnosticosSinaisSintomasCRUDController.subGrupo.descricao}"
+						size="50" readonly="true" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText id="diagnostico"
+						label="#{messages.LABEL_DIAGNOSTICO_MANTER_DIAGNOSTICO_CUIDADOS}"
+						value="#{diagnosticosSinaisSintomasCRUDController.diagnostico.descricao}"
+						size="50" readonly="true" />
+					<mec:selectBooleanCheckbox id="situacao" readonly="true"
+						label="#{messages.LABEL_ATIVO}"
+						value="#{diagnosticosSinaisSintomasCRUDController.diagnosticoSituacao}" />
+				</aghu:linha>
+			</aghu:panelGeral>
+		</h:form>
+		<h:form prependId="false" id="formListaSinaisSintomas"
+			rendered="#{diagnosticosSinaisSintomasCRUDController.diagnosticoSituacao}">
+			<aghu:panelGeral
+				legend="#{messages['TITLE_DIAGNOSTICOS_SINAIS_SINTOMAS_LABEL_FIELDSET']}">
+				<aghu:linha>
+					<mec:suggestionBox id="sinalSintoma"
+						label="#{messages.LABEL_DIAGNOSTICOS_SINAIS_SINTOMAS_LABEL_SUGGESTIONBOX}"
+						title="#{messages.TITLE_DIAGNOSTICOS_SINAIS_SINTOMAS_LABEL_SUGGESTIONBOX}"
+						rendered="#{mf:hasPermission(securityController,'manterSinaisSintomasPorDiagnostico,manter')}"
+						width="800" requiredFake="true" descricaoInput="codigo"
+						descricaoLabel="descricao" breakTo="30"
+						suggestionAction="pesquisarSinaisSintomas"
+						posDeleteAction="limparPesquisa"
+						posSelectionAction="ativarBotaoAdicionar"
+						controller="#{diagnosticosSinaisSintomasCRUDController}"
+						value="#{diagnosticosSinaisSintomasCRUDController.sinalSintoma}"
+						render="panelBtAdicionar"
+						>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.TITLE_DIAGNOSTICOS_SINAIS_SINTOMAS_LABEL_SINAL_SINTOMA_CODIGO}</b>
+							</f:facet> #{item.codigo}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.TITLE_DIAGNOSTICOS_SINAIS_SINTOMAS_LABEL_SINAL_SINTOMA_CODIGO}</b>
+							</f:facet> #{item.descricao}
+              </p:column>
+					</mec:suggestionBox>
+					
+					<aghu:acao newLine="false">
+					 <p:outputPanel id="panelBtAdicionar" layout="inline">
+						<mec:commandButton id="bt_adicionar"
+							value="#{messages.LABEL_ADICIONAR}"
+							action="#{diagnosticosSinaisSintomasCRUDController.adicionar}"
+							disabled="#{diagnosticosSinaisSintomasCRUDController.suggestionAdiconar}"
+							rendered="#{mf:hasPermission(securityController,'manterSinaisSintomasPorDiagnostico,manter')}"
+							render="formListaSinaisSintomas"
+							profile="add" />
+							
+					</p:outputPanel>
+							
+					</aghu:acao>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:serverDataTable dataModel="dataModel"
+						id="tableResultadosSinaisSintomas"
+						value="#{diagnosticosSinaisSintomasCRUDController}"
+						controller="#{diagnosticosSinaisSintomasCRUDController}">
+						<c:set var="_diagnosticosSinaisSintomas" value="#{item}" />
+						<p:column headerText="Ações" styleClass="first-column auto-adjust"
+							exportable="false">
+							<mec:commandLink id="tableResultadosSinaisSintomas_link_remover"
+								profile="delete" title="excluir"
+								action="#{diagnosticosSinaisSintomasCRUDController.excluir}">
+								<f:setPropertyActionListener for="command"
+									target="#{diagnosticosSinaisSintomasCRUDController.diagnosticosSinaisSintomasSelection}"
+									value="#{_diagnosticosSinaisSintomas}" />
+							</mec:commandLink>
+						</p:column>
+						<p:column id="columnCodigo" style="width:80px">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CODIGO}" />
+							</f:facet>
+							<h:outputText
+								value="#{_diagnosticosSinaisSintomas.caractDefinidora.codigo}" />
+						</p:column>
+						<p:column id="columnDescricao">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CUIDADO}" />
+							</f:facet>
+							<p:tooltip direction="bottom-right" styleClass="tooltip"
+								layout="block"
+								rendered="#{(_diagnosticosSinaisSintomas.caractDefinidora.descricao.length() &gt; 120)}">
+								<h:outputText
+									value="#{_diagnosticosSinaisSintomas.caractDefinidora.descricao}" />
+							</p:tooltip>
+							<h:outputText
+								value="#{(_diagnosticosSinaisSintomas.caractDefinidora.descricao.length() &gt; 120) ? fn:substring(_diagnosticosSinaisSintomas.caractDefinidora.descricao,0,120) : _diagnosticosSinaisSintomas.caractDefinidora.descricao}" />
+							<h:outputText value="..."
+								rendered="#{(_diagnosticosSinaisSintomas.caractDefinidora.descricao.length() &gt; 120)}" />
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:linha>
+			</aghu:panelGeral>
+		</h:form>
+		<h:form prependId="false" id="formBotaoVoltar">
+			<aghu:acao>
+				<mec:backButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+					immediate="true"
+					action="#{diagnosticosSinaisSintomasCRUDController.cancelar}" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

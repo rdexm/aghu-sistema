@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_CONFIGURACAO_EXAMES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterConfiguracaoExamesController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterConfiguracaoExamesController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formCadastroConfig"> 
+        <aghu:panelGeral legend="#{messages.TITLE_CONFIGURACAO_EXAMES}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="codigoConfigExame" label="#{messages.LABEL_CODIGO_CONFIG_EXAME_LIST}" readonly="true" value="#{manterConfiguracaoExamesController.configExame.seq}" maxlength="5" size="6"/>  
+            <mec:inputText id="siglaConfigExameParaLaudo" label="#{messages.LABEL_SIGLA}" title="#{messages.TITLE_SIGLA_CONFIG_EXAME_LAUDO}" required="true" style="text-transform:uppercase" maxlength="2" size="6" value="#{manterConfiguracaoExamesController.configExame.sigla}" readonly="#{not mf:hasPermission(securityController,'manterConfiguracaoExames,executar')}"/>  
+            <mec:inputText id="nomeConfigExameParaLaudo" label="#{messages.LABEL_NOME_CONFIG_EXAME_LAUDO_LIST}" title="#{messages.TITLE_NOME_CONFIG_EXAME_LAUDO_LIST}" required="true" caixaAlta="false" maxlength="50" size="60" value="#{manterConfiguracaoExamesController.configExame.nome}" readonly="#{not mf:hasPermission(securityController,'manterConfiguracaoExames,executar')}"/>  
+            <mec:selectOneMenu id="situacaoConfigExame" enum="DominioSituacao" noSelectionOption="false" label="#{messages.LABEL_SITUACAO_CONFIG_EXAME_LIST}" title="#{messages.TITLE_SITUACAO_CONFIG_EXAME_LIST}" value="#{manterConfiguracaoExamesController.configExame.situacao}" readonly="#{not mf:hasPermission(securityController,'manterConfiguracaoExames,executar')}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar" block="true" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'manterConfiguracaoExames,executar')}" action="#{manterConfiguracaoExamesController.gravar}" styleClass="bt_cinza" profile="ok"/>
+          <mec:commandButton value="#{messages.LABEL_SECOES}" action="#{manterConfiguracaoExamesController.manterCaracteristicaMaterialAnalise}" disabled="#{empty manterConfiguracaoExamesController.configExame.seq or !mf:hasPermission(securityController,'manterCaracteristicaMaterialAnalise, pesquisar')}">            
+          	<f:setPropertyActionListener target="#{manterCaracteristicaMaterialAnaliseController.lu2Seq}" value="#{manterConfiguracaoExamesController.configExame.seq}" for="command"/> 
+          </mec:commandButton>   
+          <mec:backButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" formId="formCadastroConfig" immediate="true" action="#{manterConfiguracaoExamesController.voltar}" profile="back"></mec:backButton> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panel_itens" rendered="#{not empty manterConfiguracaoExamesController.configExame.seq}" layout="inline"> 
+        <h:form prependId="false" id="formCadastroItem"> 
+          <aghu:panelGeral legend="#{messages.TITLE_LISTA_CONFIGURACOES_EXAMES}"> 
+            <aghu:linha> 
+              <mec:suggestionBox id="sugestionExame" label="#{messages.LABEL_EXAME_CONFIG_EXAME_LIST}" title="#{messages.TITLE_EXAME_CONFIG_EXAME_LIST}" width="700" required="true" descricaoInput="id.exaSigla" descricaoLabel="nomeUsualMaterial" suggestionAction="buscarExamesMaterialAnaliseUnfExecExames" rendered="#{mf:hasPermission(securityController,'manterConfiguracaoExames,executar')}" controller="#{manterConfiguracaoExamesController}" value="#{manterConfiguracaoExamesController.exame}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_SIGLA_EXM}</b> 
+                  </f:facet> #{item.id.exaSigla}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_NOME_USUAL_MATERIAL_EXM}</b> 
+                  </f:facet> #{item.nomeUsualMaterial}
+                </p:column> 
+              </mec:suggestionBox>  
+              <br clear="none"/>  
+              <mec:commandButton id="bt_gravarItem" block="true" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'manterConfiguracaoExames,executar')}" action="#{manterConfiguracaoExamesController.gravarItem}" profile="ok"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:serverDataTable dataModel="dataModel" id="tabelaItemConfigExames" controller="#{manterConfiguracaoExamesController}"> 
+                <c:set var="_config" value="#{item}"/>  
+                <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                  <mec:commandLink id="tabelaItemConfigExames_link_remover" profile="delete" title="excluir" action="#{manterConfiguracaoExamesController.excluirItem}" immediate="true"> 
+                    <f:setPropertyActionListener for="command" target="#{manterConfiguracaoExamesController.selecionado}" value="#{_config}"/> 
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SIGLA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_config.unidadeExecutaExame.id.emaExaSigla}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_EXAME}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_config.unidadeExecutaExame.aelExamesMaterialAnalise.aelExames.descricaoUsual}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MATERIAL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_config.unidadeExecutaExame.aelExamesMaterialAnalise.aelMateriaisAnalises.descricao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_config.unidadeExecutaExame.nomeUsualMaterialUnidade}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

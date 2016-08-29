@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+	  <title>#{messages.LABEL_TITULO_CADASTRO_SOLICITACAO_EXAME}</title>
+	</ui:define>
+	<ui:define name="metadata">
+	  <f:metadata>
+		<f:viewAction action="#{solicitacaoExameController.inicio}" />
+	  </f:metadata>
+	</ui:define>
+	<ui:define name="body">
+	  <mec:pageConfig controller="#{solicitacaoExameController}" ignoreEnter="true" />
+	  <h:form prependId="false" id="cadastroForm">
+		<pe:remoteCommand name="renderCadastroForm" update="cadastroForm" />
+	    <p:outputPanel id="includeUnidadeTrabalho" layout="inline">
+		  <p:outputPanel rendered="#{solicitacaoExameController.includeUnidadeTrabalho}" layout="block">
+		    <ui:include src="/pages/exames/includeIdentificarUnidadeExecutora.xhtml" />
+		  </p:outputPanel>
+	    </p:outputPanel>
+		<aghu:panelGeral legend="#{messages.LABEL_TITULO_CAD_SOLICITACAO_EXAME}">
+		  <p:outputPanel id="panelAtendimento" rendered="#{not solicitacaoExameController.solicitacaoExame.ehDiverso}" layout="block">
+			<aghu:linha>
+			  <mec:inputText id="prontuario"
+					label="#{messages.LABEL_PRONTUARIO_SOLICITACAO_EXAME}"
+					maxlength="8" size="9"
+					value="#{solicitacaoExameController.solicitacaoExame.prontuarioFormatado()}"
+					readonly="true" />
+			  <mec:inputText id="numero" 
+			  		label="#{messages.LABEL_NUMERO_SOLICITACAO_EXAME}"
+					size="10" maxlength="8"
+					value="#{solicitacaoExameController.solicitacaoExame.numeroConsulta}"
+					readonly="true" />
+			  <mec:inputText id="nomePaciente" 
+					label="#{messages.LABEL_NOMESOCIALPACIENTE_SOLICITACAO_EXAME}"
+					size="67" maxlength="50"
+					value="#{solicitacaoExameController.solicitacaoExame.nomeSocialPaciente != '' and solicitacaoExameController.solicitacaoExame.nomeSocialPaciente != null ? solicitacaoExameController.solicitacaoExame.nomeSocialPaciente : solicitacaoExameController.solicitacaoExame.nomePaciente}"
+					style="text-transform:uppercase" readonly="true" />
+			  <mec:inputText id="idadePaciente" 
+			  		label="#{messages.LABEL_IDADE_SOLICITACAO_EXAME}"
+					size="10" maxlength="8"
+					value="#{solicitacaoExameController.solicitacaoExame.idade}"
+					readonly="true" />
+			</aghu:linha>
+			<aghu:linha>
+			  <mec:inputText id="dataAtendimento" 
+					label="#{messages.LABEL_DATA_HORA_ATENDIMENTO_SOLICITACAO_EXAME}"
+					value="#{solicitacaoExameController.solicitacaoExame.dataAtendimento}"
+					readonly="true" datePattern="dd/MM/yyyy HH:mm" />
+			  <mec:selectOneMenu id="origem" 
+					label="#{messages.LABEL_ORIGEM_SOLICITACAO_EXAME}"
+					enum="DominioOrigemAtendimento"
+					value="#{solicitacaoExameController.solicitacaoExame.origem}"
+					readonly="true" />
+			  <mec:inputText id="localizacao" 
+					label="#{messages.LABEL_LOCALIZACAO_SOLICITACAO_EXAME}" size="60"
+					maxlength="50"
+					value="#{solicitacaoExameController.solicitacaoExame.localDescricao}"
+					style="text-transform:uppercase" readonly="true" />
+			</aghu:linha>
+		  </p:outputPanel>
+		  <p:outputPanel id="panelForm" layout="block">
+			<aghu:linha>
+			  <mec:suggestionBox id="sbUnidadeFuncional"
+			  		var="_itemUnidadeFuncional"
+					itemValue="#{_itemUnidadeFuncional}"
+					label="#{messages.LABEL_UNIDADE_FUNCIONAL_SOLICITACAO_EXAME}"
+					title="#{messages.TITLE_UNIDADE_FUNCIONAL_SOLICITANTE_EXAME}"
+					suggestionAction="buscarUnidadeFuncionais"
+					posDeleteAction="posDeleteActionSbUnidadeFuncional"
+					posSelectionAction="posSelectionActionSbUnidadeFuncional"
+					size="15" maxlength="15" descricaoInput="seq"
+					descricaoLabel="andarAlaDescricao" 
+					width="520" required="true"
+							readonly="#{solicitacaoExameController.desabilitaSugestionUnidadeSolicitante}"
+					controller="#{solicitacaoExameController}"
+					value="#{solicitacaoExameController.solicitacaoExame.unidadeFuncional}"
+					render="panelItemSolicitacaoExame, panelListaItemSolicitacaoExames"
+					confirmDelete="true"
+					msgConfirmDelete="#{messages.MSG_ALTERAR_UNF_SOLICITACAO}">
+				<p:column>
+				  <f:facet name="header">
+					<h:outputText value="#{messages.LABEL_UNF_ANDAR_SOLICITACAO_EXAME}" />
+				  </f:facet>
+				  <h:outputText value="#{_itemUnidadeFuncional.andar}" />
+				</p:column>
+				<p:column>
+				  <f:facet name="header">
+					<h:outputText value="#{LABEL_ALA}" />
+				  </f:facet>
+				  <h:outputText value="#{_itemUnidadeFuncional.indAla}" />
+				</p:column>
+				<p:column>
+				  <f:facet name="header">
+					<h:outputText value="#{messages.LABEL_UNF_DESCRICAO_SOLICITACAO_EXAME}" />
+				  </f:facet>
+				  <h:outputText value="#{_itemUnidadeFuncional.descricao}" />
+				</p:column>
+			  </mec:suggestionBox>
+			  <mec:suggestionBox id="sboxResponsavel" 
+			  		var="_itemResponsavel"
+					itemValue="#{_itemResponsavel}"
+					label="#{messages.LABEL_RESPONSAVEL_SOLICITACAO_EXAME}"
+					title="#{messages.TITLE_RESPONSAVEL_SOLICITACAO_EXAME}"
+					suggestionAction="buscarServidoresSolicitacaoExame" size="15"
+					maxlength="15" descricaoInput="matriculaVinculo"
+					descricaoLabel="pessoaFisica.nome"
+					readonly="#{!solicitacaoExameController.includeUnidadeTrabalho and !solicitacaoExameController.usuarioUnidadeExecutora}"
+					width="450"
+					rendered="#{mf:hasPermission(securityController,'informarResponsavel,executar')}"
+					required="#{!solicitacaoExameController.solicitacaoExame.origemAtendimentoExterno or solicitacaoExameController.solicitacaoExame.origem ne 'X'}"
+					controller="#{solicitacaoExameController}"
+					value="#{solicitacaoExameController.solicitacaoExame.responsavel}">
+				<p:column>
+				  <f:facet name="header">
+					<h:outputText value="#{messages.LABEL_SER_VINCULO_MATRICULA_SOLICITACAO_EXAME}" />
+				  </f:facet>
+				  <h:outputText value="#{_itemResponsavel.matriculaVinculo}" />
+				</p:column>
+				<p:column>
+				  <f:facet name="header">
+					<h:outputText value="#{messages.LABEL_SER_CODIGO_SOLICITACAO_EXAME}" />
+				  </f:facet>
+				  <h:outputText value="#{_itemResponsavel.pessoaFisica.codigo}" />
+				</p:column>
+				<p:column>
+				  <f:facet name="header">
+					<h:outputText value="#{messages.LABEL_SER_NOME_SOLICITACAO_EXAME}" />
+				  </f:facet>
+				  <h:outputText value="#{_itemResponsavel.pessoaFisica.nome}" />
+				</p:column>
+			  </mec:suggestionBox>
+			</aghu:linha>
+			<aghu:linha>
+			  <mec:inputTextArea id="informacoesClinicas"
+					label="#{messages.LABEL_INFORMACOESCLINICAS_SOLICITACAO_EXAME}"
+					title="#{messages.TITLE_INFORMACOESCLINICAS_SOLICITACAO_EXAME}"
+					cols="120" rows="3" size="200" maxlength="500"
+					value="#{solicitacaoExameController.solicitacaoExame.informacoesClinicas}" />
+		    </aghu:linha>
+			<aghu:linha>
+			  <mec:selectOneMenu id="usaAntimicrobianos"
+					label="#{messages.LABEL_USAANTIMICROBIANOS_SOLICITACAO_EXAME}"
+					title="#{messages.TITLE_USAANTIMICROBIANOS_SOLICITACAO_EXAME}"
+					enum="DominioSimNao"
+					value="#{solicitacaoExameController.solicitacaoExame.usaAntimicrobianos}" />
+			  <mec:selectOneMenu id="indObjetivoSolic" 
+					label="#{messages.LABEL_INDOBJETIVOSOLIC_SOLICITACAO_EXAME}"
+					title="#{messages.TITLE_INDOBJETIVOSOLIC_SOLICITACAO_EXAME}"
+					enum="DominioOrigemSolicitacao"
+					value="#{solicitacaoExameController.solicitacaoExame.indObjetivoSolic}" />
+			  <mec:selectOneMenu id="indTransplante"
+					label="#{messages.LABEL_INDTRANSPLANTE_SOLICITACAO_EXAME}"
+					title="#{messages.TITLE_INDTRANSPLANTE_SOLICITACAO_EXAME}"
+					enum="DominioSimNao"
+					value="#{solicitacaoExameController.solicitacaoExame.indTransplante}"
+					rendered="#{solicitacaoExameController.solicitacaoExame.mostrarIndicadorTransplantado}" />
+			</aghu:linha>
+		  </p:outputPanel>
+		</aghu:panelGeral>
+		<p:outputPanel id="panelAtendimentoDiverso" layout="block">
+		  <aghu:panelGeral legend="#{messages.LABEL_ATD_DIVERSO}" rendered="#{solicitacaoExameController.solicitacaoExame.ehDiverso}">
+			<aghu:linha>
+			  <mec:inputNumero id="atendimentoDiversoSeq"
+					label="#{messages.LABEL_COD_ATD_DIVERSO_SOLICITACAO_EXAME}"
+					size="9" maxlength="9"
+					value="#{solicitacaoExameController.solicitacaoExame.atendimentoDiverso.seq}"
+					readonly="true" />
+			  <mec:inputText id="atendimentoDiversoDescricao" 
+					label="#{messages.LABEL_DESC_ATD_DIVERSO_SOLICITACAO_EXAME}"
+					size="140" maxlength="140"
+					value="#{solicitacaoExameController.solicitacaoExame.descricaoAtendimentoDiverso}"
+					style="text-transform:uppercase" readonly="true" />
+			</aghu:linha>
+		  </aghu:panelGeral>
+		</p:outputPanel>
+		<p:outputPanel id="panelSolicitacaoExame" layout="block">
+		  <aghu:panelGeral legend="#{messages.LABEL_EXAMES_SOLICITACAO_EXAME}">
+			<p:outputPanel id="panelItemSolicitacaoExame" layout="block">
+			  <aghu:linha>
+				<p:tabView id="examesTab" 
+					rendered="#{mf:hasPermission(securityController,'listarExamesSendoSolicitados,pesquisar')}"
+					ajaxSingle="true" dynamic="true"
+					activeIndex="#{solicitacaoExameController.currentTabName}"
+					prependId="false">
+				  <p:ajax event="tabChange" listener="#{solicitacaoExameController.renderAbaLote()}" />
+				  <p:tab name="#{solicitacaoExameController.porExame}" title="#{messages.LABEL_POR_EXAME}">
+					<c:if test="#{solicitacaoExameController.currentTabName eq 0}">
+					  <ui:include src="/pages/exames/solicitacao/listarExamesSendoSolicitados.xhtml" />
+					</c:if>
+				  </p:tab>
+				  <p:tab name="#{solicitacaoExameController.porLote}"
+						disabled="#{solicitacaoExameController.getIseEmEdicao()}"
+						rendered="#{mf:hasPermission(securityController,'solicitarExamesLote,executar')}"
+						title="#{messages.LABEL_POR_LOTE}">
+					<c:if test="#{solicitacaoExameController.currentTabName eq 1}">
+					  <ui:include src="/pages/exames/solicitacao/listarExamesSendoSolicitadosLote.xhtml" />
+					</c:if>
+				  </p:tab>
+				</p:tabView>
+			  </aghu:linha>
+			</p:outputPanel>
+			<p:outputPanel id="panelListaItemSolicitacaoExames" layout="block">
+			  <aghu:linha>
+				<p:dataTable id="tblistaExames"
+						value="#{solicitacaoExameController.listaItemSolicitacaoExame}" 
+						var="_exame" 
+						rendered="#{not empty solicitacaoExameController.listaItemSolicitacaoExame}" 
+						styleClass="aghu-server-datatable"
+						scrollable="false" 
+						scrollHeight="200" 
+						emptyMessage="Nenhum registro encontrado!"
+						rowKey="#{item}" disabledSelection="true" paginator="false"
+					    lazy="false"  			
+					    resizableColumns="false"	
+					    draggableColumns="false" >
+				  <p:column style="width:65px; #{_exame.emEdicao ? 'background-color:#EEE8AA' : ''}">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_ACAO_SOLICITACAO_EXAME}" />
+					</f:facet>
+					<p:commandLink title="#{messages.LABEL_EDITAR}"
+						action="#{solicitacaoExameController.editarItemSolicitacaoExame(_exame)}"
+						rendered="#{not _exame.ehDependenteObrigatorio and not _exame.ehDependenteOpcional and not _exame.emEdicao}"
+						styleClass="silk-icon silk-pencil"
+						update="@form"
+						process="@this" />
+					<p:commandLink rendered="#{_exame.emEdicao or _exame.ehDependenteOpcional}" styleClass=" silk-blank silk-icon" />
+					<p:commandLink rendered="#{_exame.emEdicao}" styleClass=" silk-blank silk-icon" />
+					<p:commandLink rendered="#{_exame.ehDependenteObrigatorio}" styleClass=" silk-blank silk-icon" />
+					<p:commandLink immediate="true"
+						title="#{messages.LABEL_EXCLUIR}"
+						action="#{solicitacaoExameController.excluirItemSolicitacaoExame(_exame)}"
+						rendered="#{not _exame.ehDependenteObrigatorio and not _exame.emEdicao}"
+						styleClass="silk-icon silk-delete"
+						update="@parent:@parent:@parent:@parent" />
+					<p:commandLink rendered="#{_exame.ehDependenteObrigatorio}" styleClass=" silk-blank silk-icon" />
+					<p:commandLink id="linkRecomendacoes"
+						rendered="#{_exame.mostrarAbaRecomendacoes}"
+						styleClass="-exames silk-exames-recomendacoes silk-icon">
+					  <p:tooltip direction="bottom-right" layout="block"
+						  	for="linkRecomendacoes" style="width:90% !important;" rendered="#{not empty _exame.recomendacaoExameList}">
+						<p:dataTable style="border: 1px solid #C0C0C0;"
+							name="tabelaRecomendacoesSolicitacaoExames"
+							value="#{_exame.recomendacaoExameList}" var="_obj">
+						  <p:column style="width:20%; text-align: left; #{_obj.indAvisaResp ? 'background-color:#fcf5c6' : ''}">
+							<f:facet name="header">
+							  <h:outputText value="#{messages.LABEL_RESPONSAVEIS}" />
+							</f:facet>
+							<h:outputText value="#{_obj.responsavel.descricao} &#8195;&#8195;&#8195;" />
+						  </p:column>
+						  <p:column style="width:80%; text-align: left; #{_obj.indAvisaResp ? 'background-color:#fcf5c6' : ''}">
+							<f:facet name="header">
+							  <h:outputText value="#{messages.LABEL_RECOMENDACOES}" />
+							</f:facet>
+							<h:outputText value="#{_obj.descricao}" />
+						  </p:column>
+						</p:dataTable>
+					  </p:tooltip>
+					</p:commandLink>
+				  </p:column>
+				  <p:column style="width:10px; #{_exame.emEdicao ? 'background-color:#EEE8AA' : ''}">
+					<p:commandLink title="#{messages.LABEL_EXAME}"
+						rendered="#{not _exame.ehDependenteObrigatorio and not _exame.ehDependenteOpcional}"
+						styleClass="#{_exame.styleClass}" />
+				  </p:column>
+				  <p:column style="width:20px; #{_exame.emEdicao ? 'background-color:#EEE8AA' : ''}">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_TBL_EXAME_ITEM}" />
+					</f:facet>
+					<h:outputText value="#{_exame.sequencial}" rendered="#{not _exame.ehDependenteObrigatorio and not _exame.ehDependenteOpcional}" />
+					<p:commandLink title="#{messages.LABEL_EXAMES_DEPENDENTES_OBRIGATORIOS}"
+						rendered="#{_exame.ehDependenteObrigatorio}"
+						styleClass="#{_exame.styleClass}"  />
+					<p:commandLink title="#{messages.TITLE_EXAMES_DEPENDENTES_OPCIONAIS}"
+						rendered="#{_exame.ehDependenteOpcional}"
+						styleClass="#{_exame.styleClass}"  />
+				  </p:column>
+				  <p:column style="#{_exame.emEdicao ? 'background-color:#EEE8AA' : ''}">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_TBL_EXAME_DESC_EXAME}" />
+					</f:facet>
+					<h:outputText value="#{_exame.unfExecutaExame.descricaoExameUsualFormatada}" />
+				  </p:column>
+				  <p:column style="#{_exame.emEdicao ? 'background-color:#EEE8AA' : ''}">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_TBL_EXAME_URGENTE}" />
+					</f:facet>
+					<h:outputText value="#{_exame.urgenteDescricao}" />
+				  </p:column>
+				  <p:column style="#{_exame.emEdicao ? 'background-color:#EEE8AA' : ''}">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_TBL_EXAME_DT_PROG}" />
+				    </f:facet>
+					<h:outputText value="#{_exame.dataProgramada}">
+					  <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+					</h:outputText>
+				  </p:column>
+				  <p:column style="#{_exame.emEdicao ? 'background-color:#EEE8AA' : ''}">
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_TBL_EXAME_SIT}" />
+					</f:facet>
+				    <h:outputText value="#{_exame.situacaoCodigo.descricao}" />
+				  </p:column>
+				</p:dataTable>
+			  </aghu:linha>
+			</p:outputPanel>
+		  </aghu:panelGeral>
+		</p:outputPanel>
+		<p:outputPanel id="botoesAcaoSolicitacaoExame">
+		  <aghu:acao>
+			<p:commandButton value="#{messages.LABEL_GRAVAR}"
+				id="bt_confirmar" icon="aghu-icons-16x16 aghu-icon-check-aghu"
+				rendered="#{!solicitacaoExameController.voltarEmergencia}"
+				disabled="#{(listarExamesSendoSolicitadosController.itemSolicitacaoExameVo != null and listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.emEdicao) or solicitacaoExameController.inibeSolicExame}"
+				action="#{solicitacaoExameController.gravar}" styleClass="bt_cinza button-acao" onsuccess="core.downloadAutomaticoRelatorios(true, #{empty facesContext.messageList});"
+				process="@form"	update="@form" />
+			<p:button id="bt_confirmarEmergencia"
+				rendered="#{solicitacaoExameController.voltarEmergencia}"
+				disabled="#{(listarExamesSendoSolicitadosController.itemSolicitacaoExameVo != null and listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.emEdicao) or solicitacaoExameController.inibeSolicExame}"
+				styleClass="bt_ok icon-yes"	value="#{messages.LABEL_GRAVAR}"
+			    onclick="parent.tab.loadPage(widow.name, '#{solicitacaoExameController.voltarPara}?abaDestino=#{solicitacaoExameController.abaDestino};pacCodigo=#{solicitacaoExameController.pacCodigo};seqp=#{solicitacaoExameController.seqp};numeroConsulta=#{solicitacaoExameController.conNumero};cid=#{javax.enterprise.context.conversation.id}')"	/>					
+			<p:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar"
+				action="#{solicitacaoExameController.limpar}"  styleClass="bt_cinza button-acao" icon="aghu-icons-16x16 aghu-icon-cleaner-aghu"
+				immmediate="true" process="@this" resetValues="true"
+				update="@form" />
+			<p:commandButton value="#{messages.LABEL_CANCELAR}" icon="aghu-icons-16x16 aghu-icon-cancel"
+				id="bt_cancelar" action="#{solicitacaoExameController.cancelar}"
+				rendered="#{!solicitacaoExameController.voltarEmergencia}"
+				styleClass="bt_vermelho button-acao" immediate="true" />
+			<p:button id="bt_voltarEmergencia"
+				rendered="#{solicitacaoExameController.voltarEmergencia}"
+				disabled="#{listarExamesSendoSolicitadosController.itemSolicitacaoExameVo != null and listarExamesSendoSolicitadosController.itemSolicitacaoExameVo.emEdicao}"
+				styleClass="bt_error icon-no"
+				value="#{messages.LABEL_CANCELAR}"
+				onclick="parent.tab.loadPage(window.name, '#{solicitacaoExameController.voltarPara}?abaDestino=#{solicitacaoExameController.abaDestino};pacCodigo=#{solicitacaoExameController.pacCodigo};seqp=#{solicitacaoExameController.seqp};numeroConsulta=#{solicitacaoExameController.conNumero};cid=#{javax.enterprise.context.conversation.id}')" />	
+		  </aghu:acao>
+		</p:outputPanel>
+		<p:outputPanel id="numeroSolicitacaoPanel" layout="inline">
+		  <p:dialog id="modalNumeroSolicitacao" 
+		  		width="400" height="150" 
+		  		closable="false"
+				modal="true" 
+				resizable="false" 
+				widgetVar="modalNumeroSolicitacaoWG">
+			<f:facet name="header">
+			  <h:outputText value="#{messages.LABEL_SOLICITACAO_CONCLUIDA}" />
+			</f:facet>
+			<c:if test="#{solicitacaoExameController.solicitacaoExame.imprimiuTicketPaciente == 'true'}">
+			  <h:outputFormat value="#{messages.MENS_SOLIC_CONCLUIDA_COM_TICKET}">
+				<f:param value="#{solicitacaoExameController.solicitacaoExame.seqSolicitacaoSalvaStr}" />
+			  </h:outputFormat>
+			</c:if>
+			<c:if test="#{solicitacaoExameController.solicitacaoExame.imprimiuTicketPaciente != 'true'}">
+			  <h:outputFormat value="#{messages.MENS_SOLIC_CONCLUIDA_SEM_TICKET}">
+				<f:param value="#{solicitacaoExameController.solicitacaoExame.seqSolicitacaoSalvaStr}" />
+			  </h:outputFormat>
+			</c:if>
+			<c:if test="#{solicitacaoExameController.solicitacaoExame.alertaExamesColetaEspecial == 'true'}">
+			  <h:outputFormat value="#{messages.AEL_01509}" />
+			</c:if>
+			<br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<aghu:linha>
+			  <p:commandButton id="okNumeroSolicitacao" 
+			  		icon="aghu-icons-16x16 aghu-icon-check-aghu"  
+			  		styleClass="bt_cinza button-acao"
+					value="#{messages.LABEL_OK}"
+					action="#{solicitacaoExameController.redirecionarAposExibirNumeroSolicitacao}" />
+			  <p:commandButton value="#{messages.LABEL_AGENDAR_EXAMES}"
+					id="bt_agendar"
+					rendered="#{solicitacaoExameController.habilitaBotaoAgendamento and mf:hasPermission(securityController,'agendarExame,agendarExame')}"
+					action="#{solicitacaoExameController.agendarExames}"
+					icon="aghu-icons-16x16 aghu-icon-check-aghu"
+					styleClass="bt_cinza button-acao alinha-direita" process="@this">
+				<f:setPropertyActionListener target="#{listarExamesAgendamentoSelecaoController.examesAgendamentoSelecao}"
+					value="#{solicitacaoExameController.examesAgendamentoSelecao}"
+					for="command" />
+				<f:setPropertyActionListener target="#{listarExamesAgendamentoSelecaoController.soeSeq}"
+					value="#{solicitacaoExameController.solicitacaoExame.seqSolicitacaoSalvaStr}"
+					for="command" />
+				<f:setPropertyActionListener target="#{listarExamesAgendamentoSelecaoController.solicitacaoExameVO}"
+					value="#{solicitacaoExameController.solicitacaoExame}"
+					for="command" />
+				<f:setPropertyActionListener target="#{listarExamesAgendamentoSelecaoController.voltarPara}"
+					value="#{solicitacaoExameController.paginaChamadora}"
+					for="command" />
+				<f:setPropertyActionListener target="#{listarExamesAgendamentoSelecaoController.exibeAdvImpressaoTicket}"
+					value="#{not solicitacaoExameController.forcarGeracaoPendente}"
+					for="command" />	
+			  </p:commandButton>
+			</aghu:linha>
+		  </p:dialog>
+		</p:outputPanel>
+		<!-- Modal de confirmação para impressão de etiquetas de amostras -->
+		<p:outputPanel id="panelModalImpressaoEtiquetaAmostra" layout="inline">
+		  <p:dialog id="modalImpressaoEtiquetaAmostra" width="400" height="150"
+				closable="false" modal="true" resizable="false"
+				widgetVar="modalImpressaoEtiquetaAmostraWG">
+			<f:facet name="header">
+			  <h:outputText value="#{messages.LABEL_SOLICITACAO_EXAMES}" />
+			</f:facet>
+			<h:outputFormat value="#{messages.LABEL_CONFIRMA_IMPRESSAO_ETIQUETAS_AMOSTRAS}" />
+			<br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<aghu:linha>
+			  <p:commandButton id="btSimImprimeEtqAmostra"
+					value="#{messages.LABEL_SIM}"
+					action="#{solicitacaoExameController.confirmarImpressaoEtiqueta(true)}"
+					oncomplete="oncompleteImprimeEtiqAmostra(#{solicitacaoExameController.verificarSeImprimeEtiquetaRedome()}); return false;"
+					process="@this" icon="aghu-icons-16x16 aghu-icon-check-aghu"  styleClass="bt_cinza button-acao" />
+			  <p:commandButton id="btNaoImprimeEtqAmostra"
+					value="#{messages.LABEL_NAO}"
+					action="#{solicitacaoExameController.confirmarImpressaoEtiqueta(false)}"
+					oncomplete="oncompleteImprimeEtiqAmostra(#{solicitacaoExameController.verificarSeImprimeEtiquetaRedome()}); return false;"
+					process="@this" icon="aghu-icons-16x16 aghu-icon-cancel"  styleClass="bt_vermelho button-acao" />
+			</aghu:linha>
+		  </p:dialog>
+		</p:outputPanel>
+		<!-- Modal de confirmação para impressão de etiquetas de amostras de REDOME-->
+		<p:outputPanel id="panelModalImpressaoEtiquetaAmostraRedome" layout="inline">
+		  <p:dialog id="modalImpressaoEtiquetaAmostraRedome" 
+		  		width="400" height="150" 
+		  		closable="false" 
+		  		modal="true" 
+		  		resizable="false"
+				widgetVar="modalImpressaoEtiquetaAmostraRedomeWG">
+			<f:facet name="header">
+			  <h:outputText value="#{messages.LABEL_SOLICITACAO_EXAMES}" />
+			</f:facet>
+			<h:outputFormat value="#{messages.LABEL_CONFIRMA_IMPRESSAO_ETIQUETAS_AMOSTRAS_REDOME}" />
+			<br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<aghu:linha>
+			  <p:commandButton id="btSimImprimeEtqAmostraRedome"
+					value="#{messages.LABEL_SIM}"
+					action="#{solicitacaoExameController.confirmarImpressaoEtiquetaRedome(true)}"
+					oncomplete="oncompleteImprimeEtiqAmostraRedome(); return false;"
+					process="@this" icon="aghu-icons-16x16 aghu-icon-check-aghu"  styleClass="bt_cinza button-acao" />
+			  <p:commandButton id="btNaoImprimeEtqAmostraRedome"
+					value="#{messages.LABEL_NAO}"
+					action="#{solicitacaoExameController.confirmarImpressaoEtiquetaRedome(false)}"
+					oncomplete="oncompleteImprimeEtiqAmostraRedome(); return false;"
+					process="@this" styleClass="bt_vermelho button-acao" icon="aghu-icons-16x16 aghu-icon-cancel" />
+			</aghu:linha>
+		  </p:dialog>
+		</p:outputPanel>
+		<script>
+			function oncompleteImprimeEtiqAmostra(imprimirEtiquetaRedome) {
+			    if (imprimirEtiquetaRedome) {
+			        showModalRedome();
+			    } else {
+			        showModalSolicitacao();
+			    }
+			}
+			
+			function oncompleteImprimeEtiqAmostraRedome() {
+			    showModalSolicitacao();
+			}
+			
+			function showModalRedome() {
+			    PF('modalImpressaoEtiquetaAmostraWG').hide();
+			    PF('modalImpressaoEtiquetaAmostraRedomeWG').show();
+			    PF('modalNumeroSolicitacaoWG').hide();
+			}
+			function showModalSolicitacao() {
+			    PF('modalImpressaoEtiquetaAmostraWG').hide();
+			    PF('modalImpressaoEtiquetaAmostraRedomeWG').hide();
+			    PF('modalNumeroSolicitacaoWG').show();
+			}
+      	</script>
+		<!-- Modal com mensagem de concordancia -->
+		<p:outputPanel id="panelModalConcordancia" layout="inline">
+		  <p:dialog id="modalConcordancia" 
+		  		width="400" height="150"
+				closable="false" 
+				modal="true" 
+				resizable="false"
+				widgetVar="modalConcordanciaWG">
+			<f:facet name="header">
+			  <h:outputText value="#{messages.LABEL_SOLICITACAO_EXAMES}" />
+			</f:facet>
+			<h:outputFormat value="#{messages.LABEL_MENSAGEM_CONCORDANCIA_REGRA_SEGURANCA}" />
+			<br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<aghu:linha>
+			  <p:commandButton id="btNaoConcorda"
+					value="#{messages.LABEL_NAO}"
+					onclick="PF('modalNumeroSolicitacaoWG').hide();PF('modalImpressaoEtiquetaAmostraWG').hide();PF('modalConcordanciaWG').hide();return false;"
+					process="@this" icon="aghu-icons-16x16 aghu-icon-cancel"  styleClass="bt_vermelho button-acao"/>
+			  <p:commandButton id="btConcorda" value="#{messages.LABEL_SIM}"
+					action="#{solicitacaoExameController.confirmarMensagemConcordancia(true)}" update="numeroSolicitacaoPanel"
+					oncomplete="PF('modalNumeroSolicitacaoWG').show();PF('modalImpressaoEtiquetaAmostraWG').hide();PF('modalConcordanciaWG').hide(); return false;"
+					process="@this"  icon="aghu-icons-16x16 aghu-icon-check-aghu"  styleClass="bt_cinza button-acao" />			  </aghu:linha>
+		  </p:dialog>
+		</p:outputPanel>
+	  </h:form>
+	</ui:define>
+  </ui:composition>
+</html>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_UNIDADES_FUNCIONAIS}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{unidadeFuncionalPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_UNID_FUNCIONAL}"> 
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_PESQ_CODIGO_UNID_FUNCIONAL}" value="#{unidadeFuncionalPaginatorController.codigoPesquisa}" size="4" maxlength="4" id="codigo"/>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_PESQ_DESCRICAO_UNID_FUNCIONAL}" value="#{unidadeFuncionalPaginatorController.descricaoPesquisa}" size="60" maxlength="60" style="text-transform:uppercase" id="descricao"/>  
+            <mec:inputText label="#{messages.LABEL_SIGLA}" title="#{messages.LABEL_SIGLA_HELP}" value="#{unidadeFuncionalPaginatorController.sigla}" size="10" maxlength="10" style="text-transform:uppercase" id="sigla"/>  
+            <mec:selectOneMenu enum="DominioSituacao" label="Situação" title="#{messages.TITLE_PESQ_ATIVO_UNID_FUNCIONAL}" value="#{unidadeFuncionalPaginatorController.situacaoPesquisa}" id="ativoInativo"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_ANDAR}" value="#{unidadeFuncionalPaginatorController.andar}" title="#{messages.TITLE_UNIDADE_FUNC_ANDAR}" maxlength="2" size="2" id="andar"/>           
+            <mec:selectOneMenu id="input_situacao" value="#{unidadeFuncionalPaginatorController.ala}" label="#{messages.LABEL_ALA_UNIDADE_FUNC}"> 
+               <f:converter converterId="baseEntityConverter" for="inputId"/>  
+               <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{unidadeFuncionalPaginatorController.getDominioAlas()}"/> 
+            </mec:selectOneMenu>              
+            <mec:suggestionBox label="#{messages.LABEL_CLINICA_UNIDADE_FUNC}" title="#{messages.TITLE_CLINICA}" descricaoInput="codigo" size="10" width="500" maxlength="20" descricaoLabel="descricao" required="false" suggestionAction="pesquisaClinicaSB" id="clinicaSB" controller="#{unidadeFuncionalPaginatorController}" value="#{unidadeFuncionalPaginatorController.clinicaPesquisa}"> 
+              <p:column>#{item.codigo}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox label="#{messages.LABEL_TIPO_UNID_PAI}" title="#{messages.TITLE_UNIDADE_FUNCIONAL_PAI}" descricaoInput="seq" size="10" width="500" maxlength="20" descricaoLabel="descricao" required="false" suggestionAction="pesquisaUnidades" id="sbUnidadePai" controller="#{unidadeFuncionalPaginatorController}" value="#{unidadeFuncionalPaginatorController.unidadeFuncionalPaiPesquisa}"> 
+              <p:column>#{item.seq}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{unidadeFuncionalPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{unidadeFuncionalPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" rendered="#{unidadeFuncionalPaginatorController.dataModel.pesquisaAtiva}" action="#{unidadeFuncionalPaginatorController.novo}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formUnidadesFuncionais"> 
+        <mec:serverDataTable id="tabelaAplicacoes" dataModel="dataModel" controller="#{unidadeFuncionalPaginatorController}"> 
+          <c:set var="item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false" width="50px;">            
+            <mec:commandLink id="tabelaAplicacoes_link_editar" profile="edit" title="editar" action="#{unidadeFuncionalPaginatorController.editar}"> 
+              <f:setPropertyActionListener for="command" target="#{unidadeFuncionalPaginatorController.unidade}" value="#{item}"/> 
+            </mec:commandLink>  
+             <mec:commandLink action="#{unidadeFuncionalPaginatorController.impressora}" title="#{messages.LABEL_CADASTRAR_IMPRESSORA}" styleClass=" silk-printer silk-icon"> 
+              <f:setPropertyActionListener target="#{impressoraPadraoUnidController.unidadeFuncional}" value="#{item}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaAplicacoes_link_remover" profile="delete" title="excluir" action="#{unidadeFuncionalPaginatorController.excluir}" disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"> 
+              <f:setPropertyActionListener for="command" target="#{unidadeFuncionalPaginatorController.unidade}" value="#{item}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column width="30px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.seq}"/> 
+          </p:column>  
+          <p:column width="100px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.descricao}"/> 
+          </p:column>  
+          <p:column width="70px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SIGLA}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.sigla}"/> 
+          </p:column>  
+          <p:column width="50px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.descricaoSituacao}"/> 
+          </p:column>  
+          <p:column width="100px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TIPO_UNID_PAI}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.unfSeq.descricao}"/> 
+          </p:column>  
+          <p:column width="100px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CLINICA_UNIDADE_FUNC}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.clinica.descricao}"/> 
+          </p:column>  
+          <p:column width="250px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CENTRO_CUSTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.centroCusto.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaCuidadosController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaCuidadosController}"/>  
+      <h:form id="formCuidado" prependId="false"> 
+        <aghu:panelGeral legend="#{messages.LABEL_CUIDADO_PESQUISAR}"> 
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_CUIDADO_CODIGO}" title="#{messages.TITLE_CUIDADO_CODIGO}" value="#{pesquisaCuidadosController.epeCuidados.seq}" maxlength="4" size="6"/>  
+            <mec:inputText removerCaratersEspeciais="false" style="text-transform:uppercase" label="#{messages.LABEL_CUIDADO_DESCRICAO}" title="#{messages.TITLE_CUIDADO_DESCRICAO}" value="#{pesquisaCuidadosController.epeCuidados.descricao}" maxlength="200" size="60"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_CUIDADO_PESQUISAR}" action="#{pesquisaCuidadosController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR_CAMPOS}" action="#{pesquisaCuidadosController.limpar}" profile="clear"/>  
+          <mec:commandButton id="bt_novo" rendered="#{pesquisaCuidadosController.exibirBtnNovo and mf:hasPermission(securityController,'manterCuidadoEnfermagem,alterar')}" value="#{messages.LABEL_NOVO}" action="#{pesquisaCuidadosController.incluirNovo}" profile="add"/> 
+        </aghu:acao>  
+        <mec:serverDataTable dataModel="dataModel" id="tabelaGrupos" controller="#{pesquisaCuidadosController}"> 
+          <c:set var="_grp" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column" exportable="false">
+            <mec:commandLink id="tabelaGrupos_link_editar" profile="edit" title="editar" action="#{pesquisaCuidadosController.editar}"> 
+              <f:setPropertyActionListener target="#{cadastroCuidadosController.seqEpeCuidado}" value="#{_grp.seq}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{pesquisaCuidadosController.epeCuidadosSelecionado}" value="#{_grp}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaGrupos_link_remover" profile="delete" title="excluir" action="#{pesquisaCuidadosController.excluir}">
+              <f:setPropertyActionListener for="command" target="#{pesquisaCuidadosController.epeCuidadosSelecionado}" value="#{_grp}"/> 
+            </mec:commandLink>  
+            <mec:commandLink
+            	id="imprimir" title="#{messages.LABEL_CUIDADO_IMPRIMIR}" 
+            	action="#{pesquisaCuidadosController.imprimir}" 
+            	rendered="#{mf:hasPermission(securityController,'visualizarRotinaDoCuidado,visualizar')}" 
+            	styleClass=" silk-printer silk-icon">
+                <f:setPropertyActionListener target="#{relatorioRotinaCuidadoController.seq}" value="#{_grp.seq}" for="command"/>
+            </mec:commandLink>
+          </p:column>  
+          <p:column style="white-space:nowrap;width:60px"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CUIDADO_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_grp.seq}"/> 
+          </p:column>  
+          <p:column style="white-space:nowrap;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CUIDADO_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{(_grp.descricao.length() gt 30)? fn:substring(_grp.descricao,0,27).concat('...') : _grp.descricao}" id="grpDescricao"/>  
+            <p:tooltip for="grpDescricao" rendered="#{_grp.descricao.length() gt 30}" id="grpDescricaoToolTip"> 
+              <h:outputText value="#{_grp.descricao}" id="grpDescricaoOutPutTextToolTip"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column style="width:350px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CUIDADO_DURACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_grp.tempo}"> 
+              <f:convertDateTime pattern="HH:mm:ss" type="time"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CUIDADO_ATIVO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_grp.indSituacao}"> 
+              <f:converter converterId="situacaoAtivoSimNaoConverter"/> 
+            </h:outputText> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

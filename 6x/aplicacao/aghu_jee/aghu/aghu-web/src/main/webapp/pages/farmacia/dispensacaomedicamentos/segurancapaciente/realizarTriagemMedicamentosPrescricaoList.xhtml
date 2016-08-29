@@ -1,0 +1,673 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_ALTERAR_DISPENSACAO_MEDICAMENTOS']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{realizarTriagemMedPrescrPaginatorController}" ignoreEnter="true"/>  
+      <script type="text/javascript" xml:space="preserve">		
+				var valorAlterado;
+				window.onload = function()
+				{
+					valorAlterado = #{realizarTriagemMedPrescrPaginatorController.tipoOcorAlterado};
+				}
+	  </script>  
+      <style xml:space="preserve">
+				.backGround-VERMELHO{
+					background-color: #FF3030;
+				}
+				.backGround-AMARELO{
+					background-color: #FFFF00;
+				}
+				.backGround-VERDE{
+					background-color: #99ff99;
+				}
+			</style>  
+      <script type="text/javascript" xml:space="preserve">	
+      /*
+      function onBlurOcorrencia(id) {
+			var obj = document.getElementById(id);
+			var inputDescricao = document.getElementById(obj.id.replace("idTipoOcorDispSelect","descTipoOcor"));
+			if (jQuery(obj).val() in ocorrencias) {
+				if (ocorrencias[jQuery(obj).val()].desc.length > 15) {
+					jQuery(inputDescricao).text(ocorrencias[jQuery(obj).val()].desc.substring(0,15).concat("..."));
+				} else {
+					jQuery(inputDescricao).text(ocorrencias[jQuery(obj).val()].desc);
+				}				
+				jQuery(inputDescricao).attr('title',ocorrencias[jQuery(obj).val()].desc);
+			} else {
+				jQuery(inputDescricao).text("");
+				jQuery(inputDescricao).attr('title',"");
+			}
+		}
+		function onBlurFarmacia(id) {
+			var obj = document.getElementById(id);
+			var inputDescricao = document.getElementById(obj.id.replace("idUnidFuncSelect","descUnf"));			
+			if (jQuery(obj).val() in farmacias) {				
+				if (farmacias[jQuery(obj).val()].sigla.length > 13) {
+					jQuery(inputDescricao).text(farmacias[jQuery(obj).val()].sigla.substring(0,13).concat("..."));
+				} else {
+					jQuery(inputDescricao).text(farmacias[jQuery(obj).val()].sigla);
+				}				
+				jQuery(inputDescricao).attr('title',farmacias[jQuery(obj).val()].desc);
+			} else {
+				jQuery(inputDescricao).text("");
+				jQuery(inputDescricao).attr('title',"");
+			}
+		}*/
+		function updatePanelInfoAdicional(seq) {
+			if (seq != null) {
+			jQuery(descricaoInformacaoGeracao).text(infoMdtos[seq].situacaoGeracao);
+			jQuery(descricaoMedPrescrito).text(infoMdtos[seq].descMdtoPrescrito);
+			jQuery(descricaoOutrasInformacoes).text(infoMdtos[seq].tipoUsoMdtoPrescrito);			
+			}
+		}
+    //<![CDATA[
+	    
+			var campoComFocus;
+			var splitName;
+			var posicaoAtual;
+			var proximaPosicao;
+			var posicaoOld = -1;
+			
+			function pressedUp(){
+				processaSplit();
+	      		proximaPosicao = posicaoAtual-1;
+	      		setFocus();
+			}
+			function pressedDown() {
+				processaSplit();
+	      		proximaPosicao = posicaoAtual+1;
+	      		setFocus();
+			}
+			
+			function setFocus() {
+				if (proximaPosicao > -1) {
+					var id = splitName[0] + ':' + splitName[1] + ':' + proximaPosicao + ':' + splitName[3];
+					var element = document.getElementById(id);
+					if (element != null) {
+						element.focus();	
+					}						
+				}
+			}
+			
+			function clickElements(clicked_id,seq){
+				
+				var idElement = clicked_id;
+				if(idElement.search("qtdeDispTriagem") != -1){
+					var linkToClick = idElement.replace("qtdeDispTriagem","textSigla");
+					var elementToClick = document.getElementById(linkToClick);						
+					elementToClick.click();
+				}
+				
+				if(idElement.search("idTipoOcorDispSelect") != -1){						
+					var linkToClick = idElement.replace("idTipoOcorDispSelect","textSigla");
+					var elementToClick = document.getElementById(linkToClick);
+					elementToClick.click();
+				}
+				
+				if(idElement.search("idUnidFuncSelect") != -1){						
+					var linkToClick = idElement.replace("idUnidFuncSelect","textSigla");
+					var elementToClick = document.getElementById(linkToClick);
+					elementToClick.click();
+				}
+				
+				if(idElement.search("link_editar:link") != -1){						
+					var linkToClick = idElement.replace("link_editar:link","textSigla");
+					var elementToClick = document.getElementById(linkToClick);
+					elementToClick.click();
+				}
+				
+				if(idElement.search("UnidadeSolicitante") != -1){						
+					var linkToClick = idElement.replace("UnidadeSolicitante","textSigla");
+					var elementToClick = document.getElementById(linkToClick);
+					elementToClick.click();
+				}
+				updatePanelInfoAdicional(seq);
+			}
+			function setrow(index) {
+				var element = document.getElementById('tabela_resultados:resultList:'+index+':qtdeDispTriagem');
+				element.focus();
+			}
+			
+			function setCampoComFocus(campo) {
+				campoComFocus = campo;
+				processaSplit();
+				posicaoOld = posicaoAtual;
+			}
+			function processaSplit() {
+				splitName = campoComFocus.id.split(':');
+	      	posicaoAtual = parseInt(splitName[2]);
+	      }		
+	
+		function onKeyPressFunction(Event) {
+		        tecla = Event.keyCode; // Internet Explorer
+	      	if(tecla == null || tecla == undefined) {
+	      		tecla = Event.which;
+		        }
+	      	if(tecla == 38) {	
+					pressedUp();
+		        }
+	      	if(tecla == 40) {
+	      		pressedDown();
+		        }
+			}
+		
+		function open_modal_aghweb_parecer(url, atdSeq, token, banco, formFmx) {
+	      var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+p_atd_seq=' + atdSeq + "+CG$STARTUP_MODE=RESTRICTED AUTO QUERY";
+	      if (atdSeq != null) {abrirJanelaModal(url,{parameters: {config: 'aghweb',form: formFmx,otherparams: otherParams},
+	          onClose: function() {
+	                   }
+	          });
+	      }
+	  }
+		
+		function setCampoComFocusComSelecao(campo, Event) {
+			if (!$(campo).is(':selected')){
+				campoComFocus = campo;
+				campo.click();
+				processaSplit();
+				posicaoOld = posicaoAtual;
+				setTimeout(function(){campo.select();}, 1);
+				clickElements(campo.id,null);
+			}
+			return false;
+		}
+
+		function replaceZeros(campo){
+			var tam = campo.value.length;
+			var posZero = campo.value.lastIndexOf('0');
+			var posVirg = campo.value.lastIndexOf(',');
+			while ((posZero == tam-1) && (posVirg != -1)){
+				campo.value = setCharAt(campo.value, posZero, '');
+				tam = campo.value.length;
+				if(posVirg == tam-1){
+					campo.value = setCharAt(campo.value, posVirg, '');
+					tam = campo.value.length;
+				}
+				posVirg = campo.value.lastIndexOf(',');
+				posZero = campo.value.lastIndexOf('0');
+			}
+		}
+
+		function setCharAt(str,index,chr) {
+		    if(index > str.length-1) return str;
+		    return str.substr(0,index) + chr + str.substr(index+1);
+		}
+
+	  // ]]>
+	  </script>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_ALTERAR_DISPENSACAO_MEDICAMENTOS}"> 
+          <aghu:linha> 
+            <aghu:panelGeral style="float: left; height: 47px; position: relative; top: 0px; width: 480px;"> 
+              <mec:inputNumero label="#{messages.LABEL_PRESCRICAO}" size="9" maxlengh="9" readonly="true" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.id.seq}" id="prescricao"/>  
+              <mec:inputTextData label="#{messages.LABEL_INICIO_VALIDADE}" readonly="true"  value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.dthrInicio}" id="dataInicio" tipo="datahora"/>  
+              <mec:inputTextData label="#{messages.LABEL_FIM_VALIDADE}" readonly="true" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.dthrFim}" id="dataFim" tipo="datahora"/>  
+              <mec:commandLink style="padding-top: 35px;" action="#{realizarTriagemMedPrescrPaginatorController.processaRegistroAnterior}" rendered="#{realizarTriagemMedPrescrPaginatorController.flagRegistroAnterior}" onclick="if(valorAlterado){PF('modalConfirmacaoOperacaoRegistroProximoWG').show();; return !valorAlterado;}" title="#{messages.LABEL_PRESCRICAO_ANTERIOR}" styleClass=" silk-date-back silk-icon"/>
+              <mec:commandLink disabled="true" rendered="#{!realizarTriagemMedPrescrPaginatorController.flagRegistroAnterior}"/> 
+              <mec:commandLink style="padding-top: 35px;" action="#{realizarTriagemMedPrescrPaginatorController.processaRegistroProximo}" rendered="#{realizarTriagemMedPrescrPaginatorController.flagRegistroProximo}" onclick="if(valorAlterado){PF('modalConfirmacaoOperacaoRegistroAnteriorWG').show();; return !valorAlterado;}" title="#{messages.LABEL_PROXIMA_PRESCRICAO}" styleClass=" silk-date-go silk-icon"/>  
+              <mec:commandLink disabled="true" rendered="#{!realizarTriagemMedPrescrPaginatorController.flagRegistroProximo}"/> 
+            </aghu:panelGeral>  
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" size="9" maxlengh="9" readonly="true" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.paciente.prontuario}" id="prontuario"/>  
+            <p:outputPanel id="panelPaciente" layout="block"> 
+              <p:tooltip  for="panelPaciente" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.paciente.nome}" direction="bottom-right" styleClass="tooltip" style="margin-left: -27%" layout="block"></p:tooltip>  
+              <mec:inputText label="#{messages.LABEL_PACIENTE}" size="46" maxlengh="50" readonly="true" style="text-transform:uppercase" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.paciente.nome}" id="nome"/> 
+            </p:outputPanel>  
+            <mec:inputText label="#{messages.LABEL_LEITO}" size="8" maxlength="14" readonly="true" styleclass="suggestion_input" style="text-transform:uppercase" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.leito.leitoID}" id="leito"/> 
+          </aghu:linha>  
+          <aghu:linha > 
+            <p:outputPanel id="panelConvenio" layout="block"> 
+              <p:tooltip  for="panelConvenio" value="#{realizarTriagemMedPrescrPaginatorController.convenioSaude.descricao}" direction="bottom-right" style="margin-left: -69%" styleClass="tooltip" layout="block"></p:tooltip>  
+              <mec:inputText label="#{messages.LABEL_CONVENIO}" size="32" maxlengh="49" readonly="true" styleclass="suggestion_input" style="text-transform:uppercase" value="#{realizarTriagemMedPrescrPaginatorController.convenioSaude.descricao}" id="convenio"/> 
+            </p:outputPanel>  
+            <mec:inputText label="#{messages.LABEL_PESO}" size="12" maxlengh="9" readonly="true" styleclass="suggestion_input" style="text-transform:uppercase" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.paciente.ultimoPesoFormatado}" id="peso"/>  
+            <mec:inputText label="#{messages.LABEL_IDADE}" size="23" maxlengh="30" readonly="true" styleclass="suggestion_input" style="text-transform:uppercase" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.paciente.idadeAnoMesFormat}" id="idade"/>  
+            <p:outputPanel id="panelEquipe" layout="block"> 
+              <p:tooltip  for="panelEquipe" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.servidor.pessoaFisica.nomeUsualOuNome}" direction="bottom-right" styleClass="tooltip" style="margin-left: -15%" layout="block" rendered="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.servidor.pessoaFisica.nomeUsualOuNome != null}"></p:tooltip>  
+              <mec:inputText label="#{messages.LABEL_EQUIPE}" size="68" maxlengh="50" readonly="true" value="#{realizarTriagemMedPrescrPaginatorController.prescricaoMedica.atendimento.servidor.pessoaFisica.nomeUsualOuNome}" id="equipe"/> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="btn_ocorrencias" value="#{messages.LABEL_OCORRENCIAS}" title="#{messages.LABEL_OCORRENCIAS}" immediate="true" onclick="if(valorAlterado){PF('modalConfirmacaoOperacaoBtnOcorrenciasWG').show();; return;}" action="#{realizarTriagemMedPrescrPaginatorController.ocorrencias()}" ajax="true" styleClass="bt_cinza"/>  
+          <mec:commandButton id="btn_situacao" value="#{messages.LABEL_SITUACAO}" title="#{messages.LABEL_SITUACAO}" immediate="true" onclick="if(valorAlterado){PF('modalConfirmacaoOperacaoBtnSituacaoWG').show();; return;}" action="#{realizarTriagemMedPrescrPaginatorController.situacao()}" ajax="true" styleClass="bt_cinza"/>  
+          <mec:commandButton id="btn_dispensar" value="#{messages.LABEL_DISPENSAR}" title="#{messages.LABEL_DISPENSAR}" immediate="true" onclick="if(valorAlterado){PF('modalConfirmacaoOperacaoBtnDispensarWG').show();; return;}" action="#{realizarTriagemMedPrescrPaginatorController.dispensar()}" ajax="true" styleClass="bt_cinza"/>  
+          <mec:commandButton value="#{messages.LABEL_LEGENDA_CORES}" immediate="true" onclick="PF('ModalLegendaCoresWG').show();" ajax="true" styleClass="bt_cinza"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel rendered="#{realizarTriagemMedPrescrPaginatorController.ativo}" layout="inline"> 
+        <h:form> 
+          <pe:remoteCommand name="editarTriagem"> 
+            <pe:assignableParam name="param1" assignTo="#{realizarTriagemMedPrescrPaginatorController.pmdAtdSeq}"/>  
+            <pe:assignableParam name="param2" assignTo="#{realizarTriagemMedPrescrPaginatorController.pmdSeq}"/>  
+            <pe:assignableParam name="param3" assignTo="#{realizarTriagemMedPrescrPaginatorController.medMatCodigo}"/>  
+            <pe:assignableParam name="param4" assignTo="#{realizarTriagemMedPrescrPaginatorController.seqp}"/> 
+          </pe:remoteCommand> 
+        </h:form>  
+        <h:form prependId="false" id="resultados"> 
+          <p:hotkey id="downKey" bind="up" handler="pressedUp();"/>  
+          <p:hotkey id="upKey" bind="down" handler="pressedDown();"/>  
+          <p:spacer height="7px"/>  
+          <aghu:panelGeral id="panelGeralTriagem" legend="#{messages.LABEL_TRIAGEM}"> 
+            <aghu:linha> 
+              <mec:serverDataTable scrollHeight="220" controller="#{realizarTriagemMedPrescrPaginatorController}" ajax="true" 
+              render="@(#descricaoMedPrescrito)" selection="mdtoSelecionado" id="tabela_resultados" 
+              list="#{realizarTriagemMedPrescrPaginatorController.listaTriagemModificada}" scrollable="true">         
+                <c:set var="_item" value="#{item}"/>  
+                <p:column width="3%" sortable="false" id="columnAcao" 
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}" 
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelEditar" width="20" layout="inline">
+                  	<mec:commandLink id="link_editar" requestDelay="100" onclick="editarTriagem('#{_item.itemPrescricaoMdto.id.pmdAtdSeq}', '#{_item.itemPrescricaoMdto.id.pmdSeq}', '#{_item.itemPrescricaoMdto.id.medMatCodigo}', '#{_item.itemPrescricaoMdto.id.seqp}'); if(valorAlterado){PF('modalConfirmacaoOperacaoEditarTriagemWG').show();; return !valorAlterado;}" action="#{realizarTriagemMedPrescrPaginatorController.editarTriagem()}" styleClass=" silk-table-gear silk-icon" ajax="true"/> 
+                  </p:outputPanel>
+                  <p:tooltip for="panelEditar" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{messages.LABEL_MOVIMENTO}"/> 
+                  </p:tooltip>  
+                </p:column>  
+                <p:column width="4%" sortable="false" id="columnMatCodigo"
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}"
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.medicamento.matCodigo}"/>                  
+                </p:column>  
+                <p:column width="25%" sortable="false" 
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}" id="columnMedicamento"
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_MEDICAMENTO}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelMedicamento" width="20" layout="inline">
+                  	<h:outputText value="#{_item.medicamento.getDescricaoEditadaTrunc(30)}"/>  
+                  	<p:tooltip for="panelMedicamento" value="#{_item.medicamento.getDescricaoEditadaTrunc(9999)}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                  </p:outputPanel>                 
+                </p:column>  
+                <p:column width="5%" sortable="false" 
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}" id="columnApres"
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_APRES}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelMedicamentoSigla" width="5" layout="inline">
+                  	<h:outputText id="textSigla" value="#{_item.medicamento.tipoApresentacaoMedicamento.sigla}"/>  
+                  	<p:tooltip for="panelMedicamentoSigla"  value="#{_item.medicamento.tipoApresentacaoMedicamento.siglaDescricao}" direction="bottom-right" styleClass="tooltip" layout="block"/>
+                  </p:outputPanel>                  
+                </p:column>  
+                <p:column width="5%" sortable="false" 
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}" id="columnQtdeSolic"
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_QTD_SOLIC}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.qtdeSolicitada}"> 
+                    <f:converter converterId="bigDecimalPrecisao4Converter"/> 
+                  </h:outputText>  
+                  <p:outputPanel id="outPanellinkExclamation" layout="inline"> 
+                    <mec:commandLink disabled="true" rendered="#{_item.saldoInsuficiente}" style="vertical-align:middle;" id="imagemSaldoInsuficiente" styleClass=" silk-exclamation silk-icon"/> 
+                  </p:outputPanel>  
+                  <p:tooltip for="outPanellinkExclamation" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_item.saldoInsuficiente}"> 
+                      <h:outputText value="#{messages.LABEL_INDISPONIVEL_ESTOQUE_REALIZAR_TRIAGEM}"/> 
+                   </p:tooltip>  
+                </p:column>  
+                <p:column width="5%" sortable="false" 
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}" id="columnQtdTriado"
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_QTD_TRIADA}"/> 
+                  </f:facet>  
+                 <p:inputText value="#{_item.qtdeDispensada}" 
+				title="#{messages.HINT_QTDE_DISPENSADA_TRIAGEM_MEDICAMENTOS}" 
+				                  
+				required="true" size="5" 
+				requiredMessage="#{messages.MSG_QTDE_DISPENSADA_OBRIGATORIA}" 
+				                  
+				id="qtdeDispTriagem" autocomplete="off" 
+				converter="#{bigDecimalPrecisao4Converter}"                 
+				onfocus="setCampoComFocus(this); setCampoComFocusComSelecao(this, event);"
+				onblur="replaceZeros(this);"
+				onkeyup="onKeyPressFunction(event);">
+				</p:inputText> 
+                </p:column>  
+                <p:column width="20%" sortable="false" 
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}" id="columnOcorrencia"
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_OCORRENCIA}"/> 
+                  </f:facet>  
+                  <p:inputText value="#{_item.seqAfaTipoOcorSelecionada}" 
+                  id="idTipoOcorDispSelect"
+                  size="2" maxlength="3" 
+                  styleClass="numerico" 
+                  autocomplete="off"
+                  onfocus="setCampoComFocus(this); setCampoComFocusComSelecao(this, event);"
+				  onblur="replaceZeros(this);"
+				  onkeyup="onKeyPressFunction(event);"> 
+				  	
+                	<p:ajax event="change" process="@this" update="@(#descTipoOcor) outPanelDescTipoOcor" listener="#{realizarTriagemMedPrescrPaginatorController.processaAfaOcorDispSelecao(_item)}"/> 
+				  
+                  </p:inputText>  
+                  <mec:commandLink onclick="PF('modalLegendaTipoOcorrenciaWG').show();" style="background-position:bottom center; height:9px" styleClass=" silk-lista-consultar silk-icon" ajax="true"/>  
+                  <p:outputPanel id="outPanelDescTipoOcor" style="overflow:hidden;" layout="inline"> 
+                    <h:outputText value="#{_item.tipoOcorrenciaDispensacao.getDescricaoTrunc(15)}" rendered="#{not empty _item.seqAfaTipoOcorSelecionada}" id="descTipoOcor"/> 
+                  	<p:tooltip for="outPanelDescTipoOcor" value="#{_item.tipoOcorrenciaDispensacao.seqEDescricao}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                  </p:outputPanel>                
+                </p:column>  
+                <p:column width="20%" sortable="false" 
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}" id="columnFarmacia"
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_FARMACIA}"/> 
+                  </f:facet>  
+                  <p:inputText value="#{_item.seqUnidadeFuncionalSelecionada}" 
+                  id="idUnidFuncSelect" 
+                  size="2" maxlength="3" 
+                  styleClass="numerico" 
+                  autocomplete="off"
+                  onfocus="setCampoComFocus(this); setCampoComFocusComSelecao(this, event);"
+				  onblur="replaceZeros(this);"
+				  onkeyup="onKeyPressFunction(event);"> 
+                  </p:inputText>  
+                  <mec:commandLink onclick="PF('modalLegendaUnfWG').show();" 
+                  style="background-position:bottom center; height:9px" 
+                  styleClass=" silk-lista-consultar silk-icon" ajax="true"/>  
+                  <p:outputPanel id="outPanelDescUnf" layout="inline">  
+                    <h:outputText value="#{_item.unidadeFuncional.getDescricaoTrunc(15)}" id="descUnf" rendered="#{_item.unidadeFuncional != null}"/> 
+                 	<p:tooltip for="outPanelDescUnf" value="#{_item.unidadeFuncional.seqEDescricao}" direction="bottom-right" styleClass="tooltip" layout="block"/>
+                  </p:outputPanel> 
+                </p:column>  
+                <p:column width="15%" sortable="false" 
+                styleClass="#{realizarTriagemMedPrescrPaginatorController.processaCorLinhaTriagem(_item)}" id="situacaoItens"
+                style="background-color:#{_item.corSituacaoItemPrescrito.hexadecimal}"> 
+                  <f:facet name="header"> 
+                    <h:outputText styleClass="headerText" value="#{messages.LABEL_SITUACAO}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="outPanelIndSituacoes" layout="inline"> 
+                    <ui:repeat value="#{_item.indSituacoes}" var="varSit">
+                      <p:outputPanel layout="inline" id="outputBotao"> 
+                        <mec:commandLink disabled="true" rendered="#{!varSit.clicavel}" styleClass=" #{varSit.endImagem} silk-icon"/>  
+                        <mec:commandLink rendered="#{varSit.clicavel and !varSit.equals(varSit.valueOf('DISPENSADO_HABILITADO'))}"
+                        	action="#{realizarTriagemMedPrescrPaginatorController.processaSelecaoIndSituacao(_item, varSit.indSituacaoAssociado)}"
+                        	oncomplete="valorAlterado = true;"
+                        	styleClass=" #{varSit.endImagem} silk-icon"
+                        	ajax="true"
+                        	render="panelGeralTriagem, outPanelIndSituacoes, btn_gravar"
+                        	process="@this"/>  
+                        <mec:commandLink rendered="#{varSit.clicavel and varSit.equals(varSit.valueOf('DISPENSADO_HABILITADO'))}"
+                        	onclick="if(valorAlterado){PF('modalConfirmacaoOperacaoBtnDispensarWG').show();; return;}"
+                        	action="#{realizarTriagemMedPrescrPaginatorController.dispensar}"
+                        	immediate="true"
+                        	styleClass=" #{varSit.endImagem} silk-icon"
+                        	ajax="true"/> 
+                      </p:outputPanel> 
+                      <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" for="outputBotao"> 
+                        <h:outputText value="#{varSit.label}"/> 
+                      </p:tooltip>
+                    </ui:repeat> 
+                  </p:outputPanel>  
+                  
+                </p:column> 
+              </mec:serverDataTable>  
+              <br clear="none"/> 
+            </aghu:linha>
+           <p:outputPanel id="descricaoMedPrescrito">  
+           <h:panelGrid columns="2"> 
+              <p:column style="border: none" > 
+              <p:outputPanel layout="block" style="border: 1px solid gray; height: 70px; overflow-y: auto; padding: 3px 5px; width: 791px;">               
+                  <h:outputText value="#{realizarTriagemMedPrescrPaginatorController.mdtoSelecionado.indSitItemPrescrito.descricao}" id="descSitItem"/>  
+                  <br/>
+                  <h:outputText value="#{realizarTriagemMedPrescrPaginatorController.mdtoSelecionado.descricaoMedicamentoPrescrito}" id="descMedPres" />                
+              </p:outputPanel>
+              </p:column>  
+              <p:column valign="top" style="border: none"> 
+                <mec:commandButton id="btn_selecionar_todos_itens" value="#{messages.LABEL_TRIAR_TODOS_ITENS}" onclick="PF('modalConfirmacaoOperacaoTriarTodosOsItensWG').show();" ajax="true" styleClass="bt_cinza"/> 
+              </p:column> 
+            </h:panelGrid> 
+           </p:outputPanel>
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="btn_gravar" value="#{messages.LABEL_GRAVAR}" hint="#{messages.HINT_DADOS_TRIAGEM}" rendered="#{realizarTriagemMedPrescrPaginatorController.listaTriagemModificada.size() gt 0}" block="true" action="#{realizarTriagemMedPrescrPaginatorController.gravar}" profile="ok"/>  
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" title="#{messages.LABEL_VOLTAR}" immediate="true" onclick="if(valorAlterado){PF('modalConfirmacaoOperacaoCancelButtonWG').show();; return;}" action="#{realizarTriagemMedPrescrPaginatorController.cancelar}" styleClass=" alinha-direita bt_cinza" ajax="true" profile="back"/> 
+          </aghu:acao> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:dialog id="modalLegendaTipoOcorrencia" style="text-align:center;" 
+      height="300" resizeable="false" moveable="false" width="400" zindex="2000" 
+      modal="true" resizable="false" widgetVar="modalLegendaTipoOcorrenciaWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_OCORRENCIAS}"/> 
+        </f:facet>  
+        <br clear="none"/>  
+        <aghu:linha> 
+          <p:outputPanel layout="block" style="width:380px;" > 
+            <mec:serverDataTable list="#{realizarTriagemMedPrescrPaginatorController.tiposOcorDispensacao}" scrollable="true"> 
+              <c:set var="_var" value="#{item}"/>  
+              <p:column width="40"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_var.seq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_var.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </aghu:linha>  
+        <br clear="none"/>  
+        <h:form>
+        <aghu:linha> 
+          <mec:commandButton id="closeModalLegendaTipoOcorrencia" value="#{messages.LABEL_FECHAR}" onclick="PF('modalLegendaTipoOcorrenciaWG').hide();" styleClass="bt_fechar silk-application-form-delete bt_cinza" ajax="true"/> 
+        </aghu:linha> 
+        </h:form>
+      </p:dialog>  
+      <p:dialog id="modalLegendaUnf" style="text-align:center;" 
+      height="300" resizeable="false" moveable="false" width="400" 
+      zindex="2000" modal="true" resizable="false" widgetVar="modalLegendaUnfWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_FARMACIAS}"/> 
+        </f:facet>  
+        <br clear="none"/>  
+        <aghu:linha> 
+          <p:outputPanel layout="block" style="width:380px;" > 
+            <mec:serverDataTable list="#{realizarTriagemMedPrescrPaginatorController.farmacias}" 
+            scrollable="true"> 
+              <c:set var="_var" value="#{item}"/>  
+              <p:column width="40"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_var.seq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_var.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </aghu:linha>  
+        <br clear="none"/>  
+      <h:form>
+        <aghu:linha> 
+          <mec:commandButton id="closemodalLegendaUnf" value="#{messages.LABEL_FECHAR}" onclick="PF('modalLegendaUnfWG').hide();" styleClass="bt_fechar silk-application-form-delete bt_cinza" ajax="true"/> 
+        </aghu:linha> 
+      </h:form>
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoOperacaoRegistroProximo" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoOperacaoRegistroProximoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO_TRIAGEM_MEDICAMENTOS} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponente_1"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacao_2" value="#{messages.LABEL_SIM}" action="#{realizarTriagemMedPrescrPaginatorController.processaRegistroProximo}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_operacao_proximoReg" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoOperacaoRegistroProximoWG').hide(); return false;" profile="cancel"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoOperacaoRegistroAnterior" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoOperacaoRegistroAnteriorWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO_TRIAGEM_MEDICAMENTOS} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponente_2"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacao_4" value="#{messages.LABEL_SIM}" action="#{realizarTriagemMedPrescrPaginatorController.processaRegistroAnterior}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_operacao_anteriorReg" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoOperacaoRegistroAnteriorWG').hide();return false;" profile="cancel"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoOperacaoCancelButton" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoOperacaoCancelButtonWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:outputText value="#{messages.MENSAGEM_PENDENCIAS_ALTERACAO}"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponenteCancelButton"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacaoCancelButton" value="#{messages.LABEL_SIM}" action="#{realizarTriagemMedPrescrPaginatorController.cancelar}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_operacaoCancelButton" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoOperacaoCancelButtonWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="ModalLegendaCores" height="290" top="100" resizeable="false" moveable="false" width="350" zindex="2300" modal="true" widgetVar="ModalLegendaCoresWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_LEGENDA_CORES}"/> 
+        </f:facet>  
+        <aghu:linha style="width: 330px;"> 
+          <mec:serverDataTable style="width: 100px;" tableStyle="width: 100px;" list="#{realizarTriagemMedPrescrPaginatorController.dominioCoresSituacaoItemPrescrito}" scrollable="true"> 
+            <c:set var="_item" value="#{item}"/>  
+            <p:column style="background-color: #{_item.hexadecimal}; width:10px">
+            </p:column>  
+            <p:column> 
+              <h:outputText value="#{_item.legenda}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </aghu:linha> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoOperacaoTriarTodosOsItens" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoOperacaoTriarTodosOsItensWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_CONFIRMAR_TRIAR_TODOS_ITENS}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.CONFIRMAR_TRIAR_TODOS_ITENS} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponente_7"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacao_9" value="#{messages.LABEL_SIM}" action="#{realizarTriagemMedPrescrPaginatorController.triarTodosItens}" immediate="true" ignoreDupResponses="true" ajaxSingle="true" reRender="situacaoItens, outPanelIndSituacoes, situacaoItens" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_operacao_10" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoOperacaoTriarTodosOsItensWG').hide();return false;" profile="cancel"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoOperacaoBtnOcorrencias" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoOperacaoBtnOcorrenciasWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:outputText value="#{messages.MENSAGEM_PENDENCIAS_ALTERACAO}"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponenteBtnOcorrencias"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacaoBtnOcorrencias" value="#{messages.LABEL_SIM}" action="#{realizarTriagemMedPrescrPaginatorController.ocorrencias}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_operacaoBtnOcorrencias" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoOperacaoBtnOcorrenciasWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoOperacaoBtnSituacao" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoOperacaoBtnSituacaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:outputText value="#{messages.MENSAGEM_PENDENCIAS_ALTERACAO}"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponenteBtnSituacao"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacaoBtnSituacao" value="#{messages.LABEL_SIM}" action="#{realizarTriagemMedPrescrPaginatorController.situacao}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_operacaoBtnSituacao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoOperacaoBtnSituacaoWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoOperacaoBtnDispensar" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoOperacaoBtnDispensarWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:outputText value="#{messages.MENSAGEM_PENDENCIAS_ALTERACAO}"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponenteBtnDispensar"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacaoBtnDispensar" value="#{messages.LABEL_SIM}" action="#{realizarTriagemMedPrescrPaginatorController.dispensar}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_operacaoBtnDispensar" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoOperacaoBtnDispensarWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoOperacaoEditarTriagem" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoOperacaoEditarTriagemWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:outputText value="#{messages.MENSAGEM_PENDENCIAS_ALTERACAO}"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalOperacaoComponenteEditarTriagem"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_executar_operacaoEditarTriagem" value="#{messages.LABEL_SIM}" action="#{realizarTriagemMedPrescrPaginatorController.editarTriagem}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_operacaoEditarTriagem" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoOperacaoEditarTriagemWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

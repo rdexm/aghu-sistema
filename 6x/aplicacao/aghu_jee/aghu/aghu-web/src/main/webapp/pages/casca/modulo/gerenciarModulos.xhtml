@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.CASCA_LABEL_GERENCIAR_MODULOS_AGHU} :: CASCA - MEC</title> 
+    </ui:define>  
+    
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{gerenciarModulosPaginatorController.pesquisar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{gerenciarModulosPaginatorController}"/>  
+      <aghu:panelGeral legend="#{messages.CASCA_LABEL_GERENCIAR_MODULOS_AGHU}"> 
+        <h:form prependId="false" id="formGerenciarModulos"> 
+          <mec:serverDataTable id="tabelaGerenciarModulos" dataModel="dataModel" controller="#{gerenciarModulosPaginatorController}"> 
+            <c:set var="_moduloVO" value="#{item}"/>  
+            <p:column style="white-space:nowrap !important; width:300px;" sortable="true" sortBy="#{_moduloVO.nome}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.CASCA_LABEL_MODULO}"/> 
+              </f:facet>  
+              <mec:commandLink action="#{gerenciarModulosPaginatorController.pesquisarPermissoes}"> 
+                <h:outputText value="#{_moduloVO.modulo.nome}"/>  
+                <f:setPropertyActionListener target="#{gerenciarModulosPaginatorController.modulo}" value="#{_moduloVO.modulo}" for="command"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column sortable="true" sortBy="#{_moduloVO.descricao}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.CASCA_LABEL_DESCRICAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_moduloVO.modulo.descricao}"/> 
+            </p:column>  
+            <p:column style="white-space:nowrap !important; width:150px;" sortable="true" sortBy="#{_moduloVO.aplicacao.nome}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.CASCA_LABEL_APLICACAO}"/> 
+              </f:facet>  
+              <h:outputText id="nomeAplicacao" value="#{_moduloVO.modulo.aplicacao.nome}"/>  
+              <p:tooltip for="nomeAplicacao" style="width:750px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{messages.CASCA_LABEL_NOME}: #{_moduloVO.modulo.aplicacao.nome}" style="white-space:nowrap;"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.CASCA_LABEL_DESCRICAO}: #{_moduloVO.modulo.aplicacao.descricao}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.CASCA_LABEL_SERVIDOR}: #{_moduloVO.modulo.aplicacao.servidor}" style="white-space:nowrap;"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.CASCA_LABEL_PORTA}: #{_moduloVO.modulo.aplicacao.porta}" style="white-space:nowrap;"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.CASCA_LABEL_PROTOCOLO}: #{_moduloVO.modulo.aplicacao.protocolo}" style="white-space:nowrap;"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.CASCA_LABEL_CONTEXTO}: #{_moduloVO.modulo.aplicacao.contexto}" style="white-space:nowrap;"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.CASCA_LABEL_EXTERNO}: "/>  
+                <h:outputText value="#{_moduloVO.modulo.aplicacao.externo?messages.LABEL_SIM:messages.LABEL_NAO}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.CASCA_LABEL_URL_BASE}: #{_moduloVO.modulo.aplicacao.urlInicial}" style="white-space:nowrap;"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column style="white-space:nowrap !important; width:60px;" sortable="true" sortBy="#{_moduloVO.ativo}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.CASCA_LABEL_ATIVO}"/> 
+              </f:facet>  
+              <h:selectBooleanCheckbox id="cbAtivo" value="#{_moduloVO.modulo.ativo}" style="float: left;" layout="lineDirection" readonly="#{_moduloVO.readOnly}" disabled="#{_moduloVO.readOnly}" onchange="PF('modalConfirmacaoWG').show();"> 
+                <p:ajax event="click" process="@this" listener="#{gerenciarModulosPaginatorController.setIdSitModulo(_moduloVO.modulo.id, _moduloVO.modulo.ativo)}"/> 
+              </h:selectBooleanCheckbox>  
+              <p:tooltip for="cbAtivo" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not _moduloVO.atualizado and not _moduloVO.readOnly}"> 
+                <h:outputText value="#{messages.CASCA_MENSAGEM_CONFIRMACAO_ATIVACAO_MODULO}"/> 
+              </p:tooltip>  
+              <p:tooltip for="cbAtivo" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_moduloVO.readOnly}"> 
+                <h:outputText value="#{messages.CASCA_MENSAGEM_MODULO_READ_ONLY}"/> 
+              </p:tooltip> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </h:form> 
+      </aghu:panelGeral>  
+      <p:dialog id="modalConfirmacao" width="400" height="120" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.CASCA_LABEL_ALERTA}"/> 
+        </f:facet> #{messages.CASCA_MENSAGEM_CONFIRMACAO_ATIVACAO_MODULO} #{messages.CASCA_MENSAGEM_CERTEZA_ATIVACAO_MODULO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalConfirmacao"> 
+            <mec:commandButton id="bt_confirmar" value="#{messages.LABEL_SIM}" onclick="PF('modalConfirmacaoWG').hide();" action="#{gerenciarModulosPaginatorController.salvar}" profile="ok"/>  
+            <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoWG').hide();" action="#{gerenciarModulosPaginatorController.cancelar}" render="tabelaGerenciarModulos" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

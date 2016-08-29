@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['LABEL_CONS_SIT_DISP_MDTOS']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{medicamentosDispensacaoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{medicamentosDispensacaoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages['LABEL_CONS_SIT_DISP_MDTOS']}"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_LEITO}" size="7" maxlength="14" readonly="true" styleclass="suggestion_input" style="text-transform:uppercase" value="#{medicamentosDispensacaoPaginatorController.consultaDispensacaoMedicamentos.leito}" id="leito"/>  
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" size="9" maxlengh="9" readonly="true" value="#{medicamentosDispensacaoPaginatorController.consultaDispensacaoMedicamentos.prontuario}" id="prontuario"/>  
+              <p:tooltip  for="prontuario" direction="bottom-right" styleClass="tooltip" layout="block">  
+                <h:outputText  value="#{medicamentosDispensacaoPaginatorController.consultaDispensacaoMedicamentos.nome}"/> 
+              </p:tooltip>  
+              <mec:inputText label="#{messages.LABEL_NOME}" size="45" maxlengh="45" readonly="true" styleclass="suggestion_input" style="text-transform:uppercase" value="#{medicamentosDispensacaoPaginatorController.consultaDispensacaoMedicamentos.getNomeTrunc(45)}" id="nome"/> 
+            <mec:inputText label="#{messages.LABEL_ORIGEM_PRESCRICAO}" readonly="true" value="#{medicamentosDispensacaoPaginatorController.consultaDispensacaoMedicamentos.origem}" size="13" maxlengh="13" id="origem"/>  
+            <mec:inputNumero label="#{messages.LABEL_PRESCRICAO}" readonly="true" value="#{medicamentosDispensacaoPaginatorController.consultaDispensacaoMedicamentos.numeroPrescricao}" size="18" maxlengh="18" id="prescricao"/>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_INICIO_CONSULTA_SITUACAO_DISPENSACAO_MEDICAMENTO}" readonly="true" size="17" value="#{medicamentosDispensacaoPaginatorController.consultaDispensacaoMedicamentos.dataInicio}" id="dataInicio" tipo="datahora"/>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_FIM_CONSULTA_SITUACAO_DISPENSACAO_MEDICAMENTO}" readonly="true" size="17" value="#{medicamentosDispensacaoPaginatorController.consultaDispensacaoMedicamentos.dataFim}" id="dataFim" tipo="datahora"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{medicamentosDispensacaoPaginatorController.voltar}" profile="back"/> 
+        </aghu:acao>  
+        <mec:serverDataTable value="#{medicamentosDispensacaoPaginatorController}" dataModel="dataModel" id="tabelaMedicamentosDispensacao" controller="#{medicamentosDispensacaoPaginatorController}"> 
+          <c:set var="_mdtosDispensacao" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="historico" title="#{messages.LABEL_HISTORICO}" action="#{medicamentosDispensacaoPaginatorController.encaminharHistorico}" styleClass=" silk-clock silk-icon"> 
+              <f:setPropertyActionListener target="#{medicamentosDispensacaoPaginatorController.dispensacaoMedicamentosVOSelecionado}" value="#{_mdtosDispensacao}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="movimento" title="#{messages.LABEL_MOVIMENTO}" action="#{medicamentosDispensacaoPaginatorController.encaminharMovimento}" rendered="#{medicamentosDispensacaoPaginatorController.seqPrescricaoNaoEletronica eq null and (!mf:hasPermission(securityController, 'farmacia,somenteLeitura'))}" styleClass=" silk-table-gear silk-icon"> 
+              <f:setPropertyActionListener target="#{medicamentosDispensacaoPaginatorController.dispensacaoMedicamentosVOSelecionado}" value="#{_mdtosDispensacao}" for="command"/> 
+            </mec:commandLink>  
+            <h:outputText value="#{medicamentosDispensacaoPaginatorController.prescricaoMedica.atendimento.seq}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DISPENSACAO_MDTOS}"/> 
+            </f:facet>  
+            <p:outputPanel id="panelDispensacaoMdtos">
+            <h:outputText value="#{_mdtosDispensacao.getDescricaoEditTrunc(25)}"/>  
+            <p:tooltip for="panelDispensacaoMdtos" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_mdtosDispensacao.descricaoEdit != null}"> 
+              <h:outputText value="#{_mdtosDispensacao.descricaoEdit}"/> 
+            </p:tooltip> 
+          </p:outputPanel>
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_APRESENTACAO_CONSULTA_SITUACAO_DISPENSACAO_MEDICAMENTO}"/> 
+            </f:facet>  
+            <p:outputPanel id="panelApresentacao">
+            <h:outputText value="#{_mdtosDispensacao.getTprSiglaTrunc(25)}"/>  
+            <p:tooltip for="panelApresentacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{_mdtosDispensacao.tprSigla}"/>  
+              <h:outputText value=" - "/>  
+              <h:outputText value="#{_mdtosDispensacao.descricaoSigla}"/> 
+            </p:tooltip> 
+            </p:outputPanel>
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PRESCRICAO}"/> 
+            </f:facet>  
+            <p:outputPanel id="panelPrescricao">
+            <h:outputText value="#{_mdtosDispensacao.getDescricaoTrunc(25)}"/>  
+            <p:tooltip for="panelPrescricao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{_mdtosDispensacao.getDescricao()}"/> 
+            </p:tooltip> 
+            </p:outputPanel>
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_QTDE_SOLICITADA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_mdtosDispensacao.qtdeSolicitadaDispensacao}"> 
+              <f:converter converterId="bigDecimalPrecisao4Converter"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_QTDE_DISPENSADA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_mdtosDispensacao.qtdeDispensadaDispensacao}"> 
+              <f:converter converterId="bigDecimalPrecisao4Converter"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_OCORRENCIA}"/> 
+            </f:facet> 
+            <p:outputPanel id="panelOcorrencia"> 
+            <h:outputText value="#{_mdtosDispensacao.getCodigoDescricaoTipoOcorrenciaTrunc(24)}"/>  
+            <p:tooltip for="panelOcorrencia" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_mdtosDispensacao.codigoDescricaoTipoOcorrencia != ''}"> 
+              <h:outputText value="#{_mdtosDispensacao.getCodigoDescricaoTipoOcorrencia()}"/> 
+            </p:tooltip>
+            </p:outputPanel> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_FARMACIA}"/> 
+            </f:facet> 
+            <p:outputPanel id="panelFarmacia"> 
+            <h:outputText value="#{_mdtosDispensacao.getCodigoDescricaoUnidadeFuncionalTrunc(30)}"/>  
+            <p:tooltip for="panelFarmacia" direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{_mdtosDispensacao.getCodigoDescricaoUnidadeFuncional()}"/> 
+            </p:tooltip>
+            </p:outputPanel> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet> 
+            <p:outputPanel id="panelSituacao"> 
+            <h:outputText value="#{_mdtosDispensacao.situacaoDispensacao}"/>  
+            <p:tooltip for="panelSituacao" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{_mdtosDispensacao.nomeTriadoPor != null ||          _mdtosDispensacao.nomeDispensadoPor != null ||         _mdtosDispensacao.nomeConferidoPor != null ||         _mdtosDispensacao.nomeEntreguePor != null}"> 
+              <p:outputPanel rendered="#{_mdtosDispensacao.nomeTriadoPor != null}" layout="inline"> 
+                <h:outputText value="#{messages.LABEL_TRIADO_POR}:"/>  
+                <h:outputText value="#{_mdtosDispensacao.nomeTriadoPor}"/>  
+                <h:outputText value="#{_mdtosDispensacao.dataTriadoPor}" isDate="true"/>  
+                <br clear="none"/> 
+              </p:outputPanel>  
+              <p:outputPanel rendered="#{_mdtosDispensacao.nomeDispensadoPor != null}" layout="inline"> 
+                <h:outputText value="#{messages.LABEL_DISPENSADO_POR}:"/>  
+                <h:outputText value="#{_mdtosDispensacao.nomeDispensadoPor}"/>  
+                <h:outputText value="#{_mdtosDispensacao.dataDispensadoPor}" isDate="true"/>  
+                <br clear="none"/> 
+              </p:outputPanel>  
+              <p:outputPanel rendered="#{_mdtosDispensacao.nomeConferidoPor != null}" layout="inline"> 
+                <h:outputText value="#{messages.LABEL_CONFERIDA_POR}:"/>  
+                <h:outputText value="#{_mdtosDispensacao.nomeConferidoPor}"/>  
+                <h:outputText value="#{_mdtosDispensacao.dataConferidoPor}" isDate="true"/>  
+                <br clear="none"/> 
+              </p:outputPanel>  
+              <p:outputPanel rendered="#{_mdtosDispensacao.nomeEntreguePor != null}" layout="inline"> 
+                <h:outputText value="#{messages.LABEL_ENTREGUE_POR}:"/>  
+                <h:outputText value="#{_mdtosDispensacao.nomeEntreguePor}"/>  
+                <h:outputText value="#{_mdtosDispensacao.dataEntreguePor}" isDate="true"/> 
+              </p:outputPanel> 
+            </p:tooltip> 
+           </p:outputPanel>
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

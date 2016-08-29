@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <h:form prependId="false" id="formCirRealizada"> 
+      <aghu:panelGeral> 
+        <aghu:linha> 
+          <mec:selectOneMenu id="tipoAnestesia" label="#{messages.LABEL_TECNICA_ANESTESICA_SEDACAO}" title="#{messages.TITLE_TECNICA_ANESTESICA_SEDACAO}" 
+          style="width:220px !important;" items="#{descricaoCirurgicaCirRealizadaController.listaTipoAnestesia}" itemLabel="descricao" value="#{descricaoCirurgicaCirRealizadaController.tipoAnestesia}" 
+          readonly="#{descricaoCirurgicaController.isShowNotaAdicional()}"> 
+			<p:ajax event="change" update="@(#tabs-3)" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarTipoAnestesia}"/>
+          </mec:selectOneMenu>  
+          <mec:selectOneRadio label="#{messages.LABEL_CARATER}" title="#{messages.TITLE_CARATER_ABA_CIR_REAL}" enum="DominioCaraterCirurgia" 
+          value="#{descricaoCirurgicaCirRealizadaController.dominioCaraterCirurgia}" readonly="#{descricaoCirurgicaController.isShowNotaAdicional()}" 
+          id="dominioCaraterCirurgia"> 
+            <p:ajax event="change" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarDominioCaraterCirurgia}"/> 
+          </mec:selectOneRadio> 
+        </aghu:linha> 
+      </aghu:panelGeral>  
+      <p:outputPanel id="panelAtoCirurgico" layout="inline"> 
+        <aghu:panelGeral id="ffdl_atoCirurgico" legend="#{messages.LABEL_ATO_CIRURGICO}"> 
+          <aghu:linha> 
+			<mec:field id="procedimentoSugeridoField"
+        		label="#{messages.LABEL_PROCEDIMENTO_SUGERIDO}" title="#{messages.TITLE_PROCEDIMENTO_SUGERIDO}"
+        		posicaoLabel="acima" readonly="#{descricaoCirurgicaController.isShowNotaAdicional()}" 
+        		escape="true">        		
+				<p:selectOneMenu id="procedimentoSugerido" 
+        			label="#{messages.LABEL_PROCEDIMENTO_SUGERIDO}" title="#{messages.TITLE_PROCEDIMENTO_SUGERIDO}"
+					styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+					style="width:320px !important;" value="#{descricaoCirurgicaCirRealizadaController.procedCirurVO}"
+					disabled="#{descricaoCirurgicaController.isShowNotaAdicional()}">
+						<f:converter converterId="baseEntityConverter" />
+						<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+						<f:selectItems var="item" itemLabel="#{item.descricao}"  value="#{descricaoCirurgicaCirRealizadaController.listaProcedimentos}" itemValue="#{item}" />
+						<p:ajax event="change" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarProcedimentoCirurgico()}" update="@(#panelAtoCirurgico) @(#procDescricoes)"/>
+				</p:selectOneMenu>
+			</mec:field>
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="panelProcedimentoCirurgico" layout="inline"> 
+              <mec:suggestionBox id="suggestionProcedCirur" styleClassField="frm_obrigatorio" label="#{messages.LABEL_PROCEDIMENTO}" title="#{messages.TITLE_PROCEDIMENTO_CIR_LISTA_CIRUR}" 
+              size="10" descricaoLimite="30" maxlength="45" width="800" disabled="false" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarProcedimentoCirurgicos" 
+              posSelectionAction="changeProcedimentoCirurgicos" posDeleteAction="changeProcedimentoCirurgicos" readonly="#{descricaoCirurgicaController.isShowNotaAdicional()}" 
+              controller="#{descricaoCirurgicaCirRealizadaController}" value="#{descricaoCirurgicaCirRealizadaController.procedCirurgico}" render="panelAtoCirurgico,procDescricoes"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{item.seq}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{item.descricao}"/> 
+                </p:column> 
+              </mec:suggestionBox>  
+            </p:outputPanel> 
+          </aghu:linha>  
+          <p:outputPanel rendered="#{not empty descricaoCirurgicaCirRealizadaController.procDescricoes}" layout="inline"> 
+            <aghu:linha> 
+				<mec:serverDataTable id="procDescricoes" controller="descricaoCirurgicaCirRealizadaController" list="#{descricaoCirurgicaCirRealizadaController.procDescricoes}" scrollable="true" scrollHeight="100"> 
+				  <c:set var="_item" value="#{item}"/>  
+				  <p:column> 
+				    <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+				    <mec:commandLink id="deleteProcDesc" title="#{messages.LABEL_EXCLUIR}" requestDelay="1000" ignoreDupResponses="true" eventsQueue="filaDelete" 
+				    rendered="#{!descricaoCirurgicaController.isShowNotaAdicional()}"
+				    action="#{descricaoCirurgicaCirRealizadaController.excluirAtoCirurgico}" render="panelAtoCirurgico" 
+				    profile="delete" ajax="true" process="@this"> 
+				      <f:setPropertyActionListener target="#{descricaoCirurgicaCirRealizadaController.dcgCrgSeqExc}" value="#{_item.id.dcgCrgSeq}" for="command"/>  
+				      <f:setPropertyActionListener target="#{descricaoCirurgicaCirRealizadaController.dcgSeqpExc}" value="#{_item.id.dcgSeqp}" for="command"/>  
+				      <f:setPropertyActionListener target="#{descricaoCirurgicaCirRealizadaController.seqpExc}" value="#{_item.id.seqp}" for="command"/> 
+				    </mec:commandLink> 
+				  </p:column>  
+				  <p:column> 
+				    <f:facet name="header">#{messages.LABEL_CODIGO}</f:facet>  
+				    <h:outputText value="#{_item.procedimentoCirurgico.seq}"/> 
+				  </p:column>  
+				  <p:column> 
+				    <f:facet name="header">#{messages.LABEL_DESCRICAO}</f:facet>  
+				    <h:outputText value="#{_item.procedimentoCirurgico.descricao}"/> 
+				  </p:column>  
+				  <p:column> 
+				    <f:facet name="header">#{messages.LABEL_PROCEDIMENTO_CIRURGICO_CONTAMINACAO}</f:facet>  
+		                <p:selectOneMenu id="indContaminacao"
+							value="#{_item.indContaminacao}" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all">
+							
+							<f:converter converterId="dominioConverter" />
+	                 		<f:selectItems var="selItem" itemLabel="#{selItem.descricao}"
+	                		value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioIndContaminacao')}" />
+							
+							<p:ajax event="change" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarAtoCirurgico(_item)}"/> 
+						</p:selectOneMenu>
+				  </p:column>  
+				  <p:column> 
+				    <f:facet name="header">#{messages.LABEL_COMPLEMENTO}</f:facet>  
+                	<p:inputText size="20" maxlength="500" label="#{messages.LABEL_COMPLEMENTO}" title="#{messages.TITLE_COMPLEMENTO_ATO_CIRURGICO}" value="#{_item.complemento}" id="complemento">
+                		<p:ajax event="change" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarAtoCirurgico(_item)}"/>
+                	</p:inputText>
+                	<p:commandLink update="@(#textAreaPanel)" oncomplete="PF('modalComplementoWG').show()" actionListener="#{descricaoCirurgicaCirRealizadaController.atualizarComplemento(_item)}">
+                		<p:graphicImage id="viewField" styleClass="aghu-iconeinput aghu-lupa"  title="Abrir campo em panel para edição" />
+                	</p:commandLink>
+                 </p:column> 
+				</mec:serverDataTable>
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelOutrasInformacoes" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral id="ffdl_outrasInformacoes" legend="#{messages.LABEL_OUTRAS_INFORMACOES}"> 
+          <aghu:linha> 
+            <mec:inputTextData id="dataEntradaSala" label="#{messages.LABEL_ENTRADA_SALA}" value="#{descricaoCirurgicaCirRealizadaController.cirurgia.dataEntradaSala}" maxlength="20" size="20" readonly="true" tipo="datahora"/>  
+            <mec:inputTextData id="dthrInicioCirg" maxlength="20" size="20" label="#{messages.LABEL_INICIO_CIRURGIA_REAL}" title="#{messages.TITLE_INICIO_CIRURGIA_REAL}" 
+            value="#{descricaoCirurgicaCirRealizadaController.descricaoItem.dthrInicioCirg}" readonly="#{descricaoCirurgicaController.isShowNotaAdicional()}" 
+            verticalOffset="-130" horizontalOffset="140" tipo="datahora"> 
+              <p:ajax event="dateSelect" update="@(#panelProcedimentoCirurgico)" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarDataInicioCirurgia}"/> 
+			  <p:ajax event="change" update="@(#panelProcedimentoCirurgico)" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarDataInicioCirurgia}"/> 
+            </mec:inputTextData>  
+            <mec:inputTextData id="dthrFimCirg" maxlength="20" size="20" label="#{messages.LABEL_FIM_CIRURGIA_REAL}" title="#{messages.TITLE_FIM_CIRURGIA_REAL}" 
+            value="#{descricaoCirurgicaCirRealizadaController.descricaoItem.dthrFimCirg}" readonly="#{descricaoCirurgicaController.isShowNotaAdicional()}" verticalOffset="-130" 
+            horizontalOffset="140" tipo="datahora"> 
+              <p:ajax event="dateSelect" update="@(#panelProcedimentoCirurgico)" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarDataFimCirurgia}"/> 
+			  <p:ajax event="change" update="@(#panelProcedimentoCirurgico)" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarDataFimCirurgia}"/> 
+            </mec:inputTextData>  
+            <mec:inputTextData id="dataSaidaSala" label="#{messages.LABEL_SAIDA_SALA}" value="#{descricaoCirurgicaCirRealizadaController.cirurgia.dataSaidaSala}" maxlength="20" size="20" readonly="true" tipo="datahora"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="panelEncaminhaMatExame" layout="inline"> 
+              <mec:selectBooleanCheckbox id="encaminhaMatExame" label="#{messages.LABEL_ENCAMINHAMENTO_MATERIAL_EXAME}" title="#{messages.TITLE_ENCAMINHAMENTO_MATERIAL_EXAME}" value="#{descricaoCirurgicaCirRealizadaController.encaminhaMatExame}" readonly="#{!descricaoCirurgicaCirRealizadaController.encaminhamentoSolicitacao or descricaoCirurgicaController.isShowNotaAdicional()}"> 
+                <p:ajax event="change" update="@(#panelEncaminhaMatExame)" process="@this" listener="#{descricaoCirurgicaCirRealizadaController.atualizarEncaminhamentoExame}"/> 
+              </mec:selectBooleanCheckbox> 
+            </p:outputPanel>  
+            <mec:inputTextArea id="material" label="#{messages.LABEL_MATERIAL}" title="#{messages.TITLE_MATERIAL_CIR_REAL}" value="#{descricaoCirurgicaCirRealizadaController.material}" readonly="true" cols="90" rows="3"/> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </p:outputPanel> 
+    </h:form>  
+    <p:dialog id="modalComplemento" width="360" height="200"
+				modal="true" closable="true" resizable="false" widgetVar="modalComplementoWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.LABEL_COMPLEMENTO}" />
+					</h:panelGroup>
+				</f:facet>
+	        	<h:panelGroup>
+					<h:form prependId="false" id="formModalComplemento">
+							<p:inputTextarea id="textAreaPanel" rows="10" cols="60"
+									autoResize="true" value="#{descricaoCirurgicaCirRealizadaController.procDescricaoSelecionado.complemento}" />
+							<aghu:linha>
+							<br/>
+								<mec:commandButton value="#{messages.LABEL_CONFIRMAR}" id="bt_confirmar"
+								    action="#{descricaoCirurgicaCirRealizadaController.atualizarComplementoPelaModal()}"
+								    oncomplete="PF('modalComplementoWG').hide();"
+									profile="ok" />
+								<mec:commandButton value="#{messages.LABEL_CANCELAR}"
+									onclick="PF('modalComplementoWG').hide();"
+									profile="cancel" ajax="true" />
+							</aghu:linha>
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>			
+  </ui:composition> 
+</html>

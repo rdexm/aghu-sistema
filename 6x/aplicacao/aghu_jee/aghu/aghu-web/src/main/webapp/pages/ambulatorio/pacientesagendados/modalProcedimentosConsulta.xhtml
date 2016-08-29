@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:component rendered="#{mf:getDefaultValue(rendered,true)}">
+	<p:dialog resizeable="false" onresize="return false;"
+		id="modalProcedimentosConsulta" zindex="2" width="600" height="450"
+		modal="true" resizable="false"
+		widgetVar="modalProcedimentosConsultaWG">
+		<f:facet name="header">
+			<h:outputText
+				value="#{messages.TITLE_MANTER_PROCEDIMENTOS_CONSULTA}: #{pesquisarPacientesAgendadosController.consultaSelecionada.numero}" />
+		</f:facet>
+		<h:form prependId="false" id="formProcedimentosConsulta">
+			<aghu:panelGeral id="panelProcedimentosConsulta"
+				style="padding:10px; width: 540px"
+				legend="#{messages.TITLE_MANTER_PROCEDIMENTOS_CONSULTA_PROCEDIMENTOS}">
+				<aghu:linha>
+					<mec:suggestionBox id="procedimento"
+						label="#{messages.LABEL_MANTER_PROCEDIMENTOS_CONSULTA_PROCEDIMENTO}"
+						title="#{messages.TITLE_MANTER_PROCEDIMENTOS_CONSULTA_PROCEDIMENTO}"
+						descricaoInput="phiSeq" descricaoLabel="descricao"
+						suggestionAction="buscarProcedimentos" required="true"
+						controller="#{pesquisarPacientesAgendadosController}"
+						value="#{pesquisarPacientesAgendadosController.procedimentoHospEspecialidadeVO}"
+						render="cid">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet>
+							<h:outputText value="#{item.phiSeq}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_MANTER_PROCEDIMENTOS_CONSULTA_PROCEDIMENTO}</b>
+							</f:facet>
+							<h:outputText value="#{item.descricao}" />
+						</p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputNumero id="procedQuantidade"
+						label="#{messages.LABEL_MANTER_PROCEDIMENTOS_CONSULTA_QUANTIDADE}"
+						title="#{messages.TITLE_MANTER_PROCEDIMENTOS_CONSULTA_QUANTIDADE}"
+						size="2" maxlength="2" required="true"
+						value="#{pesquisarPacientesAgendadosController.procedQuantidade}" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:suggestionBox id="cid"
+						label="#{messages.LABEL_MANTER_PROCEDIMENTOS_CONSULTA_CID}"
+						title="#{messages.TITLE_MANTER_PROCEDIMENTOS_CONSULTA_CID}"
+						maxlength="25" suggestionAction="buscarCid" width="450"
+						descricaoInput="codigo" descricaoLabel="descricao"
+						readonly="#{pesquisarPacientesAgendadosController.procedimentoPossuiCid}"
+						controller="#{pesquisarPacientesAgendadosController}"
+						value="#{pesquisarPacientesAgendadosController.cid}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.codigo}
+		                </p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet> #{item.descricao}
+		                </p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:commandButton id="bt_adicionar"
+						value="#{messages.LABEL_ADICIONAR}"
+						action="#{pesquisarPacientesAgendadosController.adicionarProcedimentoConsulta}"
+						profile="add" styleClass="bt_verde " ajax="true"
+						render="panelProcedimentosConsulta, tabelaProcedimentosConsulta"
+						disabled="#{mf:hasPermission(securityController, 'ambulatorio,somenteLeitura')}"/>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:serverDataTable id="tabelaProcedimentosConsulta"
+						list="#{pesquisarPacientesAgendadosController.listaProcedimentosHospConsulta}">
+						<c:set var="_procedimento" value="#{item}" />
+						<p:column style="width: 50px">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ACAO}" />
+							</f:facet>
+							<mec:commandLink
+								action="#{pesquisarPacientesAgendadosController.removerProcedimentoConsulta(_procedimento)}"
+								title="#{messages.LABEL_EXCLUIR}"
+								oncomplete="PF('modalProcedimentosConsultaWG').show();"
+								profile="delete" ajax="true"
+								render="tabelaProcedimentosConsulta" process="@this" 
+								disabled="#{mf:hasPermission(securityController,'ambulatorio,somenteLeitura')}">
+							</mec:commandLink>
+						</p:column>
+						<p:column style="width: 150px">
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.LABEL_MANTER_PROCEDIMENTOS_CONSULTA_PROCEDIMENTOS}" />
+							</f:facet>
+							<h:outputText
+								value="#{_procedimento.procedHospInterno.seq} - #{_procedimento.procedHospInterno.descricao}" />
+						</p:column>
+						<p:column style="width: 50px">
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.LABEL_MANTER_PROCEDIMENTOS_CONSULTA_QTDE}" />
+							</f:facet>
+							<h:outputText value="#{_procedimento.quantidade}" />
+						</p:column>
+						<p:column style="width: 50px">
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.LABEL_MANTER_PROCEDIMENTOS_CONSULTA_CID}" />
+							</f:facet>
+							<p:outputPanel id="panelCidProcedimento" layout="block">
+								<h:outputText value="#{_procedimento.cid.codigo}" />
+								<p:tooltip rendered="#{not empty _procedimento.cid}"
+									direction="bottom-left" styleClass="tooltip" layout="block">
+									<h:outputText value="#{_procedimento.cid.descricao}" />
+								</p:tooltip>
+							</p:outputPanel>
+						</p:column>
+						<p:column style="width: 50px">
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.LABEL_MANTER_PROCEDIMENTOS_CONSULTA_PADRAO}" />
+							</f:facet>
+							<h:outputText
+								value="#{_procedimento.consulta ? messages.LABEL_SIM : messages.LABEL_NAO}" />
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:linha>
+			</aghu:panelGeral>
+		</h:form>
+	</p:dialog>
+</ui:component>
+</html>

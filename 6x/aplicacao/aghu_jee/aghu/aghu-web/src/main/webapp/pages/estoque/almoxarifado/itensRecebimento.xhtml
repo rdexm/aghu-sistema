@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_ITENS_RECEBIMENTO } :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{itensRecebimentoController.inicializar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{itensRecebimentoController}"/>  
+      <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_ITENS_RECEBIMENTO }"> 
+        <h:form prependId="false" id="formPesquisa"> 
+          <p:outputPanel id="panelDadosRecebimento" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_RECEBIMENTO_ITENS_RECEBIMENTO}"> 
+              <aghu:linha> 
+                <mec:inputText id="numeroRecebimento" label="#{messages.LABEL_CAB_NUM_ITENS_RECEB}" value="#{itensRecebimentoController.numeroSeq}" size="12" readonly="true"/>  
+                <mec:inputText id="numeroNR" label="#{messages.LABEL_NRO_NR}" value="#{itensRecebimentoController.notaRecebProv.notaRecebimento.seq}" size="12" readonly="true"/>  
+                <mec:field id="labeldtGeracao" required="false" label="#{messages.LABEL_CAB_GERACAO_ITENS_RECEB}"> 
+                  <h:inputText id="dtGeracao" value="#{itensRecebimentoController.dtGeracao}" size="10" readonly="true"> 
+                    <f:convertDateTime type="date" pattern="dd/MM/yyyy"/> 
+                  </h:inputText> 
+                </mec:field>  
+                <mec:inputText id="fornecedor" label="#{messages.LABEL_CAB_FORNECEDOR_ITENS_RECEB}" value="#{itensRecebimentoController.cnpjFornecedor != null ?           itensRecebimentoController.cnpjFornecedor : itensRecebimentoController.cpfFornecedor} - #{itensRecebimentoController.nomeFornecedor}" size="90" style="text-transform:uppercase" converter="#{itensRecebimentoController.cnpjFornecedor != null ? cnpjConverter : cpfConverter}" readonly="true}"/>  
+                <mec:inputText id="numNotaFiscal" label="#{messages.LABEL_CAB_NOTA_FISCAL_ITENS_RECEB}" value="#{itensRecebimentoController.notaRecebProv.documentoFiscalEntrada.numero}" size="10" readonly="true"/>  
+                <mec:inputNumero id="vlrNotaFiscal" value="#{itensRecebimentoController.valorNotaFiscal}" label="#{messages.LABEL_CAB_VLR_NOTA_FISCAL_ITENS_RECEB}" inteiros="12" decimais="2" actionBean="#{itensRecebimentoController}" readonly="true}"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputText id="numAF" label="#{messages.LABEL_NUMERO_AF}" value="#{itensRecebimentoController.notaRecebProv.scoAfPedido.scoAutorizacaoForn.propostaFornecedor.id.lctNumero}" size="8" readonly="true"/>  
+                <mec:inputText id="numComplemento" label="#{messages.LABEL_COMPLEMENTO}" value="#{itensRecebimentoController.notaRecebProv.scoAfPedido.scoAutorizacaoForn.nroComplemento}" size="4" readonly="true"/>  
+                <mec:selectBooleanCheckbox id="checkBoxEstornado" label="#{messages.LABEL_CHECK_ESTORNADO}" value="#{itensRecebimentoController.notaRecebProv.indEstorno}" readonly="true"/>  
+                <mec:selectBooleanCheckbox id="checkBoxConfirmado" label="#{messages.LABEL_CHECK_CONFIRMADO}" value="#{itensRecebimentoController.notaRecebProv.indConfirmado}" readonly="true"/> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:acao> 
+              <mec:commandButton id="bt_estornarRecebimento" value="#{messages.LABEL_ESTORNAR}" action="#{recebimentoController.prepararEstorno(itensRecebimentoController.notaRecebProv)}" rendered="#{(empty recebimentoController.buscarDescrBoletimOcorrencias(itensRecebimentoController.notaRecebProv.notaRecebimento.seq)           and (mf:hasPermission(securityController,'estornarRecebimento,estornar'))            and itensRecebimentoController.notaRecebProv.notaRecebimento.seq!=null) or            (empty recebimentoController.buscarDescrBoletimOcorrencias(itensRecebimentoController.notaRecebProv.notaRecebimento.seq)           and (mf:hasPermission(securityController,'estornarRecebConfirmado,estornar'))            and itensRecebimentoController.notaRecebProv.notaRecebimento.seq!=null)}" profile="ok" ajax="true" render="panelModalConfirmaEstorno"/>  
+              <mec:commandButton id="bt_devolver" value="#{messages.LABEL_DEVOLUCAO_DF}" rendered="#{not itensRecebimentoController.isNotaRecebProvisorioServico() and                      not itensRecebimentoController.notaRecebProv.indEstorno and                      itensRecebimentoController.notaRecebProv.indConfirmado and                     (mf:hasPermission(securityController,'gerarDevolucaoFornecedor,gerar'))}" action="#{itensRecebimentoController.geracaoDevolucao()}" styleClass="bt_cinza"> 
+                <f:setPropertyActionListener target="#{geracaoDevolucaoController.seqNotaRecebProvisorio}" value="#{itensRecebimentoController.numeroSeq}" for="command"/>  
+                <f:setPropertyActionListener target="#{geracaoDevolucaoController.voltarParaUrl}" value="itensRecebimento" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton id="bt_imprimirRecebimento" value="#{messages.TITLE_IMPRIMIR_NR_RECEBIMENTO}" rendered="#{itensRecebimentoController.notaRecebProv.notaRecebimento.seq ne null                        and (not itensRecebimentoController.notaRecebProv.indEstorno) and itensRecebimentoController.notaRecebProv.indConfirmado}" immediate="true" action="#{itensRecebimentoController.imprimirNotaRecebimentoPdf()}" styleClass=" icon-print bt_cinza"> 
+                <f:setPropertyActionListener target="#{imprimirNotaRecebimentoController.numNotaRec}" value="#{itensRecebimentoController.notaRecebProv.notaRecebimento.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{imprimirNotaRecebimentoController.considerarNotaEmpenho}" value="false" for="command"/>  
+                <f:setPropertyActionListener target="#{imprimirNotaRecebimentoController.considerarUnidadeFuncional}" value="false" for="command"/>  
+                <f:setPropertyActionListener target="#{imprimirNotaRecebimentoController.esconderVoltar}" value="true" for="command"/>  
+                <f:setPropertyActionListener target="#{imprimirNotaRecebimentoController.voltarPara}" value="estoque-itensRecebimento" for="command"/> 
+              </mec:commandButton> 
+            </aghu:acao> 
+          </p:outputPanel> 
+        </h:form>  
+        <h:form prependId="false" id="formResultados"> 
+          <mec:serverDataTable scrollHeight="400" style="margin: 0px !important;" id="resultList" list="#{itensRecebimentoController.listaItensReceb}" scrollable="true"> 
+            <c:set var="item" value="#{item}"/>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink id="lnkPriorizacao" action="#{itensRecebimentoController.priorizarEntregaSolicitacaoMaterialServico()}" title="#{messages.TITLE_PRIORIZACAO_ENTREGAS}" rendered="#{(mf:hasPermission(securityController, 'gerarRecebimentoProvisorio,gravar') or               mf:hasPermission(securityController, 'recebimento,estornar') or                mf:hasPermission(securityController, 'estornarRecebimento,estornar')) and item.existeSpe}" styleClass=" silk-activate silk-icon"> 
+                <f:setPropertyActionListener target="#{priorizaEntregaSolicitacaoMaterialServicoController.voltarParaUrl}" value="estoque-itensRecebimento" for="command"/>  
+                <f:setPropertyActionListener target="#{priorizaEntregaSolicitacaoMaterialServicoController.numeroAf}" value="#{item.afnNumero}" for="command"/>  
+                <f:setPropertyActionListener target="#{priorizaEntregaSolicitacaoMaterialServicoController.numeroItemAf}" value="#{item.numero}" for="command"/>  
+                <f:setPropertyActionListener target="#{priorizaEntregaSolicitacaoMaterialServicoController.seqRecebimento}" value="#{item.nrpSeq}" for="command"/>  
+                <f:setPropertyActionListener target="#{priorizaEntregaSolicitacaoMaterialServicoController.itemRecebimento}" value="#{item.nroItem}" for="command"/>  
+                <f:setPropertyActionListener target="#{priorizaEntregaSolicitacaoMaterialServicoController.qtdLimite}" value="#{item.quantidade}" for="command"/>  
+                <f:setPropertyActionListener target="#{priorizaEntregaSolicitacaoMaterialServicoController.valorLimite}" value="#{item.valor}" for="command"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_ITEM_ITENS_RECEB}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.nroItem}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_PARC_ITENS_RECEB}" title="#{messages.HINT_LISTA_PARC_ITENS_RECEB}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.parcela}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_QTDE_ITENS_RECEB}" title="#{messages.HINT_LISTA_QTDE_ITENS_RECEB}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.quantidade}"/> 
+            </p:column>  
+            <p:column style="text-align: right;"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_VLR_UNIT_ITENS_RECEB }" title="#{messages.HINT_LISTA_VLR_ITENS_RECEB}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.valor / item.quantidade}"> 
+                <f:convertNumber pattern="###,##0.0000" type="currency"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column style="text-align: right;"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_VLR_TOTAL_ITENS_RECEB}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.valor}"> 
+                <f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_UNID_ITENS_RECEB}" title="#{messages.HINT_LISTA_UNID_ITENS_RECEB}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.codigoUnidadeMedida}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_MAT_SRV_ITENS_RECEB}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.codigoMaterial == null ? item.codigoServico : item.codigoMaterial} -                 #{item.codigoMaterial == null ? item.nomeServico : item.nomeMaterial}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty item.descricaoMaterial or not empty item.descricaoServico}"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO}: "/>  
+                <h:outputText value="#{item.codigoMaterial == null ? item.descricaoServico : item.descricaoMaterial}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_MARCA_ITENS_RECEB}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.descricaoMarca} - #{item.nomeComercial}" rendered="#{not empty item.descricaoMarca or not empty item.nomeComercial}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </h:form> 
+      </aghu:panelGeral>  
+      <aghu:acao> 
+        <h:form id="acao" prependId="false"> 
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{itensRecebimentoController.voltar}" styleClass="bt_voltar bt_cinza" profile="back"/> 
+        </h:form> 
+      </aghu:acao>  
+      <p:outputPanel id="panelModalConfirmaEstorno" layout="inline"> 
+        <p:dialog id="modalConfimarEstorno" width="400" height="150" rendered="#{recebimentoController.confirmaEstorno}" modal="true" resizable="false" widgetVar="modalConfimarEstornoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_ESTORNAR}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.M3_CONFIRMA_ESTORNO_RECEBIMENTO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formRecEstornadoModal"> 
+              <aghu:linha> 
+                <mec:commandButton value="#{messages.LABEL_ESTORNAR}" id="bt_estornar" action="#{recebimentoController.estornarRecebimento}" render="panelModalConfirmaEstorno" profile="search"/>  
+                <mec:commandButton value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfimarEstornoWG').hide();" profile="cancel" ajax="true"/> 
+              </aghu:linha> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <h:form rendered="#{recebimentoController.confirmaEstorno}"> 
+          <script xml:space="preserve">
+					PF('modalConfimarEstornoWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

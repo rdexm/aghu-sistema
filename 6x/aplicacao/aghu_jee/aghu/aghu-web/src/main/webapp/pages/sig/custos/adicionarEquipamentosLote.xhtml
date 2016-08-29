@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_COPIAR_ATIVIDADE}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{adicionarEquipamentoEmLoteController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{adicionarEquipamentoEmLoteController}"/>  
+      <h:form prependId="false" id="formularioEquipamentoLote"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISA_EQUIPAMENTO}"> 
+          <aghu:linha> 
+            <mec:inputText value="#{adicionarEquipamentoEmLoteController.atividade.nome}" label="#{messages.LABEL_NOME_ATIVIDADE_GRID}" title="#{messages.TITLE_NOME_NOVA_ATIVIDADE}" required="true" readonly="true" size="117" maxlength="360" caixaAlta="false" id="nome"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_EQUIPAMENTO_CODIGO_DO_EQUIPAMENTO}" title="#{messages.TITLE_EQUIPAMENTO_CODIGO_DO_EQUIPAMENTO}" required="false" size="20" maxlength="9" value="#{adicionarEquipamentoEmLoteController.codigoEquipamento}" id="codigoEquipamento"/>  
+            <mec:inputText value="#{adicionarEquipamentoEmLoteController.nomeEquipamento}" label="#{messages.LABEL_EQUIPAMENTO_NOME_DO_EQUIPAMENTO}" title="#{messages.TITLE_EQUIPAMENTO_NOME_DO_EQUIPAMENTO}" required="false" size="90" maxlength="200" caixaAlta="false" id="nomeEquipamento"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectOneMenu label="#{messages.LABEL_EQUIPAMENTO_DIRECIONADOR}" title="#{messages.TITLE_EQUIPAMENTO_DIRECIONADOR}" itemLabel="nome" value="#{adicionarEquipamentoEmLoteController.sigDirecionadores}" items="#{adicionarEquipamentoEmLoteController.listaDirecionadores}" itemsType="entity" id="comboDirecionadorDeTempoEquipamento"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" rendered="#{!manterEquipamentosAtividadeController.edicao}" process="nome , codigoEquipamento , nomeEquipamento " ajaxSingle="true" action="#{adicionarEquipamentoEmLoteController.pesquisar}" render="tblistaEquipamentos, formListaEquipamentoLote" styleClass="bt_cinza" profile="search"/> 
+          </aghu:linha>  
+          <p:outputPanel id="formListaEquipamentoLote" rendered="#{adicionarEquipamentoEmLoteController.ativo}" layout="inline"> 
+            <mec:serverDataTable id="tblistaEquipamentos" rowKeyVar="indEquipamento" list="#{adicionarEquipamentoEmLoteController.listEquipamentoAtividade}" scrollable="true"> 
+              <c:set var="_equipamento" value="#{item}"/>  
+              <p:column styleClass="first-column auto-adjust" style="#{_equipamento.emEdicao ? 'background-color:#F1F1F1'  : ''}" rendered="#{not empty adicionarEquipamentoEmLoteController.listEquipamentoAtividade}"> 
+                <f:facet name="header"> 
+                  <h:selectBooleanCheckbox name="marcadorLote" id="marcadorLote" value="#{adicionarEquipamentoEmLoteController.marcarLote}"> 
+                    <p:ajax event="click" update="@(#formListaEquipamentoLote)" process="@this" listener="#{adicionarEquipamentoEmLoteController.selecionaLote}"/> 
+                  </h:selectBooleanCheckbox> 
+                </f:facet>  
+                <h:selectBooleanCheckbox value="#{_equipamento.selected}"> 
+                  <p:ajax event="click" process="@this" listener="#{adicionarEquipamentoEmLoteController.selectedAdicionarEquipamentoAtividade(_equipamento)}"/> 
+                </h:selectBooleanCheckbox> 
+              </p:column>  
+              <p:column style="#{_equipamento.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_equipamento.codPatrimonio}"/> 
+              </p:column>  
+              <p:column style="#{_equipamento.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{adicionarEquipamentoEmLoteController.getDescricaoBem(_equipamento)}" rendered="#{adicionarEquipamentoEmLoteController.integracaoPatrimonioOnline}"/> 
+              </p:column>  
+              <p:column style="#{_equipamento.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_VRLBEM}"/> 
+                </f:facet>  
+                <h:outputText value="#{adicionarEquipamentoEmLoteController.valorBem}" rendered="#{adicionarEquipamentoEmLoteController.integracaoPatrimonioOnline}"> 
+                  <f:converter converterId="currencyConverter"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column style="#{_equipamento.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_VLRDEPRECIADO}"/> 
+                </f:facet>  
+                <h:outputText value="#{adicionarEquipamentoEmLoteController.valorDepreciado}" rendered="#{adicionarEquipamentoEmLoteController.integracaoPatrimonioOnline}"> 
+                  <f:converter converterId="currencyConverter"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column style="#{_equipamento.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_COLUMN_EQUIPAMENTO_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_equipamento.indSituacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao id="fsetAlteracao">
+			<mec:commandButton id="btn_gravar" value="#{messages.LABEL_INCLUIR}"
+				action="#{adicionarEquipamentoEmLoteController.adicionar}"
+				process="@this, nome, codigoEquipamento,nomeEquipamento,  comboDirecionadorDeTempoEquipamento"
+				rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}"
+				profile="ok" ajax="true" />
+			<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+				action="#{adicionarEquipamentoEmLoteController.cancelar}"
+				rendered="true"
+				process="@this, nome, codigoEquipamento,nomeEquipamento,  comboDirecionadorDeTempoEquipamento"
+				ajax="true" render="tblistaEquipamentos, formListaEquipamentoLote"
+				styleClass="bt_cinza" profile="back" />
+		</aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

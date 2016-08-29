@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PACIENTE_EM_SALA_RECUPERACAO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController}"/>  
+      <p:outputPanel id="panelTodos" layout="inline"> 
+        <h:form prependId="false" id="formProfissionaisAtuantes"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PACIENTE_EM_SALA_RECUPERACAO}"> 
+            <aghu:linha> 
+              <mec:suggestionBox id="unidadeFuncional" label="#{messages.LABEL_PACIENTES_COM_CIRURGIA_POR_UNIDADE_UNIDADE_CIRURGICA}" title="#{messages.TITLE_UNI_CIR_SR}" suggestionAction="pesquisarUnidadesCirurgicas" required="true" descricaoInput="seq" descricaoLabel="descricao" maxlength="30" block="true" width="500" controller="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController}" value="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.unidadeFuncional}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+              <p:outputPanel id="panelDataEntradaSr" layout="inline"> 
+                <mec:inputTextData id="dtHrEntradaSR" label="#{messages.LABEL_DATA_ENTRADA}" title="#{messages.TITLE_DATA_ENTRADA}" value="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.dataEntradaSr}" tipo="data"/> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.pesquisar}" profile="search"/>  
+            <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" immediate="true" action="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.limparPesquisa}" profile="clear"/> 
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false" id="formListaPacientesEmSR"> 
+          <p:outputPanel rendered="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.dataModel.pesquisaAtiva}" id="regionTabelaPacientesEmSR" layout="inline"> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaPacientesEmSR" rows="40" controller="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController}"> 
+              <c:set var="_item" value="#{item}"/>  
+              <p:column id="acao"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <mec:commandLink id="detalharCirurgia" action="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.detalharCirurgia()}" title="#{messages.LABEL_DETALHAR}" immediate="true" rendered="#{mf:hasPermission(securityController,'detalheRegistroDeCirurgias,visualizar')}" styleClass=" silk-zoom silk-icon"> 
+                  <f:setPropertyActionListener target="#{detalhaRegistroCirurgiaController.crgSeq}" value="#{_item.crgSeq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{detalhaRegistroCirurgiaController.cameFrom}" value="#{'pesquisaPacientesEmSalaRecuperacao'}" for="command"/> 
+                </mec:commandLink>  
+                <mec:commandLink title="#{messages.LABEL_SAIDA}" action="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.setarDadosSaidaSR(_item.crgSeq)}" id="realizarSaidaPaciente" oncomplete="PF('modalRealizaSaidaSalaRecuperacaoWG').show();;" immediate="true" rendered="#{mf:hasPermission(securityController,'pacientesEmSalaRecuperacao,editar')}" styleClass=" silk-paciente-em-recuperacao silk-icon" ajax="true" render="panelRealizaSaidaSalaRecuperacao"/>  
+                <mec:commandLink id="editarItem" action="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.editarItem()}" title="#{messages.LABEL_EDITAR}" immediate="true" rendered="#{mf:hasPermission(securityController,'pacientesEmSalaRecuperacao,editar')}" profile="edit"> 
+                  <f:setPropertyActionListener target="#{alteraPacienteEmSalaRecuperacaoController.crgSeq}" value="#{_item.crgSeq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{alteraPacienteEmSalaRecuperacaoController.cameFrom}" value="#{'pesquisaPacientesEmSalaRecuperacao'}" for="command"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column sortBy="#{_item.prontuario}" sortable="true"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.prontuario}" styleClass="mask_prontuario}"> 
+                  <f:converter converterId="prontuarioConverter"/> 
+                </h:outputText>  
+                <h:outputText value=" - " rendered="#{empty _item.prontuario}"/> 
+              </p:column>  
+              <p:column sortBy="#{_item.nomePaciente}" sortable="true"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_NOME_PACIENTE}"/> 
+                </f:facet>
+                <p:outputPanel id="nomePaciente" layout="block">  
+	                <h:outputText value="#{(_item.nomePaciente.length() &gt; 50) ? fn:substring(_item.nomePaciente,0,50) : _item.nomePaciente}"/>  
+	                <h:outputText value="..." rendered="#{(_item.nomePaciente.length() &gt; 50)}" style="text-transform:uppercase"/>
+                </p:outputPanel>  
+                <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="true" trackMouse="true" for="nomePaciente"> 
+                  <h:outputText value="#{_item.nomePaciente}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column sortBy="#{_item.localizacao}" sortable="true"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_LOCAL}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.localizacao}" style="text-transform:uppercase"/> 
+              </p:column>  
+              <p:column sortBy="#{_item.dataEntradaSr}" sortable="true"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ENTRADA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.dataEntradaSr}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column sortBy="#{_item.nomeCirurgiao}" sortable="true"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_NOME_CIRURGIAO}"/> 
+                </f:facet>
+                <p:outputPanel id="nomeCirurgia" layout="block">    
+	                <h:outputText value="#{(_item.nomeCirurgiao.length() &gt; 50) ? fn:substring(_item.nomeCirurgiao,0,50) : _item.nomeCirurgiao}"/>  
+	                <h:outputText value="..." rendered="#{(_item.nomeCirurgiao.length() &gt; 50)}" style="text-transform:uppercase"/>
+                </p:outputPanel>  
+                <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="true" for="nomeCirurgia" trackMouse="true"> 
+                  <h:outputText value="#{_item.nomeCirurgiao}"/> 
+                </p:tooltip> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelRealizaSaidaSalaRecuperacao" layout="inline"> 
+        <p:dialog id="modalRealizaSaidaSalaRecuperacao" width="400" height="230" onresize="return false;" style="overflow: visible;" modal="true" resizable="false" widgetVar="modalRealizaSaidaSalaRecuperacaoWG" closable="true"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_REALIZA_SAIDA_SALA_RECUPERACAO}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <h:form prependId="false" id="cadastroModalSaidaSalaRecuperacaoForm"> 
+            <aghu:panelGeral id="fs_Saida" legend="#{messages.TITLE_REALIZA_SAIDA_SALA_RECUPERACAO}"> 
+              <aghu:linha> 
+                <mec:suggestionBox id="suggestionDestino2" width="500" label="#{messages.LABEL_DESTINO}" title="#{messages.TITLE_DESTINO_SAIDA_SALA_RECUPERACAO}" descricaoInput="seq" descricaoLabel="descricao" descricaoLimite="30" suggestionAction="pesquisarDestinoPacientePorSeqOuDescricao" requiredFake="true" controller="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController}" value="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.destinoPaciente}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.seq}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.descricao}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SITUACAO}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.situacao.descricao}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextData label="#{messages.LABEL_DESTINO_DATA_HORA_SAIDA}" title="#{messages.TITLE_DESTINO_DATA_HORA_SAIDA}" id="dataHoraSaida" requiredFake="true" value="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.dataHoraSaida}" tipo="datahora"/> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:acao> 
+              <mec:commandButton value="#{messages.LABEL_GRAVAR}" id="bt_incluir" onclick="PF('modalRealizaSaidaSalaRecuperacaoWG').hide();" action="#{pesquisaPacidentesEmSalaRecuperacaoPaginatorController.registrarSaidaPacienteSalaRecuperacao}" render="regionTabelaPacientesEmSR" profile="ok"/> 
+            </aghu:acao> 
+          </h:form> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

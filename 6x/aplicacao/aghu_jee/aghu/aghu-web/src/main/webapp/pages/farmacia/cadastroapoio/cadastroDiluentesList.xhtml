@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib"> 
+	
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages['LABEL_DILUENTES']} ::
+			#{messages['NOME_ABREVIADO_PROJETO']}</title>
+	</ui:define>
+
+     <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cadastroDiluentesPaginatorController.iniciarPagina}"/> 
+      </f:metadata> 
+    </ui:define>
+
+	<ui:define name="body">
+		<mec:pageConfig controller="#{_CONTROLLER_}"  />
+		
+		<h:form prependId="false" id="formPesquisaDiluentes">
+			  <aghu:panelGeral legend="#{messages['LABEL_MEDICAMENTO']}">
+				<aghu:linha>
+					<mec:inputText name="codigoMedicamentoDiluente" size="5"
+						label="#{messages.LABEL_CODIGO_MDTO}"
+						value="#{cadastroDiluentesPaginatorController.medicamentoSelecionado.matCodigo}"
+						readonly="true" />
+
+					<mec:inputText name="descricaoMedicamentoDiluente"
+						label="#{messages.LABEL_MEDICAMENTO}" size="70"
+						value="#{cadastroDiluentesPaginatorController.medicamentoSelecionado.descricaoEditada4Casas}"
+						readonly="true" style="text-transform:uppercase" />
+
+					<mec:selectOneMenu label="#{messages.LABEL_SITUACAO}"
+						semSelecione="true" readonly="true" name="listaSituacoesDiluente"
+						value="#{cadastroDiluentesPaginatorController.medicamentoSelecionado.indSituacao}"
+						items="#{cadastroDiluentesPaginatorController.obterValoresDominioSituacao()}">
+					</mec:selectOneMenu>
+				</aghu:linha> 
+				<aghu:linha>	
+					<mec:inputText name="codigo"
+						label="#{messages.LABEL_CODIGO_MDTO}" size="5" maxlength="5" 
+						value="#{cadastroDiluentesPaginatorController.medicamentoSelecionado.tipoApresentacaoMedicamento.sigla}"
+						readonly="true" style="text-transform:uppercase" />
+						
+					<mec:inputText name="apresentacao"
+						label="#{messages.LABEL_APRESENTACAO}" 
+						value="#{cadastroDiluentesPaginatorController.medicamentoSelecionado.tipoApresentacaoMedicamento.descricao}"
+						readonly="true" />
+				</aghu:linha>
+			  </aghu:panelGeral> 
+
+			<aghu:acao> 
+				<mec:commandButton id="bt_novoDiluente" value="#{messages.LABEL_NOVO}" action="#{cadastroDiluentesPaginatorController.iniciarInclusao}" profile="add" >
+				 	<f:setPropertyActionListener target="#{cadastroDiluentesController.medicamentoSelecionado}" value="#{cadastroDiluentesPaginatorController.medicamentoSelecionado}" for="command"/> 
+					<f:setPropertyActionListener for="command" target="#{cadastroDiluentesController.isUpdate}" value="false" /> 
+                </mec:commandButton>
+				<mec:commandButton id="bt_iniciarHistoricoDiluente"	value="#{messages.LABEL_HISTORICO}" immediate="true" action="#{cadastroDiluentesPaginatorController.visualizarHistorico}" styleClass=" icon-historico bt_cinza">
+					<f:setPropertyActionListener target="#{historicoCadastroDiluentesPaginatorController.medicamentoSelecionado}" value="#{cadastroDiluentesPaginatorController.medicamentoSelecionado}" for="command"/>
+				</mec:commandButton>
+				<mec:commandButton value="#{messages.LABEL_VOLTAR}" style="float: right;" id="bt_voltar" action="#{cadastroDiluentesPaginatorController.cancelarPesquisa}" styleClass="bt_cinza" profile="back"/>
+			</aghu:acao> 
+		</h:form>
+	    
+	    <h:form prependId="false" id="resultados">	
+		  <aghu:panelGeral legend="#{messages['LABEL_DILUENTES']}">
+			 <p:outputPanel rendered="#{cadastroDiluentesPaginatorController.medicamentoSelecionado != null}">
+				<mec:serverDataTable id="tabela_lista_diluente"
+						dataModel="dataModel" title="LABEL_DILUENTES" controller="#{cadastroDiluentesPaginatorController}" >
+					 	<c:set var="_diluentes" value="#{item}"/>
+					<p:column  style="width:5% ">
+						<f:facet name="header"><h:outputText value="#{messages.LABEL_ACAO}" /></f:facet>
+						<mec:commandLink  id="link_editar" profile="edit" title="#{messages.LABEL_EDITAR}" action="#{cadastroDiluentesPaginatorController.iniciarInclusao}">
+							<f:setPropertyActionListener for="command" target="#{cadastroDiluentesController.medicamentoSelecionado}" value="#{cadastroDiluentesPaginatorController.medicamentoSelecionado}" />
+							<f:setPropertyActionListener for="command" target="#{cadastroDiluentesController.seq}" value="#{_diluentes.seq}" />
+							<f:setPropertyActionListener for="command" target="#{cadastroDiluentesController.isUpdate}" value="true" />
+						</mec:commandLink>
+						<mec:commandLink id="link_excluir" title="#{messages['LABEL_EXCLUIR']}" profile="delete" action="#{cadastroDiluentesController.excluir}">
+							 <f:setPropertyActionListener for="command" target="#{cadastroDiluentesController.seq}" value="#{_diluentes.seq}"/> 
+						</mec:commandLink>
+					</p:column>
+					<p:column>
+						<f:facet name="header"><h:outputText value="#{messages['LABEL_DESCRICAO']}" /></f:facet>
+						<h:outputText value="#{_diluentes.descricao}"  />
+					</p:column>
+					<p:column>
+						<f:facet name="header"><h:outputText value="#{messages['LABEL_USUAL_PRESCRICAO']}" /></f:facet>
+						<h:outputText value="#{_diluentes.usualPrescricao}" converter="simNaoConverter"/>
+					</p:column>
+					<p:column>
+						<f:facet name="header"><h:outputText value="#{messages['LABEL_SITUACAO']}" /></f:facet>
+						<h:outputText value="#{_diluentes.situacao}" />
+					</p:column>
+				</mec:serverDataTable>
+			 </p:outputPanel>
+		  </aghu:panelGeral> 
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

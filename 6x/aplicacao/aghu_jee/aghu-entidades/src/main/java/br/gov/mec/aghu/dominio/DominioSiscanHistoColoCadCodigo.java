@@ -1,0 +1,41 @@
+package br.gov.mec.aghu.dominio;
+
+/**
+ * Domínio contendo os códigos dos campos relacionados 
+ * a Exame Histopatológico de Colo- SISCAN. 
+ * 
+ * @author ghernandez
+ *
+ */
+public enum DominioSiscanHistoColoCadCodigo {
+	
+	C_PROC_CIRURGICO,
+	C_QUAIS_PROC_CIRURGICO,
+	C_MACROSCOPIA,
+	C_TIPO_MATERIAL,
+	C_NUM_FRAGMENTOS,
+	C_EXTENSAO_TUMOR,
+	C_PROFUND_TUMOR,
+	C_DISTAN_MARGEM_PROX,
+	C_LOCALIZACAO_TUMOR,
+	C_ADEQ_MATERIAL,
+	C_ESP_INSATIS_MATERIAL,
+	C_LESAO_CARAC_BENIG,
+	C_LESAO_CARAC_NEO,
+	C_LESAO_CARAC_ADENO,
+	C_OUTRAS_NEO_MALIGNAS,
+	C_GRAU_DIF,
+	C_PROF_INVASAO,
+	C_VASCULAR,
+	C_PERI_NEURAL,
+	C_PARAMETRIAL,
+	C_CORPO_UTERINO,
+	C_VAGINA,
+	C_LINFO_EXAMINADOS,
+	C_LINFO_COMPROMETIDOS,
+	C_MARGENS_CIRUR,
+	C_DIAG_DESCR,
+	C_FRAGMENTOS,
+	C_BLOCOS;
+
+}

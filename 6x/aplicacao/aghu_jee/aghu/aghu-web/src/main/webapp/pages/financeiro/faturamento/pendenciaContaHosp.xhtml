@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PENDENCIA_ADMINISTRATIVA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pendenciaContaHospController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pendenciaContaHospController}"/>  
+      <h:form prependId="false" id="formCadastro"> 
+        <aghu:panelGeral legend="#{messages.LABEL_CONTA_HOSPITALAR_FAT}"> 
+          <aghu:linha> 
+            <mec:inputNumero size="17" maxlength="8" label="#{messages.LABEL_CONTA_HOSPITALAR_FAT}" readonly="true" value="#{pendenciaContaHospController.vFatContaHospPac.cthSeq}" id="cthSeq"/>  
+            <mec:inputNumero size="8" maxlength="8" label="#{messages.LABEL_PRONTUARIO_FAT}" readonly="true" value="#{pendenciaContaHospController.vFatContaHospPac.pacProntuario}" id="pacProntuario"/>  
+            <mec:inputNumero size="15" maxlength="8" readonly="true" label="#{messages.LABEL_COD_PAC_PEND}" value="#{pendenciaContaHospController.vFatContaHospPac.pacCodigo}" id="pacCodigoLoaded"/>  
+            <mec:inputText size="63" maxlength="50" readonly="true" label="#{messages.LABEL_NOME_PACIENTE_FAT}" value="#{pendenciaContaHospController.vFatContaHospPac.pacNome}" id="pacNomeLoaded"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_CONVENIO}" size="3" maxlength="3" readonly="true" value="#{pendenciaContaHospController.vFatContaHospPac.convenioSaudePlano.convenioSaude.codigo}" id="convenioSaudeCodigo"/>  
+            <mec:inputText label="#{messages.LABEL_DESC}" size="30" maxlength="88" readonly="true" value="#{pendenciaContaHospController.vFatContaHospPac.convenioSaudePlano.convenioSaude.descricao}" id="convenioSaudeDescricao"/>  
+            <mec:inputNumero size="6" maxlength="3" readonly="true" label="#{messages.LABEL_PLANO}" value="#{pendenciaContaHospController.vFatContaHospPac.convenioSaudePlano.id.cnvCodigo}" id="codigoPlano"/>  
+            <mec:inputText label="#{messages.LABEL_DESC}" size="44" maxlength="88" readonly="true" value="#{pendenciaContaHospController.vFatContaHospPac.convenioSaudePlano.descricao}" id="descricaoPlano"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_SITUACAO}" enum="DominioSituacaoConta" value="#{pendenciaContaHospController.vFatContaHospPac.indSituacao}" readonly="true" id="indSituacao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" rendered="#{pendenciaContaHospController.editavel}" action="#{pendenciaContaHospController.novaPendenciaContaHosp}" profile="add"> 
+            <f:setPropertyActionListener target="#{pendenciaContaHospController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>  
+            <f:setPropertyActionListener target="#{pendenciaContaHospController.dataModel.pesquisaAtiva}" value="true" for="command"/>
+          </mec:commandButton>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{pendenciaContaHospController.voltar}" styleClass=" alinha-direita bt_cinza" profile="back"/> 
+        </aghu:linha>  
+        <aghu:panelGeral legend="#{messages.LABEL_INC_ALT_MOTIVO_PENDENCIA_CONTA}"> 
+          <aghu:linha> 
+            <mec:serverDataTable dataModel="dataModel" value="#{pendenciaContaHospController}" rendered="#{pendenciaContaHospController.dataModel.pesquisaAtiva}" id="tabelaPendencias" controller="#{pendenciaContaHospController}"> 
+              <c:set var="_pendencia" value="#{item}"/>  
+              <p:column rendered="#{pendenciaContaHospController.editavel}" exportable="false">
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <p:outputPanel rendered="#{_pendencia.indSituacao eq 'A'}" layout="inline">
+                  <mec:commandLink title="#{messages.LABEL_DESATIVAR}"
+                                   name="btDesativar"
+                                   onclick="ativarDesativar('#{_pendencia.id.seqp}','I'); PF('modalConfirmacaoAtivacaoInativacaoPendenciaWG').show();;"
+                                   style="padding-bottom: 0px; height:16px;width:16px;"
+                                   styleClass="silk-icon icon-encerrar-conta-hospitalar"
+                                   ajax="true"/>
+                </p:outputPanel>  
+                <p:outputPanel rendered="#{_pendencia.indSituacao eq 'I'}" layout="inline"> 
+                  <mec:commandLink title="#{messages.LABEL_ATIVAR}"
+                                   name="btAtivar"
+                                   onclick="ativarDesativar('#{_pendencia.id.seqp}','A'); PF('modalConfirmacaoAtivacaoInativacaoPendenciaWG').show();"
+                                   style="padding-bottom: 0px; height:16px;width:16px;"
+                                   styleClass="silk-icon icon-reabrir-conta-hospitalar"
+                                   ajax="true"/>
+                </p:outputPanel> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SEQ_PARAMETRO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_pendencia.id.seqp}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_MOTIVO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_pendencia.fatMotivoPendencia.seq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_pendencia.fatMotivoPendencia.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_pendencia.indSituacao.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_UNIDADE_FUNCIONAL}"/> 
+                </f:facet>  
+                <h:outputText value="#{_pendencia.unfSeq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SIGLA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_pendencia.unidadeFuncional.sigla}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <h:form> 
+        <pe:remoteCommand name="ativarDesativar"> 
+          <pe:assignableParam name="seqp" assignTo="#{pendenciaContaHospController.seqp}"/>  
+          <pe:assignableParam name="indSituacao" assignTo="#{pendenciaContaHospController.indSituacao}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoAtivacaoInativacaoPendencia" width="360" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoAtivacaoInativacaoPendenciaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_PENDENCIA_ADMINISTRATIVA}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMA_ATIVA_INA_PEND} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formConfirmacaoAtivacaoInativacaoPendencia"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_okConfirmacaoAtivacaoInativacaoPendencia" value="#{messages.LABEL_SIM}" block="true" action="#{pendenciaContaHospController.ativarInativarPendenciaAdm}" profile="search"> 
+                <f:setPropertyActionListener target="#{pendenciaContaHospController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>  
+                <f:setPropertyActionListener target="#{pendenciaContaHospController.origem}" value="encerramentoPreviaConta" for="command"/>  
+                <f:setPropertyActionListener target="#{pendenciaContaHospController.dataModel.pesquisaAtiva}" value="true" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton id="bt_cancelarConfirmacaoAtivacaoInativacaoPendencia" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoAtivacaoInativacaoPendenciaWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MATERIAIS_CONSUMIDOS}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{materialPorCirurgiaPaginatorController}"/>  
+      <h:form prependId="false" id="formMaterialConsumidoPesquisa"> 
+        <aghu:panelGeral id="panelFiltros" legend="#{messages.LABEL_PESQUISAR_MATERIAIS_CONSUMIDOS}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="numeroAgenda" label="#{messages.LABEL_MATERIAIS_AGENDA}" title="#{messages.TITLE_MATERIAIS_AGENDA}" value="#{materialPorCirurgiaPaginatorController.agenda}" size="4" maxlength="4"/>  
+            <mec:inputTextData id="dataCirurgia" label="#{messages.LABEL_MATERIAIS_DATA_CIRURGIA}" title="#{messages.TITLE_MATERIAIS_DATA_CIRURGIA}" value="#{materialPorCirurgiaPaginatorController.data}" size="11" maxlength="10" onkeypress="formatar( this , '99/99/9999' , event )" required="false" tipo="data"/>  
+            <mec:suggestionBox id="sbCentroCusto" label="#{messages.LABEL_MATERIAIS_CENTRO_CUSTO}" title="#{messages.TITLE_MATERIAIS_CENTRO_CUSTO}" suggestionAction="pesquisarCentroCusto" descricaoInput="codigo" descricaoLabel="descricao" maxlength="30" block="true" width="500" controller="#{materialPorCirurgiaPaginatorController}" value="#{materialPorCirurgiaPaginatorController.centroCusto}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{materialPorCirurgiaPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" ajax="true" process="@this" action="#{materialPorCirurgiaPaginatorController.limpar}" profile="clear" render="panelFiltros,panelResultado"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formMaterialConsumidoLista"> 
+      <p:outputPanel id="panelResultado" layout="inline">
+        <mec:serverDataTable dataModel="dataModel" id="tblMaterial" controller="#{materialPorCirurgiaPaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column style="width: 70px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink id="bt_editar" title="#{messages.LABEL_EDITAR}" rendered="#{mf:hasPermission(securityController,'materialConsumidoCirurgia,executar')}" action="#{materialPorCirurgiaPaginatorController.editar()}" profile="edit"> 
+              <f:setPropertyActionListener target="#{materialPorCirurgiaController.mbcCirurgiaCodigo}" value="#{_item.seq}" for="command"/>  
+              <f:setPropertyActionListener target="#{materialPorCirurgiaController.voltarPara}" value="materialPorCirurgiaList" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_IMPRIMIR}" action="#{relatorioRegistroDaNotaDeSalaController.directPrint}" rendered="#{mf:hasPermission(securityController,'imprimirRegistroNotaSala,imprimir')}" styleClass=" silk-printer silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{relatorioRegistroDaNotaDeSalaController.crgSeq}" value="#{_item.seq}" for="command"/> 
+            </mec:commandLink>
+           <mec:commandLink id="conciliacao" title="#{messages.TITLE_CONCILIACAO_MATERIAIS}" rendered="false"
+					action="#{materialPorCirurgiaPaginatorController.conciliacaoMateriais(_item)}"
+					styleClass="silk-icon silk-text-list-bullets"
+					immediate="true" includePageParams="false">
+              <f:setPropertyActionListener target="#{conciliacaoMateriaisController.seq}" value="#{_item.seq}" for="command"/>					
+			</mec:commandLink>	
+          </p:column>  
+          <p:column style="width: 90px; text-align:center;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_MATERIAIS_AGENDA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.numeroAgenda}"/> 
+          </p:column>  
+          <p:column style="width: 90px; text-align:center;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_MATERIAIS_DATA_CIRURGIA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.data}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_MATERIAIS_PACIENTE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.paciente.nome}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_MATERIAIS_CENTRO_CUSTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.centroCustos.codigo} - #{_item.centroCustos.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable>        
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

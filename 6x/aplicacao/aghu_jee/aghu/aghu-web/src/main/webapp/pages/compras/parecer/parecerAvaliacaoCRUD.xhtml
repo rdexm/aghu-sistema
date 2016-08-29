@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_CAD_AVAL_PARECER} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{parecerAvaliacaoController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{parecerAvaliacaoController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formCadastro">
+		
+			<aghu:panelGeral legend="#{messages.TITLE_CAD_AVAL_PARECER}">
+				<aghu:linha>
+					<mec:suggestionBox id="sbmaterial"
+						label="#{messages.LABEL_CAD_PARECER_AVAL_MATERIAL}"
+						title="#{messages.TITLE_CAD_PARECER_AVAL_MATERIAL}"
+						descricaoInput="codigo" descricaoLabel="nome" width="400"
+						readonly="true" controller="#{parecerAvaliacaoController}"
+						value="#{parecerAvaliacaoController.parecerMaterial.material}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.codigo}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_NOME}</b>
+							</f:facet> #{item.nome}
+						</p:column>
+					</mec:suggestionBox>
+					<mec:suggestionBox id="sbMarcaComercial"
+						label="#{messages.LABEL_CAD_PARECER_AVAL_MARCA}"
+						title="#{messages.TITLE_CAD_PARECER_AVAL_MARCA}"
+						descricaoInput="codigo" descricaoLabel="descricao" readonly="true"
+						controller="#{parecerAvaliacaoController}"
+						value="#{parecerAvaliacaoController.parecerMaterial.marcaComercial}">
+						<p:column>#{item.codigo}</p:column>
+						<p:column>#{item.descricao}</p:column>
+					</mec:suggestionBox>
+					<mec:suggestionBox id="sbModelo"
+						label="#{messages.LABEL_CAD_PARECER_AVAL_MODELO}"
+						title="#{messages.TITLE_CAD_PARECER_AVAL_MODELO}"
+						descricaoInput="id.seqp" descricaoLabel="descricao"
+						readonly="true" controller="#{parecerAvaliacaoController}"
+						value="#{parecerAvaliacaoController.parecerMaterial.scoMarcaModelo}">
+						<p:column>#{item.id.seqp}</p:column>
+						<p:column>#{item.descricao}</p:column>
+					</mec:suggestionBox>
+				</aghu:linha>				
+			</aghu:panelGeral>
+			
+			<aghu:panelGeral legend="#{messages.TITLE_CAD_AVAL_PARECER_AVALIACOES}">					
+				<aghu:linha>		
+					<aghu:panelGeral
+						legend="#{parecerAvaliacaoController.parecerAvaliacao.dtAlteracao !=null ? messages.TITLE_ALTERACAO : messages.TITLE_CRIACAO}">
+						<mec:inputTextData id="dtAlteracao" maxlength="10"
+							label="#{messages.LABEL_CAD_PARECER_DATA}"
+							value="#{parecerAvaliacaoController.parecerAvaliacao.dtAlteracao != null ? parecerAvaliacaoController.parecerAvaliacao.dtAlteracao : parecerAvaliacaoController.parecerAvaliacao.dtCriacao}"
+							size="10" readonly="true" tipo="data" />
+						<mec:inputNumero id="vinServCriacaoAlteracao"
+							label="#{messages.LABEL_CAD_PARECER_VINCULO}" readonly="true"
+							size="5" maxlength="3"
+							value="#{parecerAvaliacaoController.parecerAvaliacao.servidorAlteracao.id.vinCodigo!=null ? parecerAvaliacaoController.parecerAvaliacao.servidorAlteracao.id.vinCodigo : parecerAvaliacaoController.parecerAvaliacao.servidorCriacao.id.vinCodigo }" />
+						<mec:inputText id="matricula"
+							label="#{messages.LABEL_CAD_PARECER_MATRICULA}"
+							value="#{parecerAvaliacaoController.parecerAvaliacao.servidorAlteracao.id.matricula}  #{parecerAvaliacaoController.parecerAvaliacao.servidorCriacao.pessoaFisica.nome} "
+							size="80" readonly="true" />
+					</aghu:panelGeral>				
+				</aghu:linha> 	
+					
+				<aghu:linha>	
+					<aghu:panelGeral legend="#{messages.TITLE_CAD_AVAL_PARECER_TECNICA}">
+						<aghu:linha>
+							<mec:selectOneMenu
+								label="#{messages.LABEL_CAD_PARECER_AVAL_PARECER}"
+								title="#{messages.TITLE_CAD_PARECER_AVAL_PARECER_TEC}"
+								id="parecerAvalTecnica" enum="DominioParecer" itemsType="enum"
+								required="true"
+								value="#{parecerAvaliacaoController.parecerAvalTecnica.parecer}"
+								readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}">
+								<p:ajax event="change"
+                                        listener="#{parecerAvaliacaoController.onParecerAvaliacaoTecnicaSelected()}"
+									    update="@(#panelAvalTecnica) @(#panelAvalTecnicaDescricao) @(#suggestionServAvalTecnica)"
+									    process="@this" />
+							</mec:selectOneMenu>
+							<p:outputPanel id="panelAvalTecnica" layout="inline">
+								<mec:inputTextData id="dtAvalTecnica" maxlength="10"
+									label="#{messages.LABEL_CAD_PARECER_AVAL_DT_AVALIACAO}"
+									title="#{messages.TITLE_CAD_PARECER_AVAL_DT_AVALIACAO_TEC}"
+									value="#{parecerAvaliacaoController.parecerAvalTecnica.dtAvaliacao}"
+									required="#{not empty parecerAvaliacaoController.parecerAvalTecnica.parecer}"
+									size="10"
+									readonly="#{parecerAvaliacaoController.desabilitarParecerAvalTecnica() or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit }"
+									tipo="data">
+									<p:ajax event="change" process="@this" />
+									<p:ajax event="dateSelect" process="@this" />
+									</mec:inputTextData>
+								<p:outputPanel id="panelVinculoServAvalTecnica" layout="inline">
+									<mec:inputNumero id="vinServAvalTecnica" label="#{messages.LABEL_VINCULO}"
+										readonly="true" size="5" maxlength="3"
+										value="#{parecerAvaliacaoController.getVinCodigo()}" />
+									<mec:suggestionBox id="suggestionServAvalTecnica"
+										label="#{messages.LABEL_CAD_PARECER_AVAL_RESP}"
+										title="#{messages.TITLE_CAD_PARECER_AVAL_RESP_TEC}"
+										width="500"
+                                        descricaoInput="id.matricula"
+										descricaoLabel="pessoaFisica.nome"
+										suggestionAction="listaServidores"
+										required="#{not empty parecerAvaliacaoController.parecerAvalTecnica.parecer}"
+										readonly="#{empty parecerAvaliacaoController.parecerAvalTecnica.parecer or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}"
+										controller="#{parecerAvaliacaoController}"
+										value="#{parecerAvaliacaoController.parecerAvalTecnica.servidorAvaliacao}"
+										render="panelVinculoServAvalTecnica">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_VINCULO}</b>
+											</f:facet> #{item.id.vinCodigo}
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_FUNCIONARIO}</b>
+											</f:facet> #{item.id.matricula}
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_NOME}</b>
+											</f:facet> #{item.pessoaFisica.nome}
+										</p:column>
+									</mec:suggestionBox>
+								</p:outputPanel>
+							</p:outputPanel>
+						</aghu:linha>
+						<aghu:linha style="margin-bottom: 7px">
+							<p:outputPanel id="panelAvalTecnicaDescricao" layout="inline">
+								<mec:inputText id="descricaoAvalTecnica"
+									value="#{parecerAvaliacaoController.parecerAvalTecnica.descricao}"
+									label="#{messages.LABEL_CAD_PARECER_AVAL_DESCRICAO}"
+									title="#{messages.TITLE_CAD_PARECER_AVAL_DESCRICAO_TEC}"
+									maxlength="500" size="60" removerCaratersEspeciais="false"
+									required="#{not empty parecerAvaliacaoController.parecerAvalTecnica.parecer}"
+									readonly="#{parecerAvaliacaoController.desabilitarParecerAvalTecnica() or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}"
+									panelView="true">
+									<p:ajax event="change" process="@this" />
+									</mec:inputText>
+							</p:outputPanel>
+							<aghu:acao newLine="false">
+								<mec:commandButton value="#{messages.LABEL_ANEXOS}"
+									id="bt_anexos" immediate="true"
+									rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"
+									disabled="#{parecerAvaliacaoController.parecerAvalTecnica.codigo==null}"
+									action="#{parecerAvaliacaoController.redirecionaAnexosAvaliacaoTecnica}"
+									styleClass=" icon-anexar bt_cinza">
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.numeroSolicitacao}"
+										value="#{parecerAvaliacaoController.parecerAvalTecnica.codigo}"
+										for="command" />
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.origemSolicitacao}"
+										value="PAT" for="command" />
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.telaOrigem}"
+										value="compras-parecerAvaliacaoCRUD" for="command" />
+								</mec:commandButton>
+							</aghu:acao>
+						</aghu:linha>
+					</aghu:panelGeral>
+				</aghu:linha>
+					
+				<aghu:linha>	
+					<aghu:panelGeral legend="#{messages.TITLE_CAD_AVAL_PARECER_CONSULTORIA}">
+						<aghu:linha>
+							<mec:selectOneMenu
+								label="#{messages.LABEL_CAD_PARECER_AVAL_PARECER}"
+								title="#{messages.TITLE_CAD_PARECER_AVAL_PARECER_CONSUL}"
+								id="parecerAvalConsul" enum="DominioParecer" itemsType="enum"
+								required="false"
+								value="#{parecerAvaliacaoController.parecerAvalConsul.parecer}"
+								readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}">
+								<p:ajax event="change"
+                                    listener="#{parecerAvaliacaoController.onParecerAvaliacaoConsultaSelected()}"
+									update="@(#panelAvalConsul) @(#panelAvalConsulDescricao)"
+									process="@this" />
+							</mec:selectOneMenu>
+							<p:outputPanel id="panelAvalConsul" layout="inline">
+								<mec:inputTextData id="dtAvalConsul" maxlength="10"
+									label="#{messages.LABEL_CAD_PARECER_AVAL_DT_AVALIACAO}"
+									title="#{messages.TITLE_CAD_PARECER_AVAL_DT_AVALIACAO_CONSUL}"
+									value="#{parecerAvaliacaoController.parecerAvalConsul.dtAvaliacao}"
+									size="10"
+									required="#{not empty parecerAvaliacaoController.parecerAvalConsul.parecer}"
+									readonly="#{parecerAvaliacaoController.desabilitarParecerAvalConsul() or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}"
+									tipo="data">
+									<p:ajax event="change" process="@this" />
+									<p:ajax event="dateSelect" process="@this" />
+									</mec:inputTextData>
+								<p:outputPanel id="panelVinculoServAvalConsul" layout="inline">
+									<mec:inputNumero id="vinServAvalConsul" label="#{messages.LABEL_VINCULO}"
+										readonly="true" size="5" maxlength="3"
+										value="#{parecerAvaliacaoController.parecerAvalConsul.servidorAvaliacao.id.vinCodigo}" />
+									<mec:suggestionBox id="suggestionServAvalConsul"
+										required="#{not empty parecerAvaliacaoController.parecerAvalConsul.parecer}"
+										label="#{messages.LABEL_CAD_PARECER_AVAL_RESP}"
+										title="#{messages.TITLE_CAD_PARECER_AVAL_RESP_CONSUL}"
+										width="500" descricaoInput="id.matricula"
+										descricaoLabel="pessoaFisica.nome"
+										suggestionAction="listaServidores"
+										readonly="#{empty parecerAvaliacaoController.parecerAvalConsul.parecer or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}"
+										controller="#{parecerAvaliacaoController}"
+										value="#{parecerAvaliacaoController.parecerAvalConsul.servidorAvaliacao}"
+										render="panelVinculoServAvalConsul">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_VINCULO}</b>
+											</f:facet> #{item.id.vinCodigo}
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_FUNCIONARIO}</b>
+											</f:facet> #{item.id.matricula}
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_NOME}</b>
+											</f:facet> #{item.pessoaFisica.nome}
+										</p:column>
+									</mec:suggestionBox>
+								</p:outputPanel>
+							</p:outputPanel>
+						</aghu:linha>
+						<aghu:linha style="margin-bottom: 7px;">
+							<p:outputPanel id="panelAvalConsulDescricao" layout="inline">
+								<mec:inputText id="descricaoAvalConsul"
+									value="#{parecerAvaliacaoController.parecerAvalConsul.descricao}"
+									label="#{messages.LABEL_CAD_PARECER_AVAL_DESCRICAO}"
+									title="#{messages.TITLE_CAD_PARECER_AVAL_DESCRICAO_CONSUL}"
+									maxlength="500" size="60" removerCaratersEspeciais="false"
+									required="#{not empty parecerAvaliacaoController.parecerAvalConsul.parecer}"
+									readonly="#{parecerAvaliacaoController.desabilitarParecerAvalConsul() or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}"
+									panelView="true">
+									<p:ajax event="change" process="@this" />
+									</mec:inputText>
+							</p:outputPanel>
+							<aghu:acao newLine="false">
+								<mec:commandButton value="#{messages.LABEL_ANEXOS}"
+									id="bt_anexos2" immediate="true"
+									rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"
+									disabled="#{parecerAvaliacaoController.parecerAvalConsul.codigo==null}"
+									action="#{parecerAvaliacaoController.redirecionaAnexosAvaliacaoConsultoria}"
+									styleClass=" icon-anexar bt_cinza">
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.numeroSolicitacao}"
+										value="#{parecerAvaliacaoController.parecerAvalConsul.codigo}"
+										for="command" />
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.origemSolicitacao}"
+										value="PAC" for="command" />
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.telaOrigem}"
+										value="compras-parecerAvaliacaoCRUD" for="command" />
+								</mec:commandButton>
+							</aghu:acao>
+						</aghu:linha>
+					</aghu:panelGeral>
+				</aghu:linha>
+
+				<aghu:linha>
+					<aghu:panelGeral legend="#{messages.TITLE_CAD_AVAL_PARECER_DESEMPENHO}">
+						<aghu:linha>
+							<mec:selectOneMenu
+								label="#{messages.LABEL_CAD_PARECER_AVAL_PARECER}"
+								title="#{messages.TITLE_CAD_PARECER_AVAL_PARECER_DESEMP}"
+								id="parecerAvalDesemp" enum="DominioParecer" itemsType="enum"
+								required="false"
+								value="#{parecerAvaliacaoController.parecerAvalDesemp.parecer}"
+								readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}">
+								<p:ajax event="change"
+                                    listener="#{parecerAvaliacaoController.onParecerParecerAvalDesempSelected()}"
+									update="@(#panelAvalDesemp) @(#panelAvalDesempDescricao)"
+									process="@this" />
+							</mec:selectOneMenu>
+							<p:outputPanel id="panelAvalDesemp" layout="inline">
+								<mec:inputTextData id="dtAvalDesemp" maxlength="10"
+									label="#{messages.LABEL_CAD_PARECER_AVAL_DT_AVALIACAO}"
+									title="#{messages.TITLE_CAD_PARECER_AVAL_DT_AVALIACAO_DESEMP}"
+									value="#{parecerAvaliacaoController.parecerAvalDesemp.dtAvaliacao}"
+									size="10"
+									required="#{not empty parecerAvaliacaoController.parecerAvalDesemp.parecer}"
+									readonly="#{parecerAvaliacaoController.desabilitarParecerAvalDesemp()  or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')  or not parecerAvaliacaoController.modoEdit}"
+									tipo="data">
+									<p:ajax event="change" process="@this" />
+									<p:ajax event="dateSelect" process="@this" />
+									</mec:inputTextData>
+								<p:outputPanel id="panelVinculoServAvalDesemp" layout="inline">
+									<mec:inputNumero id="vinServAvalDesemp" label="#{messages.LABEL_VINCULO}"
+										readonly="true" size="5" maxlength="3"
+										value="#{parecerAvaliacaoController.parecerAvalDesemp.servidorAvaliacao.id.vinCodigo}" />
+									<mec:suggestionBox id="suggestionServAvalDesemp"
+										required="#{not empty parecerAvaliacaoController.parecerAvalDesemp.parecer}"
+										label="#{messages.LABEL_CAD_PARECER_AVAL_RESP}"
+										title="#{messages.TITLE_CAD_PARECER_AVAL_RESP_DESEMP}"
+										width="500" descricaoInput="id.matricula"
+										descricaoLabel="pessoaFisica.nome"
+										suggestionAction="listaServidores"
+										readonly="#{empty parecerAvaliacaoController.parecerAvalDesemp.parecer or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}"
+										controller="#{parecerAvaliacaoController}"
+										value="#{parecerAvaliacaoController.parecerAvalDesemp.servidorAvaliacao}"
+										render="vinServAvalDesemp">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_VINCULO}</b>
+											</f:facet> #{item.id.vinCodigo}
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_FUNCIONARIO}</b>
+											</f:facet> #{item.id.matricula}
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_NOME}</b>
+											</f:facet> #{item.pessoaFisica.nome}
+										</p:column>
+									</mec:suggestionBox>
+								</p:outputPanel>
+							</p:outputPanel>
+						</aghu:linha>
+						<aghu:linha style="margin-bottom: 7px;">
+							<p:outputPanel id="panelAvalDesempDescricao" layout="inline">
+								<mec:inputText id="descricaoAvalDesemp"
+									value="#{parecerAvaliacaoController.parecerAvalDesemp.descricao}"
+									label="#{messages.LABEL_CAD_PARECER_AVAL_DESCRICAO}"
+									title="#{messages.TITLE_CAD_PARECER_AVAL_DESCRICAO_DESEMP}"
+									maxlength="500" size="60" removerCaratersEspeciais="false"
+									readonly="#{parecerAvaliacaoController.desabilitarParecerAvalDesemp() or not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}"
+									required="#{not empty parecerAvaliacaoController.parecerAvalDesemp.parecer}"
+									panelView="true">
+										<p:ajax event="change" process="@this" />
+									</mec:inputText>
+							</p:outputPanel>
+							<aghu:acao newLine="false">
+								<mec:commandButton value="#{messages.LABEL_ANEXOS}"
+									id="bt_anexos3" immediate="true"
+									rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"
+									disabled="#{parecerAvaliacaoController.parecerAvalDesemp.codigo==null}"
+									action="#{parecerAvaliacaoController.redirecionaAnexosAvaliacaoDesempenho}"
+									styleClass=" icon-anexar bt_cinza">
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.numeroSolicitacao}"
+										value="#{parecerAvaliacaoController.parecerAvalDesemp.codigo}"
+										for="command" />
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.origemSolicitacao}"
+										value="PAD" for="command" />
+									<f:setPropertyActionListener
+										target="#{anexarDocumentoController.telaOrigem}"
+										value="compras-parecerAvaliacaoCRUD" for="command" />
+								</mec:commandButton>
+							</aghu:acao>
+						</aghu:linha>
+					</aghu:panelGeral>						
+				</aghu:linha>
+				<aghu:linha>
+				<aghu:panelGeral>
+				 <p:outputPanel id="panelParecerFinal" layout="inline">
+					<mec:selectOneMenu
+						label="#{messages.LABEL_CAD_PARECER_AVAL_PARECER_FINAL}"
+						title="#{messages.TITLE_CAD_PARECER_AVAL_PARECER_FINAL}"
+						id="parecerFinal" enum="DominioParecer" itemsType="enum"
+						required="true"
+						value="#{parecerAvaliacaoController.parecerAvaliacao.parecerGeral}"
+						readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit or parecerAvaliacaoController.desabilitarParecerFinal()}" />
+					<mec:inputText id="lote"
+						label="#{messages.LABEL_CAD_PARECER_AVAL_LOTE}"
+						title="#{messages.TITLE_CAD_PARECER_AVAL_LOTE}"
+						value="#{parecerAvaliacaoController.parecerAvaliacao.lote}"
+						size="20"
+						readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or not parecerAvaliacaoController.modoEdit}"
+						style="text-transform:uppercase;margin-right: 5px" />
+				</p:outputPanel>	
+				</aghu:panelGeral>
+				</aghu:linha>	
+						 
+			</aghu:panelGeral>
+			 
+			<aghu:acao>
+				<mec:commandButton id="bt_gravar" block="true"
+					value="#{messages.LABEL_GRAVAR}"
+					rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') and parecerAvaliacaoController.modoEdit}"
+					action="#{parecerAvaliacaoController.gravar}" profile="ok">
+					
+					<f:setPropertyActionListener
+										target="#{consultaParecerController.refazerPesquisa}"
+										value="#{true}" for="command" />
+				</mec:commandButton>
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" profile="back" immediate="true"
+					action="#{parecerAvaliacaoController.cancelar}" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

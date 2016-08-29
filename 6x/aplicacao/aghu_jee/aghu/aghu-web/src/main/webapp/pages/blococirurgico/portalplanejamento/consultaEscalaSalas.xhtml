@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_AGRUPAR_PROCEDIMENTO_CIRURGICO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>  
+      <style xml:space="preserve">
+    		fieldset.tabela {
+    			padding: 0 9px !important;
+    		}
+    		div.div-alerta {
+    			width: 99% !important;
+    		}
+    		.hide-column-names table thead tr {
+			    display: none;
+			}
+			#tabelaEscalaInterna td {
+				padding: 4px 4px;
+			}
+			.background-color1{ background-color: #FFFACD; }
+			.background-color2{ background-color: #FFD700; }
+			.background-color3{ background-color: #D3D3D3; }
+    	</style> 
+    </ui:define>
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{consultaEscalaSalasController.iniciar}"/>
+      </f:metadata>
+    </ui:define>
+    <ui:define name="body">
+      <mec:pageConfig controller="#{consultaEscalaSalasController}"/>
+      <p:outputPanel id="panelTodo" layout="inline">
+        <h:form prependId="false" id="formEscala">
+          <aghu:panelGeral legend="#{messages.LABEL_CONSULTAR_ESCALA_SALAS}">
+            <aghu:linha>
+				<mec:selectOneMenu id="unidadesCirurgicas" noSelectionOption="false" label="#{messages.LABEL_LOCAL_ESCALA_SALAS}" title="#{messages.TITLE_LOCAL_ESCALA_SALAS}" items="#{consultaEscalaSalasController.listUnidadesFuncionais}" value="#{consultaEscalaSalasController.aghUnidadesFuncionais}" itemLabel="descricao">
+					<p:ajax event="change" update="@(#painelEscala)" process="@this" listener="#{consultaEscalaSalasController.mudarUnidadeFuncional}" />
+				</mec:selectOneMenu>
+			</aghu:linha>
+            <aghu:linha>
+              <p:outputPanel id="painelEscala" layout="inline">
+                 <div id="tbGridHeader" style="width: 947px">
+							<mec:serverDataTable id="tabelaEscala" paginatorAlwaysVisible="false" paginator="false" emptyMessage="Nenhum registro encontrado!" rendered="#{not empty consultaEscalaSalasController.escala}" styleClass="" style="border-collapse: collapse;" list="#{consultaEscalaSalasController.escala}">
+									<p:columnGroup type="header">
+										<p:column style="width:49px" headerText="#{messages.LABEL_SALAS_ESCALA_SALAS}" />
+										<p:column headerText="#{messages.LABEL_SEGUNDA_ESCALA_SALAS}" />
+										<p:column headerText="#{messages.LABEL_TERCA_ESCALA_SALAS}" />
+										<p:column headerText="#{messages.LABEL_QUARTA_ESCALA_SALAS}" />
+										<p:column headerText="#{messages.LABEL_QUINTA_ESCALA_SALAS}" />
+										<p:column headerText="#{messages.LABEL_SEXTA_ESCALA_SALAS}" />
+										<p:column headerText="#{messages.LABEL_SABADO_ESCALA_SALAS}" />
+										<p:column headerText="#{messages.LABEL_DOMINGO_ESCALA_SALAS}" />
+									</p:columnGroup>
+								</mec:serverDataTable>
+							</div>
+                			<div id="tbGrid" style="max-height:320px; overflow-y: scroll; width: 961px">
+								<p:dataTable id="tabelaEscalaInterna" paginatorAlwaysVisible="false" paginator="false" emptyMessage="Nenhum registro encontrado!" styleClass="hide-column-names" style="border-collapse: collapse;" value="#{consultaEscalaSalasController.escala}" var="_esc">
+									<p:column style="width:20px; border: none;">
+										<h:outputText value="#{_esc.sala}" />
+									</p:column>
+									<p:column style="padding: 0; margin: 0; width: 100%;">
+										<mec:serverDataTable id="tabelaTurnos" var="_sal" style="padding: 0;" list="#{_esc.turnos}" rowKeyVar="_ind" controller="#{consultaEscalaSalasController}" paginatorAlwaysVisible="false" paginator="false" styleClass="hide-column-names">
+											<c:set var="_sal" value="#{item}" />
+											<p:column style="width:26px;" styleClass="#{ _ind eq 0 ? 'background-color1' : (_ind eq 1 ? 'background-color2' : 'background-color3') }">
+												<h:outputText value="#{_sal.turno}" />
+											</p:column>
+											<p:column style="width:100px;" styleClass="#{ _ind eq 0 ? 'background-color1' : (_ind eq 1 ? 'background-color2' : 'background-color3') }">
+												<p:outputPanel id="segunda" rendered="#{_sal.dias[0].profissionais ne null and not _sal.dias[0].profissionais.isEmpty()}" layout="inline">
+													<ui:repeat value="#{_sal.dias[0].profissionais}" var="_prof" varStatus="status">
+														<ui:fragment rendered="#{status.index lt 3}">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{(_prof.nome.length() gt 12) ? fn:substring(_prof.nome,0,12) : _prof.nome}" />
+															<h:outputText value="..." rendered="#{_prof.nome.length() gt 12}" />
+															<br clear="none" />
+														</ui:fragment>
+													</ui:repeat>
+													<h:outputText value="#{messages.LABEL_MAIS_ESCALA_SALAS}" rendered="#{_sal.dias[0].profissionais.size() gt 3}" />
+													<p:tooltip for="segunda">
+														<ui:repeat value="#{_sal.dias[0].profissionais}" var="_prof">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{_prof.nome}" />
+															<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[0].particular}" />
+															<br clear="none" />
+														</ui:repeat>
+													</p:tooltip>
+												</p:outputPanel>
+												<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[0].particular}" />
+												<h:outputText value="#{messages.LABEL_URGENCIA_ESCALA_SALAS}" rendered="#{_sal.dias[0].urgencia}" />
+											</p:column>
+											<p:column style="width:100px;" styleClass="#{ _ind eq 0 ? 'background-color1' : (_ind eq 1 ? 'background-color2' : 'background-color3') }">
+												<p:outputPanel id="terca" rendered="#{_sal.dias[1].profissionais ne null and not _sal.dias[1].profissionais.isEmpty()}" layout="inline">
+													<ui:repeat value="#{_sal.dias[1].profissionais}" var="_prof" varStatus="status">
+														<ui:fragment rendered="#{status.index lt 3}">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{(_prof.nome.length() gt 12) ? fn:substring(_prof.nome,0,12) : _prof.nome}" />
+															<h:outputText value="..." rendered="#{_prof.nome.length() gt 12}" />
+															<br clear="none" />
+														</ui:fragment>
+													</ui:repeat>
+													<h:outputText value="#{messages.LABEL_MAIS_ESCALA_SALAS}" rendered="#{_sal.dias[1].profissionais.size() gt 3}" />
+													<p:tooltip for="terca">
+														<ui:repeat value="#{_sal.dias[1].profissionais}" var="_prof">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{_prof.nome}" />
+															<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[1].particular}" />
+															<br clear="none" />
+														</ui:repeat>
+													</p:tooltip>
+												</p:outputPanel>
+												<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[1].particular}" />
+												<h:outputText value="#{messages.LABEL_URGENCIA_ESCALA_SALAS}" rendered="#{_sal.dias[1].urgencia}" />
+											</p:column>
+											<p:column style="width:100px;" styleClass="#{ _ind eq 0 ? 'background-color1' : (_ind eq 1 ? 'background-color2' : 'background-color3') }">
+												<p:outputPanel id="quarta" rendered="#{_sal.dias[2].profissionais ne null and not _sal.dias[2].profissionais.isEmpty()}" layout="inline">
+													<ui:repeat value="#{_sal.dias[2].profissionais}" var="_prof" varStatus="status">
+														<ui:fragment rendered="#{status.index lt 3}">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{(_prof.nome.length() gt 12) ? fn:substring(_prof.nome,0,12) : _prof.nome}" />
+															<h:outputText value="..." rendered="#{_prof.nome.length() gt 12}" />
+															<br clear="none" />
+														</ui:fragment>
+													</ui:repeat>
+													<p:tooltip for="quarta">
+														<ui:repeat value="#{_sal.dias[2].profissionais}" var="_prof">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{_prof.nome}" />
+															<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[2].particular}" />
+															<br clear="none" />
+														</ui:repeat>
+													</p:tooltip>
+												</p:outputPanel>
+												<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[2].particular}" />
+												<h:outputText value="#{messages.LABEL_URGENCIA_ESCALA_SALAS}" rendered="#{_sal.dias[2].urgencia}" />
+											</p:column>
+											<p:column style="width:100px;" styleClass="#{ _ind eq 0 ? 'background-color1' : (_ind eq 1 ? 'background-color2' : 'background-color3') }">
+												<p:outputPanel id="quinta" rendered="#{_sal.dias[3].profissionais ne null and not _sal.dias[3].profissionais.isEmpty()}" layout="inline">
+													<ui:repeat value="#{_sal.dias[3].profissionais}" var="_prof" varStatus="status">
+														<ui:fragment rendered="#{status.index lt 3}">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{(_prof.nome.length() gt 12) ? fn:substring(_prof.nome,0,12) : _prof.nome}" />
+															<h:outputText value="..." rendered="#{_prof.nome.length() gt 12}" />
+															<br clear="none" />
+														</ui:fragment>
+													</ui:repeat>
+													<h:outputText value="#{messages.LABEL_MAIS_ESCALA_SALAS}" rendered="#{_sal.dias[3].profissionais.size() gt 3}" />
+													<p:tooltip for="quinta">
+														<ui:repeat value="#{_sal.dias[3].profissionais}" var="_prof">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{_prof.nome}" />
+															<br clear="none" />
+														</ui:repeat>
+														<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[3].particular}" />
+													</p:tooltip>
+												</p:outputPanel>
+												<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[3].particular}" />
+												<h:outputText value="#{messages.LABEL_URGENCIA_ESCALA_SALAS}" rendered="#{_sal.dias[3].urgencia}" />
+											</p:column>
+											<p:column style="width:100px;" styleClass="#{ _ind eq 0 ? 'background-color1' : (_ind eq 1 ? 'background-color2' : 'background-color3') }">
+												<p:outputPanel id="sexta" rendered="#{_sal.dias[4].profissionais ne null and not _sal.dias[4].profissionais.isEmpty()}" layout="inline">
+													<ui:repeat value="#{_sal.dias[4].profissionais}" var="_prof" varStatus="status">
+														<ui:fragment rendered="#{status.index lt 3}">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{(_prof.nome.length() gt 12) ? fn:substring(_prof.nome,0,12) : _prof.nome}" />
+															<h:outputText value="..." rendered="#{_prof.nome.length() gt 12}" />
+															<br clear="none" />
+														</ui:fragment>
+													</ui:repeat>
+													<h:outputText value="#{messages.LABEL_MAIS_ESCALA_SALAS}" rendered="#{_sal.dias[4].profissionais.size() gt 3}" />
+													<p:tooltip for="sexta">
+														<ui:repeat value="#{_sal.dias[4].profissionais}" var="_prof">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{_prof.nome}" />
+															<br clear="none" />
+														</ui:repeat>
+														<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[4].particular}" />
+													</p:tooltip>
+												</p:outputPanel>
+												<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[4].particular}" />
+												<h:outputText value="#{messages.LABEL_URGENCIA_ESCALA_SALAS}" rendered="#{_sal.dias[4].urgencia}" />
+											</p:column>
+											<p:column style="width:100px;" styleClass="#{ _ind eq 0 ? 'background-color1' : (_ind eq 1 ? 'background-color2' : 'background-color3') }">
+												<p:outputPanel id="sabado" rendered="#{_sal.dias[5].profissionais ne null and not _sal.dias[5].profissionais.isEmpty()}" layout="inline">
+													<ui:repeat value="#{_sal.dias[5].profissionais}"
+														var="_prof" varStatus="status">
+														<ui:fragment rendered="#{status.index lt 3}">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{(_prof.nome.length() gt 12) ? fn:substring(_prof.nome,0,12) : _prof.nome}" />
+															<h:outputText value="..." rendered="#{_prof.nome.length() gt 12}" />
+															<br clear="none" />
+														</ui:fragment>
+													</ui:repeat>
+													<h:outputText value="#{messages.LABEL_MAIS_ESCALA_SALAS}" rendered="#{_sal.dias[5].profissionais.size() gt 3}" />
+													<p:tooltip for="sabado">
+														<ui:repeat value="#{_sal.dias[5].profissionais}" var="_prof">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{_prof.nome}" />
+															<br clear="none" />
+														</ui:repeat>
+														<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[5].particular}" />
+													</p:tooltip>
+												</p:outputPanel>
+												<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[5].particular}" />
+												<h:outputText value="#{messages.LABEL_URGENCIA_ESCALA_SALAS}" rendered="#{_sal.dias[5].urgencia}" />
+											</p:column>
+											<p:column style="width: 100px;" styleClass="#{ _ind eq 0 ? 'background-color1' : (_ind eq 1 ? 'background-color2' : 'background-color3') }">
+												<p:outputPanel id="domingo" rendered="#{_sal.dias[6].profissionais ne null and not _sal.dias[6].profissionais.isEmpty()}" layout="inline">
+													<ui:repeat value="#{_sal.dias[6].profissionais}" var="_prof" varStatus="status">
+														<ui:fragment rendered="#{status.index lt 3}">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{(_prof.nome.length() gt 12) ? fn:substring(_prof.nome,0,12) : _prof.nome}" />
+															<h:outputText value="..." rendered="#{_prof.nome.length() gt 12}" />
+															<br clear="none" />
+														</ui:fragment>
+													</ui:repeat>
+													<h:outputText value="#{messages.LABEL_MAIS_ESCALA_SALAS}" rendered="#{_sal.dias[6].profissionais.size() gt 3}" />
+													<p:tooltip for="domingo">
+														<ui:repeat value="#{_sal.dias[6].profissionais}" var="_prof">
+															<h:outputText value="#{_prof.siglaEspecialidade}-#{_prof.nome}" />
+															<br clear="none" />
+														</ui:repeat>
+														<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[6].particular}" />
+													</p:tooltip>
+												</p:outputPanel>
+												<h:outputText value="#{messages.LABEL_PARTICULAR_ESCALA_SALAS}" rendered="#{_sal.dias[6].particular}" />
+												<h:outputText value="#{messages.LABEL_URGENCIA_ESCALA_SALAS}" rendered="#{_sal.dias[6].urgencia}" />
+											</p:column>
+										</mec:serverDataTable>
+									</p:column>
+								</p:dataTable>
+							</div>
+              </p:outputPanel> 
+            </aghu:linha>
+          </aghu:panelGeral>
+				<aghu:acao>
+					<p:outputPanel id="painelBotoes">
+						<mec:commandButton id="btImprimir" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" action="#{consultaEscalaSalasController.redirecionarRelatorio()}" disabled="#{(not mf:hasPermission(securityController,'/blococirurgico/portalplanejamento/relatorioEscalaDeSalasPdf.xhtml,render')) or (empty consultaEscalaSalasController.escala)}" profile="view" />
+						<mec:commandButton id="btVoltar" value="#{messages.LABEL_VOLTAR}" immediate="true" rendered="#{not empty consultaEscalaSalasController.urlVoltar}" action="#{consultaEscalaSalasController.voltar}" styleClass="bt_voltar bt_cinza" profile="back" />
+					</p:outputPanel>
+				</aghu:acao>
+			</h:form>  
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

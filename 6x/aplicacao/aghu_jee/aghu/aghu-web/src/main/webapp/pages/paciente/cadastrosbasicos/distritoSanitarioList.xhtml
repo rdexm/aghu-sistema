@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_DISTRITO_SANITARIO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{distritoSanitarioPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_DISTRITOS_SANITARIOS}"> 
+          <aghu:linha> 
+            <mec:inputNumero value="#{distritoSanitarioPaginatorController.distritoSanitario.codigo}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_DISTRITO_SANITARIO_PESQUISA_CODIGO}" maxlength="3" size="3" id="codigo"/>  
+            <mec:inputText label="#{messages.LABEL_DISTRITO_SANITARIO_DESCRICAO}" size="61" maxlength="60" title="#{messages.TITLE_DISTRITO_SANITARIO_PESQUISA_DESCRICAO}" value="#{distritoSanitarioPaginatorController.distritoSanitario.descricao}" style="text-transform:uppercase" id="descricao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" disabled="#{not mf:hasPermission(securityController, 'distritoSanitario,pesquisar')}" action="#{distritoSanitarioPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="Limpar" action="#{distritoSanitarioPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="Novo" action="#{distritoSanitarioPaginatorController.redirecionaIncluirDistritoSanitario}" rendered="#{distritoSanitarioPaginatorController.exibirBotaoNovo}" disabled="#{not mf:hasPermission(securityController, 'distritoSanitario,alterar')}" profile="add" ajax="true"/> 
+        </aghu:acao>  
+        <mec:serverDataTable id="tabelaDistritoSanitario" dataModel="dataModel" rendered="#{distritoSanitarioPaginatorController.dataModel.pesquisaAtiva}" title="#{messages.TITLE_DISTRITO_SANITARIO_ENCONTRADOS}" controller="#{distritoSanitarioPaginatorController}"> 
+          <c:set var="_distritoSanitario" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaDistritoSanitario_link_editar" profile="edit" title="editar" action="#{distritoSanitarioPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{distritoSanitarioController.distritoSanitario}" value="#{_distritoSanitario}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{distritoSanitarioPaginatorController.distritoSanitarioSelecionado}" value="#{_distritoSanitario}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaDistritoSanitario_link_remover" profile="delete" title="excluir" action="#{distritoSanitarioPaginatorController.excluir}" permission="distritoSanitario,alterar"> 
+              <f:setPropertyActionListener for="command" target="#{distritoSanitarioPaginatorController.distritoSanitarioSelecionado}" value="#{_distritoSanitario}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_distritoSanitario.codigo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_distritoSanitario.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CIDADES}"/> 
+            </f:facet>  
+            <h:outputText value="0" rendered="#{empty _distritoSanitario.cidades}"/>  
+            <mec:commandLink action="#{distritoSanitarioPaginatorController.exibeCidades(_distritoSanitario)}" oncomplete="PF('cidadesWG').show();;" rendered="#{not empty _distritoSanitario.cidades}" ajax="true" render="cidades"> 
+              <h:outputText value="#{fn:length(_distritoSanitario.cidades)}"/> 
+            </mec:commandLink> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:dialog id="cidades" width="600" height="300" modal="true" resizable="false" widgetVar="cidadesWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CIDADES_DISTRITO_SANITARIO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <aghu:panelGeral id="ffdl_informacoes"> 
+          <aghu:linha> 
+            <h:outputText value="#{messages.LABEL_NENHUMA_CIDADE_DISTRITO_SANITARIO}" rendered="#{empty distritoSanitarioPaginatorController.cidades}"/>  
+            <mec:serverDataTable width="100%" rendered="#{not empty distritoSanitarioPaginatorController.cidades}" list="#{distritoSanitarioPaginatorController.cidades}" scrollable="true"> 
+              <c:set var="_cidade" value="#{item}"/>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_NOME}"/> 
+                </f:facet>  
+                <h:outputText value="#{_cidade.nome} - #{_cidade.aipUf.sigla}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

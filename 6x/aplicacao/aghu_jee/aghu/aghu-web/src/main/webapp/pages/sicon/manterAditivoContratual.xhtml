@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Aditivos Contratuais :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterAditivoContratualController.init}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterAditivoContratualController}" ignoreEnter="true"/>  
+      <p:outputPanel id="panel_" layout="inline" styleClass="aghu-panel-geral">
+      <h:form prependId="false" id="formHeaderRescContrato">  
+        <aghu:panelGeral legend="#{messages.LABEL_HEADER_RESCICAO_CONTRATO}"> 
+          <p:outputPanel layout="inline"> 
+            <p:outputPanel id="hdr"> 
+              <aghu:linha> 
+                <mec:inputNumero id="numContrato" label="#{messages.LABEL_NUMERO}" size="20" readonly="true" value="#{manterAditivoContratualController.scoContrato.nrContrato}"/>  
+                <mec:inputText label="#{messages.LABEL_HEADER_CNPJCPF}" value="#{manterAditivoContratualController.getCpfCnpj()}" style="text-transform:uppercase" size="30" readonly="true" id="cpfcnpj"/>  
+                <mec:inputText label="#{messages.LABEL_HEADER_RAZAO_SOCIAL}" value="#{manterAditivoContratualController.scoContrato.fornecedor.razaoSocial}" style="text-transform:uppercase" size="80" readonly="true" id="razaosocial"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextData label="#{messages.LABEL_INICIO_VIGENCIA}" 
+                value="#{manterAditivoContratualController.scoContrato.dtInicioVigencia}" 
+                readonly="true" id="hdr_dataIniVigencia" tipo="data"/>  
+                <mec:inputTextData label="#{messages.LABEL_FIM_VIGENCIA}" 
+                value="#{manterAditivoContratualController.scoContrato.dtFimVigencia}" 
+                readonly="true" id="hdr_dataFimVigencia" tipo="data"/>  
+                <mec:inputNumero inteiros="8" decimais="2" label="#{messages.LABEL_VL_TOT}" 
+                value="#{manterAditivoContratualController.scoContrato.valorTotal}" 
+                converter="#{currencyConverter}" styleClass="mascara(decimal)" readonly="true" id="val_orig" />
+              </aghu:linha> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        </h:form>
+        <h:form prependId="false" id="formItensContrato"> 
+          <p:outputPanel id="fieldz" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.LABEL_ADICONT_BDY}"> 
+              <aghu:linha> 
+                <mec:inputNumero id="numAditivo" label="#{messages.LABEL_ADITNUM}" size="20" readonly="true" value="#{manterAditivoContratualController.aditContrato.id.seq}"/>  
+                <mec:suggestionBox id="tipoContrato" label="#{messages.LABEL_TIPO_CONTRATO}" required="true" requiredMessage="Um valor é obrigatório para o campo #{label}." title="#{messages.LABEL_TIPO_CONTRATO_HLP}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="listarTiposContratoAtivos" readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}" controller="#{manterAditivoContratualController}" value="#{manterAditivoContratualController.aditContrato.tipoContratoSicon}"> 
+                  <p:column>#{item.descricao}</p:column> 
+                </mec:suggestionBox>  
+                <mec:inputNumero label="#{messages.LABEL_VL_ADIT}" title="#{messages.LABEL_VL_ADIT_HLP}" value="#{manterAditivoContratualController.aditContrato.vlAditivado}" inteiros="13" decimais="2" styleClass="mascara(decimal)" readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}" id="valadit"/>
+                <mec:inputText label="#{messages.LABEL_SITUACAO}" size="25" readonly="true" value="#{manterAditivoContratualController.aditContrato.situacao.getDescricao()}" id="situacao"/>  
+                <mec:selectOneMenu id="tipoAditivo" label="#{messages.LABEL_TIPO_ADITIVO}" title="#{messages.TITLE_TIPO_ADITIVO}" enum="DominioTipoAditivo" value="#{manterAditivoContratualController.aditContrato.indTipoAditivo}" readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}" ajaxValidation="false"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+              
+              <mec:inputTextData name="dataIniVigencia" label="#{messages.LABEL_INICIO_VIGENCIA}" 
+                      value="#{manterAditivoContratualController.aditContrato.dtInicioVigencia}" 
+                      readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}"
+                      required="true" tipo="data" >
+					
+					<p:ajax event="dateSelect" process="@this , @(#dataFimVigencia)"  update="@(#periodo)" listener="#{manterAditivoContratualController.calculaDataDiferenca()}" />
+            		<p:ajax event="change" process="@this , @(#dataFimVigencia)"  update="@(#periodo)" listener="#{manterAditivoContratualController.calculaDataDiferenca()}" />
+                  
+              </mec:inputTextData>    
+              <mec:inputTextData name="dataFimVigencia" label="#{messages.LABEL_FIM_VIGENCIA}" 
+                      value="#{manterAditivoContratualController.aditContrato.dtFimVigencia}" 
+                      readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}"
+                      required="true" tipo="data">
+                      <p:ajax event="dateSelect" process="@this , @(#dataFimVigencia)"  update="@(#periodo)" listener="#{manterAditivoContratualController.calculaDataDiferenca()}"/>
+            		  <p:ajax event="change"  process="@this , @(#dataFimVigencia)" update="@(#periodo)" listener="#{manterAditivoContratualController.calculaDataDiferenca()}"/>
+
+                  </mec:inputTextData>                 
+                  <mec:inputText label="#{messages.LABEL_GRID_PERIODO_VIG}" size="25" readonly="true" value="#{manterAditivoContratualController.periodo}" id="periodo"/>  
+                  <mec:inputTextData label="#{messages.LABEL_DT_RESC}" value="#{manterAditivoContratualController.aditContrato.dataRescicao}" id="dataResc" tipo="data"/> 
+               
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextArea  title="#{messages.LABEL_OBJETO_HLP}" label="#{messages.LABEL_OBJETO}" cols="120" rows="5" size="200" value="#{manterAditivoContratualController.aditContrato.objetoContrato}" readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}" required="true" id="objeto" maxlength="509" style="text-transform:uppercase;z-index:0"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextArea title="#{messages.LABEL_JUST_HLP}" label="#{messages.LABEL_JUSTIFICATIVA}" cols="120" rows="5" size="200" value="#{manterAditivoContratualController.aditContrato.justificativa}" marlength="80" readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}" required="true" id="justificativa" maxlength="80" style="text-transform:uppercase;z-index:0"/> 
+              </aghu:linha>  
+              <aghu:linha>
+                <mec:inputTextData label="#{messages.LABEL_DATA_ASSINATURA}" title="#{messages.LABEL_ADIT_DATA_ASSINATURA_HELP}" value="#{manterAditivoContratualController.aditContrato.dataAssinatura}" readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}" id="dtass" tipo="data"/>  
+                <mec:inputTextData label="#{messages.LABEL_DATA_PUBLICACAO}" title="#{messages.LABEL_ADIT_DATA_PUBLICACAO_HELP}" value="#{manterAditivoContratualController.aditContrato.dataPublicacao}" readonly="#{manterAditivoContratualController.aditContrato.situacao == 'E'}" id="dtpubl" tipo="data"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextArea style=";z-index: 0;" title="#{messages.LABEL_OBSERVACOES_HLP}" cols="120" label="#{messages.LABEL_OBSERVACOES}" rows="5" size="200" value="#{manterAditivoContratualController.aditContrato.observacao}" required="false" id="obs" maxlength="80"/>
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <fieldset class="acao"> 
+                <mec:commandButton id="btn_salvar" status="commonstatus" action="#{manterAditivoContratualController.gravar}" value="#{manterAditivoContratualController.isEdit ? messages.LABEL_BT_EDICAO : messages.LABEL_GRAVAR}" profile="ok" ajax="true" render="panel_, formItens"/>
+                <mec:commandButton id="bt_limpar" value="#{manterAditivoContratualController.isEdit ? messages.LABEL_CANCELAR_EDICAO : messages.LABEL_LIMPAR}" action="#{manterAditivoContratualController.limpar()}" immediate="true" styleClass="bt_cinza" profile="clear" ajax="true" render="panel_, formItens"/>
+
+
+                <mec:commandButton id="bt_voltar" action="#{manterAditivoContratualController.voltar}" value="#{messages.LABEL_VOLTAR}" styleClass=" alinha-direita bt_cinza" ajax="true" process="@this" profile="back"/>
+            </fieldset> 
+          </p:outputPanel> 
+        </h:form>  
+        <br clear="none"/>  
+        <h:form prependId="false" id="formItens"> 
+          <p:outputPanel id="panelTabelaItens" layout="inline"> 
+
+              <mec:serverDataTable id="tabelaItens" rowKeyVar="_key" rendered="#{not empty manterAditivoContratualController.items}" list="#{manterAditivoContratualController.items}" scrollable="true"> 
+                <c:set var="_item" value="#{item}"/>  
+                <p:column width="45px" style="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq  ? 'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_GRID_ACOES}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{manterAditivoContratualController.editar(_item)}" rendered="#{ _item.id.seq != manterAditivoContratualController.aditContrato.id.seq}" profile="edit"/>  
+                  <mec:commandLink rendered="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq}" styleClass=" silk-blank silk-icon"/>  
+                  <mec:commandLink rendered="#{_item.situacao != 'E' and _item.situacao != 'AR' and (manterAditivoContratualController.habilitarExclusao(_item))}" 
+                                   id="tabelaResult_link_remover" profile="delete" title="#{messages.LABEL_EXCLUIR}"
+                                   action="#{manterAditivoContratualController.excluir}"> 
+                             <f:setPropertyActionListener for="command" target="#{manterAditivoContratualController.aditSeq}" value="#{_item.id.seq}"/> 
+                  </mec:commandLink> 
+                  
+                </p:column>  
+                <p:column width="50px" style="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq ? 'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ADITNUM}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.id.seq}"/> 
+                </p:column>  
+                <p:column width="100px" style="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq ? 'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_GRID_PERIODO_VIG}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.dtInicioVigencia}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText>- 
+                  <h:outputText value="#{ _item.dtFimVigencia}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column width="50px" style="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq ? 'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DATA_ASSINATURA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.dataAssinatura}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column width="50px" style="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq ? 'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DATA_PUBLICACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.dataPublicacao}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column width="50px" style="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq ? 'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VL_ADIT}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.vlAditivado}"> 
+                    <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column width="50px" style="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq ? 'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DT_RESC}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.dataRescicao}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column width="50px" style="#{_item.id.seq == manterAditivoContratualController.aditContrato.id.seq ? 'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.situacao.getDescricao()}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+
+          </p:outputPanel> 
+        </h:form> 
+        </p:outputPanel>        
+    </ui:define> 
+  </ui:composition> 
+</html>

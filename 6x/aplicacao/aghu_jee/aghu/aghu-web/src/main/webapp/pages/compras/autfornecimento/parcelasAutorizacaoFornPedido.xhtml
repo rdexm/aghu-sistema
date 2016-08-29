@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_PARCELAS_AFP} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{parcelasAFEntregaLiberadaController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{parcelasAFEntregaLiberadaController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <p:outputPanel id="panelDadosAF" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_PARCELAS_AFP}"> 
+            <aghu:linha> 
+              <mec:inputText id="numeroAF" label="#{messages.LABEL_AF_PARCELAS_AFP}" value="#{parcelasAFEntregaLiberadaController.numeroAF} / #{parcelasAFEntregaLiberadaController.numeroComplemento}" size="12" readonly="true"/>  
+              <mec:inputNumero id="numeroAFP" label="#{messages.LABEL_PEDIDO_PARCELAS_AFP}" value="#{parcelasAFEntregaLiberadaController.numeroAFP}" size="10" readonly="true"/>  
+              <mec:inputText id="fornecedor" label="#{messages.LABEL_FORNECEDOR_PARCELAS_AFP}" value="#{parcelasAFEntregaLiberadaController.codFornecedor} - #{parcelasAFEntregaLiberadaController.nomeFornecedor}" size="70" style="text-transform:uppercase" readonly="true"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false" id="formResultados"> 
+        <aghu:panelGeral> 
+          <br clear="none"/>  
+          <p:outputPanel id="panelParcelasAFP"> 
+            <aghu:linha> 
+              <mec:serverDataTable  scrollHeight="400" id="resultList" list="#{parcelasAFEntregaLiberadaController.listaParcelasAFP}" scrollable="true"> 
+                <c:set var="parcela" value="#{item}"/>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink id="lnkUltCompras" title="#{messages.HINT_LISTA_ULT_COMPRAS_PARCELAS_AFP}" rendered="false" disabled="true" action="#{parcelasAFEntregaLiberadaController.redirecionarAutorizacaoFornecimento}" styleClass=" silk-lista-consultar silk-icon"> 
+                    <f:param name="#{autorizacaoFornecimentoController.voltarParaUrl}" value="parcelasAutorizacaoFornPedido"/> 
+                  </mec:commandLink>  
+                  <mec:commandLink id="lnkSolCompra" title="#{messages.HINT_LISTA_SOL_COMPRA_PARCELAS_AFP}" rendered="false" disabled="true" action="#{parcelasAFEntregaLiberadaController.redirecionarAutorizacaoFornecimento}" profile="delete"> 
+                    <f:param name="#{autorizacaoFornecimentoController.voltarParaUrl}" value="parcelasAutorizacaoFornPedido"/> 
+                  </mec:commandLink>  
+                  <mec:commandLink id="lnkEstatiscaConsumo" action="#{parcelasAFEntregaLiberadaController.visualizarEstatisticasConsumo}" title="#{messages.HINT_LISTA_ESTATISTICA_PARCELAS_AFP}" disabled="#{empty parcela.codMaterial}" styleClass=" silk-chart-bar silk-icon"> 
+                    <f:setPropertyActionListener target="#{estatisticaConsumoController.codigoMaterial}" value="#{parcela.codMaterial}" for="command"/>  
+                    <f:setPropertyActionListener target="#{estatisticaConsumoController.voltarPara}" value="compras-parcelasAutorizacaoFornPedido" for="command"/> 
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_ITEM_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcela.numeroIAF}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_PARC_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcela.parcela}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_ENVIADO_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:graphicImage value="/resources/img/accept.png" rendered="#{parcela.indEnvioFornecedor}"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{parcela.indEnvioFornecedor}"> 
+                    <h:outputText value="#{parcela.dataEnvioFornecedor}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_UNIDADE_PARCELAS_AFP}" title="#{messages.HINT_LISTA_UNIDADE_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcela.codUnidMedIAF}" rendered="#{not empty parcela.codUnidMedIAF}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_FC_PARCELAS_AFP}" title="#{messages.HINT_LISTA_FC_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcela.fatorConversaoIAF}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_QTDE_PARCELAS_AFP}" title="#{messages.HINT_LISTA_QTDE_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcela.qtde}"/> 
+                </p:column>  
+                <p:column style="#{parcelasAFEntregaLiberadaController.verificarDtPrevEntrega(parcela) ? 'background-color:#FF0000;' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_PREV_ENTREGA_PARCELAS_AFP}" title="#{messages.HINT_LISTA_PREV_ENTREGA_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcela.dataPrevEntrega}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_QTDE_ENTREGUE_PARCELAS_AFP}" title="#{messages.HINT_LISTA_QTDE_ENTREGUE_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcela.qtdeEntregue}"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty parcela.qtdeEntregue}"> 
+                    <h:outputText value="#{messages.HINT_VAL_TOT_PREV_ENTREGA_PARCELAS_AFP}: "/>  
+                    <h:outputText value="#{parcela.valorTotal}"> 
+                      <f:converter converterId="bigDecimalConverter"/> 
+                    </h:outputText> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LISTA_GRUPO_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcelasAFEntregaLiberadaController.tipoSolicitacao == 'C' ? parcela.codGrupoMaterial : parcela.codGrupoServico}"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{parcelasAFEntregaLiberadaController.tipoSolicitacao == 'C' ? parcela.nomeGrupoMaterial : parcela.nomeGrupoServico}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column style="width:300px"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{parcelasAFEntregaLiberadaController.tipoSolicitacao == 'C' ?                 messages.LABEL_LISTA_MAT_PARCELAS_AFP : messages.LABEL_LISTA_SRV_PARCELAS_AFP}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{parcelasAFEntregaLiberadaController.tipoSolicitacao == 'C' ? parcela.codMaterial : parcela.codServico} -                #{parcelasAFEntregaLiberadaController.tipoSolicitacao == 'C' ? parcela.nomeMaterial : parcela.nomeServico}"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{messages.LABEL_NOME}: #{parcelasAFEntregaLiberadaController.tipoSolicitacao == 'C' ? parcela.nomeMaterial : parcela.nomeServico}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}: #{parcelasAFEntregaLiberadaController.tipoSolicitacao == 'C' ? parcela.descrMaterial : parcela.descrServico}"/> 
+                  </p:tooltip> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton immediate="true" id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{parcelasAFEntregaLiberadaController.voltar}" styleClass="bt_voltar bt_cinza" ajax="true" profile="back"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

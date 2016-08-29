@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+	<h:form id="formCirurgiasCanceladasResultados" prependId="false">
+		<aghu:acao>
+			<mec:commandButton
+				id="bt_imprime_pacientes_lista_procedimentos_cancelados_buttonView"
+				value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+				action="#{relatorioPacientesEmListaDeProcedimentosCanceladosController.print}"
+				profile="view" onclick="PF('loadDialogWG').show()"
+				rendered="#{mf:hasPermission(securityController,'imprimirPacienteProcedimentoCancelado,imprimir')}" />
+			<mec:commandButton
+				id="bt_imprime_pacientes_lista_procedimentos_cancelados_buttonPrint"
+				value="#{messages.LABEL_IMPRIMIR}"
+				action="#{relatorioPacientesEmListaDeProcedimentosCanceladosController.directPrint}"
+				profile="print" onclick="PF('loadDialogWG').show()"
+				rendered="#{mf:hasPermission(securityController,'imprimirPacienteProcedimentoCancelado,imprimir')}" />
+		</aghu:acao>
+		<aghu:table>
+		<mec:serverDataTable dataModel="dataModelCancelados" id="cirurgiasCanceladas"
+			value="#{cirurgiasCanceladasAgendaMedicoController}"
+			rendered="#{cirurgiasCanceladasAgendaMedicoController.dataModelCancelados.pesquisaAtiva}"
+			parameterPrefix="listaCrgsCanceladas_"
+			controller="#{cirurgiasCanceladasAgendaMedicoController}" draggableColumns="false" autoRender="true"
+			selection="itemSelecionado">
+			<c:set var="cigCancelada" value="#{item}" />
+			<p:column style="width:100px;" id="acao">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_ACAO}" />
+				</f:facet>
+				<mec:commandLink id="btnVisualizar"
+					action="blococirurgico-visualizaCirurgiaCancelada"
+					title="#{messages.LABEL_VISUALIZAR}"
+					rendered="#{mf:hasPermission(securityController,'visualizarPacienteProcedimentoCancelado,visualizar')}"
+					styleClass=" silk-magnifier silk-icon" >
+						<f:setPropertyActionListener target="#{visualizaCirurgiaCanceladaController.agdSeq}" value="#{cigCancelada.agdSeq}" for="command" />				
+				</mec:commandLink>
+				<mec:commandLink
+					action="#{cirurgiasCanceladasAgendaMedicoController.redirectTrocarLocalEspEquipeListaEspera(cigCancelada)}"
+					rendered="#{mf:hasPermission(securityController,'permitirTrocarLocalEspecialidadeEquipe,executar')}"
+					title="#{messages.LABEL_TROCAR_LOCAL_ESP_EQUIPE}"
+					styleClass=" silk-trocar silk-icon" requestDelay="1000" ajax="true" process="@this">
+					<f:setPropertyActionListener
+						value="blococirurgico-cirurgiasCanceladasAgendaMedico"
+						target="#{trocarLocalEspEquipeListaEsperaController.cameFrom}"
+						for="command" />						
+					<f:setPropertyActionListener
+						value="#{cigCancelada.agdSeq}"
+						target="#{trocarLocalEspEquipeListaEsperaController.agdSeq}"
+						for="command" />
+				</mec:commandLink>
+
+				<mec:commandLink id="btn_excluir" title="#{messages.LABEL_EXCLUIR}"
+					action="#{justificativaExcluirAgendamentoController.openDialog('modalJustificativaCirurgiasWG')}"
+					rendered="#{mf:hasPermission(securityController,'excluirPacienteListaCirurgiasCanceladas,excluir')}"
+					styleClass="silk-icon silk-delete" ajax="true"
+					render="modalExclusaoPanel,modalJustificativaCirurgiaPanel"
+					process="@this">
+					<f:setPropertyActionListener value="#{null}"
+						target="#{justificativaExcluirAgendamentoController.justificativa}"
+						for="command" />
+					<f:setPropertyActionListener value="listaCirurgiasCanceladas"
+						target="#{justificativaExcluirAgendamentoController.cameFrom}"
+						for="command" />	
+					<f:setPropertyActionListener
+						value="#{justificativaExcluirAgendamentoController.obterTituloExcluirCirurgia(cigCancelada.agdSeq)}"
+						target="#{justificativaExcluirAgendamentoController.tituloModal}"
+						for="command" />
+					<f:setPropertyActionListener
+						value="#{justificativaExcluirAgendamentoController.buscarListaCirurgiasCanceladasSeqId(cigCancelada.agdSeq)}"
+						target="#{justificativaExcluirAgendamentoController.seq}" for="command" />
+				</mec:commandLink>
+
+				<mec:commandLink id="bt_mostrarModalReagendamento"
+					title="#{messages.LABEL_REAGENDAR_PACIENTE_PROCEDIMENTO_CANCELADO}"
+					action="#{remarcarPacienteAgendaController.inicio}"
+					oncomplete="PF('remarcarPacienteAgendaModalWG').show()"
+					rendered="#{mf:hasPermission(securityController,'remarcarAgendamentoPaciente,remarcar')}"
+					styleClass=" silk-reagendar-cirurgias silk-icon" ajax="true"
+					render="remarcarPacienteAgendaModal" process="@this">
+					<f:setPropertyActionListener
+						value="#{cigCancelada.agdSeq}"	target="#{remarcarPacienteAgendaController.agdSeq}"	for="command" />
+					<f:setPropertyActionListener
+						value="cameFromCanceladas"	target="#{remarcarPacienteAgendaController.cameFrom}"	for="command" />
+				</mec:commandLink>
+				<mec:commandLink id="bt_mostrarAgendaHistorico"
+					oncomplete="PF('modalHistoricoAgenda')"
+					title="#{messages.LABEL_HISTORICO_AGENDA}"
+					action="#{historicoAgendaController.informarHistoricoAgenda(cigCancelada.agdSeq)}"
+					rendered="#{mf:hasPermission(securityController,'consultarHistoricoPaciente,executar')}"
+					styleClass=" silk-historico-cirurgias silk-icon" ajax="true"
+					render="modalHistoricoAgenda" process="@this" />
+			</p:column>
+			<p:column id="prontuario">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+				</f:facet>
+				<h:outputText value="#{cigCancelada.pacProntuario}" />
+				<mec:commandLink title="#{messages.TITLE_ABRIR_PRONTUARIO_ONLINE}"
+					style="float:right;padding: 0px 4px;"
+					rendered="#{not empty cigCancelada.pacProntuario and mf:hasPermission(securityController, '/paciente/prontuarioonline/arvorePOL.xhtml,render')}"
+					onclick="parent.addPOLProntuario(#{cigCancelada.prontuario})"
+					styleClass="silk-icon silk-pol16 silk-icon" ajax="true" />
+			</p:column>
+			<p:column id="paciente" sortBy="#{nome}" sortable="true">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_PESQUISA_AGENDA_CIRURGIA_COLUNA_NOME_PACIENTE}" />
+				</f:facet>
+				<p:tooltip for="toolTipNome" direction="bottom-right" styleClass="tooltip"
+					layout="block" rendered="#{cigCancelada.nome.length() &gt; 30}">
+					<h:outputText value="#{cigCancelada.nome}" />
+				</p:tooltip>
+				<h:outputText id="toolTipNome"
+					value="#{(cigCancelada.nome.length() &gt; 30) ? fn:substring(cigCancelada.nome,0,30) : cigCancelada.nome}" />
+				<h:outputText value="..."
+					rendered="#{(cigCancelada.nome.length() &gt; 30)}" />
+			</p:column>
+			<p:column id="procedimento">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_PROCEDIMENTO}" />
+				</f:facet>
+				<p:outputPanel rendered="#{cigCancelada.pciDescricao != null }"
+					layout="inline">
+					<p:tooltip for="toolTipDescricao" direction="bottom-right" styleClass="tooltip"
+						layout="block" rendered="#{cigCancelada.pciDescricao.length() &gt; 30}">
+						<h:outputText value="#{cigCancelada.pciDescricao}" />
+					</p:tooltip>
+					<h:outputText id="toolTipDescricao"
+						value="#{(cigCancelada.pciDescricao.length() &gt; 30) ? fn:substring(cigCancelada.pciDescricao,0,30) : cigCancelada.pciDescricao}" />
+					<h:outputText value="..."
+						rendered="#{(cigCancelada.pciDescricao.length() &gt; 30)}" />
+				</p:outputPanel>
+			</p:column>
+			<p:column id="motivoCancelamento">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_MOTIVO}" />
+				</f:facet>
+				<p:outputPanel rendered="#{cigCancelada.motivoCancelamento != null}"
+					layout="inline">
+					<p:tooltip for="toolTipMotivoCanc" direction="bottom-right" styleClass="tooltip"
+						layout="block"
+						rendered="#{cigCancelada.motivoCancelamento.length() &gt; 30}">
+						<h:outputText value="#{cigCancelada.motivoCancelamento}" />
+					</p:tooltip>
+					<h:outputText id="toolTipMotivoCanc"
+						value="#{(cigCancelada.motivoCancelamento.length() &gt; 30) ? fn:substring(cigCancelada.motivoCancelamento,0,30) : cigCancelada.motivoCancelamento}" />
+					<h:outputText value="..."
+						rendered="#{(cigCancelada.motivoCancelamento.length() &gt; 30)}" />
+				</p:outputPanel>
+			</p:column>
+			<p:column id="dataInclusao" sortBy="#{dthrInclusao}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_DATA_INCLUSAO}" />
+				</f:facet>
+				<h:outputText value="#{cigCancelada.dtInclusao}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputText>
+			</p:column>
+		</mec:serverDataTable>
+		</aghu:table>
+	</h:form>
+</ui:composition>
+</html>

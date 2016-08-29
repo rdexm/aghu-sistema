@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_MIGRAR_PACIENTES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>
+    
+     <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{migracaoPacientesController.inicio}"/> 
+      </f:metadata>
+      </ui:define>
+      
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{migracaoPacientesController}"/>  
+       <h:form id="form" prependId="false" > 
+        <aghu:panelGeral legend="#{messages.TITLE_MIGRAR_PACIENTES}"> 
+          <aghu:linha style="margin-left:4px !important; margin-right:4px !important;"> 
+            <mec:inputText id="separador" label="#{messages.LABEL_SEPARADOR}" required="true" size="3" maxlength="1" title="Caracter separador de campos no arquivo CSV" value="#{migracaoPacientesController.separador}"/> 
+          </aghu:linha>  
+          <aghu:linha style="margin-left:4px !important; margin-right:4px !important;"> 
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_ANULAR_PRONTUARIOS_INVALIDOS}" title="#{messages.TITLE_ANULAR_PRONTUARIOS_INVALIDOS}" id="anularPront" size="10" value="#{migracaoPacientesController.anularProntuarios}"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_MARCAR_NOME_MAE_NAO_INFORMADO}" title="#{messages.TITLE_MARCAR_NOME_MAE_NAO_INFORMADO}" id="nomeMaeNaoInf" size="10" value="#{migracaoPacientesController.nomeMaeNaoInformado}"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_GERAR_FONEMAS}" title="#{messages.TITLE_GERAR_FONEMAS}" id="gerarFonemas" size="10" value="#{migracaoPacientesController.gerarFonemas}"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_MIGRAR_ENDERECOS}" title="#{messages.TITLE_MIGRAR_ENDERECOS}" id="migrarEnderecos" size="10" value="#{migracaoPacientesController.migrarEnderecos}"/>  
+          	<mec:selectBooleanCheckbox label="#{messages.LABEL_TRATA_PRONTUARIO}" title="#{messages.TITLE_TRATA_PRONTUARIO}" id="trataProntuario" size="10" value="#{migracaoPacientesController.naoTrataProntuario}" />
+          </aghu:linha>  
+          <aghu:linha style="margin-left:4px !important; margin-right:4px !important;"> 
+            <div> 
+              <div style="float: left; width: 41%"> 
+                <h:panelGroup id="uploadArquivos">
+                	<p:fileUpload id="upload" 
+						fileUploadListener="#{migracaoPacientesController.listener}"
+						fileLimit="#{migracaoPacientesController.uploadsAvailable}"
+						auto="#{migracaoPacienteController.autoUpload}"
+						label="#{messages.LABEL_ADICIONAR_ARQUIVO_PACIENTES}"
+						uploadLabel="#{messages.LABEL_CARREGAR}"
+					 	cancelLabel="#{messages.LABEL_CANCELAR}"
+						disabled="#{migracaoPacientesController.importando}"
+						style="margin-left:4px !important; margin-right:4px !important;"
+						mode="advanced" dragDropSupport="true"
+						update="panelBotoes,info,uploadArquivos,botoes"
+						allowTypes="/(\.|\/)(csv)$/"
+						invalidFileMessage="#{messages.FORMATO_ARQUIVO_INVALIDO_CSV}"
+						process="@this">
+					</p:fileUpload>
+					<p:growl id="messages" showDetail="true" />		
+                </h:panelGroup> 
+              </div>  
+            	<div style="float: left; width: 22%" align="center">
+              		<p:outputPanel id="panelBotoes" ajaxRendered="true" layout="inline">
+	               	 <h:panelGroup id="botoes"> 
+	                  	<aghu:acao> 
+	                    <br clear="none"/>  
+	                    <mec:commandButton 
+		                    value="#{messages.LABEL_IMPORTAR_ARQUIVO_MIGRACAO}" 
+		                    id="bt_confirmar" 
+		                    disabled="#{not migracaoPacientesController.habilitaImportarArquivo}" 
+		                    action="#{migracaoPacientesController.importarArquivo}" 
+		                    render="poll, botoes, info, upload" 
+		                    styleClass="bt_cinza"/>  
+	                    <br clear="none"/>  
+	                    <br clear="none"/>  
+	                    <mec:commandButton 
+		                    id="btnLimparTudo" 
+		                    action="#{migracaoPacientesController.limpar}" 
+		                    immediate="true" 
+		                    style="width: 200px" 
+		                    value="#{messages.LABEL_LIMPAR}" 
+		                    reRender="poll, botoes, separador" 
+		                    styleClass="bt_cinza" profile="clear"/> 
+	                  		</aghu:acao> 
+	                	</h:panelGroup> 
+                	</p:outputPanel>
+              </div>
+              <div style="float: left; width: 35%" align="center;"> 
+                <p:outputPanel id="info" layout="inline"> 
+                  <h:panelGroup id="panelLogImportacao">
+                    <aghu:panelGeral legend="#{messages.TITLE_LOG_DA_IMPORTACAO}"> 
+                       <h:inputTextarea id="logImportacao" 
+                      	readonly="true" rows="10" style="width:95%; margin-right:4px; margin-left:4px; margin-botton:4px;" 
+                      	value="#{migracaoPacientesController.logImportacao}"
+                      	/> 
+                    </aghu:panelGeral> 
+                  </h:panelGroup> 
+                </p:outputPanel> 
+              </div> 
+            </div> 
+          </aghu:linha> 
+          
+           <p:poll interval="3" widgetVar="wvPoll" update="panelLogImportacao,panelBotoes" autoStart="false" />
+        </aghu:panelGeral> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

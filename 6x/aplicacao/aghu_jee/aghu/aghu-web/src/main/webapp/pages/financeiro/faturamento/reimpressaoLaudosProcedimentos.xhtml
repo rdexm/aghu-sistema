@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+		<title>#{messages.REIMPESSAO_LAUDO_PROCEDIMENTOS} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+			<f:viewAction
+				action="#{reImpressaoLaudosProcedimentosController.inicio}" />
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+		<mec:pageConfig
+			controller="#{reImpressaoLaudosProcedimentosController}" />
+      <h:form prependId="false" id="formReimpressaoLaudosProcedimentos"> 
+			<p:outputPanel
+				rendered="#{reImpressaoLaudosProcedimentosController.contaHospitalar ne null}"
+				layout="inline" styleClass="aghu-panel-geral">
+          <aghu:panelGeral legend="#{messages.INFORMACOES_PACIENTE_FAT}"> 
+            <aghu:linha> 
+              <aghu:linha> 
+							<mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO_PAC}"
+								value="#{reImpressaoLaudosProcedimentosController.contaHospitalar.pacProntuario}"
+								size="11" maxlength="9" disabled="true"
+								emptyStringToNullConverter="emptyStringToNullConverter"
+								readonly="true" id="prontuarioPaciente"
+								converter="#{prontuarioConverter}" />
+							<mec:inputNumero size="15" maxlength="8" readonly="true"
+								label="#{messages.LABEL_CODIGO_PACIENTE_FAT}"
+								value="#{reImpressaoLaudosProcedimentosController.contaHospitalar.pacCodigo}"
+								id="pacCodigo" />
+							<mec:inputText label="#{messages.LABEL_PACIENTE}"
+								value="#{reImpressaoLaudosProcedimentosController.contaHospitalar.pacNome}"
+								size="70" maxlength="50" style="text-transform:uppercase"
+								disabled="true" readonly="true" id="nomePaciente" />
+              </aghu:linha> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+			<p:outputPanel
+				rendered="#{reImpressaoLaudosProcedimentosController.contaHospitalar eq null}"
+				id="panelPesquisa" layout="inline" styleClass="aghu-panel-geral">
+          <aghu:panelGeral legend="#{messages.CONSULTA_CONTA_HOSPITALAR}"> 
+            <aghu:linha> 
+						<mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO_FAT}"
+							title="#{messages.TITLE_PRONTUARIO_FAT_INC}"
+							value="#{reImpressaoLaudosProcedimentosController.pacProntuario}"
+							id="prontuarioEdicao">
+							<p:ajax event="change"
+								actionListener="#{reImpressaoLaudosProcedimentosController.obterPacientePorProntuario}"
+								update="@(#panelPesquisa)" process="@this" />
+              </mec:inputTextProntuario>  
+						<mec:inputNumero label="#{messages.LABEL_CODIGO_PACIENTE_FAT}"
+							title="#{messages.TITLE_CODIGO_CONSULTA_GRADE}" id="pacienteCodigo"
+							styleClass="numerico" size="10" maxlength="9"
+							value="#{reImpressaoLaudosProcedimentosController.pacCodigo}">
+							<p:ajax event="change"
+								actionListener="#{reImpressaoLaudosProcedimentosController.obterPacientePorCodigo}"
+								update="@(#panelPesquisa)" process="@this" />
+              </mec:inputNumero>  
+						<mec:inputText size="50" maxlength="50"
+							label="#{messages.LABEL_NOME_PACIENTE_FAT}" readonly="true"
+							value="#{reImpressaoLaudosProcedimentosController.paciente.nome}"
+							id="pacNomeLoaded1" />
+						<mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}"
+							immediate="ajaxSingle"
+							action="#{reImpressaoLaudosProcedimentosController.redirecionarPesquisaFonetica}"
+							styleClass="bt_float  icon-pesquisa-fonetica bt_cinza"
+							ajax="true">
+							<f:setPropertyActionListener
+								target="#{pesquisaPacienteController.cameFrom}"
+								value="faturamento-reimpressaoLaudosProcedimentos" for="command" />
+							<f:param name="cid"
+								value="#{javax.enterprise.context.conversation.id}" />
+              </mec:commandButton> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+					<mec:commandButton id="bt_pesquisar"
+						value="#{messages.LABEL_PESQUISAR}"
+						action="#{reImpressaoLaudosProcedimentosController.pesquisar}"
+						styleClass="bt_cinza" profile="search" />
+					<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+						action="#{reImpressaoLaudosProcedimentosController.limparPesquisa}"
+						styleClass="bt_cinza" profile="clear" />
+          </aghu:acao> 
+        </p:outputPanel>  
+			<p:outputPanel
+				rendered="#{reImpressaoLaudosProcedimentosController.dataModel.pesquisaAtiva}"
+				layout="inline" styleClass="aghu-panel-geral">
+          <aghu:panelGeral legend="#{messages.LABEL_LISTA_ATENDIMENTOS}"> 
+            <aghu:linha> 
+						<mec:serverDataTable dataModel="dataModel" id="tabelaItens"
+							controller="#{reImpressaoLaudosProcedimentosController}">
+                <c:set var="_item" value="#{item}"/>  
+							<p:column style="white-space:nowrap;">
+			                  <f:facet name="header"> 
+			                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+			                  </f:facet>  																
+								<mec:commandButton id="bt_imprime_buttonView"
+									value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+									action="#{reImpressaoLaudosProcedimentosController.visualizarRelatorio}"
+									profile="view" onclick="PF('loadDialogWG').show()" >
+									<f:setPropertyActionListener
+										target="#{reImpressaoLaudosProcedimentosRelatorioPdfController.seqAtendimento}"
+										value="#{_item.atdSeq}" for="command" />
+									<f:setPropertyActionListener
+										target="#{reImpressaoLaudosProcedimentosRelatorioPdfController.apaSeq}"
+										value="#{_item.apaSeq}" for="command" />
+									<f:setPropertyActionListener
+										target="#{reImpressaoLaudosProcedimentosRelatorioPdfController.seqp}"
+										value="#{_item.seqp}" for="command" />
+								</mec:commandButton>	
+								<mec:commandButton id="bt_imprime_buttonPrint"
+									value="#{messages.LABEL_IMPRIMIR}"
+									action="#{reImpressaoLaudosProcedimentosController.imprimirRelatorio}"
+									profile="print" onclick="PF('loadDialogWG').show()" >
+									<f:setPropertyActionListener
+										target="#{reImpressaoLaudosProcedimentosRelatorioPdfController.seqAtendimento}"
+										value="#{_item.atdSeq}" for="command" />
+									<f:setPropertyActionListener
+										target="#{reImpressaoLaudosProcedimentosRelatorioPdfController.apaSeq}"
+										value="#{_item.apaSeq}" for="command" />
+									<f:setPropertyActionListener
+										target="#{reImpressaoLaudosProcedimentosRelatorioPdfController.seqp}"
+										value="#{_item.seqp}" for="command" />
+								</mec:commandButton>										
+                </p:column>  
+							<p:column>
+			                  	<f:facet name="header"> 
+			                    	<h:outputText value="#{messages.LABEL_ATENDIMENTO}"/> 
+			                  	</f:facet>  																
+							
+                  <h:outputText value="#{_item.atdSeq}"/> 
+                </p:column>  
+							<p:column>
+			                  	<f:facet name="header"> 
+			                    	<h:outputText value="#{messages.LABEL_DATA_INICIO}"/> 
+			                  	</f:facet>  																
+							
+                  <h:outputText value="#{_item.dthrInicio}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                  </h:outputText> 
+                </p:column>  
+							<p:column>
+			                  	<f:facet name="header"> 
+			                    	<h:outputText value="#{messages.LABEL_DATA_FIM}"/> 
+			                  	</f:facet>  																
+							
+                  <h:outputText value="#{_item.dthrFim}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                  </h:outputText> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <aghu:linha> 
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+					propagation="none"
+					rendered="#{reImpressaoLaudosProcedimentosController.from != null}"
+					action="#{reImpressaoLaudosProcedimentosController.voltar}"
+					profile="back" />
+        </aghu:linha> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

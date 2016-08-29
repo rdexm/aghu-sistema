@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_CADASTRAR_EDIFICACAO}</title>
+		<script type="text/javascript"
+			src="https://maps.google.com/maps/api/js?sensor=true|false"></script>
+		<script type="text/javascript">
+		    var currentMarker = null;
+ 
+    function handlePointClick(event) {
+        if(currentMarker === null) {
+            document.getElementById('latitude:latitude:inputId').value = event.latLng.lat();
+            document.getElementById('longitude:longitude:inputId').value = event.latLng.lng();
+			
+            currentMarker = new google.maps.Marker({
+                position:new google.maps.LatLng(event.latLng.lat(), event.latLng.lng())
+            });
+ 
+            PF('map').addOverlay(currentMarker);
+			adicionarMarker(event.latLng.lat(), event.latLng.lng());
+            currentMarker = null;
+			}  
+		}
+ 
+       </script>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{manterEdificacaoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manterEdificacaoController}" ignoreEnter="true"/>
+		<h:form prependId="false" id="formPesquisaMotivos">
+			<pe:remoteCommand name="adicionarMarker">
+				<pe:assignableParam name="posLatitude"
+					assignTo="#{manterEdificacaoController.latitude}" />
+				<pe:assignableParam name="posLongitude"
+					assignTo="#{manterEdificacaoController.longitude}" />
+			</pe:remoteCommand>
+			<aghu:panelGeral legend="#{messages.TITLE_CADASTRAR_EDIFICACAO}">
+				<aghu:linha>
+
+					<mec:inputText id="nome" style="text-transform:uppercase"
+						label="#{messages.LABEL_NOME}" required="true"
+						title="#{messages.TITLE_CADASTRAR_NOME}"
+						value="#{manterEdificacaoController.nome}" maxlength="20"
+						size="33" />
+
+					<mec:inputText id="descricao" style="text-transform:uppercase"
+						label="#{messages.LABEL_DESCRICAO}" required="true"
+						title="#{messages.TITLE_CADASTRAR_DESCRICAO}"
+						value="#{manterEdificacaoController.descricao}" maxlength="50"
+						size="87" />
+
+					<mec:suggestionBox label="#{messages.LABEL_PATRIMONIO}"
+						title="#{messages.TITLE_PATRIMONIO_EDIFICACAO_CADASTRO}"
+						suggestionAction="obterPtmBemPermanentesPorNumeroDescricao"
+						descricaoInput="numeroBem" descricaoLabel="detalhamento"
+						width="40" maxlength="15" id="sbPatrimonio" descricaoLimite="16"
+						controller="#{manterEdificacaoController}" required="true"
+						value="#{manterEdificacaoController.patrimonio}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_NUMERO}</b>
+							</f:facet> #{item.numeroBem}
+              			</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DETALHAMENTO}</b>
+							</f:facet> #{item.detalhamento}
+              		</p:column>
+					</mec:suggestionBox>
+
+					<mec:selectBooleanCheckbox id="ativo"
+						label="#{messages.LABEL_MOTIVO_ATIVO}"
+						title="#{messages.TITLE_MARCAR_SITUACAO}"
+						value="#{manterEdificacaoController.situacao}" />
+				</aghu:linha>
+			</aghu:panelGeral>
+
+			<aghu:panelGeral legend="#{messages.LABEL_ENDERECO}">
+				<aghu:linha>
+					<mec:suggestionBox label="#{messages.LABEL_CEP}"
+						suggestionAction="obterAipCepLogradourosPorCEP"
+						descricaoInput="cepFormatado" required="true" width="150px"
+						size="8" maxlength="10" id="sbCEP"
+						controller="#{manterEdificacaoController}"
+						posSelectionAction="posSelectionSBCep"
+						value="#{manterEdificacaoController.cep}"
+						posDeleteAction="posDeleteSB" minQueryLength="8"
+						render="sbUF, sbLogradouro, sbMunicipio, bairros">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CEP}</b>
+							</f:facet> #{item.cepFormatado}
+              		</p:column>
+					</mec:suggestionBox>
+
+					<mec:suggestionBox label="#{messages.LABEL_MUNICIPIO}"
+						suggestionAction="obterAipCidadesPorNomeAtivo"
+						descricaoInput="nome" required="true" maxlength="20" size="33"
+						id="sbMunicipio" controller="#{manterEdificacaoController}"
+						value="#{manterEdificacaoController.municipio}"
+						posDeleteAction="posDeleteSB" width="300px"
+						render="sbCEP, sbUF, sbLogradouro, sbMunicipio, bairros">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_NOME}</b>
+							</f:facet> #{item.nome}
+              		</p:column>
+					</mec:suggestionBox>
+
+					<mec:inputText id="sbUF" style="text-transform:uppercase"
+						label="#{messages.LABEL_UF}"
+						value="#{manterEdificacaoController.uf.sigla}" maxlength="2"
+						readonly="true" size="2" required="true" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:suggestionBox label="#{messages.LABEL_LOGRADOURO}"
+						suggestionAction="obterAipLogradourosPorNome"
+						descricaoInput="nome" required="true" width="450px" maxlength="30"
+						size="51" id="sbLogradouro"
+						controller="#{manterEdificacaoController}" minQueryLength="3"
+						value="#{manterEdificacaoController.logradouro}"
+						posDeleteAction="posDeleteSB"
+						render="sbCEP, sbUF, sbLogradouro, sbMunicipio, bairros">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_NOME}</b>
+							</f:facet> #{item.nome}
+              		</p:column>
+					</mec:suggestionBox>
+
+					<mec:inputText id="bairros" style="text-transform:uppercase"
+						label="#{messages.LABEL_BAIRRO}"
+						value="#{manterEdificacaoController.bairros.descricao}"
+						maxlength="50" readonly="true" size="76" required="true" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputNumero id="numero" style="text-transform:uppercase"
+						label="#{messages.LABEL_NUMERO}"
+						value="#{manterEdificacaoController.numero}" maxlength="7"
+						size="6" required="true" />
+
+					<mec:inputText id="complemento" style="text-transform:uppercase"
+						label="#{messages.LABEL_COMPLEMENTO}"
+						value="#{manterEdificacaoController.complemento}" maxlength="50"
+						size="87" required="true" />
+
+					<mec:inputText id="latitude" style="text-transform:uppercase"
+						label="#{messages.LABEL_LATITUDE}"
+						value="#{manterEdificacaoController.latitude}" maxlength="20"
+						readonly="true" size="19" required="true" />
+
+					<mec:inputText id="longitude" style="text-transform:uppercase"
+						label="#{messages.LABEL_LONGITUDE}"
+						value="#{manterEdificacaoController.longitude}" maxlength="20"
+						readonly="true" size="19" required="true" />
+				</aghu:linha>
+				<aghu:linha />
+				<aghu:linha />
+				<aghu:linha />
+				<aghu:linha />
+				<aghu:linha>
+					<center>
+					<p:gmap
+						center="#{manterEdificacaoController.centerLatitude},#{manterEdificacaoController.centerLongitude}"
+						zoom="15" type="ROADMAP" style="width:600px;height:300px;" navigationControl="false"
+						widgetVar="map" onPointClick="handlePointClick(event);" mapTypeControl="false"
+						model="#{manterEdificacaoController.mapModel}" id="gmap">
+						<p:ajax event="pointSelect"
+							listener="#{manterEdificacaoController.addMarker}"
+							update="gmap, longitude, latitude" />
+					</p:gmap>
+					</center>
+				<aghu:linha />
+				<aghu:linha />
+				</aghu:linha>
+			</aghu:panelGeral>
+				<aghu:linha />
+				<aghu:linha />
+			<aghu:acao>
+				<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}"
+					action="#{manterEdificacaoController.gravar}" profile="ok"/>
+				<mec:backButton id="bt_cancelar" immediate="true" 
+					block="true" bvalue="#{messages.LABEL_CANCELAR}" 
+					profile="cancel" action="#{manterEdificacaoController.voltar}"/>
+
+			</aghu:acao>
+		</h:form>
+		<h:form>
+			<p:confirmDialog id="bbdialog" showEffect="bounce" closable="true"
+				width="380" height="80" widgetVar="bbdialogWG"
+				header="#{manterEdificacaoController.editando ? messages.TITLE_PENDENCIAS_ALTERACAO : messages.TITLE_PENDENCIAS_INCLUSAO}"
+				message="#{manterEdificacaoController.editando ? messages.MENSAGEM_PENDENCIAS_ALTERACAO : messages.MENSAGEM_PENDENCIAS_INCLUSAO}">
+				<p:commandButton id="bbSim" value="Sim" style="margin: 10px"
+					icon="ui-icon-check" styleClass="ui-confirmdialog-yes"
+					action="#{manterEdificacaoController.voltar}" immediate="true" />
+				<p:commandButton id="bbNao" value="Não" style="margin: 10px"
+					icon="ui-icon-close" styleClass="ui-confirmdialog-no"
+					onclick="PF('bbdialogWG').hide();" immediate="true" />
+			</p:confirmDialog>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

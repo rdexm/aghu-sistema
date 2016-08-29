@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>messages['TITLE_RECEBIMENTO_MATERIAIS_SERVICOS_SEM_AF']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{recebeMaterialServicoSemAFController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="recebeMaterialServicoSemAF"> 
+        <aghu:panelGeral legend="#{messages.TITLE_RECEBIMENTO_MATERIAIS_SERVICOS_SEM_AF}"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <p:outputPanel id="panelFiltros" layout="inline"> 
+                <mec:suggestionBox id="sbTipo" label="#{messages.LABEL_TIPO_MATERIAIS_SERVICOS_SEM_AF}" title="#{messages.TITLE_TIPO_MATERIAIS_SERVICOS_SEM_AF}" 
+                required="true" descricaoInput="sigla" size="8" width="450" suggestionAction="getObterSiglaTipoMovimento" 
+                controller="#{recebeMaterialServicoSemAFController}" value="#{recebeMaterialServicoSemAFController.filtro.tipoMovimento}" render="panelFiltros"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_SIGLA}</b> 
+                    </f:facet> #{item.sigla}
+                  </p:column>
+                </mec:suggestionBox>  
+                <mec:suggestionBox id="numeroESL" label="#{messages.LABEL_NUMERO_ESL_SERVICO_SEM_AF}" 
+                title="#{messages.TITLE_NUMERO_ESL_SERVICO_SEM_AF}" descricaoInput="eslSeq" 
+                size="8" width="450" suggestionAction="obterNumeroESLPorSiglaTipoMovimento" controller="#{recebeMaterialServicoSemAFController}"
+                value="#{recebeMaterialServicoSemAFController.filtro.numeroESL}" render="panelFiltros, panelSuggestions" readonly="#{!(recebeMaterialServicoSemAFController.filtro.tipoMovimento != null)}"
+                posSelectionAction="selecionarFornecedorAposESL" posDeleteAction="limparFiltroFornecedor">
+                   <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NRO_DOCUMENTO}</b> 
+                    </f:facet> #{item.eslSeq}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_TIPO}</b> 
+                    </f:facet> #{item.tmvSigla}
+                  </p:column>
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MATERIAL_CODIGO}</b> 
+                    </f:facet> <h:outputText value="#{item.matCodigo}" title="#{item.matNome}" /> 
+                  </p:column>
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_QTDE_NUMERO_ESL}</b> 
+                    </f:facet> #{item.quantidade}
+                  </p:column>
+                  <p:column style="width:150px;"> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_FORNECEDOR}</b> 
+                    </f:facet> #{item.razaoSocialFornecedor}
+                  </p:column>    
+                </mec:suggestionBox>           
+                <mec:selectBooleanCheckbox id="adiantamentoAF" label="#{messages.LABEL_ADIANTAMENTO_AF_MATERIAIS_SERVICOS_SEM_AF}" title="#{messages.TITLE_ADIANTAMENTO_AF_MATERIAIS_SERVICOS_SEM_AF}" value="#{recebeMaterialServicoSemAFController.filtro.indAdiantamentoAF}"> 
+                  <p:ajax event="change" update="@(#panelSuggestions) @(#panelTabelaItensRecebimentoAdiantamento) @(#panelTabelaItensRecebimento) @(#panelSuggestionsGrade)" process="@this" listener="#{recebeMaterialServicoSemAFController.getAtualizaValorSuggestions()}"/> 
+                </mec:selectBooleanCheckbox> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelSuggestions" layout="inline"> 
+                <mec:suggestionBox id="sbNumeroAf" label="#{messages.LABEL_NUMERO_AF_MATERIAIS_SERVICOS_SEM_AF}" title="#{messages.TITLE_NUMERO_AF_MATERIAIS_SERVICOS_SEM_AF}" rendered="#{recebeMaterialServicoSemAFController.filtro.indAdiantamentoAF}" required="true" descricaoInput="propostaFornecedor.id.lctNumero" size="10" width="200" styleClass="numerico" posSelectionAction="selecionarComplementoFornecedorAposAF" posDeleteAction="limparGradeNroRecebimento" suggestionAction="pesquisarAF" controller="#{recebeMaterialServicoSemAFController}" value="#{recebeMaterialServicoSemAFController.filtro.autorizacaoForn}" render="panelSuggestions, panelTabelaItensRecebimentoAdiantamento, panelNotaFiscal"> 
+                  <p:column style="width:50px;"> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NUMERO_DA_AF}</b> 
+                    </f:facet> #{item.propostaFornecedor.id.lctNumero}
+                  </p:column>
+                  <p:column style="width:50px;"> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_COMPLEMENTO_DA_AF}</b> 
+                    </f:facet> #{item.nroComplemento}
+                  </p:column>
+                  <p:column style="width:150px;"> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME_FORNECEDOR}</b> 
+                    </f:facet> #{item.scoFornecedor.razaoSocial}
+                  </p:column>
+                </mec:suggestionBox>  
+                <script xml:space="preserve">
+							window.onload = function()
+							{
+								jQuery(Document.getElementById('sbNumeroAf')).focus();
+							}	
+							</script>  
+                <mec:suggestionBox id="sbComplementoAf" label="#{messages.LABEL_COMPLEMENTO_MATERIAIS_SERVICOS_SEM_AF}" 
+                	title="#{messages.TITLE_COMPLEMENTO_MATERIAIS_SERVICOS_SEM_AF}" rendered="#{recebeMaterialServicoSemAFController.filtro.indAdiantamentoAF}" 
+                	descricaoInput="numero"  readonly="#{recebeMaterialServicoSemAFController.filtro.autorizacaoForn == null}" 
+                	size="5" width="140" styleClass="numerico" suggestionAction="pesquisarComplemento" posSelectionAction="selecionarComplemento" 
+                	posDeleteAction="limparComplemento" controller="#{recebeMaterialServicoSemAFController}" 
+                	value="#{recebeMaterialServicoSemAFController.filtro.nroComplementoAF}" render="panelSuggestions"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_COMPLEMENTO_AF}</b> 
+                    </f:facet> #{item.nroComplemento}
+                  </p:column>                   
+                </mec:suggestionBox>  
+                <mec:suggestionBox id="sbFornecedor" label="#{messages.LABEL_FORNECEDOR}" title="#{messages.TITLE_FORNECEDOR}" descricaoInput="numero" descricaoLabel="razaoSocial" 
+                	size="10" width="200" suggestionAction="pesquisarFornecedor" posSelectionAction="selecionarFornecedor" posDeleteAction="getLimparFornecedor" 
+                	controller="#{recebeMaterialServicoSemAFController}" value="#{recebeMaterialServicoSemAFController.filtro.fornecedor}"
+                 	render="panelSuggestions, panelNotaFiscal" readonly="#{recebeMaterialServicoSemAFController.readOnlyFornecedor}" descricaoLimite="25"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.numero}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_RAZAO_SOCIAL}</b> 
+                    </f:facet> #{item.razaoSocial}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO_CNPJCPF}</b> 
+                    </f:facet> #{item.cgc}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:commandButton value="#{messages.LABEL_CONSULTAR_AF_MATERIAIS_SERVICOS_SEM_AF}" id="bt_consultarAf" immediate="true" rendered="#{recebeMaterialServicoSemAFController.filtro.indAdiantamentoAF}" disabled="#{recebeMaterialServicoSemAFController.filtro.autorizacaoForn == null}" style="margin-top:15px" action="#{recebeMaterialServicoSemAFController.consultarAf}" render="bt_consultarAf" styleClass="bt_cinza"/> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:panelGeral legend="#{messages.LABEL_DOC_FISCAL_ENTRADA_MATERIAIS_SERVICOS_SEM_AF}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelNotaFiscal" layout="inline"> 
+                <mec:suggestionBox id="sbNotaFiscalEntrada" label="#{messages.LABEL_NUMERO_NOTA_FISCAL_MATERIAIS_SERVICOS_SEM_AF}" title="#{messages.TITLE_NUMERO_NOTA_FISCAL_MATERIAIS_SERVICOS_SEM_AF}" descricaoInput="numero" size="10" width="450" posDeleteAction="limparNotaFiscal" posSelectionAction="inicio" suggestionAction="pesquisarNotafiscalEntrada" readonly="#{recebeMaterialServicoSemAFController.filtro.inibeNotaFiscalEntrada}" controller="#{recebeMaterialServicoSemAFController}" value="#{recebeMaterialServicoSemAFController.filtro.documentoFiscalEntrada}" render="panelNotaFiscal, panelSuggestions, botoesRecebimento"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NUMERO_NF}</b> 
+                    </f:facet> #{item.numero}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_SERIE_NF}</b> 
+                    </f:facet> #{item.serie}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_TIPO_NF}</b> 
+                    </f:facet> #{item.tipo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_VALOR_TOTAL_NF}</b> 
+                    </f:facet> #{item.valorTotalNf}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_FORNECEDOR}</b> 
+                    </f:facet> #{item.fornecedor.nomeFantasia}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:inputText id="serieNotaFiscal" label="#{messages.LABEL_SERIE_NOTA_FISCAL}" readonly="true" value="#{recebeMaterialServicoSemAFController.filtro.serieNotaFiscal}" size="6"/>  
+                <mec:inputText id="tipoNotaFiscal" label="#{messages.LABEL_TIPO_NOTA_FISCAL}" readonly="true" value="#{recebeMaterialServicoSemAFController.filtro.tipoNotaFiscal}" size="14"/>  
+                <mec:inputTextData label="#{messages.LABEL_DATA_EMISSAO}" id="dataEmissao" size="10" readonly="true" value="#{recebeMaterialServicoSemAFController.filtro.dataEmissao}" tipo="data"/>  
+                <mec:inputTextData label="#{messages.LABEL_DATA_ENTRADA}" id="dataEntrada" size="10" readonly="true" value="#{recebeMaterialServicoSemAFController.filtro.dataEntrada}" tipo="data"/>  
+                <mec:inputNumero label="#{messages.LABEL_VALOR}" id="valorNota" value="#{recebeMaterialServicoSemAFController.filtro.valorNota}" required="false" inteiros="11" decimais="2" styleClass="mascara(decimal)" actionBean="#{recebeMaterialServicoSemAFController}" style="text-align:right;" readonly="true}"/>  
+                <mec:inputNumero label="#{messages.LABEL_VALOR_COMPROMETIDO}" title="#{TITLE_VALOR_COMPROMETIDO}" id="valorNotaComprometido" value="#{recebeMaterialServicoSemAFController.filtro.valorComprometidoNF}" required="false" inteiros="11" decimais="2" styleClass="mascara(decimal)" actionBean="#{recebeMaterialServicoSemAFController}" style="text-align:right;" readonly="true}"/>  
+                <mec:commandButton value="#{messages.LABEL_NOTA_FISCAL}" id="bt_notaFiscal" style="margin-top:15px" immediate="true" disabled="#{recebeMaterialServicoSemAFController.filtro.inibeNotaFiscalEntrada}" action="#{recebeMaterialServicoSemAFController.buscarNotaFiscal}" render="panelNotaFiscal, panelTabelaItensRecebimentoAdiantamento, panelTabelaItensRecebimento, panelSuggestions" styleClass="bt_cinza">
+                  <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.numeroFornecedor}" value="#{recebeMaterialServicoSemAfController.numeroFornecedor}" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemRecebimentoMaterialServico}" value="true" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemConfirmacaoRecebimento}" value="false" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemGerarNotaRecebimento}" value="false" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemGerarNotaRecebimentoSemAf}" value="false" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.numeroDocumento}" value="#{null}" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.serie}" value="#{null}" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.voltarPara}" value="compras-receberMaterialServicoSemAF" for="command"/>
+                </mec:commandButton>  
+                <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limparNota" immediate="true" style="margin-top:15px" disabled="#{recebeMaterialServicoSemAFController.filtro.documentoFiscalEntrada == null}" action="#{recebeMaterialServicoSemAFController.limparNotaFiscal}" render="panelNotaFiscal" profile="clear"/> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <p:outputPanel id="botoesRecebimento" layout="inline"> 
+              <h:panelGrid columns="5"> 
+                <p:column style="border:none"> 
+                  <mec:commandButton id="bt_receber" value="#{messages.LABEL_RECEBER}" style="margin-top:15px" block="true" disabled="#{recebeMaterialServicoSemAFController.filtro.numeroRecebimento != null}" action="#{recebeMaterialServicoSemAFController.receberItensAF}" render="botoesRecebimento" styleClass="bt_cinza"/> 
+                </p:column>  
+                <p:column style="border:none"> 
+                  <mec:commandButton value="#{messages.LABEL_CONFIRMAR_RECEBIMENTO}" id="bt_confirmarRecebimento" immediate="true" block="true" style="margin-top:15px" disabled="#{recebeMaterialServicoSemAFController.filtro.numeroRecebimento == null}" action="#{recebeMaterialServicoSemAFController.confirmarRecebimento}" profile="ok"/> 
+                </p:column>  
+                <p:column style="border:none"> 
+                  <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" block="true" style="margin-top:15px" action="#{recebeMaterialServicoSemAFController.limpar}" render="botoesRecebimento" profile="clear"/> 
+                </p:column>  
+                <p:column style="border:none"> 
+                  <mec:commandButton id="bt_imprimir" value="#{messages.LABEL_IMPRIMIR_PROTOCOLO_RECEBIMENTO}" style="margin-top:15px;float: right;" disabled="#{recebeMaterialServicoSemAFController.filtro.numeroRecebimento == null}" action="#{imprimirNotaRecebimentoProvisorioController.print(recebeMaterialServicoSemAFController.filtro.numeroRecebimento)}" styleClass="bt_cinza"/> 
+                </p:column>  
+                <p:column style="text-align:left; font-weight: bold; width:145px; border-left-style: solid; border-top-style: solid; border-width: 3px; #{(recebeMaterialServicoSemAFController.filtro.numeroRecebimento == null) ? 'border-color: #DCDCDC' : 'border-color: #006400'}"> 
+                  <h:outputText value="#{messages.LABEL_NRO_RECEBIMENTO}"/>  
+                  <h:outputText id="numeroRecebimento" name="numeroRecebimento" style="font-weight: bold" value=": #{recebeMaterialServicoSemAFController.filtro.numeroRecebimento}"> 
+                  </h:outputText> 
+                </p:column> 
+              </h:panelGrid> 
+            </p:outputPanel> 
+          </aghu:acao>  
+          <aghu:panelGeral legend="#{messages.LABEL_ITENS_RECEBIMENTO_MATERIAIS_SERVICOS_SEM_AF}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelSuggestionsGrade" layout="inline"> 
+                <mec:suggestionBox id="sbMaterial" label="#{messages.LABEL_MATERIAL_MATERIAIS_SERVICOS_SEM_AF}" title="#{messages.TITLE_MATERIAL_MATERIAIS_SERVICOS_SEM_AF}" rendered="#{!recebeMaterialServicoSemAFController.filtro.indAdiantamentoAF}" requiredFake="true" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="getListarMateriais" width="650" controller="#{recebeMaterialServicoSemAFController}" value="#{recebeMaterialServicoSemAFController.materialAdd}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME}</b> 
+                    </f:facet>  
+                    <span id="refToolTipnomeMaterial#{item.codigo}"> 
+                      <h:outputText value="#{(item.nome.length() &gt; 40) ? fn:substring(item.nome,0,40) : item.nome}#{(item.nome.length() &gt; 40) ? '...' : '' }"/> 
+                    </span>  
+                    <p:tooltip  id="nomeMaterialToolTip" for="refToolTipnomeMaterial#{item.codigo}" direction="top-right" rendered="#{item.nome.length() &gt; 40}">  
+                      <h:outputText value="#{item.nome}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet>  
+                    <span id="refToolTip#{item.codigo}"> 
+                      <h:outputText value="#{(item.descricao.length() &gt; 40) ? fn:substring(item.descricao,0,40) : item.descricao}#{(item.descricao.length() &gt; 40) ? '...' : '' }"/> 
+                    </span>  
+                    <p:tooltip  id="descricaoMaterialToolTip" for="refToolTip#{item.codigo}" direction="top-right" rendered="#{item.descricao.length() &gt; 40}">  
+                      <h:outputText value="#{item.getDescricaoSplited(70)}" escape="false"/> 
+                    </p:tooltip> 
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:suggestionBox id="sbMarcaComercial" label="#{messages.LABEL_MARCA_COMERCIAL_MATERIAIS_SERVICOS_SEM_AF}" title="#{messages.TITLE_MARCA_COMERCIAL_MATERIAIS_SERVICOS_SEM_AF}" rendered="#{!recebeMaterialServicoSemAFController.filtro.indAdiantamentoAF}" suggestionAction="getMarcaComercial" descricaoInput="codigo" descricaoLabel="descricao" width="450" maxlength="60" controller="#{recebeMaterialServicoSemAFController}" value="#{recebeMaterialServicoSemAFController.marcaComercialAdd}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton id="bt_adicionar_anes" value="#{messages.LABEL_ADICIONAR}" action="#{recebeMaterialServicoSemAFController.adicionarMaterial}" rendered="#{!recebeMaterialServicoSemAFController.filtro.indAdiantamentoAF}" process="@this" profile="add" ajax="true" render="panelSuggestionsGrade, panelTabelaItensRecebimento"/> 
+                </aghu:acao> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelTabelaItensRecebimentoAdiantamento" layout="inline"> 
+                <mec:serverDataTable id="tabelaItensRecebimentoAdiantamento" name="tabelaItensRecebimentoAdiantamento" rendered="#{not empty recebeMaterialServicoSemAFController.listaItensRecebimentoAdiantamentoVO}" list="#{recebeMaterialServicoSemAFController.listaItensRecebimentoAdiantamentoVO}" scrollable="true"> 
+                  <c:set var="item" value="#{item}"/>  
+                  <p:column style="width:40px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <h:graphicImage value="/images/accept.png" rendered="#{item.qtdEntregue &gt; 0}"/> 
+                  </p:column>  
+                  <p:column style="width:40px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NUMERO_ITEM_LICITACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.itlNumero}" style="float:right; "/> 
+                  </p:column>  
+                  <p:column style="width:40px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.codigoMaterial}" style="float:right; "/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MATERIAL_MATERIAIS_SERVICOS_SEM_AF}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.nomeMaterial}" style="float:left; "/>  
+                    <p:tooltip style="width:200px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO_MATERIAL_MATERIAIS_SERVICOS_SEM_AF}: #{item.descricaoMaterial}"/>  
+                      <br clear="none"/>  
+                      <h:outputText value="#{messages.LABEL_DESCRICAO_SC_MATERIAIS_SERVICOS_SEM_AF}: #{item.descricaoSolicitacao}"/>  
+                      <br clear="none"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column style="width:30px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_UNIDADE_MATERIAIS_SERVICOS_SEM_AF}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.unidade}"/> 
+                  </p:column>  
+                  <p:column style="width:90px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_QTDE_SALDO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.saldoQtd}" style="float:right; "/>  
+                    <p:tooltip style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_SALDO_AF_MATERIAIS_SERVICOS_SEM_AF}: #{item.saldoAF}"/>  
+                      <br clear="none"/>  
+                      <h:outputText value="#{messages.LABEL_ESL_PENDENTE_AF_MATERIAIS_SERVICOS_SEM_AF}: #{item.eslPendenteAF}"/>  
+                      <br clear="none"/>  
+                      <h:outputText value="#{messages.LABEL_SALDO_MATERIAIS_SERVICOS_SEM_AF}: #{item.saldoQtd}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column style="width:100px" rendered="#{item.qtdEntregue == null}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_QTDE_ENTREGUE_GRID}"/> 
+                    </f:facet>  
+                    <h:inputText id="qtdEntregue1#{item.itlNumero}" styleClass="numerico" value="#{item.qtdEntregue}" name="qtdEntregue1#{item.itlNumero}" required="false" size="6" maxlength="6" autocomplete="off"> 
+                      <ui:insert/>  
+                      <f:converter converterId="javax.faces.Integer"/>  
+                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+                      <p:ajax event="change" eventsQueue="storeQueue" update="@(#panelTabelaItensRecebimentoAdiantamento) @(#panelNotaFiscal)" process="@this"/>  
+                      <p:ajax event="click" update="@(#panelTabelaItensRecebimentoAdiantamento) @(#panelNotaFiscal)" process="@this" listener="#{recebeMaterialServicoSemAFController.calcularValorTotal(item)}"/> 
+                    </h:inputText> 
+                  </p:column>  
+                  <p:column style="width:100px" rendered="#{item.qtdEntregue != null}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_QTDE_ENTREGUE_GRID}"/> 
+                    </f:facet>  
+                    <h:inputText id="qtdEntregue2#{item.itlNumero}" styleClass="numerico" value="#{item.qtdEntregue}" name="qtdEntregue2#{item.itlNumero}" required="false" size="6" maxlength="6" autocomplete="off"> 
+                      <ui:insert/>  
+                      <f:converter converterId="javax.faces.Integer"/>  
+                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+                      <p:ajax event="change" eventsQueue="storeQueue" update="@(#panelTabelaItensRecebimentoAdiantamento) @(#panelNotaFiscal)" process="@this"/>  
+                      <p:ajax event="blur" update="@(#panelTabelaItensRecebimentoAdiantamento) @(#panelNotaFiscal)" process="@this" listener="#{recebeMaterialServicoSemAFController.calcularValorTotal(item)}"/> 
+                    </h:inputText> 
+                  </p:column>  
+                  <p:column style="width:100px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VALOR_UNITARIO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.valorUnitarioConvertido}" style="float:right; "> 
+                      <f:convertNumber pattern="###,##0.0000"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column style="width:100px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VLR_TOTAL_PARCELA}"/> 
+                    </f:facet>  
+                    <h:inputText id="vlrTotal#{item.itlNumero}" styleClass="mascara(decimal)" value="#{item.valorTotal}" name="vlrTotal#{item.itlNumero}" required="false" size="10" maxlength="12" autocomplete="off" style="text-align: right" converter="#{bigDecimalConverter}" onfocus="jQuery(this).autoNumeric({mNum:'11',mDec:2,aSep: '.',aDec:','})}"> 
+                      <ui:insert/>  
+                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+                      <p:ajax event="change" eventsQueue="storeQueue" process="@this"/>  
+                      <p:ajax event="blur" update="@(#panelTabelaItensRecebimentoAdiantamento) @(#panelNotaFiscal)" process="@this" listener="#{recebeMaterialServicoSemAFController.calcularValorComprometido()}"/> 
+                    </h:inputText> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelTabelaItensRecebimento" layout="inline"> 
+                <mec:serverDataTable id="tabelaItensRecebimento" name="tabelaItensRecebimento" rendered="#{!recebeMaterialServicoSemAFController.filtro.indAdiantamentoAF}" list="#{recebeMaterialServicoSemAFController.listaItensRecebimentoVO}" scrollable="true"> 
+                  <c:set var="item" value="#{item}"/>  
+                  <p:column style="width:50px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="link_remover_anes" action="#{recebeMaterialServicoSemAFController.setMaterialRemove(item)}" oncomplete="PF('modalConfirmacaoExclusaoMaterialWG').show();;" title="#{messages.LABEL_EXCLUIR}" profile="delete" ajax="true" process="@this"/>  
+                    <h:graphicImage value="/images/accept.png" rendered="#{item.qtdEntregue &gt; 0 and item.valorUnitario &gt; 0 and item.valorTotal &gt; 0}"/> 
+                  </p:column>  
+                  <p:column style="width:40px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.codigoMaterial}" style="float:right; "/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MATERIAL_MATERIAIS_SERVICOS_SEM_AF}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.nomeMaterial}" style="float:left; "/>  
+                    <p:tooltip style="width:200px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO_MATERIAL_MATERIAIS_SERVICOS_SEM_AF}: #{item.descricaoMaterial}"/>  
+                      <br clear="none"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column style="width:30px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_UNIDADE_MATERIAIS_SERVICOS_SEM_AF}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.unidade}"/> 
+                  </p:column>  
+                  <p:column style="width:100px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_QTDE_ENTREGUE_GRID}"/> 
+                    </f:facet>  
+                    <h:inputText id="qtdEntregue1#{item.idUnico}" styleClass="numerico" value="#{item.qtdEntregue}" name="qtdEntregue#{item.idUnico}" required="false" size="6" maxlength="6" autocomplete="off"> 
+                      <ui:insert/>  
+                      <f:converter converterId="javax.faces.Integer"/>  
+                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+                      <p:ajax event="change" eventsQueue="storeQueue" process="@this"/>  
+                      <p:ajax event="blur" update="@(#panelTabelaItensRecebimento) @(#panelNotaFiscal)" process="@this" listener="#{recebeMaterialServicoSemAFController.calcularValorTotalMaterial(item)}"/> 
+                    </h:inputText> 
+                  </p:column>  
+                  <p:column style="width:100px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VALOR_UNITARIO}"/> 
+                    </f:facet>  
+                    <h:inputText id="valorUnitario1#{item.idUnico}" styleClass="mascara(decimal)" value="#{item.valorUnitario}" name="valorUnitario#{item.idUnico}" required="false" size="10" maxlength="12" autocomplete="off" style="text-align: right" converter="#{doubleConverter}" onfocus="jQuery(this).autoNumeric({mNum:'11',mDec:4,aSep: '.',aDec:','})}"> 
+                      <ui:insert/>  
+                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+                      <p:ajax event="change" eventsQueue="storeQueue" process="@this"/>  
+                      <p:ajax event="blur" update="@(#panelTabelaItensRecebimento) @(#panelNotaFiscal)" process="@this" listener="#{recebeMaterialServicoSemAFController.calcularValorTotalMaterial(item)}"/> 
+                    </h:inputText> 
+                  </p:column>  
+                  <p:column style="width:100px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VLR_TOTAL_PARCELA}"/> 
+                    </f:facet>  
+                    <h:inputText id="vlrTotal#{item.idUnico}" styleClass="mascara(decimal)" value="#{item.valorTotal}" name="vlrTotal#{item.idUnico}" required="false" size="10" maxlength="12" autocomplete="off" style="text-align: right" converter="#{bigDecimalConverter}" onfocus="jQuery(this).autoNumeric({mNum:'11',mDec:2,aSep: '.',aDec:','})}"> 
+                      <ui:insert/>  
+                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+                      <p:ajax event="change" eventsQueue="storeQueue" process="@this"/>  
+                      <p:ajax event="blur" update="@(#panelTabelaItensRecebimento) @(#panelNotaFiscal)" process="@this" listener="#{recebeMaterialServicoSemAFController.calcularValorComprometidoMaterial()}"/> 
+                    </h:inputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MARCA_COMERCIAL_MATERIAIS_SERVICOS_SEM_AF}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.nomeMarcaComercial}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" propagation="none" action="#{recebeMaterialServicoSemAFController.voltar}" profile="back"/> 
+          </aghu:acao> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoExclusaoMaterial" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoMaterialWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUIR_MATERIAL}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusaoMat"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{recebeMaterialServicoSemAFController.removerMaterial}" oncomplete="PF('modalConfirmacaoExclusaoMaterialWG').hide();" id="bt_excluirAnes" profile="search" ajax="true" render="panelTabelaItensRecebimento"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoMaterialWG').hide();" id="bt_cancelarExcluirAnes" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

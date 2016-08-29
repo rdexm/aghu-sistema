@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_CADASTRAR_CONTRATO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{manterAfContratoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manterAfContratoController}" />
+		<h:form prependId="false" id="formContratoConvenios">
+			<aghu:panelGeral legend="#{messages.TITLE_MODAL_ITENSCONTRATO_HDR}">
+				<aghu:linha>
+					<mec:inputNumero id="nrContrato"
+						value="#{manterAfContratoController.nrContrato}"
+						label="#{messages.LABEL_NUMERO}" readonly="true" maxlength="7"
+						size="10" />
+					<mec:inputText id="cpfCnpj"
+						label="#{messages.LABEL_HEADER_CNPJCPF}"
+						value="#{manterAfContratoController.getCpfCnpj()}" size="22"
+						readonly="true" />
+					<mec:inputText id="razaoSocial"
+						label="#{messages.LABEL_HEADER_RAZAO_SOCIAL}"
+						value="#{manterAfContratoController.contrato.fornecedor.razaoSocial}"
+						style="text-transform:uppercase" size="60" readonly="true" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText id="pac" label="#{messages.LABEL_PAC_AF}"
+						value="#{manterAfContratoController.getPac()}"
+						style="text-transform:uppercase" size="60" readonly="true" />
+				</aghu:linha>
+			</aghu:panelGeral>
+
+			<p:outputPanel id="panelVoltar" layout="inline">
+				<mec:serverDataTable id="tabelaAfs" name="tabelaAfs"
+					onRowMouseOver="this.style.backgroundColor='#F1F1F1'"
+					onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'"
+					list="#{manterAfContratoController.listaAutorizacaoFornecimentoVO}"
+					draggableColumns="false">
+					<c:set var="_item" value="#{item}" />
+					<p:column width="10">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_ACAO}" />
+						</f:facet>
+						<mec:commandLink oncomplete="PF('modalDetalharItensWG').show();;"
+							title="#{messages.LABEL_VISUALIZAR_ITENS}"
+							styleClass=" silk-folder-database silk-icon" ajax="true"
+							render="panelModal" process="@this"
+							action="#{manterAfContratoController.setAutorizacaoFornecimentoVO(_item)}">
+						</mec:commandLink>
+					</p:column>
+					<p:column width="50">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_AFCP}" />
+						</f:facet>
+						<h:outputText value="#{_item.numeroAf}/#{_item.nroComplemento}"
+							style="#{_item.jaVinculado ? 'font-weight: bold' : '' }" />
+					</p:column>
+					<p:column width="300">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_FORNECEDOR}" />
+						</f:facet>
+						<h:outputText value="#{_item.cgcCpf} - #{_item.razaoSocial}" />
+					</p:column>
+					<p:column width="80">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_VALOR_PROPOSTA}" />
+						</f:facet>
+						<h:outputText value="#{_item.valorProposta}">
+							<f:convertNumber type="currency" currencySymbol="R$"
+								maxFractionDigits="2" minFractionDigits="2" groupingUsed="true" />
+						</h:outputText>
+					</p:column>
+					<p:column width="80">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_MODALIDADE_EMPENHO}" />
+						</f:facet>
+						<h:outputText value="#{_item.modalidadeEmpenho}" />
+					</p:column>
+					<p:column width="50">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_CONVENIO_FINANCEIRO}" />
+						</f:facet>
+						<h:outputText value="#{_item.convenioFinanceiro}" />
+					</p:column>
+					<p:column width="25">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_VINCULAR_AO_CONTRATO}" />
+						</f:facet>
+			            <p:selectOneMenu id="vincularAoContrato"  
+			                             disabled="#{manterAfContratoController.contratoJaEnviado}"
+			                             value="#{_item.vincularAoContrato}">
+			                  <f:converter converterId="dominioConverter" />
+			                  <f:selectItems var="item" itemLabel="#{item.descricao}"
+									value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+			            </p:selectOneMenu>        
+					</p:column>
+				</mec:serverDataTable>
+			</p:outputPanel>
+			<aghu:acao>
+				<mec:commandButton id="btn_gravar"
+					action="#{manterAfContratoController.gravar}"
+					value="#{messages.LABEL_GRAVAR}" profile="ok" ajax="true" />
+
+				<mec:commandButton id="bt_voltar"
+					action="#{manterAfContratoController.voltar}"
+					value="#{messages.LABEL_VOLTAR}"
+					styleClass=" alinha-direita bt_cinza" ajax="true" process="@this"
+					profile="back">
+					<f:setPropertyActionListener
+						target="#{manterContratoAutomaticoController.nrContrato}"
+						value="#{manterAfContratoController.nrContrato}" for="command" />
+					<f:setPropertyActionListener
+						target="#{manterContratoAutomaticoController.voltarParaUrl}"
+						value="gerenciarContratos" for="command" />
+				</mec:commandButton>
+			</aghu:acao>
+		</h:form>
+
+		<p:outputPanel id="panelModal" layout="inline">
+			<p:dialog id="modalDetalharItens" width="800" height="460"
+				modal="true" resizable="false" widgetVar="modalDetalharItensWG"
+				closable="true">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_ITENS_AF}" />
+					</h:panelGroup>
+				</f:facet>
+				<p:outputPanel id="popuppanel_hdr" layout="inline"
+					styleClass="aghu-panel-geral">
+					<aghu:panelGeral style="width: 700px;"
+						legend="#{messages.TITLE_MODAL_AF_HDR}">
+						<h:form prependId="false" id="formpopuppanel_hdr">
+							<aghu:linha style="width: 700px;">
+								<mec:inputNumero id="numAf" label="#{messages.LABEL_AF}"
+									size="15" readonly="true"
+									value="#{manterAfContratoController.autorizacaoFornecimentoVO.numeroAf}" />
+								<mec:inputNumero id="numCp" label="#{messages.LABEL_CP}"
+									size="3" readonly="true"
+									value="#{manterAfContratoController.autorizacaoFornecimentoVO.nroComplemento}" />
+								<mec:inputText label="#{messages.LABEL_HEADER_CNPJCPF}"
+									value="#{manterAfContratoController.autorizacaoFornecimentoVO.cgcCpf}"
+									style="text-transform:uppercase" size="20" readonly="true"
+									id="cpfcnpjPopup" />
+								<mec:inputText label="#{messages.LABEL_HEADER_RAZAO_SOCIAL}"
+									value="#{manterAfContratoController.autorizacaoFornecimentoVO.razaoSocial}"
+									style="text-transform:uppercase ;width:300px" readonly="true"
+									id="razaosocialPopup" />
+							</aghu:linha>
+							<aghu:linha>
+								<mec:inputText label="#{messages.LABEL_FREQ_COMPRAS}"
+									value="#{manterAfContratoController.autorizacaoFornecimentoVO.frequenciaEntrega == null ? 1 : manterAfContratoController.autorizacaoFornecimentoVO.frequenciaEntrega}"
+									style="width:40px" readonly="true" id="freq" />
+								<mec:inputNumero label="#{messages.LABEL_VALOR_PROPOSTA}"
+									value="#{manterAfContratoController.autorizacaoFornecimentoVO.valorProposta}"
+									readonly="true"
+									inteiros="13" decimais="2" ajaxValidation="false"
+									id="vlTotPopup" />
+							</aghu:linha>
+						</h:form>
+					</aghu:panelGeral>
+				</p:outputPanel>
+				<p:outputPanel id="popuppanel_bdy" layout="inline"
+					styleClass="aghu-panel-geral">
+					<aghu:panelGeral style="width: 715px;"
+						legend="#{messages.TITLE_MODAL_AF_BDY}">
+						<aghu:linha>
+							<p:outputPanel id="popuppanelTabelaItens" layout="inline">
+								<mec:serverDataTable id="popuptabelaItens" rowKeyVar="pu_item"
+									list="#{manterAfContratoController.autorizacaoFornecimentoVO.itensAF}"
+									draggableColumns="false">
+									<c:set var="pu_item" value="#{item}" />
+									<p:column width="30px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ITEM}"
+												          style="font-weight:bold; color:#000000;" />
+										</f:facet>
+										<h:outputText value="#{pu_item.numItem}" />
+									</p:column>
+									<p:column width="300px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.POPUP_DESC}"
+												          style="font-weight:bold; color:#000000;" />
+										</f:facet>
+										<h:outputText
+											value="#{pu_item.material != null ? pu_item.material.codigo : pu_item.servico.codigo} - " />
+										<h:outputText
+											value="#{pu_item.material != null ? pu_item.material.nome : pu_item.servico.nome}" />
+									</p:column>
+									<p:column width="120px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_UNID}"
+												          style="font-weight:bold; color:#000000;" />
+										</f:facet>
+										<h:outputText value="#{pu_item.unidade.descricao}" />
+									</p:column>
+									<p:column width="70px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_QTDE}"
+												          style="font-weight:bold; color:#000000;" />
+										</f:facet>
+										<h:outputText value="#{pu_item.quant}" />
+									</p:column>
+									<p:column width="25px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_FREQ}"
+												          style="font-weight:bold; color:#000000;" />
+										</f:facet>
+										<h:outputText
+											value="#{pu_item.freq == null ? 1 : pu_item.freq}" />
+									</p:column>
+									<p:column width="110px">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_VL_UNIT}"
+												          style="font-weight:bold; color:#000000;" />
+										</f:facet>
+										<h:outputText value="#{pu_item.valorUnit}">
+											<f:convertNumber type="currency" 
+												             maxFractionDigits="2" minFractionDigits="2"
+												             groupingUsed="true" />
+										</h:outputText>
+									</p:column>
+									<p:column width="30px" style="text-align: center">
+										<p:outputPanel layout="inline">
+											<h:graphicImage id="img1"
+												            value="/resources/img/icons/marcador_verde.png"
+												            rendered="#{pu_item.material != null ? manterAfContratoController.materialPossuiCodSiasg(pu_item.material) : manterAfContratoController.servicoPossuiCodSiasg(pu_item.servico)}" />
+											<h:graphicImage id="img3"
+												            value="/resources/img/icons/marcador_vermelho.png"
+												            rendered="#{pu_item.material != null ? not manterAfContratoController.materialPossuiCodSiasg(pu_item.material) : not manterAfContratoController.servicoPossuiCodSiasg(pu_item.servico)}" />
+										</p:outputPanel>
+									</p:column>
+								</mec:serverDataTable>
+							</p:outputPanel>
+						</aghu:linha>
+					</aghu:panelGeral>
+				</p:outputPanel>
+			</p:dialog>
+		</p:outputPanel>
+		
+	</ui:define>
+</ui:composition>
+</html>

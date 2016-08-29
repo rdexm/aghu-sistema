@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_REGISTRO_PERINATAL}</title> 
+    </ui:define>  
+    <ui:define name="metadata">
+      <f:metadata>
+        <f:viewAction action="#{pesquisaGestacaoController.inicio}"/>
+      </f:metadata>
+    </ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaGestacaoController}"/>
+      <h:form prependId="false" id="formPesquisa"> 
+        <!-- FILTRO PARA PESQUISA DE GESTAÇÕES -->  
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_REGISTRO_PERINATAL}"> 
+          <mec:inputNumero id="prontuario" label="#{messages.LABEL_PRONTUARIO}" value="#{pesquisaGestacaoController.nroProntuario}" maxlength="8" size="10" required="false">
+          	<p:ajax event="change" update="@(#formPesquisa)" process="@this" listener="#{pesquisaGestacaoController.carregarDadosPaciente}"/>
+          </mec:inputNumero>  
+          <mec:inputNumero id="consulta" label="#{messages.LABEL_CONSULTA}" title="#{messages.TITLE_CONSULTA}" value="#{pesquisaGestacaoController.nroConsulta}" maxlength="8" size="10" required="false">
+          	<p:ajax event="change" update="@(#formPesquisa)" process="@this" listener="#{pesquisaGestacaoController.carregarDadosPaciente}"/>
+          </mec:inputNumero>  
+          <mec:inputText id="gestante" label="#{messages.LABEL_GESTANTE}" title="#{messages.TITLE_GESTANTE}" value="#{pesquisaGestacaoController.gestante.nome}" size="70" required="false" readonly="true"></mec:inputText>  
+          <mec:inputText id="idade" label="#{messages.LABEL_IDADE}" title="#{messages.TITLE_IDADE}" value="#{pesquisaGestacaoController.idadeFormatada}" size="30" required="false" readonly="true"></mec:inputText> 
+        </aghu:panelGeral>  
+        <!-- BOTÕES DE AÇÃO DA PESQUISA DE GESTAÇÕES -->  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisaGestacaoController.pesquisar}" profile="search" ajax="true" render="formPesquisa,resultados, legenda"></mec:commandButton>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{pesquisaGestacaoController.limpar}" ajax="true" profile="clear" render="formPesquisa,resultados, legenda"></mec:commandButton>  
+          <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVA_GESTACAO}" action="#{pesquisaGestacaoController.irNovaGestacao}" 
+          	rendered="#{pesquisaGestacaoController.permManterGestacoes and pesquisaGestacaoController.gestante.codigo != null and pesquisaGestacaoController.pesquisaAtiva}" profile="add" ajax="true"></mec:commandButton>
+		  <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_VOLTAR}" immediate="true" styleClass="bt_vermelho icon-back bt_cinza" 
+		  	profile="back" rendered="#{pesquisaGestacaoController.voltarPara != null}" action="#{pesquisaGestacaoController.cancelar}" />
+		</aghu:acao> 
+      </h:form>  
+      <br />
+      <!-- LISTAGEM DA PESQUISA DE GESTAÇÕES -->  
+        <h:form prependId="false" id="resultados"> 
+            <!-- LISTAGEM DE REGISTROS -->  
+            <mec:serverDataTable id="tabelaGestacoes"            		 
+            		list="#{pesquisaGestacaoController.dataModel}" 
+            		controller="#{pesquisaGestacaoController}"
+            		scrollable="true" 
+            		scrollHeight="310" rendered="#{pesquisaGestacaoController.pesquisaAtiva}"> 
+              <c:set var="item" value="#{item}"/>
+              <p:column style="text-align:right; width: 40px;" styleClass="#{not empty item.justificativa ? 'agd-cedencia' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.CASCA_LABEL_ACOES}"/> 
+                </f:facet>  
+                <mec:commandLink action="#{pesquisaGestacaoController.irRegistroPerinatal}" title="#{messages.LABEL_REGISTRO_PERINATAL}" styleClass="silk-icon silk-gestacao"> 
+                  <f:setPropertyActionListener target="#{pesquisaGestacaoController.gestacao}" value="#{item}" for="command"></f:setPropertyActionListener> 
+                </mec:commandLink>  
+                <p:tooltip style="white-space:nowrap" rendered="#{not empty item.justificativa}">#{item.justificativa}</p:tooltip> 
+              </p:column>  
+              <p:column style="width: 80px;" styleClass="#{not empty item.justificativa ? 'agd-cedencia' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GESTACOES_DPP}" title="#{messages.TITLE_GESTACOES_DPP}"/> 
+                </f:facet>  
+                <p:outputPanel id="colunaDataPP" layout="block">
+	                <h:outputText value="#{item.dtProvavelParto}"> 
+	                  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+	                </h:outputText>  
+                </p:outputPanel>
+                <p:tooltip style="white-space:nowrap" for="colunaDataPP" rendered="#{not empty item.justificativa}">#{item.justificativa}</p:tooltip> 
+              </p:column>  
+              <p:column style="width: 100px;" styleClass="#{not empty item.justificativa ? 'agd-cedencia' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GESTACOES_GESTACAO}" title="#{messages.TITLE_GESTACOES_GESTACAO}"/> 
+                </f:facet>  
+                <p:outputPanel id="colunaGesta" layout="block">
+                	<h:outputText value="#{item.gesta}"/>
+                </p:outputPanel>  
+                <p:tooltip style="white-space:nowrap" for="colunaGesta" rendered="#{not empty item.justificativa}">#{item.justificativa}</p:tooltip> 
+              </p:column>  
+              <p:column style="width: 100px;" styleClass="#{not empty item.justificativa ? 'agd-cedencia' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GESTACOES_PARTO}" title="#{messages.TITLE_GESTACOES_PARTO}"/> 
+                </f:facet>
+                <p:outputPanel id="colunaPara" layout="block">  
+                	<h:outputText value="#{item.para}"/>  
+                </p:outputPanel>
+                <p:tooltip style="white-space:nowrap" for="colunaPara" rendered="#{not empty item.justificativa}">#{item.justificativa}</p:tooltip> 
+              </p:column>  
+              <p:column style="width: 100px;" styleClass="#{not empty item.justificativa ? 'agd-cedencia' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GESTACOES_CESARIANA}"/> 
+                </f:facet>  
+                <p:outputPanel id="colunaCesarea" layout="block">
+                	<h:outputText value="#{item.cesarea}"/>  
+                </p:outputPanel>
+                <p:tooltip style="white-space:nowrap" for="colunaCesarea" rendered="#{not empty item.justificativa}">#{item.justificativa}</p:tooltip> 
+              </p:column>  
+              <p:column style="width: 100px;" styleClass="#{not empty item.justificativa ? 'agd-cedencia' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GESTACOES_ABORTO}"/> 
+                </f:facet>
+                <p:outputPanel id="colunaAborto" layout="block">
+                	<h:outputText value="#{item.aborto}"/>
+                </p:outputPanel>  
+              	<p:tooltip style="white-space:nowrap" for="colunaAborto" rendered="#{not empty item.justificativa}">#{item.justificativa}</p:tooltip>  
+              </p:column>
+                 
+              <p:column style="width: 100px;" styleClass="#{not empty item.justificativa ? 'agd-cedencia' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GESTACOES_ECTOPICA}"/> 
+                </f:facet>  
+                <p:outputPanel id="colunaEctopica" layout="block">
+                	<h:outputText value="#{item.ectopica}"/>
+                </p:outputPanel>  
+                <p:tooltip style="white-space:nowrap" for="colunaEctopica" rendered="#{not empty item.justificativa}">#{item.justificativa}</p:tooltip> 
+              </p:column>  
+              <p:column styleClass="#{not empty item.justificativa ? 'agd-cedencia' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GESTACOES_GRAVIDEZ}"/> 
+                </f:facet>
+                <p:outputPanel id="colunaDescricao" layout="block">  
+                	<h:outputText value="#{item.gravidez.descricao}"/>
+                </p:outputPanel>  
+                <p:tooltip style="white-space:nowrap" for="colunaDescricao" rendered="#{not empty item.justificativa}">#{item.justificativa}</p:tooltip> 
+              </p:column> 
+            </mec:serverDataTable>  
+        </h:form> 
+      <aghu:linha> 
+        <p:outputPanel id="legenda" layout="inline"> 
+          <p:outputPanel rendered="#{pesquisaGestacaoController.pesquisaAtiva}" layout="inline"> 
+            <div style="text-align: -moz-center; margin: 15px auto 10px"> 
+              <aghu:panelGeral> 
+                <table class="tbLegenda spaces">
+                  <tr>
+                    <td class="agd-cedencia" rowspan="1" colspan="1">
+                      <h:outputText value="#{messages.LABEL_COM_JUSTIFICATIVA}"/>
+                    </td>
+                    <td rowspan="1" colspan="1">
+                      <h:outputText value="#{messages.LABEL_SEM_JUSTIFICATIVA}"/>
+                    </td>
+                  </tr>
+                </table> 
+              </aghu:panelGeral> 
+            </div> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </aghu:linha> 
+    </ui:define>
+  </ui:composition>
+</html>

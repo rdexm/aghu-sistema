@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_MEDICAMENTO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{medicamentoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_MEDICAMENTO}"> 
+          <aghu:linha> 
+            <mec:inputNumero readonly="false" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_MEDICAMENTO}" size="6" maxlength="6" value="#{medicamentoPaginatorController.medicamentoPesquisa.matCodigo}" id="codigo"/>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_MEDICAMENTO}" size="60" maxlength="60" value="#{medicamentoPaginatorController.medicamentoPesquisa.descricao}" style="text-transform:uppercase" removerCaratersEspeciais="false" id="nome"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox readonly="false" label="#{messages.LABEL_TIPO}" title="#{messages.TITLE_TIPO_USO_MEDICAMENTOS}" descricaoInput="sigla" descricaoLabel="descricao" suggestionAction="pesquisaTipoUsoMdtoAtivos" width="500" id="tipoUsoMdto" controller="#{medicamentoPaginatorController}" value="#{medicamentoPaginatorController.medicamentoPesquisa.afaTipoUsoMdtos}"> 
+              <p:column>#{item.sigla}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_REVISAO_CADASTRO}" title="#{messages.TITLE_REVISAO_CADASTRO_SELECT}" value="#{medicamentoPaginatorController.indRevisaoCadastro}" id="indRevisaoCadastro"/>  
+            <mec:selectOneMenu enum="DominioSituacaoMedicamento" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_MEDICAMENTO}" value="#{medicamentoPaginatorController.medicamentoPesquisa.indSituacao}" id="indSituacao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" disabled="#{not mf:hasPermission(securityController, 'medicamento,pesquisar')}" action="#{medicamentoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{medicamentoPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao>  
+        <table width="100%"> 
+          <tr valign="top"> 
+            <td width="80%" rowspan="1" colspan="1"> 
+              <mec:serverDataTable id="tabelaMedicamentos" 
+              		dataModel="dataModel" title="MENSAGEM_MEDICAMENTOS_ENCONTRADOS" 
+              		inputRadio="true" reRender="tabelaAcao" controller="#{medicamentoPaginatorController}"
+              		selection="medicamentoSelecionado"> 
+              		<p:ajax event="rowSelect"
+							update="@(#tabelaAcao)" 
+							onstart="PF('loadDialogWG').show();" 
+							oncomplete="PF('loadDialogWG').hide();" />	
+                <c:set var="_medicamentos" value="#{item}"/>  
+                <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                  <mec:commandLink id="tabelaMedicamentos_link_editar" profile="edit" title="editar" action="#{medicamentoPaginatorController.editar}"> 
+                    <f:setPropertyActionListener for="command" target="#{medicamentoPaginatorController.medicamentoSelecionado}" value="#{_medicamentos}"/> 
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_medicamentos.matCodigo}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_medicamentos.descricao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONCENTRACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_medicamentos.concentracao}"> 
+                    <f:converter converterId="bigDecimalPrecisao4Converter"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_medicamentos.mpmUnidadeMedidaMedicas.descricao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_APRESENTACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_medicamentos.tipoApresentacaoMedicamento.sigla}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_TIPO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_medicamentos.afaTipoUsoMdtos.sigla}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_medicamentos.indSituacao.descricao}" id="situacaoMedicamento"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" for="situacaoMedicamento"> 
+                    <h:outputText value="#{messages.LABEL_CADASTRADO_EM}: "/>  
+                    <h:outputText value="#{_medicamentos.criadoEm}" isDate="true"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_RESPONSAVEL}: #{_medicamentos.rapServidores.pessoaFisica.nome}"/> 
+                  </p:tooltip> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </td>  
+            <td width="1%" rowspan="1" colspan="1"/>  
+            <td width="16%" align="center" rowspan="1" colspan="1"> 
+              <p:outputPanel id="tabelaAcao" rendered="#{medicamentoPaginatorController.dataModel.pesquisaAtiva}" layout="inline"> 
+                <div class="menu-direita" style="width:92% !important"> 
+                  <mec:commandButton id="bt_viasAdministracao" value="#{messages.LABEL_VIAS_ADMINISTRACAO}" action="#{medicamentoPaginatorController.realizarChamadaViaAdministracaoMedicamento()}" disabled="#{not mf:hasPermission(securityController, 'manterViasAdmMdtos,pesquisar') or medicamentoPaginatorController.medicamentoSelecionado == null}" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{viaAdministracaoMedicamentoPaginatorController.medicamento}" value="#{medicamentoPaginatorController.medicamentoSelecionado}" for="command"/>  
+                    <f:setPropertyActionListener target="#{viaAdministracaoMedicamentoPaginatorController.fromList}" value="#{true}" for="command"/> 
+                  </mec:commandButton>  
+                  
+                  <mec:commandButton id="bt_formasDosagem" value="#{messages.LABEL_FORMAS_DOSAGEM}" action="#{medicamentoPaginatorController.realizarChamadaFormaDosagem()}" disabled="#{not mf:hasPermission(securityController, 'formaDosagem,pesquisar') or medicamentoPaginatorController.medicamentoSelecionado == null}" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{formaDosagemPaginatorController.medicamento}" value="#{medicamentoPaginatorController.medicamentoSelecionado}" for="command"/>  
+                    <f:setPropertyActionListener target="#{formaDosagemPaginatorController.fromList}" value="#{true}" for="command"/> 
+                  </mec:commandButton>  
+                  
+                  <mec:commandButton id="bt_parametrosCalculo" value="#{messages.LABEL_PARAMETROS_CALCULO}" readonly="true" disabled="true" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_localDispensacao" value="#{messages.LABEL_LOCAL_DISPENSACAO}" action="#{medicamentoPaginatorController.realizarChamadaLocalDispensacaoMedicamento()}" disabled="#{medicamentoPaginatorController.medicamentoSelecionado == null}" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{localDispensacaoMedicamentoPaginatorController.medicamento}" value="#{medicamentoPaginatorController.medicamentoSelecionado}" for="command"/>  
+                    <f:setPropertyActionListener target="#{localDispensacaoMedicamentoPaginatorController.fromList}" value="#{true}" for="command"/> 
+                  </mec:commandButton>  
+                  <mec:commandButton id="bt_sinonimos" value="#{messages.LABEL_SINONIMOS}" action="#{medicamentoPaginatorController.realizarChamadaSinonimoMedicamento()}" disabled="#{not mf:hasPermission(securityController, 'sinonimoMedicamento,pesquisar')  or medicamentoPaginatorController.medicamentoSelecionado == null}" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{sinonimoMedicamentoPaginatorController.medicamento}" value="#{medicamentoPaginatorController.medicamentoSelecionado}" for="command"/>  
+                    <f:setPropertyActionListener target="#{sinonimoMedicamentoPaginatorController.fromList}" value="#{true}" for="command"/> 
+                  </mec:commandButton>  
+                  <mec:commandButton id="bt_diluentes" value="#{messages.LABEL_DILUENTES}" action="#{medicamentoPaginatorController.realizarChamadaDiluentes()}" readonly="false" disabled="#{not mf:hasPermission(securityController, 'vinculoDiluentes,pesquisar') or medicamentoPaginatorController.medicamentoSelecionado == null}" styleClass="bt_cinza">  
+                    <f:setPropertyActionListener target="#{cadastroDiluentesPaginatorController.medicamentoSelecionado}" value="#{medicamentoPaginatorController.medicamentoSelecionado}" for="command"/>  
+                    <f:setPropertyActionListener target="#{cadastroDiluentesPaginatorController.fromList}" value="#{true}" for="command"/> 
+                  </mec:commandButton> 
+                  <mec:commandButton id="bt_tempoEstabilidade" value="#{messages.LABEL_TEMPO_ESTABILIDADE}" readonly="true" disabled="true" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_cidsNaoPermitidos" value="#{messages.LABEL_CIDS_NAO_PERMITIDOS}" readonly="true" disabled="true" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_salBasico" value="#{messages.LABEL_SAL_BASICO}" readonly="true" disabled="true" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_material" value="#{messages.LABEL_MATERIAL}" readonly="true" disabled="true" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_classificacao" value="#{messages.LABEL_CLASSIFICACAO}" readonly="true" disabled="true" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_substitutos" value="#{messages.LABEL_SUBSTITUTOS}" action="#{medicamentoPaginatorController.realizarChamadaSubstitutosMedicamentos()}" disabled="#{medicamentoPaginatorController.medicamentoSelecionado == null}" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{medicamentoEquivalentePaginatorController.medicamento}" value="#{medicamentoPaginatorController.medicamentoSelecionado}" for="command"/>  
+                    <f:setPropertyActionListener target="#{medicamentoEquivalentePaginatorController.fromList}" value="#{true}" for="command"/> 
+                  </mec:commandButton>  
+                  <mec:commandButton id="bt_diluicoes" value="#{messages.LABEL_DILUICOES}" readonly="true" disabled="true" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_historico" value="#{messages.LABEL_HISTORICO}" action="#{medicamentoPaginatorController.realizarChamadaHistoricoMedicamento()}" disabled="#{not mf:hasPermission(securityController, 'visualizarHistMedicamento,visualizar')   or medicamentoPaginatorController.medicamentoSelecionado == null}" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{historicoCadastroMedicamentoPaginatorController.medicamento}" value="#{medicamentoPaginatorController.medicamentoSelecionado}" for="command"/>  
+                    <f:setPropertyActionListener target="#{historicoCadastroMedicamentoPaginatorController.pageVoltar}" value="medicamentoList" for="command"/> 
+                  </mec:commandButton> 
+                </div> 
+              </p:outputPanel> 
+            </td> 
+          </tr> 
+        </table> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

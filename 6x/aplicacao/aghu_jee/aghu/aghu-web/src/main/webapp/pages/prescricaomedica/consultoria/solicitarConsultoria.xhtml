@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Solicitar Consultoria :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{solicitarConsultoriaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{solicitarConsultoriaController}" ignoreEnter="true"/>  
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formPrescricaoCabecalho"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" 
+              		value="#{solicitarConsultoriaController.prescricaoMedicaVO.prontuario}" 
+              		size="8" maxlength="9" 
+              		emptyStringToNullConverter="emptyStringToNullConverter" 
+              		readonly="true" 
+              		id="prontuarioPaciente" 
+              		converter="#{prontuarioConverter}"/>  
+              <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" 
+              		value="#{solicitarConsultoriaController.prescricaoMedicaVO.nome}" 
+              		size="56" maxlength="50" 
+              		style="text-transform:uppercase" 
+              		readonly="true" 
+              		id="nomePaciente"/>  
+              <mec:inputText label="#{messages.LABEL_LOCAL}" 
+              		value="#{solicitarConsultoriaController.prescricaoMedicaVO.local}" 
+              		size="15" maxlength="15" 
+              		style="text-transform:uppercase" 
+              		readonly="true" 
+              		id="localPaciente"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}" 
+              		value="#{solicitarConsultoriaController.prescricaoMedicaVO.dthrInicio}" 
+              		readonly="true" 
+              		size="17" 
+              		datePattern="dd/MM/yyyy HH:mm" 
+              		id="dataValidadeInicial"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}" 
+              		value="#{solicitarConsultoriaController.prescricaoMedicaVO.dthrFim}" 
+              		readonly="true" 
+              		size="17" 
+              		datePattern="dd/MM/yyyy HH:mm" 
+              		id="dataValidadeFinal"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <h:form prependId="false" id="solicitarConsultoriaForm"> 
+          <p:outputPanel id="panelCampos" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="Solicitar Consultoria"> 
+              <aghu:linha> 
+                <mec:suggestionBox label="#{messages.LABEL_ESPECIALIDADE}" 
+                		maxlength="40" 
+                		title="#{messages.TITLE_LABEL_ESPECIALIDADE_PESQ}" 
+                		required="true" 
+                		descricaoInput="sigla" 
+                		descricaoLabel="nomeEspecialidade"
+                		var="_especialidade"
+                		itemValue="#{_especialidade}" 
+                		suggestionAction="pesquisarPermitemConsultoriaPorSigla" 
+                		readonly="#{solicitarConsultoriaController.readOnly}" 
+                		posSelectionAction="verificarConsultoriaExistente" 
+                		id="especialidade" 
+                		controller="#{solicitarConsultoriaController}" 
+                		value="#{solicitarConsultoriaController.solicitacaoConsultoria.especialidade}"> 
+                  <p:column>#{_especialidade.nomeEspecialidade}</p:column>  
+                  <p:column>#{_especialidade.sigla}</p:column> 
+                </mec:suggestionBox>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_URGENTE}" 
+                		readonly="#{solicitarConsultoriaController.consultoriaPossuiResposta}" 
+                		title="Marque esta solicitação de consultoria como sendo urgente." 
+                		value="#{solicitarConsultoriaController.solicitacaoConsultoria.urgente}" 
+                		id="urgente"> 
+                  <p:ajax event="change" process="@this" listener="#{solicitarConsultoriaController.setFormChanged(true)}"/> 
+                </mec:selectBooleanCheckbox>  
+                <p:outputPanel id="panelTipoSolicitacao" layout="inline"> 
+                  <mec:selectOneRadio label="#{messages.LABEL_TIPO}" 
+                  		enum="DominioTipoSolicitacaoConsultoria" 
+                  		readonly="#{solicitarConsultoriaController.consultoriaPossuiResposta}" 
+                  		required="true" 
+                  		ajaxValidation="false" 
+                  		value="#{solicitarConsultoriaController.solicitacaoConsultoria.tipo}" 
+                  		title="Selecione o tipo desta solicitação de consultoria." 
+                  		id="tipoSolicitacao"> 
+                    <p:ajax event="change" process="@this" listener="#{solicitarConsultoriaController.setFormChanged(true)}"/> 
+                  </mec:selectOneRadio> 
+                </p:outputPanel> 
+              </aghu:linha>  
+              <p:outputPanel id="motivoSolicitacao" layout="inline"> 
+                <aghu:linha> 
+                  <mec:inputTextArea label="#{messages.LABEL_MOTIVO}" 
+                  		 cols="50" rows="10" 
+                  		 required="true" 
+                  		 readonly="#{solicitarConsultoriaController.consultoriaPossuiResposta}" 
+                  		 value="#{solicitarConsultoriaController.solicitacaoConsultoria.motivo}" 
+                  		 title="Digite o motivo desta solicitação de consultoria." 
+                  		 maxlength="2000" 
+                  		 id="motivo"> 
+                    <p:ajax event="change" process="@this" listener="#{solicitarConsultoriaController.setFormChanged(true)}"/> 
+                  </mec:inputTextArea> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </aghu:panelGeral> 
+          </p:outputPanel>  
+          <aghu:acao> 
+            <mec:commandButton value="#{messages.LABEL_GRAVAR}" 
+            	disabled="#{solicitarConsultoriaController.consultoriaPossuiResposta}" 
+            	action="#{solicitarConsultoriaController.confirmar}" 
+            	id="bt_confirmar" 
+            	profile="ok"
+            	ajax="true"
+            	process="@this @(#especialidade) @(#tipoSolicitacao) @(#motivo)"
+            	render="solicitarConsultoriaForm" />  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" 
+            	id="bt_limpar" 
+            	action="#{solicitarConsultoriaController.prepararNovaSolicitacaoConsultoria}" 
+            	immediate="true"
+            	ajax="true" 
+            	profile="clear"
+            	process="@this"
+            	render="solicitarConsultoriaForm"/>  
+            <mec:commandButton id="bt_voltar" 
+            	action="#{solicitarConsultoriaController.cancelar}" 
+            	immediate="true" 
+            	value="#{messages.LABEL_VOLTAR}" 
+            	styleClass=" alinha-direita bt_cinza" 
+            	ajax="true" 
+            	render="panelModalVoltar" 
+            	profile="back"> 
+              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{solicitarConsultoriaController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{solicitarConsultoriaController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+            </mec:commandButton> 
+          </aghu:acao>  
+          <p:outputPanel id="tabelaConsultorias" layout="inline"> 
+            <p:outputPanel rendered="#{not empty solicitarConsultoriaController.listaConsultorias}" layout="inline" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral id="ffdl_prontuario" legend="#{messages.LEGEND_FIELDSET_CONSULTORIAS}"> 
+                <aghu:linha> 
+                  <h:outputText value="#{messages.NENHUMA_CONSULTORIA_ENCONTRADA}" rendered="#{empty solicitarConsultoriaController.listaConsultorias}"/>  
+                  <mec:serverDataTable rendered="#{not empty solicitarConsultoriaController.listaConsultorias}" id="richtable" 
+                  	list="#{solicitarConsultoriaController.listaConsultorias}" scrollable="true"  scrollHeight="125"> 
+                    <c:set var="_consultoria" value="#{item}"/>  
+                    <p:column style="width:60px;#{solicitarConsultoriaController.obterEstiloColuna(_consultoria)}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink rendered="#{!solicitarConsultoriaController.verificarLapisDeveAparecer(_consultoria)}" onclick="return false;" styleClass=" silk-blank silk-icon" ajax="true"/>  
+                      <mec:commandLink rendered="#{solicitarConsultoriaController.verificarLapisDeveAparecer(_consultoria)}" 
+                      	title="#{messages.LABEL_EDITAR}" 
+                      	action="#{solicitarConsultoriaController.editarSolicitacaoConsultoria(_consultoria)}" 
+                      	profile="edit" 
+                      	ajax="true"
+                      	immediate="true" 
+                      	render="panelCampos,tabelaConsultorias, panelModalEditar,tabelaConsultorias" process="@this"> 
+                      </mec:commandLink>  
+                      <p:outputPanel layout="inline"> 
+                        <h:selectBooleanCheckbox name="marcador" id="marcador" title="Excluir" value="#{solicitarConsultoriaController.consultoriasSelecionadas[_consultoria]}"> 
+                          <p:ajax event="click" update="@(#tabelaConsultorias)" process="@this"/> 
+                        </h:selectBooleanCheckbox> 
+                      </p:outputPanel> 
+                    </p:column>  
+                    <p:column style="#{solicitarConsultoriaController.obterEstiloColuna(_consultoria)}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CONSULTORIA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_consultoria.descricaoFormatada}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </aghu:linha>  
+                <aghu:acao> 
+                  <mec:commandButton value="#{messages.LABEL_EXCLUIR}" 
+                  		id="bt_excluir_selecionados_2" 
+                  		action="#{solicitarConsultoriaController.removerConsultoriasSelecionadas}"
+                  		process="@this" 
+                  		ajax="true" 
+                  		render="corpoPagina" 
+                  		styleClass="bt_cinza"/> 
+                </aghu:acao> 
+              </aghu:panelGeral> 
+            </p:outputPanel> 
+          </p:outputPanel>  
+        </h:form>   
+        <p:dialog id="modalPanel" width="350" height="150" modal="true" resizable="false" widgetVar="modalpanelWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.ATENCAO}"/> 
+          </f:facet>  
+          <h:outputFormat value="#{messages.MENSAGEM_SOLICITACAO_EXISTENTE}"> 
+            <f:param value="#{solicitarConsultoriaController.solicitacaoConsultoria.especialidade.nomeEspecialidade}"/>  
+            <f:param value="#{solicitarConsultoriaController.dataSolicitacaoAnterior}"/> 
+          </h:outputFormat>  
+          <aghu:acao> 
+            <h:form prependId="false" id="formModalConfirmacao"> 
+              <mec:commandButton value="Continuar" 
+              	immediate="true" 
+              	id="bt_continuar" 
+              	oncomplete="PF('modalpanelWG').hide();;" 
+              	action="#{solicitarConsultoriaController.limparFlagExibicaoModal}" 
+              	profile="ok" 
+              	ajax="true"/>  
+              <mec:commandButton value="#{messages.LABEL_CANCELAR}" 
+              	action="#{solicitarConsultoriaController.voltar}" 
+              	profile="cancel"> 
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{solicitarConsultoriaController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{solicitarConsultoriaController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+              </mec:commandButton> 
+            </h:form> 
+          </aghu:acao> 
+        </p:dialog>           
+        <p:outputPanel id="panelModalVoltar" layout="inline"> 
+          <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" rendered="#{solicitarConsultoriaController.confirmaVoltar}" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalPendencias"> 
+                <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{solicitarConsultoriaController.voltar}" profile="search"> 
+                  <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" 
+                  		value="#{solicitarConsultoriaController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" 
+                  		for="command"/>  
+                  <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" 
+                  		value="#{solicitarConsultoriaController.prescricaoMedicaVO.prescricaoMedica.id.seq}" 
+                  		for="command"/> 
+                </mec:commandButton>  
+                <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" profile="cancel" ajax="true"/> 
+              </h:form> 
+            </h:panelGroup> 
+          </p:dialog>  
+          <h:form rendered="#{solicitarConsultoriaController.confirmaVoltar}"> 
+            <script xml:space="preserve">
+                    PF('modalConfirmacaoPendenciaWG').show();;
+                </script> 
+          </h:form> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelModalEditar" layout="inline"> 
+          <p:dialog id="modalConfirmacaoEditar" width="400" height="150" rendered="#{solicitarConsultoriaController.confirmaEditarRequired}" modal="true" resizable="false" widgetVar="modalConfirmacaoEditarWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalEditar"> 
+                <mec:commandButton id="bt_sim_editar" 
+                	value="#{messages.LABEL_SIM}" 
+                	action="#{solicitarConsultoriaController.confirmaEditarConsultoria}" 
+                	profile="search"/>  
+                <mec:commandButton id="bt_nao_editar" 
+                	value="#{messages.LABEL_NAO}" 
+                	onclick="PF('modalConfirmacaoEditarWG').hide();" 
+                	profile="cancel" 
+                	ajax="true"/> 
+              </h:form> 
+            </h:panelGroup> 
+          </p:dialog>  
+          <h:form rendered="#{solicitarConsultoriaController.confirmaEditarRequired}"> 
+            <script xml:space="preserve">
+                    PF('modalConfirmacaoEditarWG').show();;
+                </script> 
+          </h:form> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

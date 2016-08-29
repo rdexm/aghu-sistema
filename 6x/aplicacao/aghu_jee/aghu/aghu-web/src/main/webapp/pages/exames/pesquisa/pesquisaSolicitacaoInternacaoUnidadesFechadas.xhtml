@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_SOLICITACAO_INTERN_UN_FECHADAS}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{solicitacaoInternacaoUnidadesFechadasController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{solicitacaoInternacaoUnidadesFechadasController}"/>  
+      <h:form> 
+        <p:poll id="poll" interval="300000" enabled="#{solicitacaoInternacaoUnidadesFechadasController.ativarPesquisaAutomatica and  mf:hasPermission(securityController,'consultarSolicitacaoInternacaoUnidadesFechadas,pesquisar')}" update="@(#listaExamesTable) @(#listaItemTable)" listener="#{solicitacaoInternacaoUnidadesFechadasController.pesquisaAutomatica}"/> 
+      </h:form>  
+      <h:form prependId="false" id="formSolicitacaoInternacaoExame" name="formSolicitacaoInternacaoExame"> 
+        <pe:remoteCommand name="selecionaExame" update="tabelaAcao"> 
+          <pe:assignableParam name="param1" assignTo="#{solicitacaoInternacaoUnidadesFechadasController.numero}"/> 
+        </pe:remoteCommand>  
+        <p:outputPanel id="campos" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_SOLICITACAO_INTERN_UN_FECHADAS}"> 
+            <mec:suggestionBox label="#{messages.LABEL_UNID_EXEC}" 
+                               title="#{messages.TITLE_DESCRICAO_UNID_EXEC_SUGGESTION}" 
+                               suggestionAction="obterAghUnidadesFuncionaisExecutoras" 
+                               posDeleteAction="limparAghUnidadesFuncionaisExecutoras" 
+                               posSelectionAction="persistirIdentificacaoUnidadeExecutora" 
+                               descricaoInput="seq" 
+                               descricaoLabel="descricao" 
+                               maxlength="75" 
+                               required="true" 
+                               id="sbIdentificacaoUnidade" 
+                               controller="#{solicitacaoInternacaoUnidadesFechadasController}" 
+                               value="#{solicitacaoInternacaoUnidadesFechadasController.unidadeExecutora}"
+                               var="row" itemValue="#{row}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{row.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_SOLICITACAO_A_PARTIR}" title="#{messages.LABEL_HELP_DATA_SOLICITACAO}" value="#{solicitacaoInternacaoUnidadesFechadasController.dtSolicitacao}" required="true" id="dataSolicitacao" tipo="data"/> 
+          </aghu:panelGeral>  
+          <aghu:panelGeral legend="#{messages.LABEL_SOLICITACOES_EXAMES}"> 
+            <aghu:linha> 
+              <table width="100%"> 
+                <tr> 
+                  <td width="65%" rowspan="1" colspan="1"> 
+                    <p:outputPanel id="tabelaExames_panel" layout="inline"> 
+                      <p:outputPanel layout="block"> 
+                        <mec:serverDataTable id="listaExamesTable" 
+                                             name="listaExamesTable" 
+                                             controller="#{solicitacaoInternacaoUnidadesFechadasController}" 
+                                             list="#{solicitacaoInternacaoUnidadesFechadasController.listaSolicitacaoExames}" 
+                                             selection="solicExameVO" scrollable="true"> 
+                          <c:set var="_exame" value="#{item}"/>  
+                          <p:ajax event="rowSelect" update="@(#listaExamesTable) @(#tabelaItem_panel) @(#tabelaAcao)" listener="#{solicitacaoInternacaoUnidadesFechadasController.selecionarExame}"/>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''}; width:40px"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_NUMERO_SOLIC_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="numSolicitacao" value="#{_exame.numero}"/> 
+				            <p:tooltip for="numSolicitacao" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                          </p:column>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''}; width:30px"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_UR_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="urgente" value="#{_exame.ur}"/> 
+				            <p:tooltip for="urgente" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                            
+                          </p:column>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''}; width:50px"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_PRIORIDADE_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="prioridade" value="#{_exame.prioridade}"/> 
+				            <p:tooltip for="prioridade" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                            
+                          </p:column>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''}; width:90px"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_DT_SOLIC_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="dtSolicitacao" value="#{_exame.dataSolicitacao}"> 
+                              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                            </h:outputText> 
+				            <p:tooltip for="dtSolicitacao" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                             
+                          </p:column>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''}; width:60px"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_PRONTUARIO_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="prontuario" value="#{_exame.prontuario}"/> 
+				            <p:tooltip for="prontuario" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                            
+                          </p:column>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''};"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_PACIENTE_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="paciente" value="#{_exame.pacienteDiversos}"/> 
+				            <p:tooltip for="paciente" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                            
+                          </p:column>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''}; width:70px"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_LOC_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="local" value="#{_exame.local}"/> 
+				            <p:tooltip for="local" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                              
+                          </p:column>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''}; width:30px"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_CONV_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="convenio" value="#{_exame.convenio}"/> 
+				            <p:tooltip for="convenio" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                              
+                          </p:column>  
+                          <p:column style="#{(_exame.pacienteGMR) ? 'background-color:#66CCFF' : ''}; width:30px"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_IMPR_EXAMES}"/> 
+                            </f:facet>  
+                            <h:outputText id="imprExame" value="#{_exame.imprimiu}"/> 
+				            <p:tooltip for="numSolicitacao" rendered="#{_exame.pacienteGMR}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+				              <h:outputText value="#{messages.LABEL_GRM}"/> 
+				            </p:tooltip>                              
+                              
+                          </p:column> 
+                        </mec:serverDataTable> 
+                      </p:outputPanel> 
+                    </p:outputPanel> 
+                  </td>  
+                  <td width="1%" rowspan="1" colspan="1"/>  
+                  <td width="4%" align="center" valign="top" rowspan="1" colspan="1"> 
+                    <p:outputPanel id="tabelaAcao" layout="inline"> 
+                        <div> 
+                          <mec:commandButton disabled="#{solicitacaoInternacaoUnidadesFechadasController.disableButton or not mf:hasPermission(securityController,'agendarExame,visualizarHorariosAgendamento')}" value="#{messages.LABEL_AGENDAMENTO}" action="exames-listarAgendamento" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{listarExamesAgendamentoSelecaoController.soeSeq}" value="#{solicitacaoInternacaoUnidadesFechadasController.numero}" for="command"/>  
+                            <f:setPropertyActionListener target="#{listarExamesAgendamentoSelecaoController.voltarPara}" value="exames-pesquisaSolicitacaoInternacaoUnidadesFechadas" for="command"/> 
+                          </mec:commandButton> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton disabled="#{solicitacaoInternacaoUnidadesFechadasController.disableButton or not mf:hasPermission(securityController,'imprimirExamesSolicitacao,executar') }" value="#{messages.LABEL_IMPRIME_EXAMES}" action="#{solicitacaoInternacaoUnidadesFechadasController.directPrint()}" styleClass="bt_cinza"/> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton disabled="#{solicitacaoInternacaoUnidadesFechadasController.disableButton or not mf:hasPermission(securityController,'imprimirExamesSolicitacao,executar') }" value="#{messages.LABEL_VISUALIZA_EXAMES}" action="#{solicitacaoInternacaoUnidadesFechadasController.print()}" styleClass="bt_cinza"/> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton disabled="#{solicitacaoInternacaoUnidadesFechadasController.disableButton or not mf:hasPermission(securityController,'recepcionarPaciente,executar')}" value="#{messages.LABEL_RECEBER_PACIENTE}" action="exames-listarExamesCriteriosSelecionados" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{listarExamesCriteriosSelecionadosController.numeroSolicitacao}" value="#{solicitacaoInternacaoUnidadesFechadasController.numero}" for="command"/>  
+                            <f:setPropertyActionListener target="#{listarExamesCriteriosSelecionadosController.voltarPara}" value="exames-pesquisaSolicitacaoInternacaoUnidadesFechadas" for="command"/> 
+                          </mec:commandButton> 
+                        </div>  
+                        <div> 
+                          <mec:commandButton disabled="#{solicitacaoInternacaoUnidadesFechadasController.disableButton or not mf:hasPermission(securityController,'imprimirEtiquetasEnvelope,imprimir')}" value="#{messages.LABEL_IMPRIME_ETIQUETA}" action="exames-relatorioEtiquetaEnvelopePaciente" styleClass="bt_cinza"> 
+                            <f:setPropertyActionListener target="#{etiquetaEnvelopePacienteController.codigoSolicitacao}" value="#{solicitacaoInternacaoUnidadesFechadasController.numero}" for="command"/>  
+                            <f:setPropertyActionListener target="#{etiquetaEnvelopePacienteController.voltarPara}" value="exames-pesquisaSolicitacaoInternacaoUnidadesFechadas" for="command"/> 
+                          </mec:commandButton> 
+                        </div> 
+                    </p:outputPanel> 
+                  </td> 
+                </tr> 
+              </table> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:panelGeral legend="#{messages.LABEL_ITENS}"> 
+            <aghu:linha> 
+              <p:outputPanel id="tabelaItem_panel" layout="inline"> 
+                <p:outputPanel layout="block" style="height:200px; "> 
+                  <mec:serverDataTable id="listaItemTable" name="listaItemTable" onRowMouseOver="this.style.backgroundColor='#F1F1F1'" onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'" list="#{solicitacaoInternacaoUnidadesFechadasController.listaItensExame}" scrollable="true"> 
+                    <c:set var="_itens" value="#{item}"/>  
+                    <p:column style="width:40px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NUMERO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itens.id.seqp}"/> 
+                    </p:column>  
+                    <p:column style="width:90px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itens.situacaoItemSolicitacao.descricao}"/> 
+                    </p:column>  
+                    <p:column style="width:90px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DT_PROGRAMADA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itens.dthrProgramada}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column style="width:70px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_TIPO_COLETA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itens.tipoColeta}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_EXAME}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itens.exame.descricaoUsual}"/> 
+                    </p:column>  
+                    <p:column style="width:40px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="02"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itens.indUsoO2}"> 
+                        <f:converter converterId="simNaoConverter"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column style="width:80px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_TRANSPORTE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itens.tipoTransporte.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:linha> 
+            <mec:commandButton value="#{messages.LABEL_REFRESH}" id="btAtualizar" disabled="#{not mf:hasPermission(securityController,'consultarSolicitacaoInternacaoUnidadesFechadas,pesquisar')}" action="#{solicitacaoInternacaoUnidadesFechadasController.pesquisarSolicitacaoExames}" render="tabelaExames_panel,tabelaItem_panel" profile="ok" ajax="true"/> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

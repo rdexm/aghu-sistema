@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_AJUSTE_ESTOQUE}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{ajusteEstoqueController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{ajusteEstoqueController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formMovimento" name="formMovimento">
+			<aghu:panelGeral legend="#{messages.LABEL_AJUSTE_ESTOQUE}">
+				<aghu:linha>
+					<p:outputPanel id="panelTooltipNome" layout="inline">
+						<mec:inputText label="#{messages.LABEL_DATA_HORA_GERADO_EM}"
+							required="false" readonly="true" size="96"
+							value="#{ajusteEstoqueController.geradoEmFormatado}"
+							rendered="#{ajusteEstoqueController.movimento.id != null and ajusteEstoqueController.movimento.id.seq != null}"
+							id="geradoEm" />
+						<p:tooltip 
+							direction="bottom-right" styleClass="tooltip" layout="block">
+							<h:outputText
+								value="#{ajusteEstoqueController.geradoEmFormatado}" />
+						</p:tooltip>
+					</p:outputPanel>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:suggestionBox label="#{messages.LABEL_TIPO_MOVIMENTO}"
+						title="#{messages.TITLE_TIPO_MOVIMENTO}"
+						suggestionAction="obterSceTipoMovimento" descricaoInput="id.seq"
+						descricaoLabel="descricao" posDeleteAction="atualizaMotivo"
+						required="#{empty ajusteEstoqueController.movimento.id || empty ajusteEstoqueController.movimento.id.seq}"
+						readonly="#{not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq}"
+						maxlength="20" width="350" id="sbMovimento"
+						controller="#{ajusteEstoqueController}"
+						value="#{ajusteEstoqueController.movimento.tipoMovimento}"
+						render="panelMotivo">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.id.seq}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.descricao}
+              </p:column>
+					</mec:suggestionBox>
+					<mec:suggestionBox label="#{messages.LABEL_ALMOXARIFADO}"
+						title="#{messages.TITLE_ALMOXARIFADO}"
+						suggestionAction="obterSceAlmoxarifado" descricaoInput="seq"
+						descricaoLabel="descricao"
+						required="#{empty ajusteEstoqueController.movimento.id || empty ajusteEstoqueController.movimento.id.seq}"
+						readonly="#{not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq}"
+						posDeleteAction="limparMaterial"
+						posSelectionAction="limparMaterial" maxlength="30" width="350"
+						id="sbAlmoxarifado" controller="#{ajusteEstoqueController}"
+						value="#{ajusteEstoqueController.movimento.almoxarifado}"
+						render="panelMat">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.seq}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.descricao}
+              </p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<p:outputPanel id="panelMat" layout="inline">
+						<mec:suggestionBox label="#{messages.LABEL_MATERIAL}"
+							title="#{messages.TITLE_MATERIAL}"
+							suggestionAction="listaEstoqueMaterialPorAlmoxarifado"
+							descricaoInput="codigo" descricaoLabel="nome"
+							required="#{empty ajusteEstoqueController.movimento.id || empty ajusteEstoqueController.movimento.id.seq}"
+							readonly="#{(not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq) or ajusteEstoqueController.movimento.almoxarifado == null}"
+							posSelectionAction="atualizaUnidade"
+							posDeleteAction="atualizaUnidade" width="520" maxlength="30"
+							id="sbMaterial" controller="#{ajusteEstoqueController}"
+							value="#{ajusteEstoqueController.movimento.material}"
+							render="panelUnd">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{item.codigo}
+                </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.nome}
+                </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_UNIDADE_MEDIDA}</b>
+								</f:facet> #{item.unidadeMedida.descricao}
+                </p:column>
+						</mec:suggestionBox>
+					</p:outputPanel>
+					<mec:suggestionBox label="#{messages.LABEL_FORNECEDOR}"
+						title="#{messages.TITLE_FORNECEDOR_INSTITUICAO}"
+						suggestionAction="obterFornecedor" descricaoInput="numero"
+						descricaoLabel="razaoSocial"
+						required="#{empty ajusteEstoqueController.movimento.id || empty ajusteEstoqueController.movimento.id.seq}"
+						readonly="#{not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq}"
+						width="400" maxlength="30" id="sbFornecedor"
+						controller="#{ajusteEstoqueController}"
+						value="#{ajusteEstoqueController.movimento.fornecedor}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.numero}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.razaoSocial}
+              </p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputNumero label="#{messages.LABEL_QUANTIDADE}"
+						title="#{not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq ? null : messages.TITLE_QUANTIDADE_MOVIMENTO}"
+						required="#{empty ajusteEstoqueController.movimento.id || empty ajusteEstoqueController.movimento.id.seq}"
+						maxlength="10" ajaxValidation="false" size="15"
+						readonly="#{not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq}"
+						value="#{ajusteEstoqueController.movimento.quantidade}"
+						id="quantidade" />
+					<p:outputPanel id="panelUnd" layout="inline">
+						<mec:inputText label="#{messages.LABEL_UNIDADE_MEDIDA}"
+							required="false" readonly="true" size="10"
+							value="#{ajusteEstoqueController.codigoUnidadeMedida}"
+							id="unidade" />
+					</p:outputPanel>
+				</aghu:linha>
+				<aghu:linha>
+					<p:outputPanel id="panelMotivo" layout="inline">
+						<mec:suggestionBox label="#{messages.LABEL_MOTIVO}"
+							title="#{messages.TITLE_MOTIVO}"
+							suggestionAction="obterMotivoMovimento"
+							descricaoInput="id.numero" descricaoLabel="descricao"
+							required="#{empty ajusteEstoqueController.movimento.id || empty ajusteEstoqueController.movimento.id.seq}"
+							readonly="#{not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq}"
+							maxlength="30" id="sbMotivo"
+							controller="#{ajusteEstoqueController}"
+							value="#{ajusteEstoqueController.movimento.motivoMovimento}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_NUMERO_MTV}</b>
+								</f:facet> #{item.id.numero}
+                </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.descricao}
+                </p:column>
+						</mec:suggestionBox>
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<aghu:linha>
+					<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}"
+						block="true"
+						rendered="#{empty ajusteEstoqueController.movimento.id || empty ajusteEstoqueController.movimento.id.seq}"
+						action="#{ajusteEstoqueController.gravar}" profile="ok" />
+					<mec:commandButton id="bt_novo"
+						value="#{messages.LABEL_NOVO_AJUSTE}" block="true"
+						rendered="#{not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq}"
+						action="#{ajusteEstoqueController.inicio}" styleClass="bt_cinza" />
+				</aghu:linha>
+			</aghu:acao>
+		</h:form>
+		<aghu:linha>
+		<p:outputPanel layout="block"
+			rendered="#{not empty ajusteEstoqueController.movimento.id and not empty ajusteEstoqueController.movimento.id.seq}"
+			styleClass="aghu-panel-geral">
+			<aghu:panelGeral legend="#{messages.TITLE_VALIDADES}">
+				<aghu:linha>
+					<h:form prependId="false" id="formItens" name="formItens">
+						<p:outputPanel id="panelSBQuantidade" layout="inline">
+							<mec:inputTextData label="#{messages.LABEL_DATA}"
+								title="#{messages.TITLE_DATA_VALIDADE_MATERIAL}"
+								required="#{empty ajusteEstoqueController.dataValidadeAux and empty ajusteEstoqueController.ealSeqAux}"
+								value="#{ajusteEstoqueController.validade.id.data}"
+								readonly="#{ajusteEstoqueController.verificaDisableData}"
+								id="data" tipo="data" />
+							<mec:inputNumero label="#{messages.LABEL_QUANTIDADE_DISPONIVEL}"
+								title="#{messages.TITLE_QUANTIDADE_VALIDADE_MATERIAL}"
+								required="true" ajaxValidation="false" maxlength="8"
+								value="#{ajusteEstoqueController.qtdeValidade}" id="qtd" />
+						</p:outputPanel>
+						<p:outputPanel id="panelBtAdicionar"
+							style="float:left; margin-top:18px;" layout="inline">
+							<mec:commandButton value="#{messages.LABEL_GRAVAR}"
+								id="btGravarItem"
+								rendered="#{empty ajusteEstoqueController.dataValidadeAux and empty ajusteEstoqueController.ealSeqAux}"
+								action="#{ajusteEstoqueController.adicionar}" profile="ok" />
+							<mec:commandButton value="#{messages.LABEL_ALTERAR}"
+								id="btAlterarItem"
+								rendered="#{not empty ajusteEstoqueController.dataValidadeAux and not empty ajusteEstoqueController.ealSeqAux}"
+								disabled="false" action="#{ajusteEstoqueController.adicionar}"
+								profile="ok" />
+							<mec:commandButton id="btCancelar"
+								rendered="#{not empty ajusteEstoqueController.dataValidadeAux and not empty ajusteEstoqueController.ealSeqAux}"
+								value="#{messages.LABEL_CANCELAR_EDICAO}"
+								action="#{ajusteEstoqueController.cancelarEdicao}"
+								render="tabelaAcao,panelSBQuantidade, panelBtAdicionar"
+								styleClass=" alinha-direita bt_cinza" />
+						</p:outputPanel>
+					</h:form>
+				</aghu:linha>
+				<aghu:linha>
+					<h:form prependId="false" id="formValidades" name="formValidades">
+						
+							<mec:serverDataTable list="#{ajusteEstoqueController.validades}"
+								scrollable="true">
+								<c:set var="_validade" value="#{item}" />
+								<p:column
+									style="width:5%; white-space:nowrap; #{ajusteEstoqueController.isItemSelecionado(_validade) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_ACAO}" />
+									</f:facet>
+									<mec:commandLink title="#{messages.LABEL_EDITAR}"
+										onclick="editarItem('#{_validade.id.dataLong}','#{_validade.id.ealSeq}');"
+										profile="edit" ajax="true" />
+									<mec:commandLink title="#{messages.LABEL_LOTE}"
+										onclick="editarItemLote('#{_validade.id.dataLong}','#{_validade.qtdeDisponivel}');"
+										styleClass=" silk-application-side-boxes silk-icon"
+										ajax="true" />
+								</p:column>
+								<p:column
+									style="#{ajusteEstoqueController.isItemSelecionado(_validade) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_DATA}" />
+									</f:facet>
+									<h:outputText value="#{_validade.id.data}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+								</p:column>
+								<p:column
+									style="#{ajusteEstoqueController.isItemSelecionado(_validade) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_QUANTIDADE_ENTRADA}" />
+									</f:facet>
+									<h:outputText value="#{_validade.qtdeEntrada}" />
+								</p:column>
+								<p:column
+									style="#{ajusteEstoqueController.isItemSelecionado(_validade) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_QUANTIDADE_CONSUMIDA}" />
+									</f:facet>
+									<h:outputText value="#{_validade.qtdeConsumida}" />
+								</p:column>
+								<p:column
+									style="#{ajusteEstoqueController.isItemSelecionado(_validade) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_QUANTIDADE_DISPONIVEL}" />
+									</f:facet>
+									<h:outputText value="#{_validade.qtdeDisponivel}" />
+								</p:column>
+							</mec:serverDataTable>
+						
+					</h:form>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:panelGeral legend="#{messages.TITLE_LOTES}">
+				<aghu:linha>
+					<h:form prependId="false" id="formItenLotes" name="formItenLotes">
+						<p:outputPanel id="panelSBQuantidadeLote" layout="inline">
+							<mec:suggestionBox label="#{messages.LABEL_LOTE}"
+								title="#{messages.TITLE_LOTE}" suggestionAction="listarLotes"
+								descricaoInput="id.codigo" descricaoLabel="id.codigo"
+								required="#{empty ajusteEstoqueController.loteFornecedor.seq and not empty ajusteEstoqueController.dataValidadeAuxLote}"
+								readonly="#{not empty ajusteEstoqueController.loteFornecedor.seq || empty ajusteEstoqueController.dataValidadeAuxLote}"
+								maxlength="30" id="sbLote"
+								controller="#{ajusteEstoqueController}"
+								value="#{ajusteEstoqueController.loteFornecedor.lote}">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{item.id.codigo}
+                  </p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_MARCA_COMERCIAL_CONSULTAR_NR}</b>
+									</f:facet> #{item.marcaComercial.descricao}
+                  </p:column>
+							</mec:suggestionBox>
+							<mec:inputNumero label="#{messages.LABEL_QUANTIDADE}"
+								title="#{not empty ajusteEstoqueController.loteFornecedor.seq || empty ajusteEstoqueController.dataValidadeAuxLote ? null : messages.TITLE_QUANTIDADE}"
+								ajaxValidation="false"
+								required="#{not empty ajusteEstoqueController.dataValidadeAuxLote}"
+								readonly="#{empty ajusteEstoqueController.dataValidadeAuxLote}"
+								maxlength="8" value="#{ajusteEstoqueController.qtdeLote}"
+								id="qtdLote" />
+						</p:outputPanel>
+						<p:outputPanel id="panelBtAdicionarLote"
+							style="float:left; margin-top:18px;" layout="inline">
+							<mec:commandButton value="#{messages.LABEL_GRAVAR}"
+								id="btGravarLote"
+								disabled="#{empty ajusteEstoqueController.dataValidadeAuxLote}"
+								rendered="#{empty ajusteEstoqueController.loteFornecedor.seq}"
+								action="#{ajusteEstoqueController.adicionarLote}" profile="ok" />
+							<mec:commandButton value="#{messages.LABEL_ALTERAR}"
+								id="btAlterarLote"
+								rendered="#{not empty ajusteEstoqueController.loteFornecedor.seq}"
+								action="#{ajusteEstoqueController.adicionarLote}" profile="ok" />
+							<mec:commandButton id="btCancelarLote"
+								rendered="#{not empty ajusteEstoqueController.loteFornecedor.seq}"
+								value="#{messages.LABEL_CANCELAR_EDICAO}"
+								action="#{ajusteEstoqueController.cancelarEdicaoLote}"
+								render="tabelaAcaoLote,panelSBQuantidadeLote, panelBtAdicionarLote"
+								styleClass=" alinha-direita bt_cinza" />
+						</p:outputPanel>
+					</h:form>
+				</aghu:linha>
+				<aghu:linha>
+					<h:form prependId="false" id="formLotes" name="formLotes">
+						<p:outputPanel id="tabelaAcaoLote" layout="inline">
+							<mec:serverDataTable list="#{ajusteEstoqueController.lotes}"
+								scrollable="true">
+								<c:set var="_lote" value="#{item}" />
+								<p:column
+									style="width:5%; white-space:nowrap; #{ajusteEstoqueController.isLoteSelecionado(_lote) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_ACAO}" />
+									</f:facet>
+									<mec:commandLink title="#{messages.LABEL_EDITAR}"
+										onclick="editarLote('#{_lote.seq}');" profile="edit"
+										ajax="true" />
+								</p:column>
+								<p:column
+									style="#{ajusteEstoqueController.isLoteSelecionado(_lote) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_LOTE}" />
+									</f:facet>
+									<h:outputText value="#{_lote.lote.id.codigo}" />
+								</p:column>
+								<p:column
+									style="#{ajusteEstoqueController.isLoteSelecionado(_lote) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_MARCA}" />
+									</f:facet>
+									<h:outputText value="#{_lote.lote.marcaComercial.codigo}" />
+								</p:column>
+								<p:column
+									style="#{ajusteEstoqueController.isLoteSelecionado(_lote) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+									</f:facet>
+									<h:outputText value="#{_lote.lote.marcaComercial.descricao}" />
+								</p:column>
+								<p:column
+									style="#{ajusteEstoqueController.isLoteSelecionado(_lote) ? 'background-color:#EEE8AA':''}">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_QUANTIDADE}" />
+									</f:facet>
+									<h:outputText value="#{_lote.quantidade}" />
+								</p:column>
+							</mec:serverDataTable>
+						</p:outputPanel>
+					</h:form>
+				</aghu:linha>
+			</aghu:panelGeral>
+		</p:outputPanel>
+		</aghu:linha>
+		 
+		<h:form id="formEditarItem">
+			<pe:remoteCommand name="editarItem"
+				update="@(#tabelaAcao) @(#tabelaAcaoLote) @(#panelBtAdicionar) @(#panelBtAdicionarLote) @(#panelSBQuantidade) @(#panelSBQuantidadeLote)"
+				actionListener="#{ajusteEstoqueController.editar}">
+				<pe:assignableParam name="param1"
+					assignTo="#{ajusteEstoqueController.dataValidadeAux}" />
+				<pe:assignableParam name="param2"
+					assignTo="#{ajusteEstoqueController.ealSeqAux}" />
+			</pe:remoteCommand>
+		</h:form>
+		<h:form id="formEditarItemLote">
+			<pe:remoteCommand name="editarItemLote"
+				update="@(#tabelaAcao) @(#tabelaAcaoLote) @(#panelBtAdicionar) @(#panelBtAdicionarLote) @(#panelSBQuantidade) @(#panelSBQuantidadeLote)"
+				actionListener="#{ajusteEstoqueController.editarAux}">
+				<pe:assignableParam name="param1"
+					assignTo="#{ajusteEstoqueController.dataValidadeAuxLote}" />
+				<pe:assignableParam name="param2"
+					assignTo="#{ajusteEstoqueController.qtdeValidadeAuxLote}" />
+			</pe:remoteCommand>
+		</h:form>
+		<h:form id="formEditarLote">
+			<pe:remoteCommand name="editarLote"
+				update="@(#tabelaAcaoLote) @(#panelSBQuantidadeLote) @(#panelBtAdicionarLote)"
+				actionListener="#{ajusteEstoqueController.editarLote}">
+				<pe:assignableParam name="param1"
+					assignTo="#{ajusteEstoqueController.loteFornAux}" />
+			</pe:remoteCommand>
+		</h:form>
+		 
+	</ui:define>
+</ui:composition>
+</html>

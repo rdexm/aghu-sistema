@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <p:outputPanel id="panelModal" layout="inline"> 
+      <p:dialog id="modalLeitos" width="700" autosized="true" modal="true" resizable="false" widgetVar="modalLeitosWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_LEITO}"/> 
+        </f:facet>  
+        <p:outputPanel layout="block" style="height:400px; overflow-y:scroll;"> 
+          <h:form prependId="false" id="modalLeitosForm"> 
+            <aghu:panelGeral id="ffdl_mdaol_leitos" legend="Cadastro de leitos do #{LABEL_QUARTO} #{quartoController.ainQuartos.descricao}"> 
+              <aghu:linha> 
+                <p:outputPanel id="panel_leitoModal" layout="inline"> 
+                  <mec:inputMaskContext mask="mascara_leito" style="text-transform:uppercase" label="#{messages.LABEL_LEITO}" name="leito" size="4" maxlength="4" 
+                  value="#{quartoController.ainLeitos.leito}" readonly="#{quartoController.edicaoLeito}" required="true" 
+                  title="#{messages.TITLE_CRUD_DESCRICAO_LEITO}"/> 
+                </p:outputPanel>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_ATIVO}" title="#{messages.TITLE_CRUD_SITUACAO_QUARTOS}" value="#{quartoController.ainLeitos.situacao}" id="situacao"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <p:outputPanel id="especialidadeModal" layout="inline"> 
+                  <mec:suggestionBox width="300" label="#{messages.LABEL_ESPECIALIDADE}" title="Selecione uma especialidade para este leito." converter="#{aghEspecialidadesAtivasNaoInternasConverter}" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" suggestionAction="pesquisarEspecialidadeSiglaEDescricao" required="#{quartoController.ainLeitos.consEsp}" id="especialidadeSuggestion" controller="#{quartoController}" value="#{quartoController.ainLeitosEspecialidade}"> 
+                    <p:column>#{item.sigla}</p:column>  
+                    <p:column>#{item.nomeEspecialidade}</p:column> 
+                  </mec:suggestionBox> 
+                </p:outputPanel> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_CONSISTE_CLI}" title="#{messages.TITLE_CRUD_CONSISTE_CLI_LEITOS}" value="#{quartoController.ainLeitos.consClinUnidade}" id="consClinUnidade"/>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_BLOQ_LET_LIMP}" title="#{messages.TITLE_CRUD_BLOQ_LET_LIMP_LEITOS}" value="#{quartoController.ainLeitos.indBloqLeitoLimpeza}" id="bloqLeitoLimpeza"/>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_CONSISTE_ESP}" title="#{messages.TITLE_CRUD_CONSISTE_ESP_LEITOS}" value="#{quartoController.ainLeitos.consEsp}" id="consEsp"> 
+                  <p:ajax update="@(#especialidadeModal)" event="change"/> 
+                </mec:selectBooleanCheckbox>  
+                <mec:selectBooleanCheckbox label="#{messages.TITLE_CRUD_PERT_REFERENCIAL_LEITOS}" title="#{messages.TITLE_CRUD_PERTENCE_REFERENCIAL}" value="#{quartoController.ainLeitos.pertenceRefl}" id="pertenceRefl"/> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:acao> 
+              <mec:commandButton value="#{messages.LABEL_CONFIRMAR}" 
+              action="#{quartoController.adicionarLeito}"              
+              profile="ok" ajax="true" 
+              render="panelListLeitos, panel_leitoModal, especialidadeModal, erropanel"/>  
+              <mec:commandButton value="#{messages.LABEL_CANCELAR}" bypassUpdates="true" onclick="PF('modalLeitosWG').hide();" profile="cancel" ajax="true" process="@this"/> 
+            </aghu:acao>  
+            <aghu:panelGeral style="margin: 20px 5px 5px" legend="Características"> 
+              <aghu:linha> 
+                <p:outputPanel id="caracteristicaModal" layout="inline"> 
+                  <mec:suggestionBox width="300" label="#{messages.LABEL_CARACTERISTICA}" title="Selecione uma caracterítica para este leito." 
+                  descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarTiposCaracteristicasPorCodigoOuDescricao" 
+                  readonly="#{quartoController.ainTipoCaracteristicaLeito != null}" id="caracteristicaSuggestion" controller="#{quartoController}" value="#{quartoController.ainTipoCaracteristicaLeito}"> 
+                    <p:column>#{item.codigo}</p:column>  
+                    <p:column>#{item.descricao}</p:column> 
+                  </mec:suggestionBox>  
+                  <mec:selectBooleanCheckbox id="principalModal" label="#{messages.LABEL_PRINCIPAL}" title="#{messages.TITLE_CRUD_CARACTERISTICA_PRINCIPAL}" value="#{quartoController.ainCaracteristicaLeito.principal}"/> 
+                </p:outputPanel>  
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton value="Adicionar" process="@this @(#principalModal)" action="#{quartoController.adicionarCaracteristica}" profile="add" ajax="true" render="panelListCaracteristica_modal, principalModal, caracteristicaModal, erropanel"/> 
+                </aghu:acao> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <p:outputPanel id="panelListCaracteristica_modal" layout="inline" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral id="leitos_informacoes" legend="Características dos Leitos"> 
+                <aghu:linha> 
+                  <h:outputText value="#{messages.LABEL_NENHUMA_CARACTERISTICA_ENCONTRADA}" rendered="#{empty quartoController.ainCaracteristicas}"/>  
+                  <mec:serverDataTable id="body_list_modal" rendered="#{not empty quartoController.ainCaracteristicas}" list="#{quartoController.ainCaracteristicas}" scrollable="true" scrollHeight="75"> 
+                    <c:set var="_carac" value="#{item}"/>  
+                    <p:column> 
+                      <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{quartoController.removerCaracteristica(item)}" limitToList="true" profile="delete" ajax="true" render="panelListCaracteristica_modal" process="@this"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_carac.tipoCaracteristicaLeito.codigo}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CARACTERISTICAS}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_carac.tipoCaracteristicaLeito.descricao}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PRINCIPAL}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_carac.indCaracteristicaPrincipal.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </aghu:linha> 
+              </aghu:panelGeral> 
+            </p:outputPanel>             
+          </h:form> 
+        </p:outputPanel> 
+      </p:dialog> 
+    </p:outputPanel> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_ASSOCIAR_EQUIPAMENTO_NOTA_SALA}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{associarNotaDeSalaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body">
+      <mec:pageConfig controller="#{associarNotaDeSalaController}"/>
+      <p:outputPanel id="panelTodo" layout="inline" styleClass="aghu-panel-geral">
+      <h:form prependId="false" id="formPesquisa">
+          <aghu:panelGeral legend="#{messages.TITLE_MATERIAIS_IMPRESSAO_NOTA_SALA}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="codigo" value="#{associarNotaDeSalaController.unidadeNotaSala.id.seqp}" label="#{messages.LABEL_CODIGO}" readonly="true" size="6"/>  
+              <mec:inputText label="#{messages.LABEL_ESPECIALIDADE}" size="60" maxlength="120" readonly="true" value="#{associarNotaDeSalaController.unidadeNotaSala.aghEspecialidades.sigla} - #{associarNotaDeSalaController.unidadeNotaSala.aghEspecialidades.nomeEspecialidade}" style="text-transform:uppercase" id="especialidade"/>  
+              <mec:inputText label="#{messages.LABEL_PROC_CIRURGICOS}" size="60" maxlength="120" readonly="true" value="#{associarNotaDeSalaController.unidadeNotaSala.mbcProcedimentoCirurgicos.seq} - #{associarNotaDeSalaController.unidadeNotaSala.mbcProcedimentoCirurgicos.descricao}" style="text-transform:uppercase" id="procedimentos"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>
+          </h:form>
+          <h:form prependId="false" id="formLista">
+        <aghu:panelGeral legend="#{messages.LABEL_EQUIPAMENTO_NOTA_SALA}"> 
+          <aghu:linha>
+              <mec:suggestionBox label="#{messages.LABEL_EQUIPAMENTO}" title="#{messages.TITLE_EQUIPAMENTO_NOTA_SALA}" suggestionAction="buscaEquipamentosCirurgicos" descricaoInput="seq" descricaoLabel="descricao" width="450" required="true" onkeydown="return disableEnterKey(event);" rendered="#{mf:hasPermission(securityController,'equipamentoImpressaoNotaSala,executar')}" id="sbEspecialidade" controller="#{associarNotaDeSalaController}" value="#{associarNotaDeSalaController.equipamentoNotaSala.mbcEquipamentoCirurgico}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_SEQ}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:inputNumero maxlength="3" label="#{messages.LABEL_ORDEM_IMPRESSAO_NOTA_SALA}" title="#{messages.TITLE_ORDEM_IMPRESSAO_NOTA_SALA}" value="#{associarNotaDeSalaController.equipamentoNotaSala.ordemImp}" size="3" required="true" onkeydown="return disableEnterKey(event);" rendered="#{mf:hasPermission(securityController,'equipamentoImpressaoNotaSala,executar')}" id="ordemImpressao"/>  
+              <div style="padding-top: 17px;"> 
+                <mec:commandButton id="bt_salvar" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'equipamentoImpressaoNotaSala,executar')}" action="#{associarNotaDeSalaController.confirmar}" profile="add" render="panelLista"/> 
+              </div>
+          </aghu:linha>
+          <aghu:linha>
+              <p:outputPanel id="panelLista" layout="inline"> 
+              <p:outputPanel layout="block" rendered="#{not empty associarNotaDeSalaController.equipamentosNotas}">	
+                <mec:serverDataTable id="tbListaEquipamentos" rowKeyVar="_itemID" onRowMouseOver="this.style.backgroundColor='#F1F1F1'" onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'" list="#{associarNotaDeSalaController.equipamentosNotas}" scrollable="true" > 
+                  <c:set var="item" value="#{item}"/>  
+                  <p:column rendered="#{mf:hasPermission(securityController,'equipamentoImpressaoNotaSala,executar')}" styleClass="first-column auto-adjust"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink action="#{associarNotaDeSalaController.editar}" title="#{messages.LABEL_SALVAR}" styleClass="silk-icon silk-disk" ajax="true" render="panelLista" process="@this, panelLista">
+                    	<f:setPropertyActionListener for="command" target="#{associarNotaDeSalaController.itemSelecionado}" value="#{item}"/>
+                    </mec:commandLink>  
+                    <mec:commandLink action="#{associarNotaDeSalaController.excluir}" title="#{messages.LABEL_EXCLUIR}" rendered="#{mf:hasPermission(securityController,'impressaoNotaSalaCadastro,executar')}"  profile="delete" ajax="true" render="panelLista" process="@this, panelLista">
+                    	<f:setPropertyActionListener for="command" target="#{associarNotaDeSalaController.itemSelecionado}" value="#{item}"/>
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EQUIPAMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.mbcEquipamentoCirurgico.seq} - #{item.mbcEquipamentoCirurgico.descricao}"/> 
+                  </p:column>  
+                  <p:column style="width:50px;" > 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ORDEM_IMPRESSAO_NOTA_SALA}" /> 
+                    </f:facet>
+                      <h:inputText id="ordemImp" readonly="#{not mf:hasPermission(securityController,'equipamentoImpressaoNotaSala,executar')}" value="#{item.ordemImp}" size="3" maxlength="3" converter="#{javax.faces.Short}" converterMessage="#{messages.MSG_ORDEM_IMP_VALIDACAO}" required="true" requiredMessage="#{messages.MSG_ORDEM_IMP_OBRIG}"/>
+                  </p:column> 
+                </mec:serverDataTable>
+                </p:outputPanel>
+               </p:outputPanel>
+          </aghu:linha>
+        </aghu:panelGeral>
+        </h:form>
+        <h:form prependId="false" id="formVoltar">
+          <aghu:acao> 
+            <mec:backButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{associarNotaDeSalaController.voltar}" icon="aghu-icons-16x16 aghu-icon-back" styleClass="button-acao bt_vermelho"/>
+          </aghu:acao>
+         </h:form> 
+      </p:outputPanel>
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.ENCERRAMENTO_PREVIA_CONTA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+      <style type="text/css" xml:space="preserve"> 
+			.bt_encerramento { 
+				margin:0 1px 0 1px!important; 
+				width: 95px; 
+				font-size:10px!important; 
+			}
+			.bt_encerramento_curto { 
+				margin:0 1px 0 1px!important; 
+				width: 85px; 
+				font-size:10px!important; 
+			}
+	  </style> 
+      
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{encerramentoPreviaContaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <ui:fragment> 
+          <script type="text/javascript">
+			function jsExecutaBotaoLogInconsistencias() {
+				window.parent.tab.addTab('relatorioLogInconsistenciasInternacaoPdf','#{messages.RELATORIO_LOG_INCONSISTENCIAS_INTERNACAO_TITLE}', '#{encerramentoPreviaContaController.urlLogInconsistencias}', 'silk-icon silk-printer', '1');
+				return true;
+			}
+          </script>
+		</ui:fragment>
+          
+      <mec:pageConfig controller="#{encerramentoPreviaContaController}"/>  
+      <p:outputPanel id="formularioPesquisa" layout="inline"> 
+        <h:form prependId="false" id="formPesquisa"> 
+          <aghu:panelGeral legend="#{messages.CONSULTA_CONTA_HOSPITALAR}"> 
+            <aghu:linha>
+                <mec:pesquisaPaciente id="pesqPaciente"
+                                      valueChangeListener="#{encerramentoPreviaContaController.pesquisaPaciente}"
+                                      value="#{encerramentoPreviaContaController.paciente}"
+                                      render="formularioPesquisa,panelResultado,resultado,remoteForm"
+                                      required="false"
+                                      readonly="false"
+                                      onchange="#{encerramentoPreviaContaController.limparPesquisa()}"/>
+                <aghu:acao newLine="false">
+                    <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}"
+                                       action="#{encerramentoPreviaContaController.redirecionarPesquisaFonetica}"
+                                       styleClass=" bt_cinza icon-pesquisa-fonetica" profile="search"
+                                       ajax="true">
+                        <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}"
+                                                     value="faturamento-encerramentoPreviaConta" for="command"/>
+                        <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="false" for="command"/>
+                    </mec:commandButton>
+                </aghu:acao>
+            </aghu:linha>
+            <aghu:linha> 
+              <mec:inputNumero size="13" maxlength="13" label="#{messages.LABEL_AIH_FAT}" title="#{messages.TITLE_AIH_FAT}" value="#{encerramentoPreviaContaController.cthNroAih}" id="cthNroAih"/>  
+              <mec:inputNumero size="17" maxlength="8" label="#{messages.LABEL_CONTA_HOSPITALAR_FAT}" title="#{messages.TITLE_CONTA_HOSPITALAR_FAT}" value="#{encerramentoPreviaContaController.cthSeq}" id="cthSeq"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{encerramentoPreviaContaController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+            <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{encerramentoPreviaContaController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+          </aghu:acao> 
+        </h:form> 
+      </p:outputPanel>  
+      <h:form id="remoteForm">
+        <pe:remoteCommand name="selecionar"> 
+          <pe:assignableParam name="param1" assignTo="#{encerramentoPreviaContaController.cthSeqSelected}"/>  
+          <pe:assignableParam name="param2" assignTo="#{encerramentoPreviaContaController.situacaoContaSelected}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <h:form prependId="false" id="resultado"> 
+        <p:outputPanel id="panelResultado" rendered="#{encerramentoPreviaContaController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.CONTAS_HOSPITALARES}"> 
+            <p:outputPanel id="panelBotoes" rendered="#{encerramentoPreviaContaController.exibirBotoes()}" layout="inline"> 
+              <aghu:linha> 
+                <table style="width:100%"> 
+                  <tr> 
+                    <td>
+                    	<div> 
+                       <mec:commandButton id="bt_previa" value="#{messages.LABEL_PREVIA}" action="#{encerramentoPreviaContaController.previaContaHospitalar}" block="true" styleClass="bt_cinza bt_encerramento_curto"> 
+                         <f:setPropertyActionListener target="#{consultarFatLogErrorPaginatorController.origem}" value="encerramentopreviaconta" for="command"/> 
+                       </mec:commandButton>
+                       </div> 
+                    </td>  
+                    <td> 
+                      <mec:commandButton id="bt_verEspelho"
+                                         value="#{messages.LABEL_VER_ESPELHO}"
+                                         action="#{encerramentoPreviaContaController.espelho}"
+                                         styleClass="bt_cinza bt_encerramento">
+                        <f:setPropertyActionListener target="#{consultarEspelhoAIHPaginatorController.seq}"
+                                                     value="#{encerramentoPreviaContaController.cthSeqSelected}"
+                                                     for="command"/>
+                        <f:setPropertyActionListener target="#{consultarEspelhoAIHPaginatorController.origem}"
+                                                     value="faturamento-encerramentoPreviaConta" for="command"/>
+                      </mec:commandButton> 
+                    </td>  
+                    <td> 
+                       <mec:commandButton id="bt_inconsistencias" value="#{messages.LABEL_INCONSISTENCIAS}" action="#{encerramentoPreviaContaController.consultarInconsistencias}" disabled="#{not mf:hasPermission(securityController,'inconsistenciasFaturamento,consultarInconsistencias')}" styleClass="bt_cinza  bt_encerramento"> 
+                         <f:setPropertyActionListener target="#{consultarFatLogErrorPaginatorController.pacCodigo}" value="#{encerramentoPreviaContaController.paciente.codigo}" for="command"/>  
+                         <f:setPropertyActionListener target="#{consultarFatLogErrorPaginatorController.pacProntuario}" value="#{encerramentoPreviaContaController.paciente.prontuario}" for="command"/>  
+                         <f:setPropertyActionListener target="#{consultarFatLogErrorPaginatorController.pacNome}" value="#{encerramentoPreviaContaController.paciente.nome}" for="command"/>  
+                         <f:setPropertyActionListener target="#{consultarFatLogErrorPaginatorController.cthSeqSelected}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>  
+                         <f:setPropertyActionListener target="#{consultarFatLogErrorPaginatorController.origem}" value="encerramentopreviaconta" for="command"/> 
+                       </mec:commandButton> 
+                    </td>  
+                    <td> 
+                      <mec:commandButton id="bt_alterarUTI" value="#{messages.LABEL_ALTERAR_UTI}" disabled="#{true}" styleClass="bt_cinza bt_encerramento_curto"/> 
+                    </td>  
+                    <td> 
+                      <mec:commandButton id="bt_semCobertura" type="button" value="#{messages.LABEL_SEM_COBERTURA}" onclick="PF('modalSemCoberturaWG').show();;" disabled="#{not mf:hasPermission(securityController,'contaSemCobertura,converterContaEmSemCobertura')}" ajax="true" styleClass="bt_cinza bt_encerramento"/> 
+                    </td>  
+                    <td> 
+                      <mec:commandButton id="bt_informarSolic" value="#{messages.LABEL_INFORMAR_SOLICITADO}" action="#{encerramentoPreviaContaController.informarSolicitado}" styleClass="bt_cinza bt_encerramento"> 
+                        <f:setPropertyActionListener target="#{informarSolicitadoContaHospitalarPaginatorController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>  
+                        <f:setPropertyActionListener target="#{informarSolicitadoContaHospitalarPaginatorController.from}" value="faturamento-encerramentoPreviaConta" for="command"/> 
+                      </mec:commandButton> 
+                    </td>  
+                    <td> 
+						<mec:commandButton id="bt_downloadPDF" block="true" value="#{messages.LABEL_IMPRIMIR_ESPELHO}"
+							style="width:98%; font-size:10px!important;" action="#{relatorioImpressaoEspelhoContaController.visualizarImpressao}"
+							styleClass="bt_cinza">
+							<f:setPropertyActionListener target="#{relatorioImpressaoEspelhoContaController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>
+							<f:setPropertyActionListener target="#{relatorioImpressaoEspelhoContaController.origem}" value="faturamento-encerramentoPreviaConta" for="command"/>
+						</mec:commandButton>
+                    </td>  
+                    <td> 
+                      <mec:commandButton id="bt_desdobramento" value="#{messages.LABEL_DESDOBRAMENTO}" action="#{encerramentoPreviaContaController.desdobrarConta}" styleClass="bt_cinza bt_encerramento"> 
+                        <f:setPropertyActionListener target="#{desdobramentoContaHospitalarPaginatorController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>  
+                        <f:setPropertyActionListener target="#{desdobramentoContaHospitalarPaginatorController.from}" value="encerramentoPreviaConta" for="command"/> 
+                      </mec:commandButton> 
+                    </td>  
+                    <td> 
+                      <mec:commandButton id="bt_reinternar" action="#{informarSolicitadoContaHospitalarPaginatorController.reinternarContaHospitalar}" value="#{messages.LABEL_REINTERNAR}" ajax="true" styleClass="bt_cinza bt_encerramento"> 
+                        <f:setPropertyActionListener target="#{informarSolicitadoContaHospitalarPaginatorController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>  
+                        <f:setPropertyActionListener target="#{informarSolicitadoContaHospitalarPaginatorController.pacCodigo}" value="#{encerramentoPreviaContaController.paciente.codigo}" for="command"/> 
+                      </mec:commandButton> 
+                    </td>  
+                    <td style="padding-top: 2px;"> 
+                      <mec:commandButton id="bt_logInconsistencia" value="#{messages.LABEL_LOG_INCONSISTENCIA}" action="#{encerramentoPreviaContaController.relatorioInconsistencias}" styleClass="bt_cinza bt_encerramento" process="@this"> 
+                        
+                      </mec:commandButton> 
+                    </td> 
+                  </tr>  
+                  <tr> 
+                    <td style="padding-top: 2px;"> 
+                      <mec:commandButton id="bt_pendenciaAdm" value="#{messages.LABEL_PENDENCIA_ADM}" disabled="#{not mf:hasPermission(securityController,'pendenciaAdmFat,pendenciaAdmFaturamento')}" action="#{encerramentoPreviaContaController.pendenciasAdm}" styleClass="bt_cinza bt_encerramento_curto"> 
+                        <f:setPropertyActionListener target="#{pendenciaContaHospController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/> 
+                        <f:setPropertyActionListener target="#{pendenciaContaHospController.origem}" value="faturamento-encerramentoPreviaConta" for="command"/>
+                      </mec:commandButton>
+                    </td>  
+                    <td style="padding-top: 2px;"> 
+                      <mec:commandButton type="button" id="bt_autorizaFat1Dia" value="#{messages.LABEL_AUTORIZA_FAT_1_DIA}" onclick="PF('modalFaturarContaUmDiaWG').show();;" disabled="#{not mf:hasPermission(securityController,'faturarConta,faturarContaUmDia')}" ajax="true" styleClass="bt_cinza bt_encerramento"/> 
+                    </td>  
+                    <td style="padding-top: 2px;"> 
+                      <mec:commandButton id="bt_desautorizar" value="#{messages.LABEL_DESAUTORIZAR}" disabled="#{true}" styleClass="bt_cinza bt_encerramento"/> 
+                    </td>  
+                    <td style="padding-top: 2px;" rowspan="1" colspan="1"> 
+                      <div> 
+                        <mec:commandButton id="bt_protocolo" value="#{messages.LABEL_PROTOCOLO_TELA}"  style="width: 98%; font-size:10px!important;" action="#{encerramentoPreviaContaController.protocolos}" styleClass="bt_cinza"> 
+                      		<f:setPropertyActionListener target="#{pesquisarProtocolosAihsPaginatorController.codPaciente}" value="#{encerramentoPreviaContaController.pacCodigo}" for="command"/>  
+                          	<f:setPropertyActionListener target="#{pesquisarProtocolosAihsPaginatorController.prontuario}" value="#{encerramentoPreviaContaController.pacProntuario}" for="command"/> 
+                          	<f:setPropertyActionListener target="#{pesquisarProtocolosAihsPaginatorController.nomePaciente}" value="#{encerramentoPreviaContaController.paciente.nome}" for="command"/> 
+                          	<f:setPropertyActionListener target="#{pesquisarProtocolosAihsPaginatorController.origem}" value="faturamento-encerramentoPreviaConta" for="command"/> 
+                      	</mec:commandButton> 
+                      </div> 
+                    </td>  
+                    <td style="padding-top: 2px;"> 
+                      <mec:commandButton id="bt_reimpLaudos" value="#{messages.LABEL_REIMPRESSAO_LAUDOS}" action="#{encerramentoPreviaContaController.reimpressaoLaudosProcedimentos}" styleClass="bt_cinza bt_encerramento"> 
+                        <f:setPropertyActionListener target="#{reImpressaoLaudosProcedimentosController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>  
+                        <f:setPropertyActionListener target="#{reImpressaoLaudosProcedimentosController.from}" value="encerramentoPreviaConta" for="command"/> 
+                      </mec:commandButton> 
+                    </td>  
+                    <td style="padding-top: 2px;"> 
+                      <mec:commandButton id="bt_visualizarConta" value="#{messages.LABEL_VISUALIZAR_CONTA}" action="#{encerramentoPreviaContaController.visualizarContaHospitalar}" styleClass="bt_cinza bt_encerramento"> 
+                        <f:setPropertyActionListener target="#{consultarContaHospitalarController.cthSeq}" value="#{encerramentoPreviaContaController.cthSeqSelected}" for="command"/>  
+                        <f:setPropertyActionListener target="#{consultarContaHospitalarController.origem}" value="faturamento-encerramentoPreviaConta" for="command"/> 
+                      </mec:commandButton> 
+                    </td>  
+                    <td style="padding-top: 2px;"> 
+                       <mec:commandButton id="bt_extratoPaciente"
+                                          value="#{messages.LABEL_EXTRATO_PACIENTE}"
+                                          disabled="#{encerramentoPreviaContaController.desabilitarExtratoPaciente() or not mf:hasPermission(securityController, '/internacao/pesquisas/pesquisaExtratoPaciente.xhtml,render')}"
+                                          action="#{encerramentoPreviaContaController.visualizarExtratoPaciente}"
+                                          styleClass="bt_cinza bt_encerramento_curto">
+                           <f:setPropertyActionListener target="#{pesquisaExtratoPacientePaginatorController.cameFrom}"
+                                                        value="faturamento-encerramentoPreviaConta"
+                                                        for="command"/>
+                           <f:setPropertyActionListener target="#{pesquisaExtratoPacientePaginatorController.dataModel.pesquisaAtiva}"
+                                                        value="#{true}"
+                                                        for="command"/>
+                           <f:setPropertyActionListener target="#{pesquisaExtratoPacientePaginatorController.prontuario}"
+                                                        value="#{encerramentoPreviaContaController.paciente.prontuario}"
+                                                        for="command"/>
+                       </mec:commandButton>
+                    </td>  
+                    <td style="padding-top: 2px;"> 
+                       <mec:commandButton id="bt_notaConsumo" value="#{messages.LABEL_NOTA_CONSUMO}" action="#{encerramentoPreviaContaController.visualizarNotaConsumo}" disabled="#{encerramentoPreviaContaController.desabilitarNotaConsumo() or not mf:hasPermission(securityController, '/blococirurgico/pesquisaCirurgiaRealizadaNotaConsumo.xhtml,render')}" styleClass="bt_cinza bt_encerramento">
+                         <f:setPropertyActionListener target="#{pesquisaCirurgiaRealizadaNotaConsumoPaginatorController.pacCodigoFonetica}" value="#{encerramentoPreviaContaController.paciente.codigo}" for="command"/>
+                         <f:setPropertyActionListener target="#{pesquisaCirurgiaRealizadaNotaConsumoPaginatorController.voltarPara}" value="faturamento-encerramentoPreviaConta" for="command"/>
+                         <f:setPropertyActionListener target="#{pesquisaCirurgiaRealizadaNotaConsumoPaginatorController.iniciaPesquisando}" value="true" for="command"/>
+                       </mec:commandButton> 
+                    </td>  
+                    <td style="padding-top: 2px;"> 
+                      
+                      <mec:commandButton 
+                      		id="bt_pesqCadastro" 
+                      		value="#{messages.LABEL_PESQUISA_CADASTRO}" 
+                      		styleClass="bt_cinza bt_encerramento"
+                      		action="#{encerramentoPreviaContaController.redirecionarPesquisarCadastroItens}">
+                      		<f:setPropertyActionListener target="#{visualizarItensDoProcedimentoController.voltarPara}" value="faturamento-encerramentoPreviaConta" for="command"/>
+                      </mec:commandButton> 
+                    </td> 
+                    <td style="padding-top: 2px;"> 
+                       <mec:commandButton id="bt_desfazerReintegracao" value="#{messages.LABEL_DESFAZER_REINTEGRACAO}" action="#{encerramentoPreviaContaController.desfazerReintegracao}" styleClass="bt_cinza bt_encerramento"/>
+                    </td>
+                  </tr> 
+                </table> 
+              </aghu:linha> 
+            </p:outputPanel>             
+            <aghu:linha> 
+              <mec:serverDataTable dataModel="dataModel" id="tabelaContas" controller="#{encerramentoPreviaContaController}" selection="contaSelecionada"> 
+                <c:set var="_conta" value="#{item}"/>
+                
+                <p:ajax event="rowSelect"
+							listener="#{encerramentoPreviaContaController.selecionarContaHospitalar}"
+							update="@(#panelBotoes)" />
+                
+                <p:column styleClass="tdAcao" style="white-space:nowrap;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink block="true" disabled="#{_conta.situacaoConta eq 'E'}" action="faturamento-manterContaHospitalar" title="#{messages.DETALHES_CONTA_HOSPITALAR}" style="padding-bottom: 0px; height:16px;" profile="edit" ajax="true"> 
+                    <f:setPropertyActionListener target="#{manterContaHospitalarController.seq}" value="#{_conta.seq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{manterContaHospitalarController.fromEncerramentoPreviaConta}" value="true" for="command"/> 
+                  </mec:commandLink>  
+                  <mec:commandLink block="true" style="padding-bottom: 0px; height:16px;" action="faturamento-lancarItensContaHospitalarList" disabled="#{_conta.situacaoConta eq 'E'}" title="#{messages.ITENS_CONTA_HOSPITALAR}" styleClass="silk-application-view-detail silk-icon" ajax="true"> 
+                    <f:setPropertyActionListener target="#{lancarItensContaHospitalarPaginatorController.cthSeq}" value="#{_conta.seq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{lancarItensContaHospitalarPaginatorController.fromEncerramentoPreviaConta}" value="true" for="command"/>  
+                    <f:setPropertyActionListener target="#{lancarItensContaHospitalarPaginatorController.exibirListagem}" value="true" for="command"/>  
+                    <f:setPropertyActionListener target="#{lancarItensContaHospitalarPaginatorController.somenteLeitura}" value="#{_conta.situacaoConta eq 'E'}" for="command"/> 
+                  </mec:commandLink>  
+                  <p:outputPanel rendered="#{!_conta.isEncerrada()}" layout="inline"> 
+                    <mec:commandLink block="true" title="#{messages.LABEL_ENCERRAMENTO_CONTA}" action="#{encerramentoPreviaContaController.encerramentoContaHospitalar}" disabled="#{not mf:hasPermission(securityController,'encerrarConta,validarEncerramentoContaHospitalar')}" style="padding-bottom: 0px; height:16px;" styleClass="silk-icon icon-encerrar-conta-hospitalar"> 
+                      <f:setPropertyActionListener target="#{consultarFatLogErrorPaginatorController.origem}" value="encerramentopreviaconta" for="command"/> 
+                    </mec:commandLink> 
+                  </p:outputPanel>
+                  <p:outputPanel rendered="#{_conta.isEncerrada()}" layout="inline"> 
+                    <mec:commandLink block="true" title="#{messages.LABEL_REABERTURA}" action="#{encerramentoPreviaContaController.validarReaberturaContaHospitalar}" disabled="#{not mf:hasPermission(securityController,'reaberturaConta,validarReaberturaContaHospitalar')}" propagation="nest" style="padding-bottom: 0px; height:16px;" styleClass="silk-icon icon-reabrir-conta-hospitalar">
+                    	<f:setPropertyActionListener target="#{encerramentoPreviaContaController.novaSituacao}" value="#{_conta.situacaoConta}" for="command"/>
+                    </mec:commandLink> 
+                  </p:outputPanel>                  
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONTA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_conta.seq}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PROCEDIMENTO_SSM}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelToolTipProc" rendered="#{_conta.isDifSsm()}" layout="inline"> 
+                    <h:graphicImage value="/resources/img/icons/error.png" id="ssmDif" style="padding-top: 0px; padding-bottom: 0px; margin-top: 0px; margin-bottom: 0px; height:16px;"/>  
+	                    <p:overlayPanel id="toolTipDescricaoProcedimento" for="ssmDif" showEvent="mouseover" hideEvent="mouseout" appendToBody="true" dynamic="true">
+                      <h:outputText value="#{messages.LABEL_SOLICITADO}: "/>  
+                      <h:outputText value="#{_conta.ssmSolicitado}"/> 
+						</p:overlayPanel> 
+                  </p:outputPanel>  
+                  <h:outputText value="#{_conta.ssmRealizado}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_FINANCIAMENTO}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelToolTipFin" rendered="#{_conta.isDifFinanciamento()}" layout="inline"> 
+                    <h:graphicImage value="/resources/img/icons/error.png" id="financiamentoDif" style="padding-top: 0px; padding-bottom: 0px; margin-top: 0px; margin-bottom: 0px; height:16px;"/>  
+                    <p:overlayPanel id="toolTipDescricaoFinanciamento" for="financiamentoDif" showEvent="mouseover" hideEvent="mouseout" appendToBody="true" dynamic="true">
+                      <h:outputText value="#{messages.LABEL_SOLICITADO}: "/>  
+                      <h:outputText value="#{_conta.financiamentoSolicitado}"/> 
+					</p:overlayPanel>
+                  </p:outputPanel>  
+                  <h:outputText value="#{_conta.financiamentoRealizado}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_AIH_FAT}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_conta.aih}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_INTERNACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_conta.dtInternacao}" isDate="true"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ALTA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_conta.dtAlta}" isDate="true"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LEITO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_conta.leito}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_conta.situacaoConta.descricao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SIT_GESTOR}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_conta.situacaoGestor}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalSemCobertura" width="250" height="150" modal="true" resizable="false" widgetVar="modalSemCoberturaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_CONVERTER_CONTA_SEM_COBERTURA}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONVERTER_CONTA_SEM_COBERTURA} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalSemCobertura"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_ok_SemCobertura" value="#{messages.LABEL_SIM}" action="#{encerramentoPreviaContaController.converterContaEmSemCobertura}" profile="search"/>  
+              <mec:commandButton block="true" id="bt_cancelarSemCobertura" value="#{messages.LABEL_NAO}" onclick="PF('modalSemCoberturaWG').hide();"  profile="cancel"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalFaturarContaUmDia" width="360" height="150" modal="true" resizable="false" widgetVar="modalFaturarContaUmDiaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_FATURAMENTO_INTERNACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_FATURAMENTO_INTERNACAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalFaturarContaUmDia"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_okFaturamentoInternacao" value="#{messages.LABEL_SIM}" action="#{encerramentoPreviaContaController.faturarContaUmDia}" profile="search"/>  
+              <mec:commandButton block="true" id="bt_cancelarFaturamentoInternacao" value="#{messages.LABEL_NAO}" onclick="PF('modalFaturarContaUmDiaWG').hide();"  profile="cancel"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:outputPanel id="panelModal" layout="inline"> 
+        <p:dialog id="modalConfirmacao" rendered="#{encerramentoPreviaContaController.reabrirConta}" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CONFIRMAR}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <p:outputPanel layout="inline">#{messages.MENSAGEM_CONFIRMACAO_REABERTURA_C_H} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalConfirmacao"> 
+                <aghu:linha> 
+                  <mec:commandButton block="true" id="bt_validar_abertura" value="#{messages.LABEL_SIM}" onclick="PF('modalConfirmacaoWG').hide();" action="#{encerramentoPreviaContaController.reabrirContaHospitalar}" profile="search"/>  
+                  <mec:commandButton block="true" id="bt_cancelarModal" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoWG').hide();" action="#{encerramentoPreviaContaController.cancelarReaberturaContaHospitalar}" profile="cancel"/> 
+                </aghu:linha> 
+              </h:form> 
+            </h:panelGroup> 
+          </p:outputPanel> 
+        </p:dialog>  
+        <h:form> 
+          <script>
+					PF('modalConfirmacaoWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:dialog id="ReabrirLoadingModalBox" style="text-align:center;" height="200" top="200" resizeable="false" moveable="false" width="400" zindex="2000" modal="true" resizable="false" widgetVar="ReabrirLoadingModalBoxWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="Em Andamento"/> 
+        </f:facet>  
+        <div style="text-align:center;"> 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:graphicImage value="/resources/img/loading.gif"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:outputText value="#{mf:getDefaultValue(blockMsg,'Processando, por favor aguarde.')}"/> 
+        </div> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

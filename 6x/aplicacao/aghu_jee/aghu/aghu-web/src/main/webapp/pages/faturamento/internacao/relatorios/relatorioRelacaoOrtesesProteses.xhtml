@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_RELATORIO_RELACAO_ORTESES_PROTESES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{relatorioRelacaoOrtesesProtesesController}"/>  
+      <h:form prependId="false" id="Relatorio"> 
+        <aghu:panelGeral legend="#{messages.TITLE_RELATORIO_RELACAO_ORTESES_PROTESES}"> 
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_COMPETENCIA}" title="#{messages.TITLE_COMPETENCIA}" required="true" descricaoInput="mesAno" descricaoLabel="data" suggestionAction="pesquisarCompetencias" width="400" id="competencia" controller="#{relatorioRelacaoOrtesesProtesesController}" value="#{relatorioRelacaoOrtesesProtesesController.competencia}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_MES}</b> 
+                </f:facet> #{item.id.mes}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_ANO_COMPETENCIA}</b> 
+                </f:facet> #{item.id.ano}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DATA_HORA_COMPETENCIA}</b> 
+                </f:facet>  
+                <h:outputText value="#{item.id.dtHrInicio}"> 
+                  <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_PROCEDIMENTO_ORTESE_PROTESE}" title="#{messages.TITLE_PROCEDIMENTO_ORTESE_PROTESE}" descricaoInput="codTabela" descricaoLabel="seqDescricao" suggestionAction="listarFatItensProcedHospitalarOrteseProtese" width="500" id="procedimentoOrteseProtese" controller="#{relatorioRelacaoOrtesesProtesesController}" value="#{relatorioRelacaoOrtesesProtesesController.procedimentoOrteseProtese}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_SIGLA_COD_SUS}</b> 
+                </f:facet> #{item.codTabela}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText size="17" maxlength="50" label="#{messages.LABEL_INICIAIS_PACIENTE_REL_INC_INT}" title="#{messages.TITLE_INICIAIS_PACIENTE_REL_INC_INT}" style="text-transform:uppercase" removerCaratersEspeciais="false" ajaxValidation="false" value="#{relatorioRelacaoOrtesesProtesesController.iniciaisPaciente}" id="iniciaisPaciente"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_DT_INI_OP}" title="#{messages.TITLE_DT_INI_OP}" value="#{relatorioRelacaoOrtesesProtesesController.dtIni}" id="dtIni" tipo="data"/>  
+            <mec:inputTextData label="#{messages.LABEL_DT_FIM_OP}" title="#{messages.TITLE_DT_FIM_OP}" value="#{relatorioRelacaoOrtesesProtesesController.dtFim}" id="dtFim" tipo="data"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_print_buttonView" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" action="#{relatorioRelacaoOrtesesProtesesController.visualizarRelatorio}" profile="view" onclick="PF('loadDialogWG').show()"/>  
+          <mec:commandButton id="bt_print_buttonPrint" value="#{messages.LABEL_IMPRIMIR}" action="#{relatorioRelacaoOrtesesProtesesController.imprimirRelatorio}" profile="print" onclick="PF('loadDialogWG').show()"/>  
+          <mec:commandButton id="btCsv" value="#{messages.LABEL_GERAR_CSV}" onclick="PF('loadDialogWG').show();;" action="#{relatorioRelacaoOrtesesProtesesController.gerarCSV}" profile="download-csv"> 
+            <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="limpar" immediate="true" action="#{relatorioRelacaoOrtesesProtesesController.limpar}" value="#{messages.LABEL_LIMPAR}" profile="clear" ajax="true" render="Relatorio" process="@this"/> 
+        </aghu:acao>  
+      </h:form>  
+      <h:form prependId="false" id="formButton">
+        <c:if xmlns:c="http://java.sun.com/jstl/core" test="#{relatorioRelacaoOrtesesProtesesController.gerouArquivo}">  
+          <script type="text/javascript" xml:space="preserve">
+					jQuery(document).ready(function(){
+						document.getElementById('abrirArquivoButton:button').click();
+					});
+				</script>  
+          <mec:commandButton id="abrirArquivoButton" immediate="true" action="#{relatorioRelacaoOrtesesProtesesController.dispararDownload()}" value="Download do arquivo" style="visibility: hidden;" styleClass="bt_cinza"> 
+            <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+          </mec:commandButton> 
+        </c:if> 
+      </h:form>  
+      <p:dialog id="LoadingModalBox" style="text-align:center;" height="200" top="200" resizeable="false" moveable="false" width="400" zindex="2000" modal="true" resizable="false" widgetVar="LoadingModalBoxWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="Em Andamento"/> 
+        </f:facet>  
+        <div style="text-align: center;"> 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:graphicImage value="/resources/img/loading.gif"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:outputText value="#{mf:getDefaultValue(blockMsg,'Processando, por favor aguarde.')}"/> 
+        </div> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

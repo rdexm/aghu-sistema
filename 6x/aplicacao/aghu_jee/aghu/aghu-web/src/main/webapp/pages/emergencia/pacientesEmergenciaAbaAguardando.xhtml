@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition> 
+    <!-- LISTAGEM DE PACIENTES AGUARDANDO EMERGENCIA  -->  
+    <aghu:linha> 
+      <mec:selectOneMenu label="#{messages.LABEL_AGUARDANDO_EMERG_AGENDA}" title="#{messages.TITLE_AGUARDANDO_EMERG_AGENDA}" value="#{listaPacientesEmergenciaPaginatorController.espSeq}" noSelectionLabel="Todos" valueChangeListener="#{listaPacientesEmergenciaPaginatorController.espSeq}" id="especialidade"> 
+        <p:ajax event="change" update="@(#resultListAguardando) @(#resultListAguardandoCount)" process="@this" listener="#{listaPacientesEmergenciaPaginatorController.refreshPesquisar}"/>  
+        <f:selectItems 
+        	var="itemAgurdardando" 
+        	itemLabel="#{itemAgurdardando.espSigla}" 
+        	itemValue="#{itemAgurdardando.espSeq}" 
+        	value="#{listaPacientesEmergenciaPaginatorController.listaEspecialidadeEmergencia}"/> 
+      </mec:selectOneMenu>  
+      <br clear="none"/>  
+      <br clear="none"/> 
+    </aghu:linha>  
+    <aghu:linha>    
+      <mec:serverDataTable 
+      id="resultListAguardando" 
+      list="#{listaPacientesEmergenciaPaginatorController.pacientesAguardandoAtendimentoList}"
+      controller="#{listaPacientesEmergenciaPaginatorController}" 
+      scrollable="true" 
+	  scrollHeight="auto"> 
+        <c:set var="item" value="#{item}"/>
+        <p:column style="width: 60px"> 
+          <f:facet name="header">#{messages.LABEL_AGUARDANDO_EMERG_ACAO}</f:facet>
+          
+				<mec:commandLink 
+					id="atender_id"
+					action="#{listaPacientesEmergenciaPaginatorController.iniciarAtendimento(item)}"
+					title="#{messages.LABEL_ABA_AGUARDANDO_EMERG_ATENDE}"
+					rendered="#{(listaPacientesEmergenciaPaginatorController.integrarAghuAghWeb and listaPacientesEmergenciaPaginatorController.permAtenderPacienteEmergencia) or listaPacientesEmergenciaPaginatorController.emergenciaCustom}"
+					styleClass="silk-icon silk-paciente-chamado" ajax="true"
+					render="resultListAguardando, paneljavaScript" process="@this"/>
+
+				<mec:commandLink id="adicionarControles"
+					title="#{messages.LABEL_TOOLTIP_MANTER_CONTROLE}"
+					styleClass="silk-icon silk-controles-paciente-adicionar"
+					action="#{listaPacientesEmergenciaPaginatorController.manterControlesPaciente()}"
+					ajax="true">
+					<f:setPropertyActionListener target="#{manterControlesPacienteController.pacCodigo}" value="#{item.pacCodigo}" for="command" />
+					<f:setPropertyActionListener target="#{manterControlesPacienteController.trgSeq}" value="#{item.trgSeq}" for="command" />	
+					<f:setPropertyActionListener target="#{manterControlesPacienteController.unfSeq}" value="#{listaPacientesEmergenciaPaginatorController.mamUnidAtendem.unfSeq}" for="command" />
+					<f:setPropertyActionListener target="#{manterControlesPacienteController.voltarPara}" value="listarPacientesEmergenciaAbaAguardando" for="command" />
+			 	</mec:commandLink>
+			 	
+          <mec:commandLink  id="lnkReclassificar" 
+	          styleClass="silk-icon silk-acolhimento"
+	          title="#{messages.LABEL_RECLASSIFICAR}"
+      		  keepTab="true"
+              action="#{listaPacientesEmergenciaPaginatorController.realizarReclassificar(item.trgSeq, item.pacCodigo)}"
+	          rendered="#{registrarGestacaoController.permVisualizarAcolhimento or registrarGestacaoController.permRealizarAcolhimento}" 
+	          tabName="#{messages.LABEL_RECLASSIFICAR}"
+	          process="@this"
+	          ajax="true" >
+          </mec:commandLink>
+        </p:column>  
+        <p:column style="width:80px;" styleClass="#{listaPacientesEmergenciaPaginatorController.colorirTabelaAguardando(item.cor)}" sortBy="#{item.dthrSituacao}" sortable="true"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_CHEGADA}"/> 
+          </f:facet>  
+          <h:outputText value="#{item.dthrSituacao}"> 
+            <f:convertDateTime pattern="dd/MM HH:mm"/> 
+          </h:outputText> 
+        </p:column>  
+        <p:column style="width: 77px;" styleClass="#{listaPacientesEmergenciaPaginatorController.colorirTabelaAguardando(item.cor)}" sortBy="#{item.ordemGravidade}" sortable="true"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_PREVISAO}"/> 
+          </f:facet>  
+          <h:outputText value="#{item.indImediato ? messages.LABEL_AGUARDANDO_EMERG_PRIORITARIO : item.dthrPrevAtend==null ?  messages.LABEL_AGUARDANDO_EMERG_SEM_PREV : item.dthrPrevAtend}"> 
+            <f:convertDateTime pattern="dd/MM HH:mm"/> 
+          </h:outputText> 
+        </p:column>  
+        <p:column style="width: 91px;" styleClass="#{listaPacientesEmergenciaPaginatorController.colorirTabelaAguardando(item.cor)}" sortBy="#{item.pacProntuario}" sortable="true"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_PRONTUARIO}"/> 
+          </f:facet>  
+          <h:outputText value="#{item.pacProntuario}"/> 
+        </p:column>  
+        <p:column style="width: auto; white-space:nowrap;" styleClass="#{listaPacientesEmergenciaPaginatorController.colorirTabelaAguardando(item.cor)}" sortBy="#{item.pacNome}" sortable="true"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_PACIENTE}"/> 
+          </f:facet>  
+          <h:outputText value="#{item.pacNome}"/> 
+        </p:column>  
+        <p:column styleClass="#{listaPacientesEmergenciaPaginatorController.colorirTabelaAguardando(item.cor)}" sortBy="#{item.ordemIdade}" sortable="true" style="width: 57px;"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_IDADE}"/> 
+          </f:facet>  
+          <h:outputText value="#{item.pacIdade} anos"/> 
+        </p:column>  
+        <p:column styleClass="#{listaPacientesEmergenciaPaginatorController.colorirTabelaAguardando(item.cor)}" sortBy="#{item.ordemAgenda}" sortable="true" style="width: 70px;"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_AGENDA}"/> 
+          </f:facet>  
+          <h:outputText value="#{item.espSigla}"/> 
+        </p:column>  
+        <p:column styleClass="#{listaPacientesEmergenciaPaginatorController.colorirTabelaAguardando(item.cor)}" sortBy="#{item.ordemLocalizacao}" sortable="true" style="width: 121px;"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_LOCALIZACAO}"/> 
+          </f:facet>  
+          <h:outputText value="#{item.dthrInicio == null ? messages.LABEL_AGUARDANDO_EMERG_CONSULTA : messages.LABEL_AGUARDANDO_EMERG_EM_CONSULTA}"/> 
+        </p:column>  
+        <p:column sortBy="#{item.ordemGravidade}" sortable="true" style="background-color:#{item.corGravidade} !important; width:89px;"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_AGUARDANDO_EMERG_GRAVIDADE}"/> 
+          </f:facet>
+          <p:spacer width="100px" height="10px" id="gravidadeToolTipAguardando"/>
+			<p:tooltip for="gravidadeToolTipAguardando" style="width:300px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{item.descricaoGravidade != null and item.descricaoGravidade.length() &gt; 0 and item.corGravidade != null and not empty item.corGravidade}"> 
+	        	<h:outputText value="#{item.descricaoGravidade}"/> 
+	        </p:tooltip> 
+        </p:column> 
+      </mec:serverDataTable>  
+      <aghu:linha> 
+        <p:outputPanel id="resultListAguardandoCount" layout="inline"> 
+          <h:outputFormat value="#{messages.LABEL_REGISTROS_ENCONTRADOS_AGUARDANDO_EMERG}"> 
+            <f:param value="#{listaPacientesEmergenciaPaginatorController.pacientesAguardandoAtendimentoListSize &gt; 0        ? listaPacientesEmergenciaPaginatorController.pacientesAguardandoAtendimentoListSize : 0}"/> 
+          </h:outputFormat> 
+        </p:outputPanel> 
+      </aghu:linha> 
+    </aghu:linha> 
+  </ui:composition>
+</html>

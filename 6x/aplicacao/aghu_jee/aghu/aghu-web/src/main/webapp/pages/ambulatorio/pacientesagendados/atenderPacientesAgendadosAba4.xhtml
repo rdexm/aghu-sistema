@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib"
+      xmlns:a="http://richfaces.org/a4j">  
+  <ui:composition> 
+   
+    <aghu:panelGeral id="aba4" style="padding:10px;height:100%;" legend="#{messages.TITLE_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_PROCEDIMENTO_TITULO}"> 
+      <p:outputPanel id="panelProcedimentosAtendimentoConsulta" layout="inline"> 
+        <aghu:linha> 
+          <mec:inputText label="#{messages.LABEL_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_PROCEDIMENTO}" title="#{messages.TITLE_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_PROCEDIMENTO}" size="170" maxlength="170" ajaxValidation="false" value="#{atenderPacientesAgendadosController.procedimentoDescricao}" readonly="true" id="procedimento"/> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <mec:inputNumero id="procedQuantidade" label="#{messages.LABEL_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_QUANTIDADE}" title="#{messages.TITLE_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_QUANTIDADE}" size="2" maxlength="2" required="true" value="#{atenderPacientesAgendadosController.procedimentoQuantidade}" readonly="#{atenderPacientesAgendadosController.procedimentoAtendConsultaVO eq null}"/>  
+          <mec:suggestionBox id="cid" label="#{messages.LABEL_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_CID}" title="#{messages.TITLE_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_CID}" maxlength="25" suggestionAction="listarCidPorProcedimentoAtendimento" width="550" descricaoInput="cidCodigo" descricaoLabel="cidDescEdit" readonly="#{atenderPacientesAgendadosController.desabilitarSelecaoCid}" controller="#{atenderPacientesAgendadosController}" value="#{atenderPacientesAgendadosController.procedimentoCid}"> 
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_CODIGO}</b> 
+              </f:facet> #{item.cidCodigo}
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_DESCRICAO}</b> 
+              </f:facet> #{item.cidDescEdit}
+            </p:column> 
+          </mec:suggestionBox> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_salvar" value="#{messages.LABEL_SALVAR}" action="#{atenderPacientesAgendadosController.salvarProcedimentoAtendConsulta}" disabled="#{atenderPacientesAgendadosController.procedimentoAtendConsultaVO eq null or not atenderPacientesAgendadosController.gravaProcedimento}" process="@this, procedimento, procedQuantidade, cid" rendered="#{mf:hasPermission(securityController,'selecionarProcRealizadosAmbulatorio,salvar')}" profile="ok" ajax="true" render="panelProcedimentosAtendimentoConsulta, bt_salvar, bt_cancelar_edicao, tabelaProcedimentosConsulta"/>  
+          <mec:commandButton id="bt_cancelar_edicao" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{atenderPacientesAgendadosController.iniciarProcedimentosAtendConsulta}" disabled="#{atenderPacientesAgendadosController.procedimentoAtendConsultaVO eq null}" styleClass="bt_cancel_edit bt_cinza" ajax="true" render="panelProcedimentosAtendimentoConsulta, bt_salvar, bt_cancelar_edicao, tabelaProcedimentosConsulta" process="@this"/> 
+        </aghu:linha> 
+      </p:outputPanel>
+       <aghu:linha>   
+        <p:outputPanel layout="block" style="width:100%; height:150px; overflow-y:scroll;"> 
+          <mec:serverDataTable id="tabelaProcedimentosConsulta" list="#{atenderPacientesAgendadosController.listaProcedimentosAtendConsulta}" scrollHeight="auto" scrollable="true"> 
+           
+            <p:column style="#{item.procedimentoEmEdicao eq true ? 'background-color:yellow;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_REALIZADO}"/> 
+              </f:facet>  
+              <h:selectBooleanCheckbox name="marcadorProcRealizadoSemEdicao" id="marcadorProcRealizadoSemEdicao" value="#{item.realizado}" rendered="#{atenderPacientesAgendadosController.procedimentoAtendConsultaVO eq null and mf:hasPermission(securityController,'selecionarProcRealizadosAmbulatorio,salvar')}" disabled="#{not atenderPacientesAgendadosController.gravaProcedimento}"> 
+                <p:ajax event="change" bypassUpdates="false" update="@(#panelProcedimentosAtendimentoConsulta) @(#bt_salvar) @(#bt_cancelar_edicao) @(#tabelaProcedimentosConsulta)" process="@this" listener="#{atenderPacientesAgendadosController.marcarProcedimentAtendRealizado(item)}"/> 
+              </h:selectBooleanCheckbox>  
+              <h:selectBooleanCheckbox name="marcadorProcRealizadoComEdicao" id="marcadorProcRealizadoComEdicao" value="#{item.realizado}" rendered="#{atenderPacientesAgendadosController.procedimentoAtendConsultaVO ne null             and atenderPacientesAgendadosController.procedimentoAtendConsultaVO.procedimentoEmEdicao and mf:hasPermission(securityController,'selecionarProcRealizadosAmbulatorio,salvar')}" disabled="#{(atenderPacientesAgendadosController.procedimentoAtendConsultaVO ne null             and atenderPacientesAgendadosController.procedimentoAtendConsultaVO.procedimentoEmEdicao) or             not atenderPacientesAgendadosController.gravaProcedimento}"> 
+                <p:ajax event="change" bypassUpdates="false" oncomplete="PF('modalConfirmaCancelamentoEdicaoWG').show();" update="@(#panelProcedimentosAtendimentoConsulta) @(#bt_salvar) @(#bt_cancelar_edicao) @(#tabelaProcedimentosConsulta) @(#txtMsg)" process="@this" listener="#{atenderPacientesAgendadosController.marcarProcedimentAtendRealizado(item)}"/> 
+              </h:selectBooleanCheckbox>  
+              <h:selectBooleanCheckbox name="marcadorProcRealizadoSemEdicao" id="marcadorProcRealizadoSemEdicao2" value="#{item.realizado}" rendered="#{atenderPacientesAgendadosController.procedimentoAtendConsultaVO ne null             and not atenderPacientesAgendadosController.procedimentoAtendConsultaVO.procedimentoEmEdicao and mf:hasPermission(securityController,'selecionarProcRealizadosAmbulatorio,salvar')}" disabled="#{not atenderPacientesAgendadosController.gravaProcedimento}"> 
+                <p:ajax event="change" bypassUpdates="false" update="@(#panelProcedimentosAtendimentoConsulta) @(#bt_salvar) @(#bt_cancelar_edicao) @(#tabelaProcedimentosConsulta)" process="@this" listener="#{atenderPacientesAgendadosController.marcarProcedimentAtendRealizado(item)}"/> 
+              </h:selectBooleanCheckbox> 
+            </p:column>  
+            <p:column style="#{item.procedimentoEmEdicao eq true ? 'background-color:yellow;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink action="#{atenderPacientesAgendadosController.editarProcedimentoAtendConsulta(item)}" title="#{messages.LABEL_EDITAR}" process="@this" rendered="#{not item.nenhumProcedimentoRealizado and atenderPacientesAgendadosController.gravaProcedimento and atenderPacientesAgendadosController.procedimentoAtendConsultaVO eq null}" profile="edit" ajax="true" render="panelProcedimentosAtendimentoConsulta, bt_salvar, bt_cancelar_edicao, tabelaProcedimentosConsulta"/> 
+            </p:column>  
+            <p:column style="#{item.procedimentoEmEdicao eq true ? 'background-color:yellow;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_PROCEDIMENTO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.descricao}"/> 
+            </p:column>  
+            <p:column style="#{item.procedimentoEmEdicao eq true ? 'background-color:yellow;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_QTDE}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.quantidade}"/> 
+            </p:column>  
+            <p:column style="#{item.procedimentoEmEdicao eq true ? 'background-color:yellow;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SELECIONAR_PROCEDIMENTOS_ATENDIMENTO_CID}"/> 
+              </f:facet> 
+              <p:outputPanel id="cidCodigo" layout="block">
+	              <h:outputText value="#{item.cidCodigo}"/>  
+              </p:outputPanel>
+              <p:tooltip rendered="#{item.cidDescricao ne null}" trackMouse="true" for="cidCodigo"> 
+                <h:outputText value="#{item.cidDescricao}"/> 
+              </p:tooltip> 
+            
+           </p:column> 
+          </mec:serverDataTable>
+		  </p:outputPanel>
+        </aghu:linha>
+           
+    </aghu:panelGeral> 
+    <p:dialog id="modalConfirmaCancelamentoEdicao" width="500" height="200" modal="true" resizable="false" widgetVar="modalConfirmaCancelamentoEdicaoWG"> 
+      <f:facet name="header"> 
+        <h:outputText value="#{messages.TITLE_MODAL_EDICAO_PROCEDIMENTO_ATENDIMENTO}"/> 
+      </f:facet>  
+      <p:outputPanel id="txtMsg" layout="inline"> 
+        <h:outputFormat value="#{messages.LABEL_MODAL_EDICAO_PROCEDIMENTO_ATENDIMENTO}"> 
+          <f:param value="#{atenderPacientesAgendadosController.procedimentoDescricao}"/> 
+        </h:outputFormat> 
+      </p:outputPanel>  
+      <f:verbatim> 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/> 
+      </f:verbatim>  
+      <h:panelGroup> 
+        <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{atenderPacientesAgendadosController.cancelarEdicaoProcedimentoAtendConsulta}" oncomplete="PF('modalConfirmaCancelamentoEdicaoWG').hide();" profile="ok" ajax="true" render="panelProcedimentosAtendimentoConsulta, bt_salvar, bt_cancelar_edicao, tabelaProcedimentosConsulta" process="@this"/>  
+        <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" action="#{atenderPacientesAgendadosController.carregarProcedimentoAtendConsultaEmEdicao}" oncomplete="PF('modalConfirmaCancelamentoEdicaoWG').hide();" profile="cancel" ajax="true" render="panelProcedimentosAtendimentoConsulta, bt_salvar, bt_cancelar_edicao, tabelaProcedimentosConsulta" process="@this"/> 
+      </h:panelGroup> 
+    </p:dialog> 
+  </ui:composition> 
+</html>

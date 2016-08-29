@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Prescrever Dietas :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterPrescricaoDietaController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterPrescricaoDietaController}" ignoreEnter="true"/>  
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formPrescricaoCabecalho"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" 
+				value="#{manterPrescricaoDietaController.prescricaoMedicaVO.prontuario}" 
+				size="8" maxlength="9" 
+				emptyStringToNullConverter="emptyStringToNullConverter" 
+				readonly="true" 
+				id="prontuarioPaciente" 
+				converter="#{prontuarioConverter}"/>  
+              <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" 
+				value="#{manterPrescricaoDietaController.prescricaoMedicaVO.nome}" 
+				size="56" 
+				maxlength="50" style="text-transform:uppercase" readonly="true" id="nomePaciente"/>  
+              <mec:inputText label="#{messages.LABEL_LOCAL}" 
+				value="#{manterPrescricaoDietaController.prescricaoMedicaVO.local}" 
+				size="15" 
+				maxlength="15" 
+				style="text-transform:uppercase" 
+				readonly="true" 
+				id="localPaciente"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}" 
+				value="#{manterPrescricaoDietaController.prescricaoMedicaVO.dthrInicio}" 
+				readonly="true" 
+				size="17" 
+				datePattern="dd/MM/yyyy HH:mm" 
+				id="dataValidadeInicial"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}" 
+				value="#{manterPrescricaoDietaController.prescricaoMedicaVO.dthrFim}" 
+				readonly="true" 
+				size="17" 
+				datePattern="dd/MM/yyyy HH:mm" 
+				id="dataValidadeFinal"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <p:outputPanel id="panelDieta" layout="inline"> 
+          <h:form prependId="false" id="formAdicionar"> 
+            <p:outputPanel id="formulario" layout="inline" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral id="geralPrescricaoDietas" legend="#{messages.LEGENDA_PRESCRICAO_DIETAS}"> 
+                <p:outputPanel id="panelCamposItemDieta" layout="inline"> 
+                  <aghu:linha> 
+                  	<p:outputPanel id="panelItemDieta">
+	                  <mec:suggestionBox 
+					 		required="true" 
+							label="#{messages.LABEL_ITEM}" 
+							title="Selecione um Item de Dieta." 
+							descricaoInput="seq" 
+							descricaoLabel="descricao" 
+							suggestionAction="obterTiposItemDieta" 
+							posDeleteAction="limpar" 
+							posSelectionAction="populaDependencias" 
+							readonly="#{manterPrescricaoDietaController.altera}" 
+							width="350" 
+							var="_tfa"
+							itemValue="#{_tfa}"
+							id="itemDieta" 
+							controller="#{manterPrescricaoDietaController}" 
+							value="#{manterPrescricaoDietaController.formulario.tipoItem}" 
+							render="panelQuantidade, panelFrequencia,panelAprazamento,panelNumeroVezes">							                   		
+		                      	<p:column> 
+			                        <f:facet name="header"> 
+			                          <b>#{messages.LABEL_DESCRICAO}</b> 
+			                        </f:facet> #{_tfa.descricao}
+		                      	</p:column> 
+	                  </mec:suggestionBox>
+	                </p:outputPanel> 
+                  </aghu:linha>
+                  <aghu:linha>
+                  	<p:outputPanel id="panelQuantidade" layout="inline"> 
+		              <mec:inputDecimal
+                                label="#{messages.LABEL_QUANTIDADE}"
+								value="#{manterPrescricaoDietaController.formulario.quantidade}"
+                                inteiros="5"
+                                decimais="2"
+                                pattern="#####.##"
+                                size="8"
+                                maxlength="8"
+                                disabled="#{manterPrescricaoDietaController.verificaDisabledQuantidade()}"
+								id="quantidade"
+								title="#{messages.TITLE_QUANTIDADE}"
+								required="#{manterPrescricaoDietaController.verificaRequiredQuantidade()}">
+								<p:ajax event="change" immediate="true" update="@(#panelBotoesEditar)" listener="#{manterPrescricaoDietaController.changeField}"/>
+							</mec:inputDecimal>
+
+
+                        <mec:inputText label="#{messages.LABEL_UNIDADE}"
+								title="Campo desabilitado. O Sistema e quem preenche este campo"
+								value="#{manterPrescricaoDietaController.formulario.tipoItem.unidadeMedidaMedica.descricao}" 
+								size="8" 
+								readonly="true"
+								id="unidade"
+								/> 
+						</p:outputPanel>
+                    <p:outputPanel id="panelFrequencia" layout="inline"> 
+                    	<mec:inputNumero required="#{manterPrescricaoDietaController.verificaRequiredFrequencia()}" 
+                      			label="#{messages.LABEL_FREQUENCIA}" title="#{messages.TITLE_FREQUENCIA}"
+								value="#{manterPrescricaoDietaController.formulario.frequencia}" 
+								size="10" 
+								maxlength="3" 
+								id="frequencia"
+								readonly="#{manterPrescricaoDietaController.verificaDisabledAprazamento()}"
+								jsfConverter="#{javax.faces.Short}">
+								<p:ajax id="frequenciaSupOnChange" event="change"
+									immediate="true" process="@this"
+									update="@(#tipoAprazamentoLabelPanel) @(#panelBotoesEditar)"
+									listener="#{manterPrescricaoDietaController.changeField}" />
+						</mec:inputNumero> 
+                    </p:outputPanel>  
+                    <p:outputPanel id="panelAprazamento" layout="inline"> 
+                      <mec:suggestionBox id="tipoAprazamento" 
+                      	required="#{manterPrescricaoDietaController.verificaRequiredTipoFrequencia()}" 
+                      	label="#{messages.LABEL_TIPO_APRAZAMENTO}" title="Selecione um Tipo de Frequência de Aprazamento." 
+                      	readonly="#{manterPrescricaoDietaController.verificaDisabledAprazamento()}" 
+                      	descricaoInput="sigla" 
+                      	externalDescricaoLabel="descricaoTipoFrequenciaAprazamento" 
+                      	labelId="tipoAprazamentoLabelPanel" 
+                      	suggestionAction="buscarTiposFrequenciaAprazamento" 
+                      	posSelectionAction="verificaFrequenciaEEdicao" 
+                      	controller="#{manterPrescricaoDietaController}" 
+                      	value="#{manterPrescricaoDietaController.formulario.tipoAprazamento}" 
+                      	render="panelFrequencia,panelBotoesEditar"
+                      	var="_tipoAprazamento"
+						itemValue="#{_tipoAprazamento}"> 
+                        <p:column>#{manterPrescricaoDietaController.buscaDescricaoTipoFrequenciaAprazamento(_tipoAprazamento)}</p:column>  
+                        <p:column>#{_tipoAprazamento.sigla}</p:column> 
+                      </mec:suggestionBox> 
+                    </p:outputPanel>  
+                    <p:outputPanel id="panelNumeroVezes" layout="inline">
+						<mec:inputNumero label="#{messages.LABEL_NUMERO_VEZES}"
+							size="5" maxlength="2" title="#{messages.TITLE_NUMERO_VEZES}"
+							readonly="#{manterPrescricaoDietaController.verificaDisabledNumeroVezes()}"
+							value="#{manterPrescricaoDietaController.formulario.numVezes}"
+							id="numeroVezes">
+							<p:ajax event="change" immediate="true"
+								update="@(#panelBotoesEditar)"
+								listener="#{manterPrescricaoDietaController.changeField}" />
+						</mec:inputNumero>
+					</p:outputPanel>  
+                    <aghu:acao newLine="false"> 
+                      <mec:commandButton id="bt_adicionarItem" 
+						rendered="#{not manterPrescricaoDietaController.altera}" 
+						value="#{messages.LABEL_ADICIONAR}" 
+						action="#{manterPrescricaoDietaController.adicionar}" 
+						process="panelCamposItemDieta" 
+						profile="add" 
+						ajax="true" 
+						render="panelDieta, panelBotoesVoltar"/> 
+                    </aghu:acao> 
+                  </aghu:linha> 
+                </p:outputPanel> 
+              </aghu:panelGeral>  
+              <aghu:acao> 
+                <mec:commandButton id="bt_alterarItem" 
+                	rendered="#{manterPrescricaoDietaController.altera}" 
+                	value="#{messages.LABEL_ALTERAR}" 
+                	action="#{manterPrescricaoDietaController.alterar}" 
+                	styleClass=" icon-pencil bt_cinza"	/>  
+                <mec:commandButton id="limpar_sb" 
+                	value="#{messages.LABEL_CANCELAR_EDICAO}" 
+                	action="#{manterPrescricaoDietaController.limpar()}" 
+                	rendered="#{manterPrescricaoDietaController.altera}" 
+                	immediate="false" 
+                	styleClass="bt_vermelho  bt_cinza" 
+                	ajax="true" 
+                	render="panelDieta" 
+                	process="@this"/> 
+              </aghu:acao> 
+            </p:outputPanel> 
+          </h:form>  
+          <p:outputPanel id="panelTabelaItensDieta" rendered="#{not empty manterPrescricaoDietaController.itensDieta}" layout="inline"> 
+            <h:form prependId="false" id="formItens"> 
+              <aghu:panelGeral legend="#{messages.LEGENDA_ITENS_DIETA_PRESCRITO}"> 
+                <aghu:linha> 
+                  <p:outputPanel layout="block" style="width:65%;  overflow-y:auto;" id="tabelaItensDietaPanel">
+                    <mec:serverDataTable id="tabelaItensDieta" rowKeyVar="_key" list="#{manterPrescricaoDietaController.itensDieta}" scrollable="true"
+                    	scrollHeight="120"> 
+                      <c:set var="_item" value="#{item}"/>  
+                      <p:column styleClass="tdAcao" 
+                      	style="#{_item.edicao ? 'background-color:#EEE8AA':''}"
+                      	width="10%"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                        </f:facet>  
+                        <p:outputPanel id="panelBotoesEditar" layout="inline"> 
+                          <mec:commandLink id="bt_editar_com_confirma" 
+	                          	onclick="PF('modalConfirmacaoPendenciaEdicaoWG').show();;return false;" 
+	                          	rendered="#{! _item.edicao and manterPrescricaoDietaController.modificadoEdicao}" 
+	                          	profile="edit"   
+	                          	ajax="true" 
+	                          	render="panelDieta" 
+	                          	process="@this"/>  
+                          <mec:commandLink id="bt_editar_sem_confirma" 
+                          		action="#{manterPrescricaoDietaController.preparaEditar(_item)}" 
+                          		eventsQueue="itemDietaQueue" 
+                          		rendered="#{! _item.edicao and !manterPrescricaoDietaController.modificadoEdicao}" 
+                          		profile="edit" 
+                          		ajax="true" 
+                          		render="panelDieta" 
+                          		process="@this"/> 
+                        </p:outputPanel>  
+                          
+                        <mec:commandLink title="#{messages.LABEL_EXCLUIR}"  
+	                        action="#{manterPrescricaoDietaController.excluir(_item)}" 
+	                        profile="delete" 
+	                        ajax="true" 
+	                        render="panelDieta"/> 
+                      </p:column>  
+                      <p:column style="#{_item.edicao ? 'background-color:#EEE8AA':''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ITENS}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.descricao}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </aghu:linha> 
+              </aghu:panelGeral> 
+            </h:form> 
+          </p:outputPanel> 
+        </p:outputPanel>
+        <br/>  
+        <h:form prependId="false" id="formGravar"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextArea label="#{messages.LABEL_OBSERVACAO}" 
+              		cols="120" rows="2" 
+              		title="#{messages.TITLE_OBSERVACAO_DIETA}" 
+              		value="#{manterPrescricaoDietaController.observacao}" 
+              		required="false" 
+              		maxlength="500" 
+              		id="observacao"> 
+                <p:ajax event="change" process="@this"/> 
+              </mec:inputTextArea>  
+              <mec:selectBooleanCheckbox label="#{messages.LABEL_BOMBA_INFUSAO}" 
+              		title="#{messages.TITLE_BOMBA_INFUSAO_DIETA}" 
+              		value="#{manterPrescricaoDietaController.bombaInfusao}" 
+              		id="bombaInfusao"> 
+                <p:ajax event="change" process="@this"/> 
+              </mec:selectBooleanCheckbox> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_gravar" 
+            	value="#{messages.LABEL_GRAVAR}" 
+            	status="commonstatus" 
+            	action="#{manterPrescricaoDietaController.gravar}" 
+            	profile="ok"/>  
+            <mec:commandButton id="limpar_tudo" 
+            	value="#{messages.LABEL_LIMPAR}" 
+            	action="#{manterPrescricaoDietaController.cancelar()}" 
+            	profile="clear"/>  
+            <p:outputPanel id="panelBotoesVoltar" layout="inline"> 
+              <mec:commandButton id="bt_voltar_sem_confirma" 
+              		action="#{manterPrescricaoDietaController.voltar(false)}" 
+              		value="#{messages.LABEL_VOLTAR}" 
+              		styleClass="bt_vermelho icon-back bt_cinza" 
+              		ajax="true"
+              		process="@this" 
+              		profile="back"> 
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterPrescricaoDietaController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterPrescricaoDietaController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+              </mec:commandButton> 
+            </p:outputPanel> 
+          </aghu:acao> 
+        </h:form>  
+        <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_PRESCRICAO_DIETA}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalPendencias"> 
+              <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{manterPrescricaoDietaController.voltar(true)}" profile="search"> 
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterPrescricaoDietaController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterPrescricaoDietaController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();;return false;" profile="cancel"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <p:dialog id="modalConfirmacaoPendenciaEdicao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaEdicaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_AVISO_REGISTRO_EM_EDICAO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES_EDICAO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalPendenciasEdicao"> 
+              <mec:commandButton value="#{messages.LABEL_FECHAR}" id="bt_fechar_registroemedicao_editar" onclick="PF('modalConfirmacaoPendenciaEdicaoWG').hide();; return false;" styleClass="bt_vermelho icon-close bt_cinza" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

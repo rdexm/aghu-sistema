@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.ANALISE_CUSTO_PACIENTE_DIAGNOSTICO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{visualizarCustoPacienteDiagnosticoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{visualizarCustoPacienteDiagnosticoController}"/>
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral legend="#{messages.ANALISE_CUSTO_PACIENTE_DIAGNOSTICO}">
+									<mec:selectOneMenu id="competencia"
+									label="#{messages.CUSTO_PACIENTE_COMPETENCIA}"
+									title="#{messages.CUSTO_PACIENTE_COMPETENCIA_TITLE}"
+									itemLabel="competenciaMesAno"
+									value="#{visualizarCustoPacienteDiagnosticoController.competencia}"
+									items="#{visualizarCustoPacienteDiagnosticoController.listaCompetencias}"
+									noSelectionOption="false" itemsType="entity" required="true" >
+									    <p:ajax id="competenciaChange" event="change" eventsQueue="changeQueue" process="@this"/>
+									</mec:selectOneMenu>
+									<aghu:linha>
+							<p:outputPanel id="cid_cabecalho_super" layout="inline">
+						<p:outputPanel id="cid_cabecalho" layout="inline">
+							<p:accordionPanel id="toggleCid" name="toggleCid"
+								style="margin: 5px !important;" activeIndex="#{visualizarCustoPacienteDiagnosticoController.activeIndex}" 
+								prependId="false">
+								<p:tab title="#{messages.CUSTO_PACIENTE_CID_TOGGLEPANEL}" >
+				
+										<aghu:linha>
+										<mec:suggestionBox id="suggestionCID"
+											label="#{messages.CUSTO_PACIENTE_LABEL_CID}"
+											title="#{messages.CUSTO_PACIENTE_CID_TITLE}"
+											suggestionAction="pesquisarCid" descricaoInput="codigo"
+											descricaoLabel="cid.codigoDescricaoCompletaCID" width="450"
+											maxlength="60" posSelectionAction="getAdicionarCidNaLista"
+											controller="#{visualizarCustoPacienteDiagnosticoController}"
+											cache="false"
+											value="#{visualizarCustoPacienteDiagnosticoController.cid}"
+											render="panelExternoCid">
+											<p:column>
+												<f:facet name="header">
+													<b>#{messages.CUSTO_PACIENTE_LABEL_CID}</b>
+												</f:facet> #{item.codigo}
+                        </p:column>
+											<p:column>
+												<f:facet name="header">
+													<b>#{messages.LABEL_DESCRICAO}</b>
+												</f:facet> #{item.descricao}
+                        </p:column>
+										</mec:suggestionBox>
+									</aghu:linha>
+									
+									<aghu:linha>
+									<p:outputPanel id="panelExternoCid">
+										
+										<!-- Não pode fazer o bind, pois ocorre erro "A ID de componente tabelaCid:j_idt142 já foi encontrada na visualização" -->
+										<!-- binding="#{visualizarCustoPacienteDiagnosticoController.dataTable}" -->
+										<!-- O problema com o selection terá de ser resolvido de outro modo -->
+										<p:dataTable name="tabelaCid" id="tabelaCid" styleClass="aghu-server-datatable"
+											
+                                            rendered="#{not empty visualizarCustoPacienteDiagnosticoController.listaCID}"
+                                            value="#{visualizarCustoPacienteDiagnosticoController.listaCID}"
+                                            var="_item" scrollable="true" selection="#{visualizarCustoPacienteDiagnosticoController.cidSelecionado}" rowKey="#{_item.seq}" selectionMode="single" >
+										    <p:ajax event="rowSelect"    update="@(#panelExternoCid)"/>
+                                            <p:ajax event="rowUnselect"  update="@(#panelExternoCid)"/>
+											
+											<p:column style="width:40px;text-align:center">
+												<f:facet name="header">
+													<h:outputText value="#{messages.PACIENTE_CUSTO_LABEL_ACAO}" />
+												</f:facet>
+												<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+													action="#{visualizarCustoPacienteDiagnosticoController.deletarCIDDaLista(_item)}"
+													immediate="true" profile="delete" ajax="true"
+													render="cid_cabecalho,panelExternoCid" />
+											</p:column>
+											  <p:column selectionMode="single" style="width:40px;text-align:center">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Principal" />
+                                                </f:facet>
+                                            </p:column>
+			                        		<p:column style="width:60px;text-align:center">
+												<f:facet name="header">
+													<h:outputText value="#{messages.CUSTO_PACIENTE_LABEL_CID}" />
+												</f:facet>
+												<h:outputText value="#{_item.codigo}" />
+											</p:column>
+											<p:column>
+												<f:facet name="header">
+													<h:outputText
+														value="#{messages.PACIENTE_CUSTO_LABEL_DESCRICAO}" />
+												</f:facet>
+												<h:outputText value="#{_item.descricao}" />
+											</p:column>
+										</p:dataTable>
+										</p:outputPanel>
+									</aghu:linha>
+									<aghu:linha>
+									
+				                    <mec:selectOneRadio 
+											   enum="DominioCidCustoPacienteDiagnostico"
+												value="#{visualizarCustoPacienteDiagnosticoController.tipo}"
+												id="tipo_id"
+												label="#{messages.LABEL_CONSIDERAR}">
+									</mec:selectOneRadio>
+									</aghu:linha>
+								</p:tab>
+								</p:accordionPanel>
+								</p:outputPanel>
+								</p:outputPanel>
+								
+									</aghu:linha>
+									
+									<aghu:linha>
+					
+								
+							</aghu:linha>
+									</aghu:panelGeral>
+		
+		<aghu:acao>
+								<mec:commandButton id="bt_pesquisar"
+										value="#{messages.LABEL_PESQUISAR}" block="true"
+										action="#{visualizarCustoPacienteDiagnosticoController.pesquisar}"
+										ajax="true"
+										process="competencia,tipo_id,@this"
+										defaultCommand="true"
+										render="listagem_outputpanel"
+										profile="search" />
+									<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+										immediate="true"
+										action="#{visualizarCustoPacienteDiagnosticoController.limpar}"
+										styleClass="bt_cinza" profile="clear" />
+								</aghu:acao>
+				<p:outputPanel id="listagem_outputpanel" layout="inline">
+				
+					<style type="text/css"> .ui-treetable-empty-message{text-align: center;}</style>
+				    <p:treeTable style="margin: 10px !important;" styleClass="aghu-server-datatable" rendered="#{not empty visualizarCustoPacienteDiagnosticoController.root}" value="#{visualizarCustoPacienteDiagnosticoController.root}" var="diagnostico" emptyMessage="#{messages.MENSAGEM_NENHUM_REGISTRO_ENCONTRADO_TREE_VIEW}">
+					    <p:ajax event="select" listener="#{visualizarCustoPacienteDiagnosticoController.onNodeSelect}"/>
+						<p:ajax event="expand" listener="#{visualizarCustoPacienteDiagnosticoController.onNodeExpand}"/>
+						<p:ajax event="collapse" listener="#{visualizarCustoPacienteDiagnosticoController.onNodeCollapse}"/>		
+								
+				        <p:column headerText="#{messages.LABEL_CODIGO}" sortBy="#{diagnostico.cidCodigo}">
+				            <h:outputText value="#{diagnostico.cidCodigo}" />
+				            <f:facet name="footer"> 
+					    		<p:spacer/> 
+					    	</f:facet>
+				        </p:column>
+				        <p:column headerText="#{messages.LABEL_DIAGNOSTICO}" sortBy="#{diagnostico.cidDescricao}">
+				            <p:tooltip direction="bottom-right" styleClass="tooltip" for="diagnosticoId" layout="block" rendered="#{(diagnostico.cidDescricao.length() &gt; 90) and (diagnostico.terceiroNivel==null or not diagnostico.terceiroNivel)}"> 
+				              <h:outputText value="#{diagnostico.cidDescricao}"/> 
+				            </p:tooltip>  
+				            <h:outputText id="diagnosticoId" rendered="#{(diagnostico.terceiroNivel==null or not diagnostico.terceiroNivel) and (diagnostico.terceiroNivel==null or not diagnostico.terceiroNivel)}" value="#{(diagnostico.cidDescricao.length() &gt; 90) ? fn:substring(diagnostico.cidDescricao,0,90) : diagnostico.cidDescricao}"/>  
+				            <h:outputText value="..." rendered="#{(diagnostico.cidDescricao.length() &gt; 90)}"/>
+				            <h:commandLink rendered="#{diagnostico.terceiroNivel!=null and diagnostico.terceiroNivel}" action="#{visualizarCustoPacienteDiagnosticoController.redirecionarCustoPacienteArvore(diagnostico)}" value="#{diagnostico.prontuario}-#{diagnostico.pacNome}" style="color:blue;"/> 
+				        	<f:facet name="footer"> 
+					    		<p:spacer/> 
+					    	</f:facet>
+				        </p:column>
+				        <p:column headerText="#{messages.LABEL_QUANTIDADE}" sortBy="#{diagnostico.quantidade}">
+				            <h:outputText value="#{diagnostico.quantidade}" rendered="#{diagnostico.terceiroNivel==null or not diagnostico.terceiroNivel}"/>
+				            <f:facet name="footer">
+				            	<p:outputPanel layout="block" style="text-align:left">
+			                		<h:outputText value="#{visualizarCustoPacienteDiagnosticoController.totalQuantidade}"/>
+		                		</p:outputPanel>
+	   						</f:facet>
+				        </p:column>
+				        <p:column headerText="#{messages.PACIENTE_CUSTO_CUSTO_TOTAL}" sortBy="#{diagnostico.custoTotal}">
+				            <h:outputText value="#{diagnostico.custoTotal ne null ? diagnostico.custoTotal: '-'}">
+								<f:converter converterId="currencyConverter"/> 
+							</h:outputText>
+							<f:facet name="footer">
+								<p:outputPanel layout="block" style="text-align:left">
+			                		<h:outputText value="#{visualizarCustoPacienteDiagnosticoController.totalCusto}">
+										<f:converter converterId="currencyConverter"/> 
+									</h:outputText>
+								</p:outputPanel>
+	   						</f:facet>
+				        </p:column>
+				        <p:column headerText="#{messages.PACIENTE_CUSTO_RECEITA_TOTAL}" sortBy="#{diagnostico.receitaTotal}">
+				            <h:outputText value="#{diagnostico.receitaTotal ne null ? diagnostico.receitaTotal : '-'}">
+								<f:converter converterId="currencyConverter"/> 
+							</h:outputText>
+							<f:facet name="footer">
+   								<p:outputPanel layout="block" style="text-align:left">
+			                		<h:outputText value="#{visualizarCustoPacienteDiagnosticoController.totalReceita}">
+										<f:converter converterId="currencyConverter"/> 
+									</h:outputText>
+								</p:outputPanel>
+	   						</f:facet>
+				        </p:column>
+				    </p:treeTable>
+				</p:outputPanel>
+		</h:form>
+		
+	</ui:define>
+</ui:composition>
+</html>

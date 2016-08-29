@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.ANALISE_CUSTO_PACIENTE}</title>
+			</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{visualizarCustoPacienteController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{visualizarCustoPacienteController}"/>
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral>
+				<p:outputPanel id="cabecalho_principal_consulta" layout="inline">
+					<h:panelGrid columns="2">
+						<h:panelGroup id="panelGroup_visao">
+							<aghu:panelGeral style="width: 250px;"
+								title="#{messages.CUSTO_PACIENTE_VISAO_TITLE}"
+								legend="#{messages.CUSTO_PACIENTE_VISAO}">
+								<mec:selectOneRadio enum="DominioVisaoCustoPaciente"
+									value="#{visualizarCustoPacienteController.visao}"
+									id="visao_id">
+									<p:ajax update="@(#panelPaciente) @(#panelCompetencia)" event="change" process="@this" listener="#{visualizarCustoPacienteController.validaTipoVisao}"/>
+								</mec:selectOneRadio>
+							</aghu:panelGeral>
+						</h:panelGroup>
+						<h:panelGroup id="panelGroup_paciente_competencia">
+							<aghu:linha>
+							<p:outputPanel id="panelPaciente">
+								<p:outputPanel
+									id="cabecao_principal_consulta_tipo_visao_paciente"
+									rendered="#{visualizarCustoPacienteController.exibePesquisaPaciente}"
+									layout="inline">
+									<mec:pesquisaPaciente id="pesqPaciente" requiredFake="true"
+										valueChangeListener="#{visualizarCustoPacienteController.pesquisaPaciente}"
+										value="#{visualizarCustoPacienteController.paciente}"
+										render="cabecao_principal_consulta_tipo_visao_paciente" />
+									<aghu:acao newLine="false">
+										<mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}"
+											immediate="true" block="true" requestDelay="1000"
+											action="#{visualizarCustoPacienteController.redirecionarPesquisaFonetica}"
+											styleClass=" bt_cinza icon-pesquisa-fonetica">
+											<f:setPropertyActionListener
+												target="#{pesquisaPacienteController.cameFrom}"
+												value="custos-visualizarCustoPaciente" for="command" />
+											<f:setPropertyActionListener
+												target="#{pesquisaPacienteController.exibeBotaoEditar}"
+												value="#{false}" for="command" />
+										</mec:commandButton>
+									</aghu:acao>
+								</p:outputPanel>
+								</p:outputPanel>
+							</aghu:linha>
+							<p:outputPanel id="panelCompetencia">
+							<p:outputPanel
+								id="cabecao_principal_consulta_tipo_visao_competencia"
+								rendered="#{not visualizarCustoPacienteController.exibePesquisaPaciente}"
+								layout="inline">
+								<mec:selectOneMenu id="competencia"
+									label="#{messages.CUSTO_PACIENTE_COMPETENCIA}"
+									title="#{messages.CUSTO_PACIENTE_COMPETENCIA_TITLE}"
+									itemLabel="competenciaMesAno"
+									value="#{visualizarCustoPacienteController.competencia}"
+									items="#{visualizarCustoPacienteController.listaCompetencias}"
+									semSelecione="true" itemsType="entity" required="true" />
+								<mec:selectBooleanCheckbox
+									label="#{messages.CUSTO_PACIENTE_PACIENTE_ALTA_MES}"
+									title="#{messages.CUSTO_PACIENTE_PACIENTE_ALTA_MES_TITLE}"
+									value="#{visualizarCustoPacienteController.vo.pacienteComAlta}"
+									id="checkCriticaApac" />
+							</p:outputPanel>
+							</p:outputPanel>
+						</h:panelGroup>
+					</h:panelGrid>
+					<p:outputPanel id="cid_cabecalho_super" layout="inline">
+						<p:outputPanel id="cid_cabecalho" layout="inline">
+							<p:accordionPanel id="toggleCid" name="toggleCid"
+								style="margin: 5px !important;" activeIndex="-1"
+								prependId="false">
+								<p:tab title="#{messages.CUSTO_PACIENTE_CID_TOGGLEPANEL}">
+									<aghu:linha>
+										<mec:suggestionBox id="suggestionCID"
+											label="#{messages.CUSTO_PACIENTE_LABEL_CID}"
+											title="#{messages.CUSTO_PACIENTE_CID_TITLE}"
+											suggestionAction="pesquisarCid" descricaoInput="codigo"
+											descricaoLabel="codigoDescricaoCompletaCID" width="450"
+											maxlength="60" posSelectionAction="getAdicionarCidNaLista"
+											controller="#{visualizarCustoPacienteController}"
+											value="#{visualizarCustoPacienteController.vo.aghCid}"
+											render="panelExternoCid">
+											<p:column>
+												<f:facet name="header">
+													<b>#{messages.CUSTO_PACIENTE_LABEL_CID}</b>
+												</f:facet> #{item.codigo}
+                        </p:column>
+											<p:column>
+												<f:facet name="header">
+													<b>#{messages.LABEL_DESCRICAO}</b>
+												</f:facet> #{item.descricao}
+                        </p:column>
+										</mec:suggestionBox>
+									</aghu:linha>
+									<aghu:linha>
+									<p:outputPanel id="panelExternoCid">
+										<mec:serverDataTable name="tabelaCid" id="tabelaCid"
+											rendered="#{not empty visualizarCustoPacienteController.listaCID}"
+											list="#{visualizarCustoPacienteController.listaCID}"
+											>
+											<c:set var="_item" value="#{item}" />
+											<p:column style="width:30px;">
+												<f:facet name="header">
+													<h:outputText value="#{messages.PACIENTE_CUSTO_LABEL_ACAO}" />
+												</f:facet>
+												<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+													action="#{visualizarCustoPacienteController.deletarCIDDaLista(_item)}"
+													immediate="true" profile="delete" ajax="true"
+													render="cid_cabecalho" />
+											</p:column>
+											<p:column style="width:100px;">
+												<f:facet name="header">
+													<h:outputText value="#{messages.CUSTO_PACIENTE_LABEL_CID}" />
+												</f:facet>
+												<h:outputText value="#{_item.codigo}" />
+											</p:column>
+											<p:column style="width:500px;">
+												<f:facet name="header">
+													<h:outputText
+														value="#{messages.PACIENTE_CUSTO_LABEL_DESCRICAO}" />
+												</f:facet>
+												<h:outputText value="#{_item.descricao}" />
+											</p:column>
+										</mec:serverDataTable>
+										</p:outputPanel>
+									</aghu:linha>
+								</p:tab>
+							</p:accordionPanel>
+						</p:outputPanel>
+					</p:outputPanel>
+					<p:outputPanel id="centroCusto_cabecalho" layout="inline">
+						<p:accordionPanel id="toggleCentroCusto" name="toggleCentroCusto"
+							style="margin: 5px !important;" activeIndex="-1"
+							prependId="false">
+							<p:tab
+								title="#{messages.CUSTO_PACIENTE_CENTROS_CUSTOS_TOGGLEPANEL}">
+								<aghu:linha>
+									<mec:suggestionBox
+										label="#{messages.PACIENTE_CUSTO_LABEL_CENTRO_CUSTO}"
+										title="#{messages.PACIENTE_CUSTO_TITLE_CENTRO_CUSTO}"
+										descricaoInput="codigo" descricaoLabel="descricao"
+										suggestionAction="pesquisarCentroCustoSuggestion" width="400"
+										posSelectionAction="getAdicionarCentroCustoNaLista"
+										id="ccusto" controller="#{visualizarCustoPacienteController}"
+										value="#{visualizarCustoPacienteController.vo.centroCusto}"
+										render="panelExternoCentroCusto">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_CODIGO}</b>
+											</f:facet> #{item.codigo}
+                      </p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_DESCRICAO}</b>
+											</f:facet> #{item.descricao}
+                      </p:column>
+									</mec:suggestionBox>
+								</aghu:linha>
+								<aghu:linha>
+								<p:outputPanel id="panelExternoCentroCusto">
+									<mec:serverDataTable name="tabelaCusto" id="tabelaCusto"
+										rendered="#{not empty visualizarCustoPacienteController.listaCentroCusto}"
+										list="#{visualizarCustoPacienteController.listaCentroCusto}"
+										>
+										<c:set var="_item" value="#{item}" />
+										<p:column style="width:30px;">
+											<f:facet name="header">
+												<h:outputText value="#{messages.PACIENTE_CUSTO_LABEL_ACAO}" />
+											</f:facet>
+											<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+												action="#{visualizarCustoPacienteController.deletarCentroCustoDaLista(_item)}"
+												immediate="true" profile="delete" ajax="true"
+												render="centroCusto_cabecalho" />
+										</p:column>
+										<p:column style="width:100px;">
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.PACIENTE_CUSTO_LABEL_CODIGO}" />
+											</f:facet>
+											<h:outputText value="#{_item.codigo}" />
+										</p:column>
+										<p:column style="width:500px;">
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.PACIENTE_CUSTO_LABEL_DESCRICAO}" />
+											</f:facet>
+											<h:outputText value="#{_item.descricao}" />
+										</p:column>
+									</mec:serverDataTable>
+								</p:outputPanel>
+								</aghu:linha>
+							</p:tab>
+						</p:accordionPanel>
+					</p:outputPanel>
+					<p:outputPanel id="especialidades_cabecalho" layout="inline">
+						<p:accordionPanel id="toggleEspecialidades"
+							name="toggleEspecialidades" style="margin: 5px !important;"
+							activeIndex="-1" prependId="false">
+							<p:tab
+								title="#{messages.CUSTO_PACIENTE_ESPECIALIDADES_MEDICAS_TOGGLEPANEL}">
+								<aghu:linha>
+									<mec:suggestionBox
+										label="#{messages.PACIENTE_CUSTO_LABEL_ESPECIALIDADE_MEDICA}"
+										title="#{messages.PACIENTE_CUSTO_TITLE_ESPECIALIDADE_MEDICA}"
+										descricaoInput="seq" descricaoLabel="nomeEspecialidade"
+										suggestionAction="pesquisarEspecialidadesSuggestion"
+										width="400"
+										posSelectionAction="adicionarEspecialidadesNaLista"
+										id="espMedica"
+										controller="#{visualizarCustoPacienteController}"
+										value="#{visualizarCustoPacienteController.vo.especialidades}"
+										render="panelExternoEspecialidades">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_CODIGO}</b>
+											</f:facet> #{item.seq}
+                      </p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.PACIENTE_CUSTO_SIGLA}</b>
+											</f:facet> #{item.sigla}
+                      </p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_DESCRICAO}</b>
+											</f:facet> #{item.nomeEspecialidade}
+                      </p:column>
+									</mec:suggestionBox>
+								</aghu:linha>
+								<aghu:linha>
+								<p:outputPanel id="panelExternoEspecialidades">
+									<mec:serverDataTable name="tabelaEspecialidades"
+										id="tabelaEspecialidades"
+										rendered="#{not empty visualizarCustoPacienteController.listaEspecialidades}"
+										list="#{visualizarCustoPacienteController.listaEspecialidades}"
+										>
+										<c:set var="_item" value="#{item}" />
+										<p:column style="width:30px;">
+											<f:facet name="header">
+												<h:outputText value="#{messages.PACIENTE_CUSTO_LABEL_ACAO}" />
+											</f:facet>
+											<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+												action="#{visualizarCustoPacienteController.deletarEspecialidadesDaLista(_item)}"
+												immediate="true" profile="delete" ajax="true"
+												render="especialidades_cabecalho" />
+										</p:column>
+										<p:column style="width:100px;">
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.PACIENTE_CUSTO_LABEL_CODIGO}" />
+											</f:facet>
+											<h:outputText value="#{_item.seq}" />
+										</p:column>
+										<p:column style="width:100px;">
+											<f:facet name="header">
+												<h:outputText value="#{messages.PACIENTE_CUSTO_SIGLA}" />
+											</f:facet>
+											<h:outputText value="#{_item.sigla}" />
+										</p:column>
+										<p:column style="width:500px;">
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.PACIENTE_CUSTO_LABEL_DESCRICAO}" />
+											</f:facet>
+											<h:outputText value="#{_item.nomeEspecialidade}" />
+										</p:column>
+									</mec:serverDataTable>
+									</p:outputPanel>
+								</aghu:linha>
+							</p:tab>
+						</p:accordionPanel>
+					</p:outputPanel>
+					<p:outputPanel id="equipe_cabecalho" layout="inline">
+						<p:accordionPanel id="toggleEquipe" name="toggleEquipe"
+							style="margin: 5px !important;" activeIndex="-1"
+							prependId="false">
+							<p:tab
+								title="#{messages.CUSTO_PACIENTE_EQUIPE_MEDICA_TOGGLEPANEL}">
+								<aghu:linha>
+									<mec:suggestionBox
+										label="#{messages.PACIENTE_CUSTO_LABEL_EQUIPE_MEDICA}"
+										title="#{messages.PACIENTE_CUSTO_TITLE_EQUIPE_MEDICA}"
+										descricaoInput="seq"
+										descricaoLabel="profissionalResponsavel.pessoaFisica.nome"
+										suggestionAction="pesquisarEquipesPorNomeOuCodigo" width="400"
+										posSelectionAction="adicionarEquipesNaLista" id="equipeMedica"
+										controller="#{visualizarCustoPacienteController}"
+										value="#{visualizarCustoPacienteController.vo.equipes}"
+										render="panelExternoEquipe">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.PACIENTE_CUSTO_NOME}</b>
+											</f:facet> #{item.nome}
+                      </p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_CODIGO}</b>
+											</f:facet> #{item.seq}
+                      </p:column>
+									</mec:suggestionBox>
+								</aghu:linha>
+								<aghu:linha>
+								<p:outputPanel id="panelExternoEquipe">
+									<mec:serverDataTable name="tabelaEquipes" id="tabelaEquipes"
+										rendered="#{not empty visualizarCustoPacienteController.listaEquipes}"
+										list="#{visualizarCustoPacienteController.listaEquipes}"
+										>
+										<c:set var="_item" value="#{item}" />
+										<p:column style="width:30px;">
+											<f:facet name="header">
+												<h:outputText value="#{messages.PACIENTE_CUSTO_LABEL_ACAO}" />
+											</f:facet>
+											<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+												action="#{visualizarCustoPacienteController.deletarEquipeDaLista(_item)}"
+												immediate="true" profile="delete" ajax="true"
+												render="equipe_cabecalho" />
+										</p:column>
+										<p:column style="width:100px;">
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.PACIENTE_CUSTO_LABEL_CODIGO}" />
+											</f:facet>
+											<h:outputText value="#{_item.seq}" />
+										</p:column>
+										<p:column style="width:500px;">
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.PACIENTE_CUSTO_LABEL_DESCRICAO}" />
+											</f:facet>
+											<h:outputText value="#{_item.nome}" />
+										</p:column>
+									</mec:serverDataTable>
+									</p:outputPanel>
+								</aghu:linha>
+							</p:tab>
+						</p:accordionPanel>
+					</p:outputPanel>
+				</p:outputPanel>
+				<aghu:linha>
+					
+					<mec:commandButton id="bt_pesquisar"
+						value="#{messages.LABEL_PESQUISAR}" block="true"
+						action="#{visualizarCustoPacienteController.pesquisar}"
+						defaultCommand="true"
+						render="listagem_outputpanel, cid_cabecalho, centroCusto_cabecalho, especialidades_cabecalho, equipe_cabecalho"
+						profile="search" />
+					<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+						immediate="true"
+						action="#{visualizarCustoPacienteController.limpar}"
+						render="cabecalho_principal_consulta, visao_id"
+						styleClass="bt_cinza" profile="clear" />
+				</aghu:linha>
+			</aghu:panelGeral>
+		
+			<p:outputPanel id="listagem_outputpanel" rendered="#{visualizarCustoPacienteController.dataModel.pesquisaAtiva}" layout="inline">
+					<br/>
+					<mec:serverDataTable id="listagem_datatable"
+						dataModel="dataModel"
+						controller="#{visualizarCustoPacienteController}"
+						list="#{visualizarCustoPacienteController.listagem}">
+						<c:set var="_item" value="#{item}" />
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.PACIENTE_CUSTO_LABEL_ACAO}" />
+							</f:facet>
+							<h:selectBooleanCheckbox posicaoLabel="esquerda"
+								id="selectBooleanCheckbox_controleAtd"
+								value="#{_item.controleAtd}" >
+								<p:ajax event="click" process="@this" listener="#{visualizarCustoPacienteController.selecionarAtendimento(_item)}"/>	
+							</h:selectBooleanCheckbox>
+							<f:facet name="footer">								
+								<p:spacer/>
+      						</f:facet>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.PACIENTE_CUSTO_PRONTUARIO}" />
+							</f:facet>
+							<h:outputText value="#{_item.prontuario}" />
+							<f:facet name="footer"> 
+					          <p:spacer/> 
+					        </f:facet>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.PACIENTE_CUSTO_NOME}" />
+							</f:facet>
+							<h:outputText value="#{_item.nomePaciente}" />
+							<f:facet name="footer"> 
+					          <p:spacer/> 
+					        </f:facet>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText
+									value="#{messages.PACIENTE_CUSTO_DATANASCIMENTO}" />
+							</f:facet>
+							<h:outputText value="#{_item.dtNascimentoPaciente}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+							<f:facet name="footer"> 
+					          <p:spacer/> 
+					        </f:facet>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.PACIENTE_CUSTO_NOME_MAE}" />
+							</f:facet>
+							<h:outputText value="#{_item.nomeMaePaciente}" />
+							<f:facet name="footer"> 
+					          <p:spacer/> 
+					        </f:facet>
+						</p:column>
+						<p:column style="text-align: right">
+							<f:facet name="header">
+								<h:outputText value="#{messages.PACIENTE_CUSTO_ULTIMA_FATURA}" />
+							</f:facet>
+							<h:outputText rendered="#{_item.valorUltimaFatura != null}" value="R$ "/>
+	                        <h:outputText value="#{_item.valorUltimaFatura}" rendered="#{_item.valorUltimaFatura ne null}">
+								<f:converter converterId="currencyConverter"/> 
+							</h:outputText>
+							<h:outputText rendered="#{_item.valorUltimaFatura eq null}" value="-"/>
+							<f:facet name="footer"> 
+					          <h:outputText value="#{messages.LABEL_TOTAL_GERAL}:" />
+					        </f:facet>
+						</p:column>
+						<p:column style="text-align: right">
+							<f:facet name="header">
+								<h:outputText value="#{messages.PACIENTE_CUSTO_CUSTO_TOTAL}" />
+							</f:facet>
+							<h:outputText rendered="#{_item.valorTotalCusto != null}" value="R$ "/>
+	                        <h:outputText value="#{_item.valorTotalCusto}" rendered="#{_item.valorTotalCusto ne null}">
+								<f:converter converterId="currencyConverter"/> 
+							</h:outputText>
+							<h:outputText rendered="#{_item.valorTotalCusto eq null}" value="-"/>
+							<f:facet name="footer">     
+								<h:outputText rendered="#{visualizarCustoPacienteController.totalCusto != null}" value="R$ "/> 										 
+				                <h:outputText value="#{visualizarCustoPacienteController.totalCusto}">
+									<f:converter converterId="currencyConverter"/> 
+								</h:outputText>
+      						</f:facet>
+						</p:column>
+						<p:column style="text-align: right">
+							<f:facet name="header">
+								<h:outputText value="#{messages.PACIENTE_CUSTO_RECEITA_TOTAL}" />
+							</f:facet>
+							<h:outputText rendered="#{_item.valorTotalReceita != null}" value="R$ "/>
+							<h:outputText rendered="#{_item.valorTotalReceita ne null}" value="#{_item.valorTotalReceita}">
+								<f:converter converterId="currencyConverter"/> 
+							</h:outputText>
+							<h:outputText rendered="#{_item.valorTotalReceita eq null}" value="-"/>
+							<f:facet name="footer">
+								<h:outputText rendered="#{visualizarCustoPacienteController.totalReceita != null}" value="R$ "/>
+				                <h:outputText value="#{visualizarCustoPacienteController.totalReceita}">
+									<f:converter converterId="currencyConverter"/> 
+								</h:outputText>
+      						</f:facet>
+						</p:column>      					
+					</mec:serverDataTable>
+				</p:outputPanel>
+				<br clear="none" />
+				<aghu:linha>
+					<mec:commandButton id="confirmar_id"
+						rendered="#{not empty visualizarCustoPacienteController.listagem}"
+						value="#{messages.PACIENTE_CUSTO_BOTAO_CONFIRMAR_LABEL}"
+						action="#{visualizarCustoPacienteController.confirmar}"
+						render="listagem_outputpanel" profile="ok">
+						<f:setPropertyActionListener
+							target="#{visualizarCustoPacienteArvoreApresentacaoDadosController.prontuario}"
+							value="#{visualizarCustoPacienteController.paciente.prontuario}"
+							for="command" />
+						<f:setPropertyActionListener
+							target="#{visualizarCustoPacienteArvoreApresentacaoDadosController.pacCodigoFonetica}"
+							value="#{visualizarCustoPacienteController.paciente.codigo}"
+							for="command" />
+						<f:setPropertyActionListener
+							target="#{visualizarCustoPacienteArvoreApresentacaoDadosController.nomePaciente}"
+							value="#{visualizarCustoPacienteController.paciente.nome}"
+							for="command" />
+					</mec:commandButton>
+				</aghu:linha>
+		</h:form>
+		
+	</ui:define>
+</ui:composition>
+</html>

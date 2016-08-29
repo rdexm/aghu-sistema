@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PARECER_MEDICAMENTO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+      <f:metadata>
+        <f:viewAction action="#{consultaMedicamentoAvaliadosController.inicio}"/>
+      </f:metadata>
+    </ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{ConsultaMedicamentoAvaliadosController}" />
+		<h:form prependId="false" id="formPesquisa">
+		
+
+			<aghu:panelGeral legend="#{messages.LABEL_PESQUISA_PACIENTE}" >
+				<p:outputPanel id="painelPesquisa">
+					<aghu:linha>
+						<p:outputPanel id="pacienteDecorate" layout="inline">
+							<mec:pesquisaPaciente id="pesqPaciente"
+								valueChangeListener="#{consultaMedicamentoAvaliadosController.pesquisaPaciente}"
+								value="#{consultaMedicamentoAvaliadosController.paciente}"
+								render="painelPesquisa,grid,gridMedicamentos" />
+							<br clear="none" />
+							<mec:commandButton id="botaoPesquisaFonetica"
+								value="#{messages.LABEL_PESQUISA_FONETICA}"
+								action="#{consultaMedicamentoAvaliadosController.redirecionarPesquisaFonetica}"
+								styleClass=" bt_cinza icon-pesquisa-fonetica" ajax="true"
+								process="@this">
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.cameFrom}"
+									value="prescricaomedica-consultaMedicamentosAvaliados"
+									for="command" />
+							</mec:commandButton>
+						</p:outputPanel>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox
+							label="#{messages.LABEL_LEITO_AVALIACAO_MEDICAMENTO}"
+							title="#{messages.TITLE_LEITO_AVALIACAO_MEDICAMENTO}"
+							descricaoInput="leitoID" width="350"
+							suggestionAction="pesquisarLeitos"
+							breakTo="40" id="leito"
+							controller="#{consultaMedicamentoAvaliadosController}"
+							render="painelPesquisa,pacienteDecorate,grid,gridMedicamentos" size="35"
+							value="#{consultaMedicamentoAvaliadosController.ainLeitos}"
+							>
+							<p:column >
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_QUARTO}"
+										style="font-weight: bold;" />
+								</f:facet> #{item.quarto.numero}
+							</p:column>
+							<p:column style="width:150px">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_UNIDADE_FUNCIONAL}" style="font-weight: bold;" />
+								</f:facet> #{item.unidadeFuncional.seq}
+						</p:column>
+	                  <p:column >
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_LEITO}"
+										style="font-weight: bold;" />
+								</f:facet> #{item.leitoID}
+	                  </p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			<br/>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}" block="true"
+					action="#{consultaMedicamentoAvaliadosController.pesquisarAtendimentos}"
+					profile="search" />
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar"
+					immediate="true"
+					action="#{consultaMedicamentoAvaliadosController.limparCampos}"
+					render="tabelaPacientes,painelPesquisa,tabelaMedicamentosAvaliados" profile="clear" />
+			</aghu:acao>
+			<br/>
+			<aghu:panelGeral rendered="#{consultaMedicamentoAvaliadosController.gridTelaAtendimentos}" id="grid" legend="#{messages.TITLE_ATENDIMENTOS_DO_PACIENTE}" >
+			<mec:serverDataTable scrollHeight="110" title="#{messages.TITLE_ATENDIMENTOS_DO_PACIENTE}" selection="aghAtendimentosVOSelecionado"
+				id="tabelaPacientes" scrollable="true" height="scrollHeight"
+				list="#{consultaMedicamentoAvaliadosController.aghAtendimentosVO}"
+				controller="#{consultaMedicamentoAvaliadosController}">
+				<c:set var="item" value="#{item}" />
+				<p:ajax event="rowSelect" update="@(#gridMedicamentos),@(#tabelaMedicamentosAvaliados) ,@(#formPesquisa2)" listener="#{consultaMedicamentoAvaliadosController.pesquisarMedicamentosAvaliadosPaciente}"/>
+				<p:column style="width:10%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTOS_AVALIADOS_PRONTUARIO}" />
+					</f:facet>
+					<h:outputText
+						value="#{item.prontuario}" />
+				</p:column>
+				<p:column style="width:30%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTOS_AVALIADOS_NOME_PACIENTE}" />
+					</f:facet>
+				<h:outputText id="nomepaciente"	value="#{consultaMedicamentoAvaliadosController.obterStringReduziada(item.nomePaciente,28)}" />
+				<p:tooltip direction="bottom-right" for="nomepaciente" styleClass="tooltip" layout="block" rendered="#{(item.nomePaciente.length() &gt; 28)}">
+                    <h:outputText value="#{item.nomePaciente}"/>
+                </p:tooltip>
+				</p:column>
+				<p:column style="width:8%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTOS_AVALIADOS_LEITO}" />
+					</f:facet>
+				<h:outputText 	value="#{item.leitoId}" />
+				</p:column>
+				<p:column style="width:7%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTOS_AVALIADOS_QUARTO}" />
+					</f:facet>
+				<h:outputText value="#{item.qrtNumero}" />
+				</p:column>
+				<p:column  style="width:30%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTOS_AVALIADOS_UNIDADE_FUNCIONAL}" />
+					</f:facet>
+				<h:outputText  id="unidadeFuncional"	value="#{consultaMedicamentoAvaliadosController.obterStringReduziada(consultaMedicamentoAvaliadosController.concatenaValores(item),30)}" />
+				<p:tooltip direction="bottom-right" for="unidadeFuncional" styleClass="tooltip" layout="block" rendered="#{(consultaMedicamentoAvaliadosController.concatenaValores(item).length() &gt; 30)}">
+                    <h:outputText value="#{consultaMedicamentoAvaliadosController.concatenaValores(item)}"/>
+                </p:tooltip>
+				</p:column>
+				<p:column style="width:10%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTOS_AVALIADOS_DATA_INICIO}" />
+					</f:facet>
+					<h:outputText value="#{item.dtHrInicio}">
+						<f:convertDateTime pattern="dd/MM/yyyy" />
+					</h:outputText>
+				</p:column>
+				<p:column style="width:10%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTOS_AVALIADOS_DATA_FIM}" />
+					</f:facet>
+					<h:outputText value="#{item.dtHrFim}">
+						<f:convertDateTime pattern="dd/MM/yyyy" />
+					</h:outputText>
+				</p:column>
+			</mec:serverDataTable>
+			</aghu:panelGeral>
+			</h:form>
+			<br/>
+			<h:form prependId="false" id="formPesquisa2">
+			<aghu:panelGeral rendered="#{consultaMedicamentoAvaliadosController.gridTela}" id="gridMedicamentos" legend="#{messages.LEBEL_MEDICAMENTOS_AVALIADOS}" >
+			<mec:serverDataTable  title="#{messages.TITLE_MEDICAMENTOS_AVALIADOS}"
+				id="tabelaMedicamentosAvaliados" scrollable="true" height="scrollHeight"
+				list="#{consultaMedicamentoAvaliadosController.lista}"
+				controller="#{consultaMedicamentoAvaliadosController}">
+				<c:set var="item" value="#{item}" />
+				<p:column style="width:10%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_ACAO}" />
+					</f:facet>
+					<mec:commandLink title="#{messages.LABEL_DETALHAR_PARECER}" action="#{detalhaParecerMedicamentosController.obterParecerMedicamento}" styleClass="silk-magnifier silk-icon"> 
+						<f:setPropertyActionListener target="#{detalhaParecerMedicamentosController.parecerSeq}" value="#{item.mpmParecerUsoMdtos.seq}" for="command"/>
+						<f:setPropertyActionListener target="#{detalhaParecerMedicamentosController.mpmItemPrescParecerMdtoId}" value="#{item.id}" for="command"/>
+					</mec:commandLink>
+					<mec:commandLink title="#{messages.LABEL_VISUALIZAR_IMPRESSAO_PARECER}"
+						action="#{consultaMedicamentoAvaliadosController.redirecionaVisualizar}"
+						styleClass="silk-page-white-acrobat silk-icon">
+						<f:setPropertyActionListener
+							target="#{consultaMedicamentoAvaliadosController.itemGridMedicamentos}"
+							value="#{item}" for="command" />
+					</mec:commandLink>
+					<mec:commandLink id="bt_imprimir" title="#{messages.LABEL_IMPRIMIR_PARECER}" block="true"
+						action="#{consultaMedicamentoAvaliadosController.directPrint}"
+						rendered="#{mf:hasPermission(securityController,'atualizarRelatorioAvaliacaoMedicamentos,atualizar')}"
+						profile="print"
+						styleClass="silk-printer silk-icon">
+						<f:setPropertyActionListener
+							target="#{consultaMedicamentoAvaliadosController.itemGridMedicamentos}"
+							value="#{item}" for="command" />
+					</mec:commandLink>
+
+				</p:column>
+				<p:column style="width:10%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CODIGO_MEDICAMENTO}" />
+					</f:facet>
+					<h:outputText
+						value="#{item.mpmItemPrescricaoMdto.medicamento.matCodigo}" />
+				</p:column>
+				<p:column style="width:30%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTO}" />
+					</f:facet>
+				<h:outputText id="medicamentoDescricao"	value="#{consultaMedicamentoAvaliadosController.obterStringReduziada(item.mpmItemPrescricaoMdto.getDescricaoFormatada(),40)}" />
+				<p:tooltip direction="bottom-right" for="medicamentoDescricao" styleClass="tooltip" layout="block" rendered="#{(item.mpmItemPrescricaoMdto.getDescricaoFormatada().length() &gt; 40)}">
+                    <h:outputText value="#{item.mpmItemPrescricaoMdto.getDescricaoFormatada()}"/>
+                </p:tooltip>
+				</p:column>
+				<p:column style="width:20%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_DATA_AVALIACAO_MEDICAMENTO}" />
+					</f:facet>
+					<h:outputText value="#{item.mpmParecerUsoMdtos.dthrParecer}">
+						<f:convertDateTime pattern="dd/MM/yyyy HH:MM" />
+					</h:outputText>
+				</p:column>
+				<p:column style="width:30%;text-align: left;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_AVALIACAO_MEDICAMENTO}" />
+					</f:facet>
+					<h:outputText id="mpmtDescricao"	value="#{consultaMedicamentoAvaliadosController.obterStringReduziada(item.mpmParecerUsoMdtos.mpmTipoParecerUsoMdtos.descricao,38)}" />
+						<p:tooltip rendered="#{(item.mpmParecerUsoMdtos.mpmTipoParecerUsoMdtos.descricao.length() &gt; 38)}" direction="bottom-right" for="mpmtDescricao" styleClass="tooltip" layout="block" >
+                    		<h:outputText value="#{consultaMedicamentoAvaliadosController.formatarTooltip(item.mpmParecerUsoMdtos.mpmTipoParecerUsoMdtos.descricao,100)}"/>
+							<br clear="none"/>
+							<h:outputText value="#{consultaMedicamentoAvaliadosController.part2}" rendered="#{(consultaMedicamentoAvaliadosController.part2.length() &gt; 1)}"/>
+							<br clear="none"/> 
+							<h:outputText value="#{consultaMedicamentoAvaliadosController.part3}" rendered="#{(consultaMedicamentoAvaliadosController.part3.length() &gt; 1)}"/>
+							<br clear="none"/> 
+							<h:outputText value="#{consultaMedicamentoAvaliadosController.part4}" rendered="#{(consultaMedicamentoAvaliadosController.part4.length() &gt; 1)}"/>
+							<br clear="none"/> 
+							<h:outputText value="#{consultaMedicamentoAvaliadosController.part5}" rendered="#{(consultaMedicamentoAvaliadosController.part5.length() &gt; 1)}"/>
+                		</p:tooltip>
+				</p:column>
+			</mec:serverDataTable>
+			</aghu:panelGeral>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

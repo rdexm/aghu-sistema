@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+  <ui:define name="body">
+	<mec:pageConfig controller="#{snappeController}" />
+	  <h:form prependId="false" id="formGeral">
+		<aghu:panelGeral legend="#{messages.LABEL_SNAPPE_RECEM_NASCIDO}">
+		  <aghu:linha>
+			<h:outputText value="#{snappeController.dadosRecemNascido}" />
+		  </aghu:linha>
+		</aghu:panelGeral>
+		<aghu:panelGeral legend="#{messages.LABEL_SNAPPE_CALCULO_SNAPPE}">
+		  <aghu:linha>
+			<p:outputPanel id="panel_lista_elaborador" layout="inline">
+			  <p:outputPanel rendered="#{snappeController.dataModel.size() &gt; 0}" layout="inline">
+				<mec:serverDataTable id="tabelaSnappe"
+						list="#{snappeController.dataModel}"
+						controller="#{snappeController}" selection="selecionado"
+						scrollable="true" scrollHeight="85">
+				  <c:set var="item" value="#{item}" />
+				  <p:ajax event="rowSelect" listener="#{snappeController.selecionarItem()}" update="@(#panel_botao_novo) @(#panel_geral_snappe) @(#panel_botoes_gravar_imprimir) @(#panel_lista_elaborador)" />
+				  <p:column style="text-align:right; width: 46px;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.CASCA_LABEL_ACOES}" />
+					</f:facet>
+				    <mec:commandLink id="excluir_snapper" immediate="true"
+						title="#{messages.CASCA_LABEL_EXCLUIR}"
+						disabled="#{not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+						action="#{snappeController.excluir()}" profile="delete"
+						render="panel_botao_novo, panel_geral_snappe, panel_botoes_gravar_imprimir, panel_lista_elaborador"
+						ajax="true" process="@this">
+					  <f:setPropertyActionListener target="#{snappeController.vo}" value="#{item}" for="command" />
+					</mec:commandLink>
+				  </p:column>
+				  <p:column>
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_SNAPPE_ELABORADO_POR}" />
+					</f:facet>
+					<h:outputText value="#{item.serVinCodigo} - #{item.serMatricula} - #{item.nome}" />
+				  </p:column>
+				  <p:column>
+					<f:facet name="header">
+					  <h:outputText value="#{messages.LABEL_SNAPPE_EM}" />
+					</f:facet>
+					<h:outputText value="#{item.criadoEm}">
+					  <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+					</h:outputText>
+				  </p:column>
+				</mec:serverDataTable>
+			  </p:outputPanel>
+			</p:outputPanel>
+			<p:outputPanel id="panel_botao_novo" layout="inline">
+			  <aghu:acao>
+				<mec:commandButton value="#{messages.LABEL_SNAPPE_NOVO}"
+					id="bt_gravar_snappe" rendered="#{snappeController.btNovo}"
+					action="#{snappeController.inclusao}"
+					render="panel_botao_novo, panel_geral_snappe, panel_botoes_gravar_imprimir"
+					profile="ok" ajax="true"></mec:commandButton>
+			  </aghu:acao>
+			</p:outputPanel>
+		  </aghu:linha>
+		  <aghu:linha>
+			<p:outputPanel id="panel_geral_snappe" layout="inline">
+			  <aghu:panelGeral legend="#{messages.LABEL_SNAPPE_PRENCHER}">
+				<aghu:linha>
+				  <div style="float: left; width: 700px; max-height: 100%;">
+				    <aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+					  <aghu:linha>
+						<table style="height: 78px;">
+							<c:forEach xmlns:c="http://java.sun.com/jstl/core"
+								items="#{snappeController.listarPresaoArterialMedia()}"
+								var="dominio">
+								<tr>
+									<td style="margin-top: 4px;" rowspan="1" colspan="1">
+										<h:outputText value="#{dominio.codigo}" />
+									</td>
+								</tr>
+							</c:forEach>
+						</table>
+					  </aghu:linha>
+					</aghu:panelGeral>
+					<aghu:panelGeral style="width: 200px; height: 105px; float: left !important" legend="#{messages.LABEL_SNAPPE_PRESAO_ARTERIAL_MEDIA}">
+					  <aghu:linha>
+						<h:selectOneRadio id="presao_arterial_media"
+							value="#{snappeController.snappes.pressaoArtMedia}"
+							layout="pageDirection"
+							disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+							title="#{messages.TITLE_SNAPPE_PRESAO_ARTERIAL_MEDIA}">
+						  <p:ajax event="change" update="@(#resultado)" process="@this" listener="#{snappeController.atualizarEscore}" />
+						  <f:converter for="presao_arterial_media" converterId="dominioConverter" />
+						  <f:selectItems for="presao_arterial_media" var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioPressaoArterialMedia')}" />
+						</h:selectOneRadio>
+					  </aghu:linha>
+					</aghu:panelGeral>
+					<aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+					  <aghu:linha>
+						<table style="height: 78px;">
+						  <c:forEach xmlns:c="http://java.sun.com/jstl/core"
+								items="#{snappeController.listarTemperatura()}"
+								var="dominio">
+							<tr>
+							  <td style="margin-top: 4px;" rowspan="1" colspan="1">
+								<h:outputText value="#{dominio.codigo}" />
+							  </td>
+							</tr>
+						  </c:forEach>
+						</table>
+					  </aghu:linha>
+					</aghu:panelGeral>
+					<aghu:panelGeral style="width: 200px; height: 105px; float: left !important" legend="#{messages.LABEL_SNAPPE_TEMPERATURA}">
+					  <aghu:linha>
+						<h:selectOneRadio id="temperatura"
+							value="#{snappeController.snappes.temperatura}"
+							layout="pageDirection"
+							disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+							title="#{messages.TITLE_SNAPPE_TEMPERATURA}">
+							<f:converter converterId="dominioConverter" />
+							<p:ajax event="change" update="@(#resultado)" process="@this" listener="#{snappeController.atualizarEscore}" />
+							<f:selectItems var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioTemperatura')}" />
+						</h:selectOneRadio>
+					  </aghu:linha>
+					</aghu:panelGeral>
+					<aghu:linha>
+					  <aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+					    <aghu:linha>
+						  <table style="height: 110px;">
+							<c:forEach xmlns:c="http://java.sun.com/jstl/core"
+								items="#{snappeController.listarRazaoPO2PORFIO2()}"
+								var="dominio">
+							  <tr>
+								<td style="margin-top: 4px;" rowspan="1" colspan="1">
+								  <h:outputText value="#{dominio.codigo}" />
+								</td>
+							  </tr>
+							</c:forEach>
+						  </table>
+					    </aghu:linha>
+					  </aghu:panelGeral>
+					  <aghu:panelGeral style="width: 200px; height: 134px; float: left !important" legend="#{messages.LABEL_SNAPPE_RAZAO_P02_FIO2}">
+					    <aghu:linha>
+						  <h:selectOneRadio id="razao_p02_fI02"
+								value="#{snappeController.snappes.razaoPo2PorFio2}"
+								layout="pageDirection"
+								disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+								title="#{messages.TITLE_SNAPPE_RAZAO_P02_FIO2}">
+							<f:converter converterId="dominioConverter" />
+							<p:ajax event="change" update="@(#resultado)" process="@this" listener="#{snappeController.atualizarEscore}" />
+							<f:selectItems var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioRazaoPO2PORFIO2')}" />
+						  </h:selectOneRadio>
+					    </aghu:linha>
+					  </aghu:panelGeral>
+					  <aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+					    <aghu:linha>
+						  <table style="height: 78px;">
+							<c:forEach xmlns:c="http://java.sun.com/jstl/core"
+								items="#{snappeController.listarDominioPHSangue()}"
+								var="dominio">
+							  <tr>
+								<td style="margin-top: 4px;" rowspan="1" colspan="1">
+								  <h:outputText value="#{dominio.codigo}" />
+								</td>
+							  </tr>
+							</c:forEach>
+						  </table>
+						</aghu:linha>
+					  </aghu:panelGeral>
+					  <aghu:panelGeral style="width: 200px; height: 134px; float: left !important" legend="#{messages.LABEL_SNAPPE_PH_SANGUE}">
+						<aghu:linha>
+						  <h:selectOneRadio id="razao_ph_sangue"
+								value="#{snappeController.snappes.phDoSangue}"
+								layout="pageDirection"
+								disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+								title="#{messages.TITLE_SNAPPE_PH_SANGUE}">
+							<p:ajax event="change" update="@(#resultado)" process="@this" listener="#{snappeController.atualizarEscore}" />
+							<f:converter converterId="dominioConverter" />
+							<f:selectItems var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioPHSangue')}" />
+						  </h:selectOneRadio>
+						</aghu:linha>
+					  </aghu:panelGeral>
+					</aghu:linha>
+					<aghu:linha>
+					  <aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+						<aghu:linha>
+						  <table style="height: 60px;">
+							<c:forEach xmlns:c="http://java.sun.com/jstl/core"
+								items="#{snappeController.listarDominioConvulsoesMultiplas()}"
+								var="dominio">
+							  <tr>
+								<td style="margin-top: 4px;" rowspan="1" colspan="1">
+								  <h:outputText value="#{dominio.codigo}" />
+								</td>
+							  </tr>
+							</c:forEach>
+						  </table>
+						</aghu:linha>
+					  </aghu:panelGeral>
+					  <aghu:panelGeral style="width: 200px; height: 105px; float: left !important" legend="#{messages.LABEL_SNAPPE_CONVULSOES_MULTIPLAS}">
+						<aghu:linha>
+						  <h:selectOneRadio id="convulsoes_multiplas"
+								value="#{snappeController.snappes.convulsoesMultiplas}"
+								layout="pageDirection"
+								disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+								title="#{messages.TITLE_SNAPPE_CONVULSOES_MULTIPLAS}">
+							<p:ajax event="change" update="@(#resultado)" process="@this" listener="#{snappeController.atualizarEscore}" />
+							<f:converter converterId="dominioConverter" />
+							<f:selectItems var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioConvulsoesMultiplas')}" />
+						  </h:selectOneRadio>
+						</aghu:linha>
+					  </aghu:panelGeral>
+					  <aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+						<aghu:linha>
+						  <table style="height: 78px;">
+							<c:forEach xmlns:c="http://java.sun.com/jstl/core"
+								items="#{snappeController.listarDominioVolumeUnitario()}"
+								var="dominio">
+							  <tr>
+								<td style="margin-top: 4px;" rowspan="1" colspan="1">
+								  <h:outputText value="#{dominio.codigo}" />
+								</td>
+							  </tr>
+							</c:forEach>
+						  </table>
+						</aghu:linha>
+					  </aghu:panelGeral>
+					  <aghu:panelGeral style="width: 200px; height: 105px; float: left !important" legend="#{messages.LABEL_SNAPPE_VOLUME_URINARIO}">
+						<aghu:linha>
+						  <h:selectOneRadio id="volume_unitario"
+								value="#{snappeController.snappes.volUrinario}"
+								layout="pageDirection"
+								disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+								title="#{messages.TITLE_SNAPPE_VOLUME_URINARIO}">
+							<p:ajax event="change" update="@(#resultado)" process="@this" listener="#{snappeController.atualizarEscore}" />
+							<f:converter converterId="dominioConverter" />
+							<f:selectItems var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioVolumeUnitario')}" />
+						  </h:selectOneRadio>
+						</aghu:linha>
+					  </aghu:panelGeral>
+					</aghu:linha>
+					<aghu:linha>
+					  <aghu:linha>
+						<aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+						  <aghu:linha>
+							<table style="height: 78px;">
+							  <c:forEach xmlns:c="http://java.sun.com/jstl/core"
+									items="#{snappeController.listarDominioPesoNascer()}"
+									var="dominio">
+								<tr>
+								  <td style="margin-top: 4px;" rowspan="1" colspan="1">
+									<h:outputText value="#{dominio.codigo}" />
+								  </td>
+								</tr>
+							  </c:forEach>
+							</table>
+						  </aghu:linha>
+						</aghu:panelGeral>
+						<aghu:panelGeral style="width: 200px; height: 105px; float: left !important" legend="#{messages.LABEL_SNAPPE_PESO_NASCER}">
+						  <aghu:linha>
+							<h:selectOneRadio id="peso_nascer"
+								value="#{snappeController.snappes.pesoAoNascer}"
+								layout="pageDirection"
+								disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+								title="#{messages.TITLE_SNAPPE_PESO_NASCER}">
+							  <p:ajax event="change" update="@(#resultado)" process="@this" listener="#{snappeController.atualizarEscore}" />
+							  <f:converter converterId="dominioConverter" /> 
+							  <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioPesoNascer')}" />
+							</h:selectOneRadio>
+						  </aghu:linha>
+						</aghu:panelGeral>
+						<aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+						  <aghu:linha>
+							<table style="height: 60px;">
+							  <c:forEach xmlns:c="http://java.sun.com/jstl/core"
+									items="#{snappeController.listarDominioPig()}"
+									var="dominio">
+								<tr>
+								  <td style="margin-top: 4px;" rowspan="1" colspan="1">
+								    <h:outputText value="#{dominio.codigo}" />
+								  </td>
+								</tr>
+							  </c:forEach>
+						    </table>
+						  </aghu:linha>
+						</aghu:panelGeral>
+						<aghu:panelGeral style="width: 200px; height: 105px; float: left !important" legend="#{messages.LABEL_SNAPPE_PIG}">
+						  <aghu:linha>
+							<h:selectOneRadio id="pig"
+								value="#{snappeController.snappes.pig}"
+								disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+								layout="pageDirection"
+								title="#{messages.TITLE_SNAPPE_PIG}">
+							  <p:ajax event="change" update="@(#resultado)" process="@this" listener="#{snappeController.atualizarEscore}" />
+							  <f:converter converterId="dominioConverter" />
+							  <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioPig')}" />
+							</h:selectOneRadio>
+						  </aghu:linha>
+						</aghu:panelGeral>
+					  </aghu:linha>
+					  <aghu:linha>
+						<aghu:panelGeral style="margin-left: 16px !important; width: 40px; float: left !important" legend="#{messages.LABEL_VALORES}">
+						  <aghu:linha>
+							<table style="height: 60px;">
+							  <c:forEach xmlns:c="http://java.sun.com/jstl/core"
+									items="#{snappeController.listarDominioApgar5()}"
+									var="dominio">
+								<tr>
+								  <td style="margin-top: 4px;" rowspan="1" colspan="1">
+									<h:outputText value="#{dominio.codigo}" />
+								  </td>
+								</tr>
+							  </c:forEach>
+							</table>
+						  </aghu:linha>
+						</aghu:panelGeral>
+						<aghu:panelGeral style="margin-left: 16px !important; width: 200px; height: 85px; float: left !important" legend="#{messages.LABEL_SNAPPE_APGAR}">
+							<aghu:linha>
+								<h:selectOneRadio id="apgar"
+									value="#{snappeController.snappes.apgar5}"
+									disabled="#{!snappeController.camposSnappes or not mf:hasPermission(securityController,'registrarSnappe, executar')}"
+									layout="pageDirection"
+									title="#{messages.TITLE_SNAPPE_APGAR}">
+									<p:ajax event="change" update="@(#resultado)"
+										process="@this"
+										listener="#{snappeController.atualizarEscore}" />
+									<f:converter converterId="dominioConverter" />
+									<f:selectItems var="item" itemLabel="#{item.descricao}"
+										value="#{mf:getEnumItens(mf:getDefaultValue(enumPath,dominioPath), 'DominioApgar5')}" />
+								</h:selectOneRadio>
+							</aghu:linha>
+						</aghu:panelGeral>
+						<p:outputPanel id="resultado" layout="inline">
+						  <aghu:panelGeral style="margin-left: 16px !important; width: 280px; height: 85px; float: left !important" legend="#{messages.LABEL_SNAPPE_ESCORE}">
+							<aghu:linha>
+							  <table style="height: 72px;">
+								<tr>
+								  <td style="margin-top: 4px;" rowspan="1" colspan="1">
+									<h:outputText value="#{messages.LABEL_SNAPPE_RESULTADO}  #{snappeController.escore}" />
+								  </td>
+								</tr>
+							  </table>
+							</aghu:linha>
+						  </aghu:panelGeral>
+						</p:outputPanel>
+					  </aghu:linha>
+					</aghu:linha>
+				  </div>
+				  <div style="float: left; width: 268px; max-height: 100%;">
+					<mec:serverDataTable id="tabelaPercentil"
+						list="#{snappeController.dataModelTabAdequacaoPesoPercentilVO}"
+						controller="#{snappeController}" scrollable="true"
+						scrollHeight="100%">
+					  <c:set var="item" value="#{item}" />
+					  <p:column>
+						<f:facet name="header">
+						  <h:outputText value="#{messages.LABEL_SNAPPE_IDADE_GESTACIONAL}" />
+						</f:facet>
+						<h:outputText value="#{item.igSemanas}" />
+					  </p:column>
+					  <p:column>
+					    <f:facet name="header">
+						  <h:outputText value="#{messages.LABEL_SNAPPE_IDADE_PERCENTIL}" />
+						</f:facet>
+						<h:outputText value="#{item.percentil3}" />
+					  </p:column>
+					</mec:serverDataTable>
+				  </div>
+				</aghu:linha>
+			  </aghu:panelGeral>
+			</p:outputPanel>
+		  </aghu:linha>
+		  <p:outputPanel id="panel_botoes_gravar_imprimir" layout="inline">
+		    <aghu:acao>
+   		      <mec:commandButton value="#{messages.LABEL_GRAVAR}" 
+   		      		id="bt_gravar" 
+   		      		rendered="#{snappeController.btGravar}" 
+   		      		disabled="#{not mf:hasPermission(securityController,'registrarSnappe, executar')}" 
+   		      		action="#{snappeController.gravar}" 
+   		      		render="panel_lista_elaborador" 
+   		      		profile="ok" />
+			  <mec:commandButton  value="#{messages.LABEL_SNAPPE_IMPRIMIR}"
+					action="#{snappeController.imprimir()}"  
+					profile="print"
+					disabled="#{not mf:hasPermission(securityController,'imprimirSnappe, executar') or snappeController.btImprimirDisable}"
+					id="bt_imprimir"
+					process="@this"
+					ajax="true" >
+				<f:setPropertyActionListener target="#{relatorioSnappe2Controller.telaOrigem}" value="preencherSnappe" for="command"/>
+				<f:setPropertyActionListener target="#{relatorioSnappe2Controller.pacCodigoRecemNascido}" value="#{snappeController.pacCodigoRecemNascido}" for="command"/>
+				<f:setPropertyActionListener target="#{relatorioSnappe2Controller.seqpRecemNascido}" value="#{snappeController.seqpRecemNascido}" for="command"/>
+			  </mec:commandButton>
+		    </aghu:acao>
+		  </p:outputPanel>
+		</aghu:panelGeral>
+		<mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar"
+			action="#{snappeController.verificarAlteracoes()}" profile="back"
+			ajax="true" render="panelModalGravar" />
+		<p:outputPanel id="panelModalGravar" layout="inline">
+		  <p:dialog id="modalConfirmacaoGravar" width="400" height="150"
+				showWhenRendered="#{snappeController.mostraModalGravar}"
+				modal="true" resizable="false" widgetVar="modalConfirmacaoGravarWG">
+			<f:facet name="header">
+			  <h:panelGroup>
+				<h:outputText value="#{messages.LABEL_GRAVAR}" />
+			  </h:panelGroup>
+			</f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+            <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+			  <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim"
+					action="#{snappeController.gravarAlteracao()}"
+					onclick="PF('modalConfirmacaoGravarWG').hide();" profile="search"
+					ajax="true" />
+			  <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}"
+					action="#{snappeController.voltar()}" immediate="true"
+					oncomplete="PF('modalConfirmacaoGravarWG').hide();"
+					profile="cancel" ajax="true" />
+			</h:panelGroup>
+		  </p:dialog>
+		</p:outputPanel>
+	  </h:form>
+	</ui:define>
+	<ui:define name="metadata">
+	  <f:metadata>
+		<f:viewAction action="#{snappeController.carregarDados}" />
+	  </f:metadata>
+	</ui:define>
+</ui:composition>
+</html>

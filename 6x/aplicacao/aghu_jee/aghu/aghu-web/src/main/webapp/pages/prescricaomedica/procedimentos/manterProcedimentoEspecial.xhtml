@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Prescrição de Procedimentos Especiais :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterProcedimentoEspecialController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterProcedimentoEspecialController}" ignoreEnter="true"/>  
+      
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+      
+        <h:form prependId="false" id="formPrescricaoCabecalho"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.prontuario}" size="8" maxlength="9" emptyStringToNullConverter="emptyStringToNullConverter" readonly="true" id="prontuarioPaciente" converter="#{prontuarioConverter}"/>  
+              <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.nome}" size="56" maxlength="50" style="text-transform:uppercase" readonly="true" id="nomePaciente"/>  
+              <mec:inputText label="#{messages.LABEL_LOCAL}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.local}" size="15" maxlength="15" style="text-transform:uppercase" readonly="true" id="localPaciente"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.dthrInicio}" readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm" id="dataValidadeInicial"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.dthrFim}" readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm" id="dataValidadeFinal"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form>  
+        
+        <h:form prependId="false" id="formDadosCabecalho"> 
+          <p:outputPanel id="panelDadosCabecalho" layout="inline"> 
+            <aghu:panelGeral legend="#{messages.LABEL_MANTER_PRESCRICAO_PROCEDIMENTOS}"> 
+              <p:outputPanel id="formPanel" layout="inline"> 
+                <aghu:linha>
+                  <mec:selectOneRadio label="#{messages.LABEL_TIPO}" readonly="#{(manterProcedimentoEspecialController.procSeqAtendimento != null) and (manterProcedimentoEspecialController.procSeq != null)}" enum="DominioTipoProcedimentoEspecial" value="#{manterProcedimentoEspecialController.procedimento.tipo}" title="#{messages.TITLE_PROCEDIMNTO_ESPECIAL_DIVERSO_TIPO}" id="tipoProcedimentoEspecial"> 
+                    <p:ajax event="change" update="@(#divSugestions) @(#divModoUsoTotal)" process="@this" listener="#{manterProcedimentoEspecialController.valueChangeTipoProcedimentoEspecial}"/> 
+                  </mec:selectOneRadio> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <p:outputPanel id="divSugestions" layout="inline"> 
+                    <p:outputPanel id="divSbEspeciais" rendered="#{manterProcedimentoEspecialController.ehTipoEspecialDiverso == true}" layout="inline">
+						<mec:suggestionBox
+							var="procedimentoEspecial"
+							itemValue="#{procedimentoEspecial}"
+							label="#{messages.LABEL_ESPECIAIS_DIVERSOS}"
+							title="#{messages.TITLE_ESPECIAIS_DIVERSOS}"
+							suggestionAction="obterProcedEspecialDiversos"
+							required="#{manterProcedimentoEspecialController.ehTipoEspecialDiverso == true}"
+							size="50" posDeleteAction="limparModoUsoSelecionado"
+							maxlength="50" descricaoInput="seq"
+							descricaoLabel="descricao"
+							posSelectionAction="setFormChanged" id="sbEpeciaisDiversos"
+							controller="#{manterProcedimentoEspecialController}"
+							value="#{manterProcedimentoEspecialController.procedimento.procedEspecial}"
+							readonly="#{(manterProcedimentoEspecialController.procSeqAtendimento != null) and (manterProcedimentoEspecialController.procSeq != null)}"
+							render="divModoUsoTotal,divModoUso,tblistaModoUsoProdedimentoEspecial,panelListaProcedimentosPrescritos,formDadosCabecalho">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{procedimentoEspecial.descricao}
+                    		</p:column>
+						</mec:suggestionBox>
+					</p:outputPanel>  
+                    <p:outputPanel id="divSbLeito" rendered="#{manterProcedimentoEspecialController.ehTipoProcedimentosLeito == true}" layout="inline">
+						<mec:suggestionBox
+							var="procedCirugRealizadosLeito"
+							itemValue="#{procedCirugRealizadosLeito}"
+							label="#{messages.LABEL_PROCEDIMENTOS_REALIZADOS_NO_LEITO}"
+							title="#{messages.TITLE_PROCEDIMENTOS_REALIZADOS_NO_LEITO}"
+							suggestionAction="obterProcedRealizadosLeito"
+							required="#{manterProcedimentoEspecialController.ehTipoProcedimentosLeito == true}"
+							size="50" maxlength="50" descricaoInput="seq"
+							descricaoLabel="descricao" 
+							posSelectionAction="setFormChanged" id="sbProcedRealidoLeito"
+							controller="#{manterProcedimentoEspecialController}"
+							readonly="#{(manterProcedimentoEspecialController.procSeqAtendimento != null) and (manterProcedimentoEspecialController.procSeq != null)}"
+							value="#{manterProcedimentoEspecialController.procedimento.procedCirugRealizadosLeito}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{procedCirugRealizadosLeito.descricao}
+                    		</p:column>
+						</mec:suggestionBox>
+					</p:outputPanel>  
+                    <p:outputPanel id="divSbOrtesProtes" rendered="#{manterProcedimentoEspecialController.ehTipoOrtesesProteses == true}" layout="inline"> 
+                      <aghu:linha>
+							<mec:suggestionBox 
+								var="orteseProtese"
+								itemValue="#{orteseProtese}"
+								label="#{messages.LABEL_ORTESES_PROTESES}"
+								title="#{messages.TITLE_ORTESES_PROTESES}"
+								suggestionAction="obterOrteseseProteses"
+								required="#{manterProcedimentoEspecialController.ehTipoOrtesesProteses == true}"
+								size="50" maxlength="50" descricaoInput="codigo"
+								descricaoLabel="nome"
+								posSelectionAction="setFormChangedgetE" id="sbOrtesProteses"
+								controller="#{manterProcedimentoEspecialController}"
+								value="#{manterProcedimentoEspecialController.procedimento.orteseProtese}"
+								readonly="#{(manterProcedimentoEspecialController.procSeqAtendimento != null) and (manterProcedimentoEspecialController.procSeq != null)}"
+								render="procUnidade">
+                                <p:column>
+                                    <f:facet name="header">
+                                        <b>#{messages.LABEL_DESCRICAO}</b>
+                                    </f:facet> #{orteseProtese.nome}
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <b>#{messages.LABEL_UNIDADE}</b>
+                                    </f:facet> #{orteseProtese.umdCodigo}
+                                </p:column>
+                            </mec:suggestionBox>
+					  </aghu:linha>  
+                      <aghu:linha> 
+                        <mec:inputNumero label="#{messages.LABEL_PROCEDIMENTO_QUANT}" size="30" maxlength="4" title="#{messages.TITLE_PROCEDIMENTO_QUANT}" value="#{manterProcedimentoEspecialController.procedimento.quantidade}" required="#{manterProcedimentoEspecialController.ehTipoOrtesesProteses == true}" id="procQuantidade"> 
+                          <p:ajax event="change" process="@this" listener="#{manterProcedimentoEspecialController.setFormChanged(true)}"/> 
+                        </mec:inputNumero>  
+                        <mec:inputText label="#{messages.LABEL_PROCEDIMENTO_UNIDADE}" id="procUnidade" size="30" maxlength="15" value="#{manterProcedimentoEspecialController.procedimento.unidade}" style="text-transform:uppercase" readonly="true"> 
+                          <p:ajax event="change" process="@this" listener="#{manterProcedimentoEspecialController.setFormChanged(true)}"/> 
+                        </mec:inputText> 
+                      </aghu:linha> 
+                    </p:outputPanel>
+                  </p:outputPanel> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:inputText label="#{messages.LABEL_INFORMACOES_COMPLEMENTARES}" removerCaratersEspeciais="false" size="125" maxlength="240" title="#{messages.TITLE_INFORMACOES_COMPLEMENTARES}" value="#{manterProcedimentoEspecialController.procedimento.informacaoComplementar}" id="informacoesComplemetares"> 
+                    <p:ajax event="change" process="@this" listener="#{manterProcedimentoEspecialController.setFormChanged(true)}"/> 
+                  </mec:inputText> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:inputText label="#{messages.LABEL_JUSTIFICATIVA}" removerCaratersEspeciais="false" size="90" maxlength="240" title="#{messages.TITLE_JUSTIFICATIVA}" value="#{manterProcedimentoEspecialController.procedimento.justificativa}" id="justificativa"> 
+                    <p:ajax event="change" process="@this" listener="#{manterProcedimentoEspecialController.setFormChanged(true)}"/> 
+                  </mec:inputText>  
+                  <mec:inputNumero label="#{messages.LABEL_DURACAO_SOLICITADA}" size="40" maxlength="3" title="#{messages.TITLE_DURACAO_SOLICITADA}" value="#{manterProcedimentoEspecialController.procedimento.duracaoSolicitada}" id="duracaoSolicitada"> 
+                    <p:ajax event="change" process="@this" listener="#{manterProcedimentoEspecialController.setFormChanged(true)}"/> 
+                  </mec:inputNumero> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <p:outputPanel id="divModoUsoTotal" layout="inline"> 
+                <p:outputPanel id="divModoUso" rendered="#{manterProcedimentoEspecialController.ehTipoEspecialDiverso == true and not empty manterProcedimentoEspecialController.obterTipoModoUsoProcedimento(null)}" layout="inline"> 
+                  <aghu:linha> 
+                    <aghu:panelGeral legend="#{messages.LABEL_MANTER_PRESCRICAO_PROCEDIMENTOS_MODOUSO}"> 
+                      <p:outputPanel id="itemFormPanel" layout="inline"> 
+                        <aghu:linha> 
+                          <aghu:linha> 
+                            <mec:suggestionBox label="#{messages.LABEL_MODOUSO_SUGESTION}" title="#{messages.TITLE_MODOUSO_SUGESTION}" suggestionAction="obterTipoModoUsoProcedimento" size="20" maxlength="20" descricaoInput="id.seqp" descricaoLabel="descricao" width="400" requiredFake="true" posSelectionAction="setItemFormChanged" id="sbModoUsoEpeciaisDiversos" controller="#{manterProcedimentoEspecialController}" value="#{manterProcedimentoEspecialController.modoUsoProc.tipoModoUsoProced}" render="modoUsoUnidade"> 
+                              <p:column> 
+                                <f:facet name="header"> 
+                                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                                </f:facet> #{item.descricao}
+                              </p:column> 
+                            </mec:suggestionBox>  
+                            <mec:field name="modoUsoQuantidade" label="#{messages.LABEL_MODOUSO_QUANT}" title="#{messages.TITLE_MODOUSO_QUANT}"> 
+                              <p:inputText name="modoUsoQuantidade" size="10" maxlength="3" value="#{manterProcedimentoEspecialController.modoUsoProc.quantidade}" converter="#{javax.faces.Short}"> 
+                                <p:ajax event="change" process="@this" listener="#{manterProcedimentoEspecialController.setItemFormChanged(true)}"/> 
+                              </p:inputText> 
+                            </mec:field>  
+                            <mec:inputText label="#{messages.LABEL_MODOUSO_UNIDADE}" id="modoUsoUnidade" size="10" maxlength="15" value="#{manterProcedimentoEspecialController.modoUsoProc.unidade}" style="text-transform:uppercase" readonly="true"> 
+                              <p:ajax event="change" process="@this" listener="#{manterProcedimentoEspecialController.setItemFormChanged(true)}"/> 
+                            </mec:inputText>  
+                            <span class="alinha-esquerda" style="padding-top: 20px !important;"> 
+                              <mec:commandButton value="#{messages.LABEL_ADICIONAR}" id="btAdicionarModoUso" action="#{manterProcedimentoEspecialController.adicionarModoUso}" rendered="#{not manterProcedimentoEspecialController.modoUsoProc.emEdicao}" profile="add" ajax="true" render="divModoUsoTotal"/>  
+                              <mec:commandButton value="#{messages.LABEL_ALTERAR}" id="btAlterarModoUso" action="#{manterProcedimentoEspecialController.alterarModoUso}" rendered="#{manterProcedimentoEspecialController.modoUsoProc.emEdicao}" profile="ok" styleClass=" icon-margin " ajax="true" render="divModoUsoTotal"/>  
+                              <mec:commandButton value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{manterProcedimentoEspecialController.cancelarAlteracaoModoUso}" rendered="#{manterProcedimentoEspecialController.modoUsoProc.emEdicao}" ajax="true" render="divModoUsoTotal" styleClass="bt_cinza"/> 
+                            </span> 
+                          </aghu:linha> 
+                        </aghu:linha>  
+                        <p:outputPanel rendered="#{not empty manterProcedimentoEspecialController.listaModoUsoProdedimentoEspecial}" layout="inline"> 
+                          <aghu:linha> 
+                            <mec:serverDataTable id="tblistaModoUsoProdedimentoEspecial" rendered="#{not empty manterProcedimentoEspecialController.listaModoUsoProdedimentoEspecial}" 
+                            	list="#{manterProcedimentoEspecialController.listaModoUsoProdedimentoEspecial}" scrollable="true"
+                            	scrollHeight="120"> 
+                              <c:set var="_modoUsoProcedimeto" value="#{item}"/>  
+                              <p:column width="60px" style="#{_modoUsoProcedimeto.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                                <f:facet name="header"> 
+                                  <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                                </f:facet>  
+                                <mec:commandLink immediate="true" title="#{messages.LABEL_EDITAR}" action="#{manterProcedimentoEspecialController.editarModoUso(_modoUsoProcedimeto)}" rendered="#{not _modoUsoProcedimeto.emEdicao}" profile="edit" ajax="true" render="itemFormPanel" process="@this"/>  
+                                <mec:commandLink rendered="#{_modoUsoProcedimeto.emEdicao}" styleClass=" silk-blank silk-icon"/>  
+                                <mec:commandLink immediate="true" title="#{messages.LABEL_EXCLUIR}" action="#{manterProcedimentoEspecialController.excluirModoUso(_modoUsoProcedimeto)}" profile="delete" ajax="true" render="divModoUsoTotal"/> 
+                              </p:column>  
+                              <p:column style="#{_modoUsoProcedimeto.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                                <f:facet name="header"> 
+                                  <h:outputText value="#{messages.LABEL_ITEM_MODO_USO}"/> 
+                                </f:facet>  
+                                <h:outputText value="#{_modoUsoProcedimeto.modoUso}"/> 
+                              </p:column>  
+                              <p:column style="#{_modoUsoProcedimeto.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                                <f:facet name="header"> 
+                                  <h:outputText value="#{messages.LABEL_ITEM_QUANTIDADE}"/> 
+                                </f:facet>  
+                                <h:outputText value="#{_modoUsoProcedimeto.quantidade}"/> 
+                              </p:column>  
+                              <p:column style="#{_modoUsoProcedimeto.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                                <f:facet name="header"> 
+                                  <h:outputText value="#{messages.LABEL_ITEM_UNIDADE}"/> 
+                                </f:facet>  
+                                <h:outputText value="#{_modoUsoProcedimeto.unidade}"/> 
+                              </p:column> 
+                            </mec:serverDataTable> 
+                          </aghu:linha> 
+                        </p:outputPanel> 
+                      </p:outputPanel>
+                    </aghu:panelGeral> 
+                  </aghu:linha> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </aghu:panelGeral>  
+            <aghu:acao>
+				
+				<mec:commandButton id="bt_gravar_procedimento"
+					action="#{manterProcedimentoEspecialController.gravar}"
+					value="#{messages.LABEL_GRAVAR}" process="@form" profile="ok"
+					ajax="true" render="formDadosCabecalho, formListaProcedimentosPrescritos" />
+				
+				<mec:commandButton id="bt_limparPesquisa"
+					value="#{messages.LABEL_LIMPAR}"
+					action="#{manterProcedimentoEspecialController.limpar}"
+					profile="clear" 
+					ajax="true" process="@this" render="formDadosCabecalho, formListaProcedimentosPrescritos" />
+					
+				<mec:commandButton id="bt_voltar"
+					action="#{manterProcedimentoEspecialController.verificaPendencias}"
+					value="#{messages.LABEL_VOLTAR}" immediate="true"
+					styleClass=" alinha-direita tabSelectors bt_cinza" ajax="true"
+					profile="back">
+					<f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command" />
+					<f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command" />
+				</mec:commandButton>
+				
+			</aghu:acao> 
+          </p:outputPanel> 
+        </h:form>  
+        
+        <br clear="none"/>  
+        <br clear="none"/>  
+        
+        <h:form id="formListaProcedimentosPrescritos" prependId="false"> 
+           <aghu:panelGeral rendered="#{not empty manterProcedimentoEspecialController.listaProcedimentoEspecial}" legend="#{messages.LABEL_PROCEDIMENTOS_PRESCRITOS}"> 
+             <p:outputPanel id="panelListaProcedimentosPrescritos" layout="inline"> 
+               <aghu:linha> 
+                 <mec:serverDataTable rendered="#{not empty manterProcedimentoEspecialController.listaProcedimentoEspecial}" 
+                 	list="#{manterProcedimentoEspecialController.listaProcedimentoEspecial}" scrollable="true" scrollHeight="130"> 
+                   <c:set var="item" value="#{item}"/>  
+                   <p:column style="width:60px; #{(item.atendimentoSeq == manterProcedimentoEspecialController.procSeqAtendimento and item.itemSeq  == manterProcedimentoEspecialController.procSeq) ? 'background-color:#EEE8AA' : ''}"> 
+	                    <f:facet name="header"> 
+	                       <h:outputText value="#{messages.LABEL_ACOES}"/> 
+	                    </f:facet>
+						<mec:commandLink
+							rendered="#{(item.atendimentoSeq == manterProcedimentoEspecialController.procSeqAtendimento and item.itemSeq  == manterProcedimentoEspecialController.procSeq)}"
+							onclick="return false;" styleClass=" silk-blank silk-icon"
+							ajax="true" />
+							
+						<mec:commandLink process="@this"
+							id="editarProcedimentoLink" title="#{messages.LABEL_EDITAR}"
+							rendered="#{(item.atendimentoSeq != manterProcedimentoEspecialController.procSeqAtendimento or item.itemSeq  != manterProcedimentoEspecialController.procSeq)}"
+							action="#{manterProcedimentoEspecialController.editarProcedimento(item)}"
+							render="formListaProcedimentosPrescritos,panelCampos"
+							profile="edit" />
+							
+						<p:selectBooleanCheckbox name="marcador" id="marcador"
+							value="#{item.excluir}" title="Excluir">
+							<p:ajax event="click" bypassUpdates="false"
+								update="@(#panelListaProcedimentosPrescritos)"
+								process="@this" />
+						</p:selectBooleanCheckbox>
+				   </p:column>  
+                   <p:column width="auto" title="#{item.tipo.titulo}" style="#{(item.atendimentoSeq == manterProcedimentoEspecialController.procSeqAtendimento and item.itemSeq  == manterProcedimentoEspecialController.procSeq) ? 'background-color:#EEE8AA' : (item.excluir ? 'background-color:#FF6347' : ''  )}"> 
+                     <f:facet name="header"> 
+                       <h:outputText value="#{messages.LABEL_PROCEDIMENTOS_PRESCRITOS}"/> 
+                     </f:facet>  
+                     <div class="silk-icon icon-#{item.tipo.toString().toLowerCase()}" style="cursor: default !important;" title="#{item.tipo.toString()}"/>  
+                     <h:outputText value="#{' '}#{item.descricao}" escape="false"/> 
+                   </p:column> 
+                 </mec:serverDataTable> 
+               </aghu:linha>  
+               <aghu:acao>
+				   <mec:commandButton id="bt_excluir_selecionados"
+						value="#{messages.LABEL_EXCLUIR}"
+						action="#{manterProcedimentoEspecialController.removerSelecionados}"
+						styleClass="bt_cinza" />
+			   </aghu:acao> 
+             </p:outputPanel> 
+           </aghu:panelGeral>  
+        </h:form>  
+        
+        <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalPendencias"> 
+                <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{manterProcedimentoEspecialController.voltar}" profile="ok"> 
+                  <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterProcedimentoEspecialController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+                </mec:commandButton>  
+                <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" profile="cancel" ajax="true"/> 
+              </h:form> 
+            </h:panelGroup> 
+        </p:dialog>  
+          
+        <p:dialog id="confirmEditarModal" width="400" height="150" modal="true" resizable="false" widgetVar="confirmEditarModalWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="confirmEditarForm"> 
+              <mec:commandButton id="bt_sim_editar" value="#{messages.LABEL_SIM}" action="#{manterProcedimentoEspecialController.editarProcedimento}" profile="ok" ajax="true" render="corpoPagina"/>  
+              <mec:commandButton id="bt_nao_editar" value="#{messages.LABEL_NAO}" onclick="PF('confirmEditarModalWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>   
+        
+        
+        <p:dialog id="confirmExcluirModal" width="400" height="150" modal="true" resizable="false" widgetVar="confirmExcluirModalWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="confirmExcluirForm"> 
+              <mec:commandButton id="bt_sim_excluir" value="#{messages.LABEL_SIM}" action="#{manterProcedimentoEspecialController.confirmaRemoverSelecionados}" profile="ok" ajax="true" render="corpoPagina"/>  
+              <mec:commandButton id="bt_nao_excluir" value="#{messages.LABEL_NAO}" onclick="PF('confirmExcluirModalWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+       
+        <p:dialog id="confirmEditarItemModal" width="400" height="150" modal="true" resizable="false" widgetVar="confirmEditarItemModalWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="confirmEditarItemForm"> 
+              <mec:commandButton id="bt_sim_editar_item" value="#{messages.LABEL_SIM}" action="#{manterProcedimentoEspecialController.editarModoUso}" profile="ok" ajax="true" render="corpoPagina"/>  
+              <mec:commandButton id="bt_nao_editar_item" value="#{messages.LABEL_NAO}" onclick="PF('confirmEditarItemModalWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+         
+       
+        <p:dialog id="confirmGravarModal" width="400" height="150" modal="true" resizable="false" closable="false" widgetVar="confirmGravarModalWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="confirmGravarForm"> 
+              <mec:commandButton id="bt_sim_gravar" value="#{messages.LABEL_SIM}" action="#{manterProcedimentoEspecialController.confirmaGravar}" profile="ok" ajax="true" render="corpoPagina"/>  
+              <mec:commandButton id="bt_nao_gravar" value="#{messages.LABEL_NAO}" onclick="PF('confirmGravarModalWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

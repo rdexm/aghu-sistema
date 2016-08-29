@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_MANTER_PARECER} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{parecerController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{parecerController}" ignoreEnter="true" />
+		<h:form prependId="false" id="formCadastro">
+			<aghu:panelGeral legend="#{messages.TITLE_CADASTRAR_PARECER_TECNICO}">
+				<aghu:column type="table">
+					<aghu:panelGeral id="panelComercial" layout="inline">
+						<aghu:linha>
+							<mec:suggestionBox id="sbmaterial"
+								label="#{messages.LABEL_CADASTRO_PARECER_MATERIAL}"
+								title="#{messages.TITLE_CADASTRO_PARECER_MATERIAL}"
+								descricaoInput="codigo" descricaoLabel="nome" resultTitle=""
+								suggestionAction="listarMateriais"
+								posSelectionAction="setaValorPasta"
+								posDeleteAction="limparPasta" width="700" requiredFake="true"
+								readonly="#{(parecerController.modoEdit) or (not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')) or parecerController.isInativo()}"
+								controller="#{parecerController}"
+								value="#{parecerController.parecerMaterial.material}"
+								render="panelPasta, panelSubPasta">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{item.codigo}
+                                      </p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_NOME}</b>
+									</f:facet>
+									<h:outputText value="#{(item.nome.length() &gt; 40) ? fn:substring(item.nome,0,40) : item.nome}#{(item.nome.length() &gt; 40) ? '...' : '' }" 
+									              title="#{item.nome}"/>
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_SC_ESTOCAVEL}</b>
+									</f:facet>
+									<h:outputText value="#{item.estocavel}">
+										<f:converter converterId="simNaoConverter" />
+									</h:outputText>
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet>
+									<h:outputText title="#{item.getDescricaoSplited(70)}"
+											value="#{(item.descricao.length() &gt; 40) ? fn:substring(item.descricao,0,40) : item.descricao}#{(item.descricao.length() &gt; 40) ? '...' : '' }" />
+								</p:column>
+							</mec:suggestionBox>
+							<mec:selectBooleanCheckbox id="situacao"
+								label="#{messages.LABEL_CADASTRO_PARECER_SITUACAO_ATIVO}"
+								title="#{messages.TITLE_CADASTRO_PARECER_SITUACAO_ATIVO}"
+								value="#{parecerController.situacao}"
+								readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}" />
+						</aghu:linha>
+						
+						<aghu:linha>
+							<p:outputPanel id="panelMarcaComercial" layout="inline">
+								<mec:suggestionBox id="sbMarcaComercial"
+									label="#{messages.LABEL_CADASTRO_PARECER_MARCA}"
+									title="#{messages.TITLE_CADASTRO_PARECER_MARCA}"
+									descricaoInput="codigo" descricaoLabel="descricao"
+									posDeleteAction="limparModeloComercial"
+									posSelectionAction="setaValorSubpasta"
+									suggestionAction="pesquisarMarcaComercial"
+									requiredFake="true"
+									readonly="#{(parecerController.modoEdit) or (not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')) or parecerController.isInativo()}"
+									controller="#{parecerController}"
+									value="#{parecerController.parecerMaterial.marcaComercial}"
+									render="panelModelo,panelSubPasta,tabelaAcao,panelSubPasta">
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_CODIGO}</b>
+										</f:facet> #{item.codigo}
+                                          </p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_DESCRICAO}</b>
+										</f:facet> #{item.descricao}
+                                          </p:column>
+								</mec:suggestionBox>
+							</p:outputPanel>
+							<p:outputPanel id="panelModelo" layout="inline">
+								<mec:suggestionBox id="sbModelo"
+									label="#{messages.LABEL_CADASTRO_PARECER_MODELO}"
+									title="#{messages.TITLE_CADASTRO_PARECER_MODELO}"
+									requiredFake="true" descricaoInput="id.seqp"
+									descricaoLabel="descricao"
+									suggestionAction="pesquisarMarcaModeloPorCodigoDescricao"
+									readonly="#{(empty parecerController.parecerMaterial.marcaComercial) or (not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')) or parecerController.isInativo()}"
+									controller="#{parecerController}"
+									value="#{parecerController.parecerMaterial.scoMarcaModelo}">
+									<p:column>#{item.id.seqp}</p:column>
+									<p:column>#{item.descricao}</p:column>
+								</mec:suggestionBox>
+							</p:outputPanel>
+						</aghu:linha>
+						
+						<aghu:linha>
+							<mec:inputText id="nrRegistro"
+								label="#{messages.LABEL_CADASTRO_PARECER_NR_REGISTRO}"
+								title="#{messages.TITLE_CADASTRO_PARECER_NR_REGISTRO}"
+								value="#{parecerController.parecerMaterial.nrRegistro}"
+								maxlength="15" size="12" styleClass="numerico"
+								readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or parecerController.isInativo()}" />
+							<mec:inputTextData id="dtVencReg" maxlength="10"
+								label="#{messages.LABEL_CADASTRO_PARECER_DT_VENC_REG}"
+								title="#{messages.TITLE_CADASTRO_PARECER_DT_VENC_REG}"
+								value="#{parecerController.parecerMaterial.dtVenctRegistro}"
+								size="10"
+								readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or parecerController.isInativo()}"
+								tipo="data" />
+							<mec:inputText id="observacao"
+								label="#{messages.LABEL_CADASTRO_PARECER_OBS}"
+								title="#{messages.TITLE_CADASTRO_PARECER_OBS}"
+								value="#{parecerController.parecerMaterial.observacao}"
+								maxlength="250" size="120" style="text-transform:uppercase"
+								removerCaratersEspeciais="false"
+								panelView="true" 
+								readonly="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or parecerController.isInativo()}" />
+						</aghu:linha>
+					</aghu:panelGeral>
+					
+					<aghu:panelGeral id="panelLocalizacao" legend="#{messages.TITLE_CADASTRO_PARECER_LOCALIZACAO_FISICA}"> 
+						<p:outputPanel id="panelPasta" layout="inline">
+							<mec:suggestionBox id="sbPasta"
+								label="#{messages.LABEL_CADASTRO_PARECER_PASTA}"
+								title="#{messages.TITLE_CADASTRO_PARECER_PASTA}"
+								suggestionAction="pesquisarOrigemParecerTecnicoPorSeqDescricao"
+								posSelectionAction="selecionarSubPasta"
+								posDeleteAction="limparSubPasta" descricaoInput="codigo"
+								descricaoLabel="descricao" maxlength="30" width="400"
+								readonly="#{(parecerController.readOnlyPasta) or (not empty parecerController.parecerMaterial.origemParecerTecnico and parecerController.modoEdit) or (not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')) or parecerController.isInativo()}"
+								controller="#{parecerController}"
+								value="#{parecerController.parecerMaterial.origemParecerTecnico}"
+								render="panelSubPasta">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_ORIGEM}</b>
+									</f:facet> #{item.codigo}
+                                         </p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_MANTER_MATERIAL_AGRUPAMENTO}</b>
+									</f:facet> #{item.scoAgrupamentoMateriais.descricao} #{item.fccCentroCusto.descricao}
+                                         </p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>
+						
+						<p:outputPanel id="panelSubPasta" layout="inline">
+							<mec:inputNumero id="subpasta"
+								value="#{parecerController.parecerMaterial.numeroSubPasta}"
+								label="#{messages.LABEL_CADASTRO_PARECER_SUBPASTA}"
+								title="#{messages.TITLE_CADASTRO_PARECER_SUBPASTA}"
+								maxlength="4" size="4" readonly="true" />
+						</p:outputPanel>
+					</aghu:panelGeral>
+						
+						
+					<aghu:panelGeral id="panelUltimaAvaliacao" 
+									 style="height:70px;" 
+					                 legend="#{messages.TITLE_CADASTRO_PARECER_ULTIMA_AVALIACAO}"
+					                 rendered="#{fn:length(parecerController.getListaParecerAvaliacao()) gt 0}">	           
+						<mec:serverDataTable style="margin: 0px !important;"
+										 	 id="resultListParecerAvaliacao"
+											 list="#{parecerController.listaParecerAvaliacao}"
+											 scrollable="true">
+							<c:set var="itemParecerAvaliacao" value="#{item}" />
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ACAO}" />
+								</f:facet>		
+								
+								<mec:commandLink
+									action="#{parecerController.redirecionarParecerAvaliacao}"
+									title="#{messages.LABEL_EDITAR}"
+									rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') and not parecerController.isInativo() and parecerController.isReadOnlyUltimaAvaliacao()}"
+									profile="edit">
+                                    <f:setPropertyActionListener
+                                            target="#{parecerAvaliacaoController.parecerMaterial}"
+                                            value="#{parecerController.parecerMaterial}" for="command" />
+
+									<f:setPropertyActionListener
+										target="#{parecerAvaliacaoController.codigo}"
+										value="#{itemParecerAvaliacao.codigo}" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerAvaliacaoController.modoEdit}"
+										value="true" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerAvaliacaoController.voltarParaUrl}"
+										value="compras-parecerCRUD" for="command" />
+								</mec:commandLink>
+								<mec:commandLink
+									action="#{parecerController.redirecionarParecerAvaliacao}"
+									title="#{messages.LABEL_VISUALIZAR}"
+									rendered="#{not parecerController.isReadOnlyUltimaAvaliacao()}"
+									styleClass=" silk-zoom silk-icon">
+									<f:setPropertyActionListener
+										target="#{parecerAvaliacaoController.codigo}"
+										value="#{itemParecerAvaliacao.codigo}" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerAvaliacaoController.voltarParaUrl}"
+										value="compras-parecerCRUD" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerAvaliacaoController.modoEdit}"
+										value="false" for="command" />	
+								</mec:commandLink>								
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_CADASTRO_PARACER_DT_CRIACAO}" />
+								</f:facet>
+								<h:outputText value="#{itemParecerAvaliacao.dtCriacao}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_CADASTRO_PARECER_LOTE}" />
+								</f:facet>
+								<h:outputText value="#{itemParecerAvaliacao.lote}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_CADASTRO_PARACER_PARECER_FINAL}" />
+								</f:facet>
+								<h:outputText
+									value="#{itemParecerAvaliacao.parecerGeral.descricao}" />
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:panelGeral>			
+						
+					<aghu:panelGeral id="panelUltimasOcorrencias" 
+									 style="height:70px;" 
+					                 legend="#{messages.TITLE_CADASTRO_PARECER_ULTIMA_OCORRENCIA}"
+					                 rendered="#{fn:length(parecerController.getListaParecerOcorrencia()) gt 0}">							
+						<mec:serverDataTable style="margin: 0px !important;"
+											 id="resultListParecerOcorrencia"
+											 list="#{parecerController.listaParecerOcorrencia}"
+											 scrollable="true">
+							<c:set var="itemParecerOcorrencia" value="#{item}" />
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ACAO}" />
+								</f:facet>
+								<mec:commandLink
+									action="#{parecerController.redirecionarParecerOcorrencia}"
+									title="#{messages.LABEL_EDITAR}"
+									rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') and  not parecerController.isInativo()}"
+									profile="edit">
+									<f:setPropertyActionListener
+										target="#{parecerOcorrenciaController.codigoParecer}"
+										value="#{item.codigo}" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerOcorrenciaController.renderGravar}"
+										value="true" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerOcorrenciaController.parecerAtivo}"
+										value="true" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerOcorrenciaController.voltarParaUrl}"
+										value="compras-parecerCRUD" for="command" />
+								</mec:commandLink>
+								<mec:commandLink
+									action="#{parecerController.redirecionarParecerOcorrencia}"
+									title="#{messages.LABEL_VISUALIZAR}"
+									rendered="#{not mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') or (mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar') and parecerController.isInativo())}"
+									styleClass=" silk-zoom silk-icon">
+									<f:setPropertyActionListener
+										target="#{parecerOcorrenciaController.codigoParecer}"
+										value="#{parecerController.codigoParecer}" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerOcorrenciaController.parecerAtivo}"
+										value="false" for="command" />
+									<f:setPropertyActionListener
+										target="#{parecerOcorrenciaController.voltarParaUrl}"
+										value="compras-parecerCRUD" for="command" />
+								</mec:commandLink>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_CADASTRO_PARACER_DT_OCORRENCIA}" />
+								</f:facet>
+								<h:outputText value="#{itemParecerOcorrencia.dtOcorrencia}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_CADASTRO_PARECER_LOTE}" />
+								</f:facet>
+								<h:outputText value="#{itemParecerOcorrencia.lote}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_CADASTRO_PARACER_PARECER}" />
+								</f:facet>
+								<h:outputText
+									value="#{itemParecerOcorrencia.parecerOcorrencia.descricao}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_CADASTRO_PARACER_SITUACAO}" />
+								</f:facet>
+								<h:outputText
+									value="#{itemParecerOcorrencia.indSituacao.descricao}" />
+							</p:column>
+						</mec:serverDataTable>
+
+					</aghu:panelGeral>
+				</aghu:column>
+										
+				<aghu:column type="button">
+					<aghu:panelGeral id="panelBotoes">
+						<ui:insert name="menu">
+							<ui:include src="parecerMenuCRUD.xhtml" />
+						</ui:insert>
+					</aghu:panelGeral>
+				</aghu:column>
+			</aghu:panelGeral>
+			
+			
+			<aghu:acao>
+				<mec:commandButton id="bt_gravar" block="true"
+					value="#{messages.LABEL_GRAVAR}"
+					action="#{parecerController.gravar}"
+					rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"
+					profile="ok">
+					<f:setPropertyActionListener
+						target="#{parecerAvaliacaoController.modoEdit}" value="true"
+						for="command" />
+					<f:setPropertyActionListener
+						target="#{parecerAvaliacaoController.voltarParaUrl}"
+						value="parecerCRUD" for="command" />
+				</mec:commandButton>
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+					action="#{parecerController.voltar}" immediate="true" ajax="true"
+					styleClass="bt_cinza" profile="back" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

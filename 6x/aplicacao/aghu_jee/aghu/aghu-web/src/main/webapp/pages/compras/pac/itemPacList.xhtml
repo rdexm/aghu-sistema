@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_ITENS_PAC}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{itemPacPaginatorController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{itemPacPaginatorController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formDadosCabecalho"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_ITENS_PAC}"> 
+          <p:outputPanel id="panelFiltros" layout="inline"> 
+            <aghu:linha> 
+              <mec:inputNumero id="numeroPac" label="#{messages.LABEL_ITEM_NUMERO_PAC_NABREV}" size="7" title="#{messages.TITLE_ITEM_NUMERO_PAC}" maxlength="7" required="true" value="#{itemPacPaginatorController.numeroPac}"/>  
+              <mec:inputText label="#{messages.LABEL_DESCRICAO_PAC}" id="descricaoPac" size="60" readonly="true" value="#{itemPacPaginatorController.descricaoPac}" required="false"/>  
+              <mec:selectBooleanCheckbox id="indExcluido" label="#{messages.LABEL_EXCLUIDO_PAC}" value="#{itemPacPaginatorController.indExcluido}" readonly="true"/> 
+            </aghu:linha>  
+            <aghu:linha>                
+              <mec:inputTextData id="dtGeracaoField" label="#{messages.LABEL_DATA_GERACAO_PAC}" value="#{itemPacPaginatorController.dataGeracaoPac}" readonly="true"/>
+              <mec:inputText label="#{messages.LABEL_MODALIDADE_PAC}" id="modalidadePac" size="60" readonly="true" value="#{itemPacPaginatorController.modalidadePac}" required="false"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_NUMERO_DOCUMENTO}" id="numeroDocumento" size="15" readonly="true" style="text-align:right;" value="#{itemPacPaginatorController.numeroDocumento}" required="false"/>  
+              <mec:inputText label="#{messages.LABEL_NUMERO_EDITAL}" id="numeroEdital" size="7" readonly="true" style="text-align:right;" value="#{itemPacPaginatorController.numeroEdital}" required="false"/>  
+              <mec:inputText label="#{messages.LABEL_ANO_EDITAL}" id="anoEdital" size="4" readonly="true" style="text-align:right;" value="#{itemPacPaginatorController.anoEdital}" required="false"/>  
+              <mec:inputText label="#{messages.LABEL_TIPO}" id="tipoEdital" size="20" readonly="true" value="#{itemPacPaginatorController.tipoEdital}" required="false"/>  
+              <mec:inputText label="#{messages.LABEL_SITUACAO}" id="situacaoEdital" size="40" readonly="true" value="#{itemPacPaginatorController.situacaoPac}" required="false"/>  
+              <mec:inputNumero id="vlrTotal" value="#{itemPacPaginatorController.valorTotalItens}" label="#{messages.LABEL_VALOR_TOTAL_ITENS}" required="false" inteiros="11" decimais="2" styleClass="mascara(decimal)" actionBean="#{itemPacPaginatorController}" style="text-align:right;" readonly="true"/> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{itemPacPaginatorController.pesquisar}" render="panelFiltros,resultados" profile="search"> 
+            <p:ajax event="click" update="@(#vlrTotal) @(#panelFiltros)"/> 
+          </mec:commandButton>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{itemPacPaginatorController.limparPesquisa}" reRender="formDadosCabecalho" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton immediate="true" value="#{messages.LABEL_VISUALIZAR_PAC}" id="bt_visualizarPac" action="#{itemPacPaginatorController.visualizarPac}" rendered="#{((itemPacPaginatorController.voltarParaUrl == null) ? true : false) and (not itemPacPaginatorController.listCompleta.isEmpty())}" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{processoAdmComprasController.numeroPac}" value="#{itemPacPaginatorController.numeroPac}" for="command"/>  
+            <f:setPropertyActionListener target="#{processoAdmComprasController.voltarParaUrl}" value="itemPacList" for="command"/> 
+            <f:setPropertyActionListener target="#{processoAdmComprasController.desabilitaItensPac}" value="#{true}" for="command"/>
+          </mec:commandButton> 
+          <mec:commandButton id="btn_gerar_csv"
+						hint="#{messages.HINT_BOTAO_GERAR_ARQUIVO_CSV}"						
+						value="#{messages.LABEL_GERAR_EXCEL_AUTORIZACOES_FORNECIMENTO}"
+						action="#{itemPacPaginatorController.getGerarArquivo()}"
+						disabled="#{itemPacPaginatorController.listCompleta.isEmpty()}"
+						styleClass=" icon-download-csv bt_cinza">
+						<f:param name="cid"
+							value="#{javax.enterprise.context.conversation.id}" />
+		  </mec:commandButton>
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar" immediate="true" rendered="#{(itemPacPaginatorController.voltarParaUrl == null) ? false : true}" action="#{itemPacPaginatorController.voltar}" styleClass="bt_cinza" profile="back"/> 
+        </aghu:acao>  
+      </h:form>  
+      <h:form prependId="false" id="resultados" rendered="#{not itemPacPaginatorController.listCompleta.isEmpty()}"> 
+        <aghu:panelGeral legend="#{messages.LEGEND_GRID_ITENS_LICITACAO}"> 
+          <aghu:linha style="padding: 5px">   
+              <p:outputPanel id="botoesAcao">       
+              <mec:commandButton id="bt_salvar"  action="#{itemPacPaginatorController.gravar}" value="#{messages.LABEL_BOTAO_GRAVAR}" disabled="#{ not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" ajax="true" render="bt_reordenar,bt_salvar,vlrTotal,tabela_itens_licitacao" styleClass="bt_cinza"/> 
+              <mec:commandButton id="bt_incluir_ss" action="#{itemPacPaginatorController.incluirItens}" value="#{messages.LABEL_INCLUIR_ITENS}" disabled="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" styleClass="bt_cinza"> 
+                 <f:setPropertyActionListener target="#{associaScSsPacController.numeroPac}" value="#{itemPacPaginatorController.numeroPac}" for="command"/>  
+                 <f:setPropertyActionListener target="#{associaScSsPacController.voltarPara}" value="itemPacList" for="command"/>
+                 <f:setPropertyActionListener target="#{associaScSsPacController.listaItensAdicionados}" value="#{null}" for="command"/> 
+                 
+              </mec:commandButton>                
+              <mec:commandButton id="bt_reordenar" title="#{messages.HINT_REORDENAR_ITENS_PAC}" action="#{itemPacPaginatorController.setMostrarModalReordenar(true)}" value="#{messages.LABEL_REORDENAR_ITENS_PAC}" disabled="#{not (mf:hasPermission(securityController,'cadastrarPAC,gravar')) or itemPacPaginatorController.indExcluido or itemPacPaginatorController.verificarEdicaoItensPac(itemPacPaginatorController.numeroPac, true, false) or (itemPacPaginatorController.listAlteracoes.size() > 0)}" ajax="true" render="panelModalReordernar" styleClass="bt_cinza"/> 
+              <mec:commandButton id="bt_gerarlotes" action="#{itemPacPaginatorController.gerarLotes()}" value="#{messages.LABEL_GERAR_LOTES}" rendered="false" ajax="true" styleClass="bt_cinza"/>
+             </p:outputPanel>          
+          </aghu:linha>  
+          <aghu:linha>
+                <p:dataTable id="tabela_itens_licitacao" value="#{itemPacPaginatorController.listCompleta}"  var="_item" scrollable="true" editable="true" editMode="cell"> 
+                  <p:ajax event="rowEdit"  listener="#{itemPacPaginatorController.atualizarListaEdicoes(_item)}"/>	  
+                  
+                  <p:column style="width:80px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet> 
+                     <mec:commandLink id="lnkVisualizarSolicitacaoCompra" title="#{messages.LABEL_VISUALIZAR_SOLICITACAO}" rendered="#{itemPacPaginatorController.verificarSolicitacaoCompras(_item.itemLicitacaoOriginal) and (mf:hasPermission(securityController,'cadastrarSolicitacaoServico,gravar') or mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar') or mf:hasPermission(securityController,'cadastrarSSPlanejamento,gravar') or mf:hasPermission(securityController,'cadastrarSSComprador,gravar') or mf:hasPermission(securityController,'cadastrarSSEngenharia,gravar') or mf:hasPermission(securityController,'cadastrarSSChefias,gravar'))}" action="#{itemPacPaginatorController.visualizarSolicitacaoCompras}" styleClass=" silk-zoom silk-icon"> 
+                      <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{_item.numeroSolicitacao}" for="command"/>  
+                      <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-itemPacList" for="command"/> 
+                    </mec:commandLink>  
+                    <mec:commandLink id="lnkVisualizarSolicitacaoServico" title="#{messages.LABEL_VISUALIZAR_SOLICITACAO}" rendered="#{!itemPacPaginatorController.verificarSolicitacaoCompras(_item.itemLicitacaoOriginal) and (mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar') or mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar') or mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or mf:hasPermission(securityController,'cadastrarSCChefias,gravar'))}" action="#{itemPacPaginatorController.visualizarSolicitacaoServico}" styleClass=" silk-zoom silk-icon"> 
+                      <f:setPropertyActionListener target="#{solicitacaoServicoController.numero}" value="#{_item.numeroSolicitacao}" for="command"/>  
+                      <f:setPropertyActionListener target="#{solicitacaoServicoController.voltarParaUrl}" value="compras-itemPacList" for="command"/> 
+                    </mec:commandLink>  
+                    <mec:commandLink action="#{itemPacPaginatorController.redirecionarAnexarDocumentoSolicitacaoCompra}" title="#{messages.TITLE_CONTEM_ARQUIVO_ANEXO}" rendered="#{_item.possuiAnexo}" styleClass=" silk-attach silk-icon"> 
+                      <f:setPropertyActionListener target="#{anexarDocumentoController.telaOrigem}" value="compras-itemPacList" for="command"/>  
+                      <f:setPropertyActionListener target="#{anexarDocumentoController.origemSolicitacao}" value="#{(itemPacPaginatorController.verificarSolicitacaoCompras(_item.itemLicitacaoOriginal)) ? 'SC' : 'SS'}" for="command"/>  
+                      <f:setPropertyActionListener target="#{anexarDocumentoController.numeroSolicitacao}" value="#{_item.numeroSolicitacao}" for="command"/>  
+                      <f:setPropertyActionListener target="#{anexarDocumentoController.modoEdit}" value="#{false}" for="command"/> 
+                    </mec:commandLink>  
+                    <mec:commandLink id="lnkFormaPagamento" title="#{messages.LABEL_FORMAS_PAGAMENTO}" rendered="#{(mf:hasPermission(securityController,'cadastrarPAC,gravar')) or mf:hasPermission(securityController,'consultarPAC,visualizar')}" action="#{itemPacPaginatorController.condicoesPagamentoPac}" styleClass=" silk-money-dollar silk-icon"> 
+                      <f:setPropertyActionListener target="#{condicoesPagamentoPaginatorController.numeroPac}" value="#{itemPacPaginatorController.numeroPac}" for="command"/>  
+                      <f:setPropertyActionListener target="#{condicoesPagamentoPaginatorController.numeroItemPac}" value="#{_item.itemLicitacaoOriginal.id.numero}" for="command"/>  
+                      <f:setPropertyActionListener target="#{condicoesPagamentoPaginatorController.urlRetorno}" value="compras-itemPacList" for="command"/> 
+                    </mec:commandLink>
+					<mec:commandLink id="deleteButton"
+						action="#{itemPacPaginatorController.prepararExclusao(_item)}"
+						title="#{messages.LABEL_EXCLUIR}" eventsQueue="changeQueue"
+						rendered="#{(not _item.indExclusao || itemPacPaginatorController.isHabilitadoExclusaoFisica(_item)) and (not itemPacPaginatorController.indExcluido) and (mf:hasPermission(securityController,'cadastrarPAC,gravar'))}"
+						styleClass="silk-icon silk-delete" ajax="true"
+						render="panelModalExcluir, panelModalConfirmaExcluir, resultados" />
+					<mec:commandLink id="recoveryButton"
+						action="#{itemPacPaginatorController.reativarItemPac(_item.itemLicitacaoOriginal)}"
+						title="#{messages.LABEL_REATIVAR_ITEM_PAC}"
+						eventsQueue="changeQueue"
+						rendered="#{(_item.indExclusao) and (not _item.itemOutroPac) and (not itemPacPaginatorController.indExcluido) and (mf:hasPermission(securityController,'cadastrarPAC,gravar'))}"
+						styleClass=" silk-arrow-undo silk-icon" ajax="true"
+						render="resultados" />
+				   </p:column> 
+				   <p:column> 
+				        <f:facet name="header">
+				       <h:graphicImage value="/resources/img/icons/pencil2.png" style=" vertical-align:bottom"/> 
+				       <h:outputText value="#{messages.LABEL_ITEM}" />                         
+                    </f:facet> 
+				                      
+	                  <p:cellEditor>
+		               <f:facet name="output">
+		                  <h:outputText value="#{_item.numeroItem}" /></f:facet>
+		                   <f:facet name="input"> <h:inputText id="numeroItem#{_item.itemLicitacaoOriginal.id.numero}" styleClass="numerico" 
+		                   value="#{_item.numeroItem}" name="numeroItem#{_item.itemLicitacaoOriginal.id.numero}" required="false" size="3" maxlength="4" autocomplete="off" 
+		                   readonly="#{(not mf:hasPermission(securityController,'cadastrarPAC,gravar')) or itemPacPaginatorController.verificarEdicaoItensPacPropostaLote(itemPacPaginatorController.numeroPac, _item.numeroItem)}"
+		                    disabled="#{(not mf:hasPermission(securityController,'cadastrarPAC,gravar'))  or itemPacPaginatorController.verificarEdicaoItensPacPropostaLote(itemPacPaginatorController.numeroPac, _item.numeroItem)}"> 
+		                      <f:converter converterId="javax.faces.Short"/>  
+		                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+		                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+		                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+		                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>
+		                      <p:ajax event="blur" listener="#{itemPacPaginatorController.atualizarListaEdicoes(_item)}" update="@(#botoesAcao)" />
+		                   </h:inputText>
+	                   </f:facet>
+	                   </p:cellEditor>       
+                  </p:column>  
+                   <p:column style="white-space:nowrap"> 
+                    <f:facet name="header"> 
+                      <mec:commandLink immediate="true" value="#{messages.LABEL_GRID_TIPO_SOLIC}" title="#{messages.MESSAGE_HINT_TIPO}" action="#{itemPacPaginatorController.ordenar('tipoSolicitacao')}" ajax="true" render="tabela_itens_licitacao"/> 
+                    </f:facet>  
+                    <h:outputText id="tipoSolicitacao" value="#{_item.tipoSolicitacao}"/>  
+                    <p:tooltip for="tipoSolicitacao" style="width:300px;                                         word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO}: #{itemPacPaginatorController.obterDescricaoSolicitacao(_item.itemLicitacaoOriginal)}"/> 
+                    </p:tooltip>                    
+                  </p:column> 
+                  <p:column style="white-space:nowrap"> 
+                    <f:facet name="header"> 
+                      <mec:commandLink immediate="true" value="#{messages.LABEL_GRID_SOLIC}" title="#{messages.MESSAGE_HINT_SOLIC}" action="#{itemPacPaginatorController.ordenar('numeroSolicitacao')}" ajax="true" render="tabela_itens_licitacao"/>
+                       <h:graphicImage value="/resources/img/icons/arrow-updown_white.png" style=" vertical-align:bottom"/>  
+                    </f:facet>  
+                    <h:outputText value="#{_item.numeroSolicitacao}" style="float:right; "/> 
+                  </p:column>                    
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <mec:commandLink immediate="true" value="#{messages.LABEL_CODIGO_MATERIAL_SERVICO}" title="#{messages.MESSAGE_HINT_CODIGO_MATSER}" action="#{itemPacPaginatorController.ordenar('codMatServ')}" ajax="true" render="tabela_itens_licitacao,numeroItem#{_item.itemLicitacaoOriginal.id.numero}"/>
+                      <h:graphicImage value="/resources/img/icons/arrow-updown_white.png" style=" vertical-align:bottom"/>  
+                    </f:facet>  
+                    <h:outputText value="#{itemPacPaginatorController.obterCodMatServ(_item.itemLicitacaoOriginal)}"/> 
+                  </p:column>  
+                   <p:column style="width:130px"> 
+                    <f:facet name="header">                     
+                      <mec:commandLink immediate="true" value="#{messages.LABEL_GRID_MATERIAL_SERVICO}" action="#{itemPacPaginatorController.ordenar('nomeMaterial')}" ajax="true" render="tabela_itens_licitacao"/>
+                      <h:graphicImage value="/resources/img/icons/arrow-updown_white.png" style=" vertical-align:bottom"/>  
+                    </f:facet>                    
+                    <h:outputText id="nomeMaterial" value="#{_item.nomeMaterial}"/>
+                     <p:tooltip for="nomeMaterial" style="width:300px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_MATERIAL_SOLIC_LIBERAR}: #{itemPacPaginatorController.obterNomeMaterialServico(_item.itemLicitacaoOriginal)}"/>  
+                      <br clear="none"/>  
+                      <h:outputText value="#{messages.LABEL_DESCRICAO}: #{itemPacPaginatorController.obterDescricaoMaterialServico(_item.itemLicitacaoOriginal)}"/> 
+                    </p:tooltip>                       
+                  </p:column>   
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <p:outputPanel layout="block"> 
+                        <p:tooltip direction="top-right" styleClass="tooltip" layout="block"> 
+                          <h:outputText value="#{messages.MESSAGE_HINT_UNIDADE}"/> 
+                        </p:tooltip>  
+                        <h:outputText value="#{messages.LABEL_GRID_IT_UNIDADE}"/> 
+                      </p:outputPanel> 
+                    </f:facet>  
+                    <h:outputText id="tabela_grid_unidade" value="#{_item.unidadeMaterial}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GRID_QUANTIDADE}"/> 
+                    </f:facet>  
+                    <h:outputText id="tabela_grid_qtde" style="float:right; " value="#{_item.qtdeSolicitada}"/> 
+                  </p:column>             
+		          
+		          <p:column style="width:100px">
+		             <f:facet name="header"> 
+                    	<p:outputPanel layout="block"> 
+                    	    <h:graphicImage value="/resources/img/icons/pencil2.png" style=" vertical-align:bottom"/>                         	
+                        	<h:outputText  id="headerUnitPrev" value="#{messages.LABEL_GRID_VLR_UNITARIO_PREVISTO}"/>
+                        	<p:tooltip for="headerUnitPrev" direction="top-right" styleClass="tooltip" layout="block"> 
+                          		<h:outputText value="#{messages.MESSAGE_HINT_VLR_UNIT_PREVISTO}"/> 
+                        	</p:tooltip>  
+                      	</p:outputPanel> 
+		            </f:facet>                  
+	                <p:cellEditor>
+		               <f:facet name="output">
+		                   <h:outputText value="#{_item.valorUnitarioPrevisto}" style="float:right">
+		                   <f:convertNumber type="number" 
+										maxFractionDigits="4" minFractionDigits="4"
+										groupingUsed="true" />
+		                   </h:outputText> </f:facet>
+		                   <f:facet name="input">		                   
+				            <pe:inputNumber id="vlrUnit#{_item.itemLicitacaoOriginal.id.numero}"
+				                            value="#{_item.valorUnitarioPrevisto}"
+				                            readonly="#{(not mf:hasPermission(securityController,'cadastrarPAC,gravar')) or itemPacPaginatorController.verificarEdicaoItensPacPropostaLote(itemPacPaginatorController.numeroPac, _item.numeroItem)}"
+		                                    converter="#{bigDecimalConverter}"
+				                            size="16" maxlength="22" 
+				                            decimalPlaces="4"                        
+				                            style="text-align:right;"> 	
+				            	<p:ajax event="change"  listener="#{itemPacPaginatorController.atualizarListaEdicoes(_item)}" update="@(#botoesAcao)"/>
+				            </pe:inputNumber>	
+		               </f:facet>
+		            </p:cellEditor>		
+				  </p:column>
+				  
+				  <p:column>
+		             <f:facet name="header"> 
+                    	<p:outputPanel layout="block">
+                    	    <h:graphicImage value="/resources/img/icons/pencil2.png" style=" vertical-align:bottom"/>                            	
+                        	<h:outputText  id="headerFreq" value="#{messages.LABEL_GRID_FREQ}"/>
+                        	<p:tooltip for="headerFreq" direction="top-right" styleClass="tooltip" layout="block"> 
+                          		<h:outputText value="#{messages.MESSAGE_HINT_FREQ}"/> 
+                        	</p:tooltip> 
+                        	 
+                      	</p:outputPanel> 
+		            </f:facet>       
+		          
+		                            
+	                <p:cellEditor>
+		               <f:facet name="output">
+		                  <h:outputText value="#{_item.frequenciaEntrega}" /></f:facet>
+		                   <f:facet name="input">
+			                   <h:inputText id="frequenciaEntrega#{_item.itemLicitacaoOriginal.id.numero}" styleClass="numerico" value="#{_item.frequenciaEntrega}" name="frequenciaEntrega#{_item.itemLicitacaoOriginal.id.numero}" required="false" size="2" maxlength="3" autocomplete="off" 
+			                        readonly="#{(not mf:hasPermission(securityController,'cadastrarPAC,gravar')) or itemPacPaginatorController.verificarEdicaoItensPacPropostaLote(itemPacPaginatorController.numeroPac, _item.numeroItem)}"
+		                            disabled="#{(not mf:hasPermission(securityController,'cadastrarPAC,gravar'))  or itemPacPaginatorController.verificarEdicaoItensPacPropostaLote(itemPacPaginatorController.numeroPac, _item.numeroItem)}"> 
+				                      <ui:insert/>  
+				                      <f:converter converterId="javax.faces.Integer"/>  
+				                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+				                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+				                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+				                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+				                      <p:ajax event="change" listener="#{itemPacPaginatorController.atualizarListaEdicoes(_item)}" update="@(#botoesAcao)" /> 
+				               </h:inputText> 
+		                   </f:facet>
+		            </p:cellEditor>	
+		          </p:column>
+		          
+		          <p:column style="width:100px">
+		             <f:facet name="header">
+		               <h:graphicImage value="/resources/img/icons/pencil2.png" style=" vertical-align:bottom"/> 
+				       <h:outputText value="#{messages.LABEL_GRID_PERIODO}" />                        
+                    </f:facet> 		                          
+	                <p:cellEditor>
+		               <f:facet name="output">
+		                  <h:outputText value="#{_item.indFrequencia}" /></f:facet>
+		                   <f:facet name="input">
+			                   <p:selectOneMenu id="indFrequenciaEntr#{_item.itemLicitacaoOriginal.id.numero}"  value="#{_item.indFrequencia}" required="false" onkeydown="enterInSelectField(event, '#{stopEnter}');" 
+			                   disabled="#{(not mf:hasPermission(securityController,'cadastrarPAC,gravar'))  or itemPacPaginatorController.verificarEdicaoItensPacPropostaLote(itemPacPaginatorController.numeroPac, _item.numeroItem)}">
+					                  <f:converter converterId="dominioConverter" />
+					                  <f:selectItem itemValue=""
+										itemLabel="Selecione"
+										noSelectionOption="true" />
+					                  <f:selectItems var="selItem" itemLabel="#{selItem.descricao}"
+											value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioFrequenciaEntrega')}" />	
+									 <p:ajax event="change" listener="#{itemPacPaginatorController.atualizarListaEdicoes(_item)}" update="@(#botoesAcao)" /> 						  		
+					           </p:selectOneMenu>
+					        </f:facet>
+					 </p:cellEditor>
+				  </p:column>
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <p:outputPanel layout="block">                      
+                        <h:outputText id="gridITExclusao"  value="#{messages.LABEL_GRID_IT_EXCLUSAO}"/>
+                        <p:tooltip for="gridITExclusao"  direction="top-right" styleClass="tooltip" layout="block"> 
+                          <h:outputText value="#{messages.MESSAGE_HINT_EXCLUSAO}"/> 
+                        </p:tooltip>   
+                      </p:outputPanel> 
+                    </f:facet>  
+                    <h:graphicImage id="chkexc" value="/resources/img/icons/close-window.png" rendered="#{_item.indExclusao}"/>  
+                    <p:tooltip for="chkexc" rendered="#{_item.indExclusao}" style="width:300px;word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_MOTIVO_EXCLUSAO}: #{_item.motivoExclusao}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column style="width:50px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ESCOLHIDO}"/> 
+                    </f:facet>
+                    <h:graphicImage id="chkesc" value="/resources/img/icons/accept.png" rendered="#{_item.indEscolhido}"/>  
+                    <p:tooltip for="chkesc" style="width:300px;word-wrap: break-word;" rendered="#{_item.criterioEscolha != null or _item.criterioEscolha != null}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText rendered="#{_item.criterioEscolha != null}" value="#{messages.LABEL_FORNECEDOR_VENCEDOR}: #{_item.forncedorVencedor.nomeFantasia}"/>  
+                      <br clear="none"/>  
+                      <h:outputText rendered="#{_item.criterioEscolha != null}" value="#{messages.LABEL_CRITERIO_ESCOLHA}: #{_item.criterioEscolha}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column style="width:55px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GRID_COMPLEMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText id="tabela_grid_complemento" value="#{itemPacPaginatorController.numeroPac}/#{_item.complemento}" rendered="#{_item.complemento != null}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <p:outputPanel layout="block"> 
+                        <p:tooltip direction="top-right" showDelay="300" styleClass="tooltip" layout="block"> 
+                          <h:outputText value="#{messages.MESSAGE_HINT_PENDENTE}"/> 
+                        </p:tooltip>  
+                        <h:outputText value="#{messages.LABEL_GRID_PEND}"/> 
+                      </p:outputPanel> 
+                    </f:facet>  
+                    <h:graphicImage id="chkjulg_#{_item.itemLicitacaoOriginal.id.numero}" value="/resources/img/icons/marcador_vermelho.png" rendered="#{itemPacPendenteJulgamentoController.isPendente(_item)}"/>  
+                    <p:tooltip direction="top-left" showDelay="400" styleClass="tooltip" layout="block" rendered="#{itemPacPendenteJulgamentoController.isPendente(_item)}"> 
+                      <h:outputText value="#{itemPacPendenteJulgamentoController.getPendenteMotivoMessage(_item)}"/>  
+                      <br clear="none"/>  
+                      <h:outputText value="#{itemPacPendenteJulgamentoController.getPendenteUsuarioMessage(_item)}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column rendered="false"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GRID_LOTE}"/> 
+                    </f:facet>  
+                    <h:inputText id="numeroLote#{_item.itemLicitacaoOriginal.id.numero}" styleClass="numerico" value="#{_item.numeroLote}" name="numeroLote#{_item.itemLicitacaoOriginal.id.numero}" required="false" size="2" maxlength="3" autocomplete="off" readonly="#{(1==1) or (not mf:hasPermission(securityController,'cadastrarPAC,gravar')) or itemPacPaginatorController.indExcluido or itemPacPaginatorController.bloqueiaEdicao}"> 
+                      <f:converter converterId="javax.faces.Short"/>  
+                      <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                      <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                      <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                      <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+                      <p:ajax event="change" listener="#{itemPacPaginatorController.atualizarListaEdicoes(_item)}"  update="@(#botoesAcao)" /> 
+                    </h:inputText> 
+                  </p:column> 
+                </p:dataTable>            
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form>  
+      
+      <p:outputPanel id="panelModalConfirmaExcluir" layout="inline">
+			<p:dialog id="modalExclusaoSco" resizeable="false" moveable="false"
+				zindex="2" width="550" height="215" modal="true" resizable="false"
+				widgetVar="modalExclusaoScoWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.LABEL_EXCLUIR_ITENS_PAC}" />
+					</h:panelGroup>
+				</f:facet>
+				<aghu:panelGeral style="padding:10px;">
+					<h:form prependId="false" id="formExcModal">
+						<p:outputPanel id="modalExclusaoSolicitacaoPanel" layout="inline">
+							<aghu:linha>
+								<mec:inputTextArea
+									label="#{messages.LABEL_OBSERVACAO_MOTIVO_SCO}"
+									title="#{messages.TITLE_OBSERVACAO_EXCLUSAO_SCO}"
+									required="true" maxlength="60" cols="60" rows="2"
+									id="tx_observacao" value="#{itemPacPaginatorController.observacaoExclusao}" />
+							</aghu:linha>
+						</p:outputPanel>
+					
+						<p:commandButton icon="aghu-icons-16x16 aghu-icon-check-aghu"
+							styleClass="button-acao bt_cinza" id="modal_excluir"
+							value="#{messages.LABEL_GRAVAR}"
+							action="#{itemPacPaginatorController.excluirItemPac}"
+							oncomplete="PF('modalExclusaoScoWG').hide();" 
+							update="@(#resultados) @(#panelFiltros)"
+							ajax="true">
+						</p:commandButton>
+						<p:commandButton icon="aghu-icons-16x16 aghu-icon-cancel"
+							styleClass="button-acao bt_cinza" id="modal_cancelar_bt"
+							value="#{messages.LABEL_CANCELAR}"
+							action="#{itemPacPaginatorController.limparModalExclusao}"
+							oncomplete="PF('modalExclusaoScoWG').hide();" ajax="true"
+							render="#(modalExclusaoSolicitacaoPanel)" process="@this">
+						</p:commandButton>
+					</h:form>
+				</aghu:panelGeral>
+			</p:dialog>
+			<h:form rendered="#{itemPacPaginatorController.mostrarModalExclusao}"> 
+		        <script xml:space="preserve">
+					PF('modalExclusaoScoWG').show();;
+				</script> 
+	        </h:form> 		
+		</p:outputPanel>      
+
+      <p:outputPanel id="panelModalExcluir" layout="inline" render="#{not itemPacPaginatorController.mostrarModalExclusao}">
+		<p:dialog id="modalConfirmacaoExclusao" width="400" height="150"
+			rendered="#{itemPacPaginatorController.mostrarModalConfirmacaoExclusao}"
+			modal="true" resizable="false"
+			widgetVar="modalConfirmacaoExclusaoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.LABEL_EXCLUIR}" />
+				</h:panelGroup>
+			</f:facet> #{itemPacPaginatorController.msgModalExclusao} 
+          <br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formExclusaoModal">
+						<mec:commandButton value="#{messages.LABEL_SIM}" id="bt_edsim"
+							action="#{itemPacPaginatorController.excluirItemPac}"
+							oncomplete="PF('modalConfirmacaoExclusaoWG').hide();"
+							profile="search" ajax="true"
+							render="tabela_itens_licitacao, resultados" />
+						<mec:commandButton id="bt_ednaoexclui"
+							value="#{messages.LABEL_NAO}"
+							action="#{itemPacPaginatorController.setMostrarModalConfirmacaoExclusao(false)}"
+							onclick="PF('modalConfirmacaoExclusaoWG').hide();"
+							profile="cancel" ajax="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+		<h:form rendered="#{itemPacPaginatorController.mostrarModalConfirmacaoExclusao}"> 
+          <script xml:space="preserve">
+					PF('modalConfirmacaoExclusaoWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel> 
+       
+      <p:outputPanel id="panelModalReordernar" layout="inline"> 
+        <p:dialog id="modalConfirmacaoReordenar" width="400" height="150" rendered="#{itemPacPaginatorController.mostrarModalReordenar}" modal="true" resizable="false" widgetVar="modalConfirmacaoReordenarWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CONFIRMACAO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_CONFIRMACAO_REORDENAR} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formReordenarModal"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_reordsim" action="#{itemPacPaginatorController.reordenarItens()}" oncomplete="PF('modalConfirmacaoReordenarWG').hide();" profile="search" ajax="true" render="tabela_itens_licitacao"/>  
+              <mec:commandButton id="bt_ednaoreord" value="#{messages.LABEL_NAO}" action="#{itemPacPaginatorController.setMostrarModalReordenar(false)}" onclick="PF('modalConfirmacaoReordenarWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <h:form rendered="#{itemPacPaginatorController.mostrarModalReordenar}"> 
+          <script xml:space="preserve">
+					PF('modalConfirmacaoReordenarWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

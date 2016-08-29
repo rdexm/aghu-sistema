@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LEGEND_TRANSFERIR_EXAMES}</title>
+	</ui:define>
+
+	<ui:define name="body">
+		<mec:pageConfig controller="#{transferirExamesController}" />
+		<h:form prependId="false" id="formPesquisa">
+		
+			<aghu:panelGeral id="panelDeConsulta" legend="#{messages.LEGEND_DE_CONSULTA}">
+				<aghu:linha>
+		
+					<mec:inputNumero id="deConsulta" required="true" value="#{transferirExamesController.numero}" 
+									label="#{messages.LABEL_CONSULTA}" title="#{messages.TITLE_CONSULTA_EXAMES_1}" maxlength="8" size="10">
+						<p:ajax event="blur" listener="#{transferirExamesController.pesquisarDeConsulta}" process="@this" update="@(#deProntuario) @(#dePaciente) @(#panelExame) @(#paraProntuario) @(#paraPaciente) @(#consulta) @(#panelPesquisar)" />
+					</mec:inputNumero>
+					
+					<mec:inputTextProntuario id="deProntuario" value="#{transferirExamesController.deConsulta.prontuario}" 
+										size="10" maxlength="8" label="#{messages.LABEL_PRONTUARIO}" readonly="true"/>
+										
+					<mec:inputText id="dePaciente" value="#{transferirExamesController.deConsulta.codigoNome()}" readonly="true"
+							label="#{messages.LABEL_PACIENTE}" maxlength="61" size="60" />
+
+				</aghu:linha>
+			</aghu:panelGeral>
+			
+			<aghu:panelGeral id="panelExame" legend="#{messages.LEGEND_SOLICITACOES_EXAMES}">
+				<div style="height: 100px; overflow-y: scroll">
+					<h:panelGroup id="panelListaSolicitacoes" rendered="#{transferirExamesController.listaSolicitacoesExames ne null}">
+						<aghu:linha>
+							<mec:serverDataTable name="listagemExames" id="listagemExames" scrollable="true"
+								scrollHeight="100px"
+								rowKeyVar="keyVar" list="#{transferirExamesController.listaSolicitacoesExames}">
+								<c:set var="_item" value="#{item}" />
+
+								<p:column style="text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_NUMERO}"/>
+									</f:facet>
+									<h:outputText value="#{_item.seq}" />
+								</p:column>
+								
+								<p:column style="text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_UNIDADE}"/>
+									</f:facet>
+									<h:outputText value="#{_item.unidade}" />
+								</p:column>
+								
+								<p:column style="text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_DESCRICAO}"/>
+									</f:facet>
+									<h:outputText value="#{_item.descricao}" />
+								</p:column>
+							</mec:serverDataTable>
+						</aghu:linha>
+					</h:panelGroup>
+				</div>
+			</aghu:panelGeral>
+			
+			<aghu:panelGeral id="panelParaConsulta" legend="#{messages.LEGEND_PARA_CONSULTA}">
+				<aghu:linha>
+					<mec:inputNumero id="paraConsulta"
+									 value="#{transferirExamesController.numeroFiltro}" label="#{messages.LABEL_CONSULTA}" 
+									 title="#{messages.TITLE_CONSULTA_EXAMES_2}" maxlength="8" size="10"/>
+							
+					<mec:inputTextProntuario id="paraProntuario" value="#{transferirExamesController.deConsulta.prontuario}" 
+										size="10" maxlength="8" label="#{messages.LABEL_PRONTUARIO}" readonly="true"/>
+										
+					<mec:inputText id="paraPaciente" value="#{transferirExamesController.deConsulta.codigoNome()}" readonly="true"
+							label="#{messages.LABEL_PACIENTE}" maxlength="61" size="60" />
+	
+				</aghu:linha>		 
+						
+			</aghu:panelGeral>
+			
+			<aghu:acao>
+				<h:panelGroup id="panelPesquisar">
+					<mec:commandButton value="#{messages.LABEL_PESQUISAR}"
+						id="bt_pesquisar" profile="search" 
+						action="#{transferirExamesController.pesquisarParaConsultas}"
+						disabled="#{!transferirExamesController.solitacoesExames}"/>
+				</h:panelGroup>
+		
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					block="true" profile="clear" action="#{transferirExamesController.limpar}"
+					render="panelParaConsulta, consulta" ajax="true" process="@this"/>
+			</aghu:acao>
+			
+			<aghu:panelGeral id="consulta" legend="#{messages.LEGEND_CONSULTAS}">
+				<div style="height: 100px; overflow-y: scroll">
+					<h:panelGroup id="panelLista" rendered="#{transferirExamesController.listaParaConsultas ne null}">
+						<aghu:linha>
+							<mec:serverDataTable name="listagemConsultas" id="listagemConsultas" scrollable="true"
+								scrollHeight="100px"
+								rowKeyVar="keyVar" list="#{transferirExamesController.listaParaConsultas}"
+								controller="#{transferirExamesController}"
+								selection="paraConsultaSelecionada" onRowClick="paraConsultaSelecionada">
+								<c:set var="_item" value="#{item}" />
+								
+								<p:ajax event="rowSelect" update="@(#listagemConsultas)"/>
+								
+								<p:column style="width: 30px; text-align:left;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_ACAO}" />
+									</f:facet>
+									<mec:commandLink id="trocarSolicitacoes"
+										rendered="#{transferirExamesController.paraConsultaSelecionada ne null and mf:hasPermission(securityController, 'manterTransferirExames,transferirExame') and item.seq eq transferirExamesController.paraConsultaSelecionada.seq}"
+										action="#{transferirExamesController.trocarSolicitacoes}"
+										title="#{messages.LABEL_TROCAR_SOLICITACOES}"
+										styleClass="silk-icon16 silk-trocar2"/>
+									<mec:commandLink id="trocarSolicitacoesOff"
+										rendered="#{transferirExamesController.paraConsultaSelecionada ne null and not mf:hasPermission(securityController, 'manterTransferirExames,transferirExame') and item.seq eq transferirExamesController.paraConsultaSelecionada.seq}"
+										styleClass="silk-icon16 trocar-disabled"/>
+								</p:column >
+								
+								<p:column style="width: 150px; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_CONSULTA}"/>
+									</f:facet>
+									<h:outputText value="#{item.consultaNumero}" />
+								</p:column>
+								
+								<p:column style="width: 150px; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_PRONTUARIO}"/>
+									</f:facet>
+									<h:outputText value="#{_item.prontuario}" />
+								</p:column>
+								
+								<p:column style="text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_PACIENTE}"/>
+									</f:facet>
+									<h:outputText value="#{_item.codigoNome()}" />
+								</p:column>
+							</mec:serverDataTable>
+						</aghu:linha>
+					</h:panelGroup>
+				</div>
+			</aghu:panelGeral>
+			
+		</h:form>
+		
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CADASTRAR_LOGRADOUROS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{logradouroController}"/>  
+      <ui:param name="stopEnter" value="true"/>  
+      <h:form> 
+        <pe:remoteCommand name="excluirBairro"> 
+          <pe:assignableParam name="param1" assignTo="#{logradouroController.aipBairro.codigo}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <h:form prependId="false" id="cadastroLogradouroForm"> 
+        <aghu:panelGeral legend="#{messages.TITLE_CADASTRAR_LOGRADOUROS}"> 
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_TIPO}" title="Escolha um tipo de logradouro." descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarTipoLogradouro" required="true" id="tipoLogradouro" controller="#{logradouroController}" value="#{logradouroController.aipLogradouro.aipTipoLogradouro}"> 
+              <p:column>#{item.codigo}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox label="#{messages.LABEL_TITULO}" title="Selecione um Título de Logradouro." descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarTituloLogradouro" id="tituloLogradouro" controller="#{logradouroController}" value="#{logradouroController.aipLogradouro.aipTituloLogradouro}"> 
+              <p:column>#{item.codigo}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_NOME}" title="#{messages.TITLE_CRUD_NOME_LOGRADOURO}" value="#{logradouroController.aipLogradouro.nome}" style="text-transform:uppercase" size="63" maxlength="60" required="true" id="nome"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CIDADE}" title="Selecione um município." descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarCidade" required="true" id="cidade" controller="#{logradouroController}" value="#{logradouroController.aipLogradouro.aipCidade}"> 
+              <p:column>#{item.nome}</p:column>  
+              <p:column>#{item.aipUf.sigla}</p:column>  
+              <p:column>#{item.codigo}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <legend>#{messages.TITLE_CEPS}</legend>  
+            <aghu:linha> 
+              <p:outputPanel id="panel_cep_logradouro" layout="inline"> 
+                <mec:inputTextCEP label="#{messages.LABEL_CEP}" title="#{messages.TITLE_CRUD_CEP_LOGRADOURO}" value="#{logradouroController.aipCepLogradouro.id.cep}" readonly="#{logradouroController.aipCepLogradouro.id.lgrCodigo != null}" maxlength="10" id="cepLogradouro"/>  
+                <mec:inputText label="#{messages.LABEL_NRO_INICIAL}" title="#{messages.TITLE_CRUD_NRO_INCICIAL_LOGRADOURO}" value="#{logradouroController.aipCepLogradouro.nroInicial}" maxlength="10" removerCaratersEspeciais="false" id="nroInicial"/>  
+                <mec:inputText label="#{messages.LABEL_NRO_FINAL}" title="#{messages.TITLE_CRUD_NRO_FINAL_LOGRADOURO}" value="#{logradouroController.aipCepLogradouro.nroFinal}" maxlength="10" removerCaratersEspeciais="false" id="nroFinal"/>  
+                <mec:selectOneMenu enum="DominioLadoEndereco" itemsType="enum" label="#{messages.LABEL_LADO}" title="#{messages.TITLE_CRUD_LADO_LOGRADOURO}" value="#{logradouroController.aipCepLogradouro.lado}" id="lado"/> 
+              </p:outputPanel>  
+              <aghu:acao style="margin: 16px 0 10px 10px !important" newLine="false"> 
+                <mec:commandButton name="btAdicionarCepLogradouro" value="#{messages.LABEL_ADICIONAR}" action="#{logradouroController.adicionarCepLogradouro}" render="panel_cep_logradouro,panel_tabela_cls" profile="add" ajax="true"/> 
+              </aghu:acao> 
+            </aghu:linha>  
+            <p:outputPanel id="panel_tabela_cls" layout="inline"> 
+              <p:outputPanel layout="block" style="width: 100%; height: 200px; overflow: scroll; overflow-x: hidden;" rendered="#{not empty logradouroController.aipCepLogradouros}"> 
+                <aghu:linha style="padding: 0 0 0 8px !important"> 
+                  <mec:serverDataTable id="tabelaCLs" title="" rendered="#{true}" onRowMouseOver="this.style.backgroundColor='#F1F1F1'" onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'" list="#{logradouroController.listarAipCepLogradouros()}" scrollable="true"> 
+                    <c:set var="aipCL" value="#{item}"/>  
+                    <p:column label="#{messages.LABEL_ACAO}" styleClass="tdAcao"> 
+                      <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{logradouroController.setAipCepLogradouro(aipCL)}" profile="edit" ajax="true" render="panel_cep_logradouro" process="@this"/>  
+                      <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{logradouroController.setAipCLSelecionado(aipCL)}" oncomplete="PF('modalConfirmacaoExclusaoCepLogradouroWG').show();;" profile="delete" ajax="true" render="modalEdicaoBairros"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CEP}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{aipCL.id.cep}"> 
+                        <f:converter converterId="cepConverter"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NRO_INICIAL}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{aipCL.nroInicial}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NRO_FINAL}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{aipCL.nroFinal}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_LADO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{aipCL.lado.descricao}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_BAIRRO}"/> 
+                      </f:facet>  
+                      <mec:commandLink action="#{logradouroController.editarBairros(aipCL)}" oncomplete="PF('modalEdicaoBairrosWG').show();;" styleClass="silk-text-left silk-application-view-detail silk-icon" ajax="true" render="modalEdicaoBairros"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_salvar" value="#{messages.LABEL_GRAVAR}" disabled="#{not mf:hasPermission(securityController, 'logradouro,alterar')}" action="#{logradouroController.salvar}" render="confirmacaoAlteracoesPendentesPanel" profile="ok"/>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" immediate="true" action="#{logradouroController.cancelar}" profile="cancel" ajax="true" render="confirmacaoAlteracoesPendentesPanel"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoExclusaoCepLogradouro" width="400" height="160" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoCepLogradouroWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO_CEP_LOGRADOURO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <aghu:acao> 
+          <h:form> 
+            <mec:commandButton id="bt_removerCepLogradouro" value="#{messages.LABEL_SIM}" onclick="PF('modalConfirmacaoExclusaoCepLogradouroWG').hide();" action="#{logradouroController.removerCepLogradouro}" render="panel_cep_logradouro,panel_tabela_cls" profile="ok" ajax="true"/>  
+            <input type="button" class="bt_error icon-no" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoCepLogradouroWG').hide();"/> 
+          </h:form> 
+        </aghu:acao> 
+      </p:dialog>  
+      <p:outputPanel id="confirmacaoAlteracoesPendentesPanel" layout="inline"> 
+        <p:dialog onshow="aghu.system.style.rich_modal();" id="modalConfirmacaoAlteracoesPendentes" width="400" height="150" showWhenRendered="#{logradouroController.exibirModalAlteracoesPendentes()}" modal="true" resizable="false" widgetVar="modalConfirmacaoAlteracoesPendentesWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_ALTERACOES_PENDENTES}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" name="formModalAlteracoesPendentes"> 
+              <mec:commandButton id="simAlteracoesPendentes" value="#{messages.LABEL_SIM}" action="#{logradouroController.confirmarModal}" profile="ok"/>  
+              <mec:commandButton id="naoAlteracoesPendentes" value="#{messages.LABEL_NAO}" action="#{logradouroController.cancelarModal}" profile="cancel"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <ui:include src="/pages/paciente/cadastrosbasicos/logradouroBairrosModal.xhtml"/> 
+    </ui:define> 
+  </ui:composition> 
+</html>

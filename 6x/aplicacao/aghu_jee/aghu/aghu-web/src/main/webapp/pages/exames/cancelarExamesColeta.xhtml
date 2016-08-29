@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_TITLE_CANCELAR_EXAMES_COLETA}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cancelarExameColetaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cancelarExameColetaController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formPesquisa" name="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_SOLICITACAO_EXAME}"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_SOLICITACAO}" size="10" disabled="true" readonly="true" value="#{cancelarExameColetaController.solicPaciente.codigoSoe}" id="solicitacao"/>  
+            <mec:inputText label="#{messages.LABEL_CODIGO}" size="5" disabled="true" readonly="true" value="#{cancelarExameColetaController.solicPaciente.codPaciente}" id="codPaciente"/>  
+            <mec:inputText label="#{messages.LABEL_PACIENTE}" size="50" disabled="true" readonly="true" value="#{cancelarExameColetaController.solicPaciente.paciente}" id="paciente"/>  
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO_PAC}" value="#{cancelarExameColetaController.solicPaciente.prontuario}" size="11" maxlength="9" emptyStringToNullConverter="emptyStringToNullConverter" disabled="true" readonly="true" id="prontuario" converter="#{prontuarioConverter}"/>  
+            <mec:inputText label="#{messages.LABEL_ORIGEM}" size="20" disabled="true" readonly="true" value="#{cancelarExameColetaController.solicPaciente.origemAtendimento.descricao}" id="origem"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextArea label="#{messages.LABEL_INFO_CLINICA}" cols="120" rows="5" disabled="true" readonly="true" value="#{cancelarExameColetaController.solicPaciente.infoClinica}" id="infoClinica"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_ITENS_SOLICITACAO_EXAME}"> 
+          <p:outputPanel id="suggestionMotivo_panel" layout="inline"> 
+            <p:outputPanel layout="block" id="suggestionMotivo_Div" rendered="#{cancelarExameColetaController.showSuggestion}"> 
+              <mec:suggestionBox var="_itemMotivoCancelamento" itemValue="#{_itemMotivoCancelamento}" title="#{messages.TITLE_MOTIVO_CANCELAMENTO_EXAMES}" label="#{messages.LABEL_MOTIVO_CANCELAMENTO}" suggestionAction="pesquisarMotivoCancelaExames" posSelectionAction="habilitaBotaoGravar" posDeleteAction="desabilitaBotaoGravar" descricaoInput="seq" size="50" width="500" descricaoLabel="descricao" required="true" id="sbMotivoCancelar" controller="#{cancelarExameColetaController}" value="#{cancelarExameColetaController.motivoCancelar}" render="button_Div"> 
+                <p:column>#{_itemMotivoCancelamento.seq}</p:column>  
+                <p:column>#{_itemMotivoCancelamento.descricao}</p:column> 
+              </mec:suggestionBox> 
+			  <p:outputPanel layout="block" id="button_Div"> 
+                <div style="vertical-align: bottom;"> 
+                  <mec:inputText rendered="#{cancelarExameColetaController.habilitaCCMotivo}" label="#{messages.LABEL_COMPLEMENTO_MOTIVO}" title="#{messages.TITLE_COMPLEMENTO_MOTIVO}" size="100" maxlength="2000" value="#{cancelarExameColetaController.motivoComplementoMotivo}" id="motivoComplemento"/> 
+                </div>  
+                <div style="float: left; margin-bottom: 5px; margin-top: 17px; margin-left:6px;"> 
+                  <mec:commandButton id="bt_gravar" disabled="#{not cancelarExameColetaController.habilitaBotao}" value="#{messages.LABEL_GRAVAR}" action="#{cancelarExameColetaController.gravar}" profile="ok"/> 
+                </div> 
+               </p:outputPanel> 
+            </p:outputPanel> 
+          </p:outputPanel>  
+          <p:outputPanel id="tabelaItens_panel" layout="inline"> 
+            <p:outputPanel layout="block" style="height:150px;"> 
+              <mec:serverDataTable id="listaItensTable" name="listaItensTable" list="#{cancelarExameColetaController.itensSolicitacao}" scrollHeight="110" scrollable="true"  controller="#{cancelarExameColetaController}" selection="pesquisaExameSelecionado">
+                <c:set var="_itemSolicitacao" value="#{item}"/>  
+                <p:ajax event="rowSelect" update="@(#listaItensTable) @(#listaAmostrasItemTable)" listener="#{cancelarExameColetaController.selecionarItem(_itemSolicitacao.iseSeq)}"/>  
+                <p:column styleClass="first-column" style="width: 10%;" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_CANCELAR}" rendered="#{_itemSolicitacao.podeCancelar and mf:hasPermission(securityController,'cancelarExamesNaColeta,executar')}" action="#{cancelarExameColetaController.renderSuggestion(_itemSolicitacao.iseSeq)}" styleClass=" silk-exames-cancelar silk-icon" ajax="true" render="suggestionMotivo_panel, suggestionMotivo_Div" process="@this"/>  
+                  <mec:commandLink title="#{messages.LABEL_ESTORNAR}" rendered="#{_itemSolicitacao.podeEstornar and mf:hasPermission(securityController,'estornarExamesNaColeta,executar')}" action="#{cancelarExameColetaController.estornarItemExame(_itemSolicitacao.iseSeq)}" styleClass=" silk-arrow-rotate-clockwise silk-icon" ajax="true" render="tabelaItens_panel, listaItensTable,listaAmostrasItemTable" process="@this"/> 
+                </p:column>  
+                <p:column style="width: 20%;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSolicitacao.situacaoItem}"/> 
+                </p:column>  
+                <p:column style="width: 20%;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MOTIVO_CANCELAMENTO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSolicitacao.motivoCancelamentoItem}"/> 
+                </p:column>  
+                <p:column style="width: auto;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_EXAME_MATERIAL_ANALISE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSolicitacao.exameMaterialAnalise}"/> 
+                </p:column>  
+                <p:column style="width: 20%;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NUMERO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSolicitacao.iseSeq}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_AMOSTRAS}"> 
+          <p:outputPanel id="tabelaAmostras_panel" layout="inline"> 
+            <p:outputPanel layout="block" style="height:120px;"> 
+              <mec:serverDataTable id="listaAmostrasItemTable" name="listaAmostrasItemTable" list="#{cancelarExameColetaController.amostrasItemExame}" scrollHeight="80" scrollable="true" controller="#{cancelarExameColetaController}" selection="itemAmostraSelecionado">
+                <c:set var="_amostra" value="#{item}"/>  
+                <p:column style="width: 20%"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SOLICITACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{cancelarExameColetaController.solicPaciente.codigoSoe}"/> 
+                </p:column>  
+                <p:column style="width: auto"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_AMOSTRA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_amostra.id.amoSeqp}"/> 
+                </p:column>  
+                <p:column style="width: auto"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_amostra.situacao.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{cancelarExameColetaController.voltar}" styleClass=" alinha-direita bt_cinza" profile="back" immediate="true"/> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

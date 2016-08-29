@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_RELACIONAR_CBO_COM_PROCEDIMENTO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{relacionarCboComProcedimentoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{relacionarCboComProcedimentoController}" ignoreEnter="true"/>  
+      <p:outputPanel id="panelCampos" layout="inline"> 
+        <p:outputPanel rendered="#{relacionarCboComProcedimentoController.itemProcedHosp != null}" layout="inline"> 
+          <h:form prependId="false" id="formDados"> 
+            <aghu:panelGeral style="margin-left: 4px !important; margin-right: 4px !important;" legend="#{messages.LABEL_RELACIONAR_CBO_COM_PROCEDIMENTO}"> 
+              <aghu:linha> 
+                <mec:inputText label="#{messages.LABEL_TABELA}" size="60" readonly="true" value="#{relacionarCboComProcedimentoController.itemProcedHosp.id.phoSeq} - #{relacionarCboComProcedimentoController.itemProcedHosp.procedimentoHospitalar.descricao}" id="procedHospitalar"/>  
+                <p:outputPanel layout="block"> 
+                  <p:tooltip  value="#{relacionarCboComProcedimentoController.itemProcedHosp.codTabela} - #{relacionarCboComProcedimentoController.itemProcedHosp.descricao}" direction="bottom-right" styleClass="tooltip" layout="block"></p:tooltip>  
+                  <mec:inputText label="#{messages.LABEL_PROCEDIMENTO_SUS}" size="90" readonly="true" value="#{relacionarCboComProcedimentoController.itemProcedHosp.codTabela} - #{relacionarCboComProcedimentoController.itemProcedHosp.descricao}" id="descricaoItem"/> 
+                </p:outputPanel>  
+                <mec:inputText label="#{messages.LABEL_IPH}" size="10" readonly="true" value="#{relacionarCboComProcedimentoController.itemProcedHosp.id.seq}" id="sequencialItem"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <p:outputPanel id="panelCbo" layout="inline"> 
+                  <mec:suggestionBox label="#{messages.LABEL_CBO}" title="#{messages.TITLE_CBO}" required="true" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="listarCbos" width="500" id="cbo" controller="#{relacionarCboComProcedimentoController}" value="#{relacionarCboComProcedimentoController.cbo}"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_CODIGO}</b> 
+                      </f:facet> #{item.codigo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_DESCRICAO}</b> 
+                      </f:facet> #{item.descricao}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_CBO_INICO_VIGENCIA}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{item.dtInicio}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_CBO_FIM_VIGENCIA}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{item.dtFim}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                      </h:outputText> 
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <BR/>  
+                  <mec:commandButton id="bt_adicionar" value="#{messages.LABEL_GRAVAR}" block="true" disabled="#{!mf:hasPermission(securityController, 'relacionarCboComProcedimento,alterar')}" action="#{relacionarCboComProcedimentoController.adicionar}" render="panelLista, panelMsgNaoEncontrado, panelCbo" profile="add" styleClass="bt_verde "/> 
+                </p:outputPanel> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <p:outputPanel id="panelMsgNaoEncontrado" layout="inline"> 
+                  <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{empty relacionarCboComProcedimentoController.procedimentos}"> 
+                    <h:outputText value="#{messages.LABEL_NENHUM_CBO_ENCONTRADO}"/> 
+                  </p:outputPanel> 
+                </p:outputPanel>  
+                <p:outputPanel id="panelLista" layout="inline"> 
+                  <p:outputPanel id="listaCbo" rendered="#{not empty relacionarCboComProcedimentoController.procedimentos}" layout="inline"> 
+                    <mec:serverDataTable list="#{relacionarCboComProcedimentoController.procedimentos}" id="tabela" controller="#{relacionarCboComProcedimentoController}" scrollable="true"> 
+                      <c:set var="_procCbo" value="#{item}"/>  
+                      <ui:define name="controls"> 
+                        <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{relacionarCboComProcedimentoController.editar(_procCbo.seq)}" oncomplete="PF('modalConfirmacaoExclusaoWG').show();;" disabled="#{!mf:hasPermission(securityController, 'relacionarCboComProcedimento,excluir')}" profile="delete" ajax="true" process="@this"/> 
+                      </ui:define>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_procCbo.cbo.codigo}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_procCbo.cbo.descricao}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_CBO_INICO_VIGENCIA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_procCbo.dtInicio}"> 
+                          <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_CBO_FIM_VIGENCIA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_procCbo.dtFim}"> 
+                          <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                        </h:outputText> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:acao> 
+              <mec:backButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{relacionarCboComProcedimentoController.cancelar}"/> 
+            </aghu:acao> 
+          </h:form> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO_CBO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_CBO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao" name="formModalExclusao"> 
+            <aghu:linha> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" oncomplete="PF('modalConfirmacaoExclusaoWG').hide();" block="true" id="bt_excluir" action="#{relacionarCboComProcedimentoController.remover}" render="panelMsgNaoEncontrado, panelLista" profile="search" ajax="true"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" id="bt_cancelarExcluir" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

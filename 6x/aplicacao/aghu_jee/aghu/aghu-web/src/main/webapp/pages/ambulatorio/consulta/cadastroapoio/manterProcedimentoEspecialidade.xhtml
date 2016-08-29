@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PROCEDIMENTO_ESPECIALIDADE} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterProcedimentoEspecialidadeController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="consulta"> 
+        <aghu:panelGeral id="ffdl_consultas" legend="#{messages.TITLE_PROCEDIMENTO_ESPECIALIDADE}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panel_especialidade" layout="inline"> 
+              <mec:suggestionBox  var="especialidade" itemValue="#{especialidade}"  label="#{messages.LABEL_ESPECIALIDADE_AGENDA}" title="#{messages.TITLE_ESPECIALIDADE_PROC}" descricaoInput="sigla" size="10" width="450" required="true" descricaoLabel="nomeEspecialidade" suggestionAction="listarEspecialidades" id="especialidade" controller="#{manterProcedimentoEspecialidadeController}" value="#{manterProcedimentoEspecialidadeController.especialidade}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_SIGLA}</b> 
+                  </f:facet> #{especialidade.sigla}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{especialidade.nomeEspecialidade}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{manterProcedimentoEspecialidadeController.pesquisar}" limitToList="true" process="@this" profile="search" ajax="true" render="panel_especialidade, detalhe"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{manterProcedimentoEspecialidadeController.limpar}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="detalhe" layout="inline"> 
+        <p:outputPanel id="detalhe_interno" rendered="#{manterProcedimentoEspecialidadeController.especialidade != null}" layout="inline"> 
+          <h:form prependId="false" id="listagem"> 
+            <aghu:panelGeral id="ffdl_consultasList" legend="#{messages.TITLE_PROCEDIMENTO_HOSP_ESPECIALIDADE}"> 
+              <aghu:linha> 
+                <mec:suggestionBox  var="procedimento" itemValue="#{procedimento}" label="#{messages.LABEL_PROCEDIMENTO}" title="#{messages.TITLE_PROCEDIMENTO_PROC}" descricaoInput="seq" size="10" width="450" required="true" readonly="#{manterProcedimentoEspecialidadeController.edicao}" descricaoLabel="descricao" suggestionAction="listarProcedimentos" id="procedimento" controller="#{manterProcedimentoEspecialidadeController}" value="#{manterProcedimentoEspecialidadeController.procedimento}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{procedimento.seq}
+                  </p:column>  
+                  <p:column>
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{procedimento.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_CONSULTA}" title="#{messages.TITLE_CONSULTA}" value="#{manterProcedimentoEspecialidadeController.consulta}" id="consultacheckBox"/> 
+                <p:outputPanel id="panel_botoes_gravar" rendered="#{!manterProcedimentoEspecialidadeController.edicao}" layout="inline"> 
+                  <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" action="#{manterProcedimentoEspecialidadeController.gravar}" profile="ok" ajax="true" render="detalhe"/> 
+                </p:outputPanel>  
+                <p:outputPanel id="panel_botoes_cancelar" rendered="#{manterProcedimentoEspecialidadeController.edicao}" layout="inline"> 
+                  <mec:commandButton id="bt_editar" value="#{messages.LABEL_ALTERAR}" action="#{manterProcedimentoEspecialidadeController.gravar}" profile="ok" ajax="true" render="detalhe, validacaoAgendamento"/>  
+                  <mec:commandButton id="bt_cancelarEdic" value="#{messages.LABEL_CANCEL_EDI}" immedite="true" action="#{manterProcedimentoEspecialidadeController.cancelarEdicao}" ajax="true" render="detalhe, panelListagem" styleClass="bt_cinza"/> 
+                </p:outputPanel> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:serverDataTable rendered="#{not empty manterProcedimentoEspecialidadeController.listaProcedimentos}" list="#{manterProcedimentoEspecialidadeController.listaProcedimentos}" scrollable="true" scrollHeight="300" > 
+                  <c:set var="_procedimento" value="#{item}"/>  
+                  <p:column width="50" style="#{_procedimento.id eq manterProcedimentoEspecialidadeController.procedimentoEspecialidade.id and manterProcedimentoEspecialidadeController.edicao eq true ? 'background-color:yellow;' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink action="#{manterProcedimentoEspecialidadeController.editar(_procedimento)}" limitToList="true" title="#{messages.LABEL_EDITAR}" rendered="#{not manterProcedimentoEspecialidadeController.edicao}" profile="edit" ajax="true" render="detalhe, panelListagem" process="@this"/>  
+                    <mec:commandLink action="#{manterProcedimentoEspecialidadeController.excluir(_procedimento)}" title="#{messages.LABEL_EXCLUIR}" rendered="#{not manterProcedimentoEspecialidadeController.edicao}" limitToList="true" profile="delete" ajax="true" render="detalhe" process="@this"/> 
+                  </p:column>  
+                  <p:column width="95" style="#{_procedimento.id eq manterProcedimentoEspecialidadeController.procedimentoEspecialidade.id and manterProcedimentoEspecialidadeController.edicao eq true ? 'background-color:yellow; text-align: center !important;' : 'text-align: center !important;'}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PROCEDIMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_procedimento.procedHospInterno.seq}"/> 
+                  </p:column>  
+                  <p:column width="410" style="#{_procedimento.id eq manterProcedimentoEspecialidadeController.procedimentoEspecialidade.id and manterProcedimentoEspecialidadeController.edicao eq true ? 'background-color:yellow;' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_procedimento.procedHospInterno.descricao}"/> 
+                  </p:column>  
+                  <p:column width="70" style="#{_procedimento.id eq manterProcedimentoEspecialidadeController.procedimentoEspecialidade.id and manterProcedimentoEspecialidadeController.edicao eq true ? 'background-color:yellow; text-align: center !important;' : 'text-align: center !important;'}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CONSULTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{manterProcedimentoEspecialidadeController.isSimNao(_procedimento.consulta)}"/> 
+                  </p:column>  
+                  <p:column width="390" style="#{_procedimento.id eq manterProcedimentoEspecialidadeController.procedimentoEspecialidade.id and manterProcedimentoEspecialidadeController.edicao eq true ? 'background-color:yellow;' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ROTINA_FAT_AUTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_procedimento.rotina}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </h:form> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+      <p:outputPanel id="validacaoAgendamento" layout="inline"> 
+        <p:dialog id="modalAgendamento" width="400" height="150" modal="true" resizable="false" widgetVar="modalAgendamentoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CONFIRMACAO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALERT_GRADE_AGENDAMENTO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalAgendamento" name="formModalAgendamento"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_conf" action="#{manterProcedimentoEspecialidadeController.gravarComConfirmacao}" profile="ok"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalAgendamentoWG').hide();; return false;" id="bt_cancelarConf" profile="cancel" ajax="true" process="@this"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <p:outputPanel id="panelModalAgendamento" rendered="#{manterProcedimentoEspecialidadeController.exibirModalAgendamento}" layout="inline"> 
+          <script xml:space="preserve">
+					PF('modalAgendamentoWG').show();;
+				</script> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

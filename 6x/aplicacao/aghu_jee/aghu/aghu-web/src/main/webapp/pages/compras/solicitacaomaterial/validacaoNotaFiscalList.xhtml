@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_LIST_VALIDACAO_NOTA_FISCAL} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{validacaoNotaFiscalPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_VALIDACAO_NOTA_FISCAL}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="numeroNotaFiscal" readonly="false" label="#{messages.LABEL_NOTA_FISCAL}" title="#{messages.TITLE_NOTA_FISCAL}" size="10" maxlength="7" value="#{validacaoNotaFiscalPaginatorController.numeroNotaFiscal}"/>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_EMISSAO_NF_INICIO}" title="#{messages.TITLE_PERIODO_DATA_EMISSAO_NF_INICIO}" id="fdPeriodoEmissaoInicio" value="#{validacaoNotaFiscalPaginatorController.dataInicioEmissao}" required="false" tipo="data"/>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_EMISSAO_NF_FIM}" title="#{messages.TITLE_PERIODO_DATA_EMISSAO_NF_FIM}" id="fdPeriodoEmissaoFim" value="#{validacaoNotaFiscalPaginatorController.dataFimEmissao}" required="false" tipo="data"/> 
+          </aghu:linha>  
+          <p:spacer height="16px" width="93px" id="spacer" style="float: left"/>  
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_DATA_PEDIDO_INICIO}" title="#{messages.TITLE_PERIODO_DATA_PEDIDO_INICIO}" id="fdPeriodoPedidoInicio" value="#{validacaoNotaFiscalPaginatorController.dataInicioPedido}" required="false" tipo="data"/>  
+            <p:outputPanel style="width: 7px; height: 15px; float: left;" layout="inline"> </p:outputPanel>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_PEDIDO_FIM}" title="#{messages.TITLE_PERIODO_DATA_PEDIDO_FIM}" id="fdPeriodoPedidoFim" value="#{validacaoNotaFiscalPaginatorController.dataFimPedido}" required="false" tipo="data"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{validacaoNotaFiscalPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}" action="#{validacaoNotaFiscalPaginatorController.limparPesquisa}" profile="clear"/> 
+        </aghu:acao> 
+
+        <p:outputPanel id="panelListaNotasFiscais" layout="inline"> 
+          <mec:serverDataTable dataModel="dataModel" title="#{messages.TITLE_LISTA_VALIDACAO_NOTA_FISCAL}" 
+          	rendered="#{validacaoNotaFiscalPaginatorController.dataModel.pesquisaAtiva}" 
+          	id="tabelaNotasFiscais" controller="#{validacaoNotaFiscalPaginatorController}"> 
+            <c:set var="_notaFiscal" value="#{item}"/>  
+            <p:column style="white-space: nowrap"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink id="bt_visualizar" title="#{messages.LABEL_VISUALIZAR}" action="#{validacaoNotaFiscalPaginatorController.visualizar}" immediate="true" includePageParams="false" styleClass=" silk-zoom silk-icon" ajax="true"> 
+                <f:setPropertyActionListener target="#{validacaoNotaFiscalController.dataNotaFiscal}" value="#{_notaFiscal.dataNotaFiscal}" for="command"/>  
+                <f:setPropertyActionListener target="#{validacaoNotaFiscalController.numeroNotaFiscal}" value="#{_notaFiscal.numeroNotaFiscal}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="bt_confirmar" title="#{messages.LABEL_CONFIRMAR}"
+                               rendered="#{_notaFiscal.indValidacaoNF eq 'N' or _notaFiscal.indValidacaoNF eq 'R'}"
+                               action="#{validacaoNotaFiscalPaginatorController.setNumeroNotaFiscal(_notaFiscal.numeroNotaFiscal)}"
+                               oncomplete="PF('modalConfirmacaoAprovacaoWG').show();"
+                               immediate="true"
+                               styleClass=" silk-accept silk-icon"
+                               ajax="true"/>
+              <mec:commandLink id="bt_recusar" title="#{messages.LABEL_RECUSAR}" rendered="#{_notaFiscal.indValidacaoNF eq 'N'}"
+                               oncomplete="PF('modalConfirmacaoRejeicaoWG').show();;"
+                               actionListener="#{validacaoNotaFiscalPaginatorController.setNumeroNotaFiscal(_notaFiscal.numeroNotaFiscal)}" immediate="true" includePageParams="false" styleClass=" silk-cancel silk-icon" ajax="true"/>
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_NOTA_FISCAL}"/> 
+              </f:facet>  
+              <h:outputText value="#{_notaFiscal.numeroNotaFiscal}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DATA_EMISSAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_notaFiscal.dataNotaFiscal}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_VALOR_TOTAL_NF}"/> 
+              </f:facet>  
+              <h:outputText value="#{_notaFiscal.valorTotal}" styleClass="mascara(decimal)}"> 
+                <f:converter converterId="currencyConverter"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CONF}"/> 
+              </f:facet>  
+              <h:outputText value="#{_notaFiscal.indValidacaoNF eq 'S' ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ESTOQUE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_notaFiscal.indIntegracaoEstoque eq 'S' ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_RM}"/> 
+              </f:facet>  
+              <h:outputText value="#{_notaFiscal.indGeracaoRM eq 'S' ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_REC}"/> 
+              </f:facet>  
+              <h:outputText value="#{_notaFiscal.indValidacaoNF eq 'R' ? 'Sim' : 'Não'}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoRejeicao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoRejeicaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_REJEICAO_NOTA_FISCAL}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_REJEICAO_NOTA_FISCAL} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalRejeicao" name="formModalRejeicao"> 
+            <aghu:linha> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" immediate="true" id="bt_excluir" action="#{validacaoNotaFiscalPaginatorController.recusar}" profile="search">
+                <f:setPropertyActionListener for="command" target="#{validacaoNotaFiscalPaginatorController.seqAcao}" value="{#_notaFiscal.numeroNotaFiscal}"/>
+              </mec:commandButton>
+              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoRejeicaoWG').hide();" id="bt_cancelarExcluir" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoAprovacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoAprovacaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_APROVACAO_NOTA_FISCAL}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_APROVACAO_NOTA_FISCAL} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalAprovacao" name="formModalAprovacao"> 
+            <aghu:linha> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" immediate="true" id="bt_aprovar" action="#{validacaoNotaFiscalPaginatorController.aprovar}" profile="search">
+              </mec:commandButton>
+              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoAprovacaoWG').hide();" id="bt_cancelarAprovacao" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

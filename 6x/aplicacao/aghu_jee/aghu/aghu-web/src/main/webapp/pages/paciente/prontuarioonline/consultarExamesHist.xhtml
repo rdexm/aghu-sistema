@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_EXAMES_POL}</title> 
+    </ui:define>  
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{consultarExamesHistController.inicio}" />
+		</f:metadata>
+	</ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{consultarExamesHistController}"/>  
+        <h:form id="formDocsAnexo" prependId="false"> 
+          <p:tabView id="tapPanel" dynamic="true" activeIndex="#{consultarExamesHistController.currentTab}" prependId="false">
+          	<p:ajax event="tabChange" listener="#{consultarExamesHistController.renderAbas}" update="@this @(#panelBotoes1) @(#panelBotoes2)"/> 
+            <p:tab name="#{messages.LABEL_EXAMES_LIBERADOS_POL}" title="#{messages.LABEL_EXAMES_LIBERADOS_POL}">
+             
+              <p:outputPanel id="panelBotoes1" layout="block"> 
+             	 <aghu:linha style="padding-left: 1px;">
+                  <mec:commandButton id="bt_resultadosExamesLiberados" value="#{messages.LABEL_RESULTADO}" 
+                  					 disabled="#{consultarExamesHistController.hasAcessoAdminPol() or not consultarExamesHistController.verificarOcorrenciaExameSelecionado()}"
+                  					 action="#{consultarExamesHistController.consultarResultadoNotaAdicional}"
+					              	 onclick="parent.hideModalPOL()" styleClass="bt_cinza"  style="padding-left: 1px;"> 
+                    <p:ajax event="click" update="@(#panellistaExamesLiberados)"/> 
+                  </mec:commandButton>  
+                  
+                  <mec:commandButton id="bt_imagemExamesPendentes" value="#{messages.LABEL_IMAGEM}" disabled="#{empty consultarExamesHistController.visualizarImagensExame(false)  || not consultarExamesHistController.verificarPermissaoVisualizarImagensExame(false) || not consultarExamesHistController.verificarOcorrenciaExameSelecionado()}" onclick="window.open('#{consultarExamesHistController.visualizarImagensExame(false)}', 'IMPAX');return false" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_atoAnestesicoExamesLiberados" value="#{messages.LABEL_ATO_ANESTESICO}" disabled="#{cirurgiasInternacaoPOLController.usuarioAdministrativo || consultarExamesHistController.botaoAtoAnestesicoDisabled}" action="#{consultarExamesHistController.visualizarRelatorioAtoAnestesico}" ajax="true" process="@this" styleClass="bt_cinza"/> 
+                </aghu:linha> 
+             	 <aghu:linha></aghu:linha>
+              </p:outputPanel>  
+              <p:outputPanel id="panelExamesLiberados"> 
+                <mec:serverDataTable id="tblistaExamesLiberados" 
+                					 list="#{consultarExamesHistController.listaExamesLiberados}" scrollable="true" scrollHeight="355"> 
+                  <c:set var="_examesLiberados" value="#{item}"/>  
+                  
+                  <p:column rendered="#{!mf:hasPermission(securityController,'acessoAdminPOL,acessar')}" 
+                  			style="text-align:center;width:20px; padding-left: 2px !important;"> 
+                    <h:selectBooleanCheckbox name="marcadorExamesLiberados" id="marcadorExamesLiberados" value="#{_examesLiberados.itemSelecionadoLista}" title="Exibir Resultados"> 
+                      <p:ajax event="click" update="@(#panelBotoes1)" process="@this" listener="#{consultarExamesHistController.selecionarItemExame(_examesLiberados.soeSeq, _examesLiberados.seqp, false)}"/> 
+                    </h:selectBooleanCheckbox> 
+                  </p:column>  
+                  
+                  <p:column style="width: 60px; padding-left: 2px !important;" rendered="#{!mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="linkAcao0" action="#{consultarExamesHistController.abrirDetalhamento}" title="#{messages.LABEL_EXAMES_POL_DETALHAR_EXAME}"
+                    				 styleClass=" silk-magnifier silk-icon" onclick="parent.hideModalPOL();"> 
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.soeSeq}" value="#{_examesLiberados.soeSeq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.seqp}" value="#{_examesLiberados.seqp}" for="command"/>  
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.voltarPara}" value="pol-consultarExamesHist" for="command"/>  
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.isHist}" value="true" for="command"/>  
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.origemPOL}" value="true" for="command"/> 
+                    </mec:commandLink>
+                      
+                    <mec:commandLink immediate="true" title="#{messages.CONSULTAR_NOTAS_ADICIONAIS_LABEL_NOTAS_ADICIONAIS}" 
+                      				   oncomplete="PF('modalConsultarNotasAdicionaisWG').show()" 
+                      				   rendered="#{_examesLiberados.notasAdicionais}" 
+                      				   action="#{consultarNotasAdicionaisHistController.selecionarItemSolicitacaoExame(_examesLiberados)}" 
+                      				   styleClass=" silk-attach silk-icon" ajax="true" 
+                      				   render="modalConsultarNotasAdicionais" /> 
+
+                    <mec:commandLink id="btAnexoLiberados" rendered="#{_examesLiberados.temAnexo and !consultarExamesHistController.hasAcessoAdminPol()}" 
+                      				   action="#{consultarExamesHistController.abrirVisualizarResultado}" 
+                      				   title="#{messages.LABEL_DOWNLOAD_ARQUIVO_LAUDO}" 
+                      				   styleClass=" silk-page-white silk-icon"> 
+                        <f:setPropertyActionListener target="#{consultarExamesHistController.iseSoeSeq}" value="#{_examesLiberados.soeSeq}" for="command"/>  
+                        <f:setPropertyActionListener target="#{consultarExamesHistController.iseSeqp}" value="#{_examesLiberados.seqp}" for="command"/>  
+                        <f:setPropertyActionListener target="#{consultarExamesHistController.origemPOL}" value="true" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  
+                  <p:column style="text-align:center;width:55px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_DATA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesLiberados.dthrLiberada}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_EXAME}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesLiberados.exaDescricaoUsual}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width: 52px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_AMOSTRA}"/> 
+                    </f:facet>  
+	                <h:outputText value="#{fn:substring(_examesLiberados.manDescricao,0,7)}..." rendered="#{(fn:length(_examesLiberados.manDescricao) gt 7)}" title="#{_examesLiberados.manDescricao}"/>  
+		            <h:outputText value="#{_examesLiberados.manDescricao}" rendered="#{(fn:length(_examesLiberados.manDescricao) le 7)}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width:150px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_SERVICO_LABORATORIO}"/> 
+                    </f:facet>  
+	                <h:outputText value="#{fn:substring(_examesLiberados.unfDescricao,0,22)}..." rendered="#{(fn:length(_examesLiberados.unfDescricao) gt 22)}" title="#{_examesLiberados.unfDescricao}"/>  
+		            <h:outputText value="#{_examesLiberados.unfDescricao}" rendered="#{(fn:length(_examesLiberados.unfDescricao) le 22)}"/> 
+                  </p:column>  
+                  
+                  <p:column rendered="#{!mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"
+                  			style="text-align:center;width:50px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_RESULTADO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesLiberados.resultado}"/> 
+                  </p:column> 
+                </mec:serverDataTable>  
+              </p:outputPanel> 
+            </p:tab>  
+            
+            
+            <p:tab name="#{messages.LABEL_EXAMES_PENDENTES_POL}" title="#{messages.LABEL_EXAMES_PENDENTES_POL}" > 
+              <p:outputPanel id="panelBotoes2"> 
+                <aghu:linha> 
+                  <mec:commandButton id="bt_resultadosExamesPendentes" value="#{messages.LABEL_RESULTADO}"
+                  					 disabled="#{consultarExamesHistController.hasAcessoAdminPol() or not consultarExamesHistController.verificarOcorrenciaExameSelecionado()}"
+                  					 action="#{consultarExamesHistController.consultarResultadoNotaAdicional}" 
+					              	 onclick="parent.hideModalPOL()" styleClass="bt_cinza"  style="padding-left: 1px;"/>
+					              	   
+                  <mec:commandButton id="bt_imagemExamesLiberados" value="#{messages.LABEL_IMAGEM}" 
+                  					 disabled="#{empty consultarExamesHistController.visualizarImagensExame(false) || not consultarExamesHistController.verificarPermissaoVisualizarImagensExame(true) || not consultarExamesHistController.verificarOcorrenciaExameSelecionado()}"
+                  					 onclick="window.open('#{consultarExamesHistController.visualizarImagensExame(false)}', 'IMPAX');return false" styleClass="bt_cinza"/>  
+                  <mec:commandButton id="bt_atoAnestesicoExamesPendentes" value="#{messages.LABEL_ATO_ANESTESICO}" 
+                  					 disabled="#{cirurgiasInternacaoPOLController.usuarioAdministrativo || consultarExamesHistController.botaoAtoAnestesicoDisabled}" 
+                  					 action="#{consultarExamesHistController.visualizarRelatorioAtoAnestesico}" ajax="true" process="@this" styleClass="bt_cinza"/> 
+                </aghu:linha> 
+             	 <aghu:linha></aghu:linha> 
+              </p:outputPanel>  
+
+              <p:outputPanel id="panelExamesPendentes" > 
+                <mec:serverDataTable id="tblistaExamesPendentes" style="width: 98%" list="#{consultarExamesHistController.listaExamesPendentes}" 
+                					 scrollable="true" scrollHeight="355"> 
+                  <c:set var="_examesPendentes" value="#{item}"/>  
+                  <p:column rendered="#{!mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"
+                  			style="text-align:center;width:20px; padding-left: 2px !important;"> 
+                    <h:selectBooleanCheckbox name="marcadorExamesPendentes" id="marcadorExamesPendentes" value="#{_examesPendentes.itemSelecionadoLista}" title="Exibir Resultados"> 
+                      <p:ajax event="click" update="@(#panelBotoes2)" process="@this" listener="#{consultarExamesHistController.selecionarItemExame(_examesPendentes.soeSeq,_examesPendentes.seqp, true)}"/> 
+                    </h:selectBooleanCheckbox> 
+                  </p:column>  
+                  
+                  <p:column styleClass="tdAcao" rendered="#{!mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"
+                  			style="width:50px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="linkAcao3" 
+                    				 action="#{consultarExamesHistController.abrirDetalhamento}" 
+                    				 title="#{messages.LABEL_EXAMES_POL_DETALHAR_EXAME}" styleClass=" silk-magnifier silk-icon"
+                    				 onclick="parent.hideModalPOL();"> 
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.soeSeq}" value="#{_examesPendentes.soeSeq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.seqp}" value="#{_examesPendentes.seqp}" for="command"/>  
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.voltarPara}" value="pol-consultarExamesHist" for="command"/>  
+                      <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.isHist}" value="true" for="command"/> 
+                    </mec:commandLink>
+                      
+                    <mec:commandLink id="btAnexoPendentes" 
+                      				   rendered="#{_examesPendentes.temAnexo and !consultarExamesHistController.hasAcessoAdminPol()}" 
+                      				   action="#{consultarExamesHistController.abrirVisualizarResultado}" 
+                      				   title="#{messages.LABEL_DOWNLOAD_ARQUIVO_LAUDO}" 
+                      				   styleClass=" silk-attach silk-icon"> 
+                        <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSoeSeq}" value="#{_examesPendentes.soeSeq}" for="command"/>  
+                        <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSeqp}" value="#{_examesPendentes.seqp}" for="command"/>  
+                        <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.origemPOL}" value="true" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                 
+                  <p:column style="text-align:center;width:55px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_DATA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesPendentes.dthrLiberada}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_EXAME}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesPendentes.exaDescricaoUsual}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width:45px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_AMOSTRA}"/> 
+                    </f:facet>  
+	                <h:outputText value="#{fn:substring(_examesPendentes.manDescricao,0,5)}..." rendered="#{(fn:length(_examesPendentes.manDescricao) gt 5)}" title="#{_examesPendentes.manDescricao}"/>  
+		            <h:outputText value="#{_examesPendentes.manDescricao}" rendered="#{(fn:length(_examesPendentes.manDescricao) le 5)}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width:110px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_SERVICO_LABORATORIO}"/> 
+                    </f:facet>  
+	                <h:outputText value="#{fn:substring(_examesPendentes.unfDescricao,0,14)}..." rendered="#{(fn:length(_examesPendentes.unfDescricao) gt 14)}" title="#{_examesPendentes.unfDescricao}"/>  
+		            <h:outputText value="#{_examesPendentes.unfDescricao}" rendered="#{(fn:length(_examesPendentes.unfDescricao) le 14)}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width:70px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_SITUACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesPendentes.situacaoCodigoDescricao}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width:55px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_SOLICITACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesPendentes.soeSeq}"/> 
+                  </p:column> 
+                </mec:serverDataTable>  
+              </p:outputPanel> 
+            </p:tab>  
+            
+            <p:tab name="#{messages.LABEL_EXAMES_CANCELADOS_POL}" title="#{messages.LABEL_EXAMES_CANCELADOS_POL}"> 
+              <p:outputPanel id="panelBotoes3"> 
+                <mec:serverDataTable id="tblistaExamesCancelados" style="width: 98%" list="#{consultarExamesHistController.listaExamesCancelados}" 
+                					 scrollable="true" scrollHeight="425"> 
+                  <c:set var="_examesCancelados" value="#{item}"/>  
+                  <p:column styleClass="tdAcao" rendered="#{!mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"
+                  			style="text-align:center;width:40px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="btAnexoCancelados" 
+                    				 action="#{consultarExamesHistController.abrirVisualizarResultado}" 
+                    				 title="#{messages.LABEL_DOWNLOAD_ARQUIVO_LAUDO}" styleClass=" silk-attach silk-icon"
+                    				 rendered="#{_examesCancelados.temAnexo}"> 
+                        <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSoeSeq}" value="#{_examesCancelados.soeSeq}" for="command"/>  
+                        <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSeqp}" value="#{_examesCancelados.seqp}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>
+                    
+                  <p:column style="text-align:center;width:55px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_DATA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesCancelados.dthrLiberada}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText> 
+                  </p:column>  
+                
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_EXAME}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesCancelados.exaDescricaoUsual}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width:60px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_AMOSTRA}"/> 
+                    </f:facet>  
+	                <h:outputText value="#{fn:substring(_examesCancelados.manDescricao,0,7)}..." rendered="#{(fn:length(_examesCancelados.manDescricao) gt 7)}" title="#{_examesCancelados.manDescricao}"/>  
+		            <h:outputText value="#{_examesCancelados.manDescricao}" rendered="#{(fn:length(_examesCancelados.manDescricao) le 7)}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width:150px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_SERVICO_LABORATORIO}"/> 
+                    </f:facet>  
+	                <h:outputText value="#{fn:substring(_examesCancelados.unfDescricao,0,22)}..." rendered="#{(fn:length(_examesCancelados.unfDescricao) gt 22)}" title="#{_examesCancelados.unfDescricao}"/>  
+		            <h:outputText value="#{_examesCancelados.unfDescricao}" rendered="#{(fn:length(_examesCancelados.unfDescricao) le 22)}"/> 
+                  </p:column>  
+                  
+                  <p:column style="width:55px; padding-left: 2px !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_EXAMES_POL_SOLICITACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_examesCancelados.soeSeq}"/> 
+                  </p:column> 
+                </mec:serverDataTable>  
+              </p:outputPanel> 
+            </p:tab> 
+          </p:tabView>  
+          <ui:include src="consultarNotasAdicionaisHist.xhtml"/> 
+        </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

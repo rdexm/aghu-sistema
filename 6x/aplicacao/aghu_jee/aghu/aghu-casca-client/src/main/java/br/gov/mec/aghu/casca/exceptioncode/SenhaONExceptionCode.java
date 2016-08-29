@@ -1,0 +1,16 @@
+package br.gov.mec.aghu.casca.exceptioncode;
+
+import br.gov.mec.aghu.core.exception.BusinessExceptionCode;
+
+public enum SenhaONExceptionCode implements BusinessExceptionCode {
+	
+	CASCA_MENSAGEM_LOGIN_INEXISTENTE,
+	CASCA_MENSAGEM_EMAIL_NAO_CADASTRADO,
+	CASCA_MENSAGEM_CPF_NAO_CADASTRADO,
+	CASCA_MENSAGEM_CPF_NAO_CONFERE,
+	CASCA_MENSAGEM_PARAMETRO_EMAIL_NAO_CADASTRADO,
+	CASCA_MENSAGEM_ERRO_GERAR_TOKEN,
+	CASCA_MENSAGEM_CORPO_EMAIL_NAO_CADASTRADO
+	;
+
+}

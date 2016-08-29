@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_ANTIMICROBIANOS} :: #{messages.NOME_ABREVIADO_PROJETO}</title>  
+      <style xml:space="preserve">
+			.checked {
+				background-image: url('../../../resources/img/icons/checked.png') !important;
+				background-repeat: no-repeat;
+				background-position: center;
+			}
+		</style> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaAntimicrobianosPaginatorController}"/>  
+      <h:form prependId="false" id="formAntimicrobianos" name="formAntimicrobianos"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_ANTIMICROBIANOS}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="seq" value="#{pesquisaAntimicrobianosPaginatorController.filtros.seq}" label="#{messages.LABEL_CODIGO_ANTIMICROBIANO}" title="#{messages.TITLE_CODIGO_ANTIMICROBIANO}" size="6" maxlength="6"/>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO_ANTIMICROBIANO}" title="#{messages.TITLE_DESCRICAO_ANTIMICROBIANO}" id="descricao" value="#{pesquisaAntimicrobianosPaginatorController.filtros.descricao}" size="50" maxlength="50" emptyStringToNullConverter="emptyStringToNullConverter" style="text-transform:uppercase"/>  
+            <mec:selectOneMenu id="situacao" enum="DominioSituacao" value="#{pesquisaAntimicrobianosPaginatorController.filtros.situacao}" label="#{messages.LABEL_SITUACAO_ANTIMICROBIANO}" title="#{messages.TITLE_SITUACAO_ANTIMICROBIANO}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" disabled="#{not mf:hasPermission(securityController,'consultarAntimicrobiano,pesquisar')}" action="#{pesquisaAntimicrobianosPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{pesquisaAntimicrobianosPaginatorController.limpar}" ajax="true" render="formAntimicrobianos, formLista" process="@this" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" action="#{pesquisaAntimicrobianosPaginatorController.novo()}" rendered="#{pesquisaAntimicrobianosPaginatorController.dataModel.pesquisaAtiva}" disabled="#{not mf:hasPermission(securityController,'manterAntimicrobiano,manter')}" ajax="true" styleClass="bt_cinza" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formLista" name="formLista"> 
+        <mec:serverDataTable id="tabelaAntimicrobianos" dataModel="dataModel" controller="#{pesquisaAntimicrobianosPaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaAntimicrobianos_link_editar" profile="edit" title="editar" action="#{pesquisaAntimicrobianosPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{cadastroAntimicrobianosController.mciAntimicrobiano}" value="#{_item}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{pesquisaAntimicrobianosPaginatorController.selecionado}" value="#{_item}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaAntimicrobianos_link_remover" profile="delete" title="excluir" action="#{pesquisaAntimicrobianosPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{pesquisaAntimicrobianosPaginatorController.selecionado}" value="#{_item}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COD_DESCRICAO_ANTIMICROBIANO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.seq} - #{_item.descricao}"/> 
+          </p:column>  
+          <p:column style="white-space:nowrap;width:40px;" styleClass="#{_item.situacao.descricao == 'Ativo' ? 'checked' : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ATIVO}"/> 
+            </f:facet> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_LABORATORIO_HEMOCENTRO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{laboratorioHemocentroPaginatorController}"/>  
+      <h:form prependId="false" id="formDadosLaboratorioHemocentro"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_LABORATORIO_HEMOCENTRO}"> 
+          <aghu:linha> 
+            <mec:inputText value="#{laboratorioHemocentroPaginatorController.filtros.nome}" label="#{messages.LABEL_NOME_LABORATORIO_HEMOCENTRO}" title="#{messages.TITLE_NOME_LABORATORIO_HEMOCENTRO}" size="70" maxlength="120" style="text-transform:uppercase" id="nome"/>  
+            <mec:inputText value="#{laboratorioHemocentroPaginatorController.filtros.endereco}" label="#{messages.LABEL_ENDERECO_LABORATORIO_HEMOCENTRO}" title="#{messages.TITLE_ENDERECO_LABORATORIO_HEMOCENTRO}" size="70" maxlength="120" removerCaratersEspeciais="false" style="text-transform:uppercase" id="endereco"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText value="#{laboratorioHemocentroPaginatorController.filtros.cidade}" label="#{messages.LABEL_CIDADE_LABORATORIO_HEMOCENTRO}" title="#{messages.TITLE_CIDADE_LABORATORIO_HEMOCENTRO}" size="146" maxlength="25" style="text-transform:uppercase" id="cidade"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+              <mec:inputNumero id="codigoConvenio"
+                               label="#{messages.LABEL_COD_CONVENIO_FAT}"
+                               title="#{messages.TITLE_LABEL_CODIGO_CONVENIO_PESQ}"
+                               size="10" maxlength="3"
+                               readonly="#{laboratorioHemocentroPaginatorController.filtros != null and laboratorioHemocentroPaginatorController.filtros.convenio != null}"
+                               value="#{laboratorioHemocentroPaginatorController.convenioId}">
+              </mec:inputNumero>
+
+              <mec:inputNumero id="codigoPlano"
+                               label="#{messages.LABEL_COD_PLANO_FAT}" title="#{messages.TITLE_LABEL_CODIGO_PLANO_PESQ}"
+                               size="8" maxlength="2"
+                               converter="#{javax.faces.Byte}"
+                               styleClass="numerico"
+                               readonly="#{laboratorioHemocentroPaginatorController.filtros != null and laboratorioHemocentroPaginatorController.filtros.convenio != null}"
+                               value="#{laboratorioHemocentroPaginatorController.planoId}">
+                  <p:ajax event="change"
+                          bypassUpdates="false"
+                          update="@(#codigoConvenio) @(#codigoPlano) @(#suggestion_plano)"
+                          process="@this"
+                          listener="#{laboratorioHemocentroPaginatorController.escolherPlanoConvenio()}"/>
+              </mec:inputNumero>
+
+              <mec:suggestionBox id="suggestion_plano"
+                                 label="#{messages.LABEL_CONVENIO_PLANO}"
+                                 title="#{messages.TITLE_LABEL_CONVENIO_PLANOS_PACIENTES_ADMITIDOS}"
+                                 width="800" size="112" maxlength="40"
+                                 converter="#{fatConvenioSaudePlanoConverter}"
+                                 descricaoInput="descricaoPlanoConvenio"
+                                 suggestionAction="pesquisarConvenioSaudePlanos"
+                                 posSelectionAction="atribuirPlano"
+                                 posDeleteAction="atribuirPlano"
+                                 controller="#{laboratorioHemocentroPaginatorController}"
+                                 value="#{laboratorioHemocentroPaginatorController.filtros.convenio}"
+                                 render="codigoConvenio, codigoPlano">
+                  <p:column>#{item.convenioSaude.descricao} - #{item.descricao}</p:column>
+              </mec:suggestionBox>
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" rendered="#{mf:hasPermission(securityController,'cadastrarLaboratorio/Hemocentro,pesquisar')}" action="#{laboratorioHemocentroPaginatorController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+          <mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}" action="#{laboratorioHemocentroPaginatorController.limparPesquisa}" profile="clear" immediate="true"/>
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" immediate="true" action="#{laboratorioHemocentroPaginatorController.inserir}" rendered="#{laboratorioHemocentroPaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'cadastrarLaboratorio/Hemocentro,executar')}" profile="add"/> 
+        </aghu:linha> 
+      </h:form>  
+      <h:form prependId="false" id="formListarLaboratorioHemocentro"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaLaboratorioHemocentro" controller="#{laboratorioHemocentroPaginatorController}"> 
+          <c:set var="_obj" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaLaboratorioHemocentro_link_editar" profile="edit" title="editar" action="#{laboratorioHemocentroPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{laboratorioHemocentroController.laboratorioExterno}" value="#{_obj}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{laboratorioHemocentroPaginatorController.selecionado}" value="#{_obj}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaLaboratorioHemocentro_link_remover" profile="delete" title="excluir" action="#{laboratorioHemocentroPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{laboratorioHemocentroPaginatorController.selecionado}" value="#{_obj}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{_obj.nome}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME_LABORATORIO_HEMOCENTRO}"/> 
+            </f:facet>  
+            <p:outputPanel rendered="#{(fn:length(_obj.nome) gt 40)}" layout="inline"> 
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{_obj.nome}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{fn:substring(_obj.nome,0,40)}"/>  
+              <h:outputText value=" ..."/> 
+            </p:outputPanel>  
+            <p:outputPanel rendered="#{(fn:length(_obj.nome) le 40)}" layout="inline"> 
+              <h:outputText value="#{_obj.nome}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{_obj.endereco}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ENDERECO_LABORATORIO_HEMOCENTRO}"/> 
+            </f:facet>  
+            <p:outputPanel rendered="#{(fn:length(_obj.endereco) gt 30)}" layout="inline"> 
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{_obj.endereco}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{fn:substring(_obj.endereco,0,30)}"/>  
+              <h:outputText value=" ..."/> 
+            </p:outputPanel>  
+            <p:outputPanel rendered="#{(fn:length(_obj.endereco) le 30)}" layout="inline"> 
+              <h:outputText value="#{_obj.endereco}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{_obj.cidade}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CIDADE_LABORATORIO_HEMOCENTRO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_obj.cidade}"/> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{_obj.convenio}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CONVENIO}"/> 
+            </f:facet>  
+            <c:set xmlns:c="http://java.sun.com/jstl/core" var="conv" value="#{_obj.convenioSaude.descricao} - #{_obj.convenio.descricao}"></c:set>  
+            <p:outputPanel rendered="#{fn:length(conv) gt 20}" layout="inline"> 
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{conv}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{fn:substring(conv,0,20)}"/>  
+              <h:outputText value=" ..."/> 
+            </p:outputPanel>  
+            <p:outputPanel rendered="#{fn:length(conv) le 20}" layout="inline"> 
+              <h:outputText value="#{conv}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{_obj.formaEnvio}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_FORMAENVIO_LABORATORIO_HEMOCENTRO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_obj.formaEnvio.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

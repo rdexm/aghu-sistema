@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Receber Amostras</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{listarAmostrasSolicitacaoRecebimentoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{listarAmostrasSolicitacaoRecebimentoController}"/>  
+      <h:form prependId="false" id="formReceberAmostras"> 
+        <p:outputPanel id="panelReceberAmostra" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_RECEBER_AMOSTRAS}"> 
+            <aghu:linha>
+              <mec:suggestionBox 
+				id="sbIdentificacaoUnidade" 
+				label="#{messages.LABEL_UNID_EXEC}" 
+				title="#{messages.TITLE_DESCRICAO_UNID_EXEC_SUGGESTION}" 
+				suggestionAction="obterAghUnidadesFuncionaisExecutoras" 
+				width="500" 
+				posSelectionAction="persistirIdentificacaoUnidadeExecutora" 
+				descricaoInput="seq" 
+				descricaoLabel="descricao" 
+				maxlength="30"
+				required="true"
+				controller="#{listarAmostrasSolicitacaoRecebimentoController}" 
+				value="#{listarAmostrasSolicitacaoRecebimentoController.unidadeExecutora}"
+				var="unidExec"
+				itemValue="#{unidExec}" > 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{unidExec.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+
+              <mec:inputNumero id="solicitacao" 
+                               requiredFake="true" 
+                               label="#{messages.LABEL_SOLICITACAO}" 
+                               title="#{messages.TITLE_SOLICITACAO_EXAME_IDENTIFICA}" 
+                               value="#{listarAmostrasSolicitacaoRecebimentoController.valorEntradaCampoSolicitacao}" 
+                               size="10" maxlength="7" 
+                               required="false"
+                               onkeyup="if(this.value.length &gt; 6) document.getElementById('amostra:amostra:inputId_input').focus()"/>  
+              <mec:inputNumero id="amostra" 
+                               label="#{messages.LABEL_AMOSTRA}" 
+                               title="#{messages.TITLE_AMOSTRA}" 
+                               value="#{listarAmostrasSolicitacaoRecebimentoController.valorEntradaCampoAmostra}" 
+                               size="4" maxlength="3" 
+                               required="false" 
+                               onkeyup="caretToEndIfNumbers(this, event);"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <p:outputPanel id="panelExamesAndamento" 
+                         rendered="#{listarAmostrasSolicitacaoRecebimentoController.habilitarNumeroAp and mf:hasPermission(securityController, 'gerarApReceberAmostra,executar') and not empty listarAmostrasSolicitacaoRecebimentoController.listaExameOrigem}" 
+                         layout="inline" style="height:95px;" 
+                         styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.LABEL_EXAME_DE_ORIGEM}"> 
+              <p:outputPanel id="panelExamesOrigem" layout="block" style="height:95px;"> 
+	              <aghu:linha> 
+	                <mec:serverDataTable 
+	                		id="tabelaExameOrigem"
+	                		scrollHeight="75" 
+							controller="listarAmostrasSolicitacaoRecebimentoController"
+	                		list="#{listarAmostrasSolicitacaoRecebimentoController.listaExameOrigem}" 
+	                		scrollable="true">
+	                		 
+	                  <c:set var="_exameOrigem" value="#{item}"/>
+	
+	                  <p:column> 
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.COLUMN_EXAME_EXAMES_ANDAMENTO}"/> 
+	                    </f:facet>  
+	                    <h:outputText value="#{_exameOrigem.tipoExame.sigla}"/> 
+	                  </p:column>  
+	                  <p:column> 
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.COLUMN_NUMERO_EXAME_EXAMES_ANDAMENTO}"/> 
+	                    </f:facet>  
+	                    <h:outputText value="#{_exameOrigem.numeroExame}"/> 
+	                  </p:column>  
+	                  <p:column> 
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.COLUMN_PATOLOGISTA_EXAMENS_ANDAMENTO}"/> 
+	                    </f:facet>  
+	                    <h:outputText value="#{_exameOrigem.patologistaResponsavel.nome}"/> 
+	                  </p:column>  
+	                  <p:column> 
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.COLUMN_DATA_RECEBIMENTO_EXAMES_ANDAMENTO}"/> 
+	                    </f:facet>  
+	                    <h:outputText value="#{_exameOrigem.dataRecebimento}"> 
+	                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+	                    </h:outputText> 
+	                  </p:column> 
+	                </mec:serverDataTable> 
+	              </aghu:linha> 
+              </p:outputPanel>
+            </aghu:panelGeral> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelAcoesBotoes" layout="inline"> 
+	          <aghu:acao> 
+	            <mec:commandButton id="bt_pesquisar" 
+	                               block="true"
+	                               value="#{messages.LABEL_PESQUISAR}" 
+	                               action="#{listarAmostrasSolicitacaoRecebimentoController.pesquisar}" 
+	                               render="panelReceberAmostras,panelResultados,panelAmostras,panelExamesAmostras" 
+	                               profile="search"/>  
+	            <mec:commandButton id="bt_limparCampos" 
+	                               value="#{messages.LABEL_LIMPAR}" 
+	                               action="#{listarAmostrasSolicitacaoRecebimentoController.limparPesquisa}"
+	                               render="panelReceberAmostra,panelDados,panelAmostra,panelExamesAmostra" 
+	                               profile="clear"/>  
+	            <mec:commandButton id="bt_mapas" 
+	                               action="#{listarAmostrasSolicitacaoRecebimentoController.redirecionarEmissaoMapaTrabalho}" 
+	                               value="#{messages.LABEL_MAPAS}" 
+	                               rendered="#{not empty listarAmostrasSolicitacaoRecebimentoController.listaAmostras}" 
+	                               styleClass="bt_cinza"> 
+	            	<f:setPropertyActionListener target="#{emissaoMapaTrabalhoController.cameFrom}" value="listarAmostrasSolicitacaoRecebimento" for="command"/> 
+	            </mec:commandButton>  
+	            <mec:commandButton id="bt_receberAmostrasSolicitacao"
+	            	               value="#{messages.LABEL_RECEBER_AMOSTRAS_SOLICITACAO}"
+	            	               rendered="#{not empty listarAmostrasSolicitacaoRecebimentoController.listaAmostras}"
+	            	               disabled="#{not mf:hasPermission(securityController,'receberAmostra,executar') or listarAmostrasSolicitacaoRecebimentoController.desabilitarReceberTodasAmostras()}"
+	            	               onclick="PF('loadDialogWG').show();"
+		            	           oncomplete="PF('loadDialogWG').hide();"
+	            	               action="#{listarAmostrasSolicitacaoRecebimentoController.receberTodasAmostras}"
+	            	               render="panelAmostras,panelExamesAmostras"
+	            	               styleClass="bt_cinza"/>  
+	            <mec:commandButton id="bt_voltarAmostrasSolicitacao"
+	            	               value="#{messages.LABEL_VOLTAR_AMOSTRAS_SOLICITACAO}"
+	            	               disabled="#{not mf:hasPermission(securityController,'voltarTodasAmostras,executar') or listarAmostrasSolicitacaoRecebimentoController.desabilitarVoltarTodasAmostras()}"
+	            	               rendered="#{not empty listarAmostrasSolicitacaoRecebimentoController.listaAmostras}"
+	            	               onclick="PF('loadDialogWG').show();"
+		            	           oncomplete="PF('loadDialogWG').hide();"
+	            	               action="#{listarAmostrasSolicitacaoRecebimentoController.voltarTodasAmostras}"
+	            	               render="panelAmostras,panelExamesAmostras"
+	            	               styleClass="bt_cinza"/>  
+	            <mec:commandButton id="bt_respAp"
+	            	               value="#{messages.LABEL_RESP_AP}"
+	            	               rendered="#{not empty listarAmostrasSolicitacaoRecebimentoController.listaAmostras}"
+	            	               readonly="#{not listarAmostrasSolicitacaoRecebimentoController.verificaUnidadePatologica and not mf:hasPermission(securityController,'informarResponsavel,executar')}"
+	            	               action="#{listarAmostrasSolicitacaoRecebimentoController.chamarRespAp}"
+	            	               styleClass="bt_cinza"> 
+	              	<f:setPropertyActionListener target="#{informarResponsavelAPController.soeSeq}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoNumero}" for="command"/>  
+	              	<f:setPropertyActionListener target="#{informarResponsavelAPController.seqp}" value="#{listarAmostrasSolicitacaoRecebimentoController.valorEntradaCampoAmostra}" for="command"/> 
+	            </mec:commandButton> 
+	            <mec:commandButton id="bt_cancelar" 
+	                               action="#{listarAmostrasSolicitacaoRecebimentoController.redirecionarCancelarExamesAreaExecutora}" 
+	                               value="#{messages.LABEL_CANCELAR}" 
+	                               rendered="#{not empty listarAmostrasSolicitacaoRecebimentoController.listaAmostras}" 
+	                               profile="cancel"> 
+	             	<f:setPropertyActionListener target="#{cancelarExameController.soeSeq}" value="#{listarAmostrasSolicitacaoRecebimentoController.amostraSoeSeqSelecionada}" for="command"/>  
+	             	<f:param name="amoSeqp" value="#{listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada}"/>  
+	             	<f:setPropertyActionListener target="#{cancelarExameController.ufeUnfSeq}" value="#{listarAmostrasSolicitacaoRecebimentoController.unidadeExecutora.seq}" for="command"/>  
+	             	<f:setPropertyActionListener target="#{cancelarExameController.voltarPara}" value="listarAmostrasSolicitacaoRecebimento" for="command"/> 
+	            </mec:commandButton>  
+	            
+	          </aghu:acao>  
+          </p:outputPanel> 
+          <script type="text/javascript" xml:space="preserve">	
+						//var myTextField = document.getElementById('solicitacaoDecorate:solicitacao');
+						//alert(myTextField.value);
+						var myTextField = document.getElementById('solicitacaoDecorate:solicitacao');
+						myTextField.focus();
+						myTextField.select();
+					</script> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false" id="formDados"> 
+        <p:outputPanel id="panelDados" rendered="#{not empty listarAmostrasSolicitacaoRecebimentoController.listaAmostras}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_SOLICITACAO}"> 
+            <aghu:linha> 
+              <mec:inputText id="solicitacaoNumero" label="#{messages.LABEL_NUMERO}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoNumero}" readonly="true" size="9" maxlength="8" styleclass="suggestion_input" style="text-transform:uppercase"/>  
+              <mec:inputText id="solicitacaoConvenio" label="#{messages.LABEL_CONVENIO}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoConvenio}" readonly="true" size="25" maxlength="19" styleclass="suggestion_input" style="text-transform:uppercase"/>  
+              <mec:inputText id="solicitacaoOrigem" label="#{messages.LABEL_ORIGEM}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoOrigem}" readonly="true" size="20" maxlength="19" styleclass="suggestion_input" style="text-transform:uppercase"/>  
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText id="solicitacaoPaciente" label="#{messages.LABEL_PACIENTE}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoPaciente}" readonly="true" size="70" maxlength="85" styleclass="suggestion_input" style="text-transform:uppercase"/>  
+              <mec:inputTextProntuario id="solicitacaoProntuario" label="#{messages.LABEL_PRONTUARIO}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoProntuario}" readonly="true" size="9" maxlength="8" style="text-transform:uppercase"/> 
+            </aghu:linha> 
+            <aghu:linha> 
+              <mec:inputText id="solicitacaoUnidade" label="#{messages.LABEL_UNIDADE}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoUnidade}" readonly="true" size="60" maxlength="100" styleclass="suggestion_input" style="text-transform:uppercase"/>  
+              <mec:inputText id="solicitacaoQuarto" label="#{LABEL_QUARTO}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoQuarto}" readonly="true" size="12" maxlength="10" styleclass="suggestion_input" style="text-transform:uppercase"/>  
+              <mec:inputText id="solicitacaoLeito" label="#{messages.LABEL_LEITO}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoLeito}" readonly="true" size="14" maxlength="14" styleclass="suggestion_input" style="text-transform:uppercase"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText id="solicitacaoInformacoes" label="#{messages.LABEL_INFO_CLINICA}" value="#{listarAmostrasSolicitacaoRecebimentoController.solicitacaoInformacoes}" readonly="true" size="103" maxlength="100" styleclass="suggestion_input" style="text-transform:uppercase"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false" id="formAmostra"> 
+        <p:outputPanel id="panelAmostra" rendered="#{not empty listarAmostrasSolicitacaoRecebimentoController.listaAmostras}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_AMOSTRA}"> 
+            <p:outputPanel id="panelNumeroAp" layout="inline"> 
+              <p:outputPanel id="panelNumeroApControl" rendered="#{listarAmostrasSolicitacaoRecebimentoController.habilitarNumeroAp}" layout="inline"> 
+                <aghu:linha/> 
+              </p:outputPanel> 
+            </p:outputPanel>  
+            <aghu:linha>
+            
+              <p:outputPanel id="panelAmostras" layout="block" style="height:165px;">
+                 
+                  <mec:serverDataTable 
+						id="tabelaAmostras"
+						scrollHeight="143"
+                        controller="#{listarAmostrasSolicitacaoRecebimentoController}"
+                        list="#{listarAmostrasSolicitacaoRecebimentoController.listaAmostras}"
+                        scrollable="true"
+                        selection="amostraSelecionada">
+                                       
+                      <c:set var="_itemAmostra" value="#{item}"/>
+                      
+                      <p:ajax event="rowSelect"
+                              listener="#{listarAmostrasSolicitacaoRecebimentoController.pesquisarExamesAmostra()}"
+                              update="@(#tabelaAmostras) @(#tabelaExamesAmostra)" />
+
+                    <p:column 
+                    	style="width:40px; 
+                    	white-space:nowrap; #{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>
+                        
+                      <p:outputPanel id="panelAcoesReceberAmostra" rendered="#{not listarAmostrasSolicitacaoRecebimentoController.verificaSituacaoExecutada(_itemAmostra)}" layout="inline"> 
+                        <mec:commandLink
+                        	title="#{messages.LABEL_RECEBER_AMOSTRA}"
+                        	action="#{listarAmostrasSolicitacaoRecebimentoController.receberAmostra(_itemAmostra)}"
+                        	onclick="PF('loadDialogWG').show();"
+                        	oncomplete="PF('loadDialogWG').hide();"
+                        	render="panelAmostras,panelExamesAmostras"
+                        	rendered="#{listarAmostrasSolicitacaoRecebimentoController.verificaAmostraSituacaoReceber(_itemAmostra) and mf:hasPermission(securityController,'receberAmostra,executar')}"
+                        	styleClass=" silk-ativo silk-icon"/>  
+
+                        <mec:commandLink
+                        	title="#{messages.LABEL_VOLTAR_AMOSTRA}"
+                        	action="#{listarAmostrasSolicitacaoRecebimentoController.voltarAmostra(_itemAmostra)}"
+                        	onclick="PF('loadDialogWG').show();"
+                        	oncomplete="PF('loadDialogWG').hide();"
+                        	render="panelAmostras,panelExamesAmostras,panelExamesOrigem" 
+                        	disabled="#{not mf:hasPermission(securityController,'receberAmostra,executar')}"
+                        	rendered="#{not listarAmostrasSolicitacaoRecebimentoController.verificaAmostraSituacaoReceber(_itemAmostra)}"
+                        	styleClass=" silk-arrow-rotate-anticlockwise silk-icon"/>
+                      </p:outputPanel>  
+
+                      <p:outputPanel id="panelAcoesImprimirEtiquetas" rendered="#{mf:hasPermission(securityController,'reimprimirEtiquetasAmostras,executar') and (_itemAmostra.situacao == 'R' or _itemAmostra.situacao == 'U' or _itemAmostra.situacao == 'E')}" layout="inline"> 
+                        <mec:commandLink
+                        	title="#{messages.LABEL_IMPRIMIR_ETIQUETA_AMOSTRA}"
+                        	action="#{listarAmostrasSolicitacaoRecebimentoController.calcularNumeroImpressoes(_itemAmostra)}"
+                        	oncomplete="PF('modalConfirmacaoImpressaoEtiquetasWG').show();"
+                        	styleClass=" silk-printer silk-icon"
+                        	ajax="true"
+                        	render="panelMensagemConfirmacaoImpressaoEtiquetas"/>  
+                      </p:outputPanel>
+
+                    </p:column>  
+                    <p:column style="width:50px; #{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_AMOSTRA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemAmostra.seqp}"/>  
+                    </p:column>
+                    <p:column style="width:70px; #{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NRO_UNICO_ABR}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemAmostra.nroUnico != null ? _itemAmostra.nroUnico : ''}"/>  
+                    </p:column>
+                    <p:column style="width:80px; #{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DATA_NRO_UNICO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemAmostra.dtNumeroUnico != null ? _itemAmostra.dtNumeroUnico : ''}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                      </h:outputText>  
+                    </p:column>
+                    <p:column rendered="#{not _itemAmostra.indNroFrascoFornec}" style="width:110px; white-space:nowrap;#{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NRO_FRASCO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemAmostra.nroFrascoFabricante}"/>  
+                    </p:column>
+                    <p:column rendered="#{_itemAmostra.indNroFrascoFornec}" style="width:width:110px; white-space:nowrap;#{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NRO_FRASCO}"/> 
+                      </f:facet>  
+                      <h:inputText id="nroFrascoFabricanteField" value="#{_itemAmostra.nroFrascoFabricante}" rendered="#{_itemAmostra.indNroFrascoFornec}" size="9" maxlength="8" styleclass="suggestion_input" style="text-transform:uppercase;" bypassUpdates="false"> 
+                        <p:ajax event="blur" process="@this" listener="#{listarAmostrasSolicitacaoRecebimentoController.salvarNroFrasco(_itemAmostra)}"/> 
+                      </h:inputText> 
+                    </p:column>  
+                    <p:column style="width:120px; #{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_TEMPO_INTERVALO_COLETA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemAmostra.tempoIntervaloColeta != null and _itemAmostra.tempoIntervaloColeta &gt; 0 ? _itemAmostra.tempoIntervaloColeta : ''} #{_itemAmostra.tempoIntervaloColeta != null and _itemAmostra.tempoIntervaloColeta &gt; 0 and _itemAmostra.unidTempoIntervaloColeta != null ? _itemAmostra.unidTempoIntervaloColeta : ''}"/>  
+                    </p:column>
+                    <p:column style="width:80px; #{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemAmostra.situacao != null ? _itemAmostra.situacao.descricao : ''}"/>  
+                    </p:column>
+                    <p:column style="#{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_RECIPIENTE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemAmostra.recipienteColeta != null ? _itemAmostra.recipienteColeta : ''}"/>  
+                    </p:column>
+                    <p:column style="#{(_itemAmostra.seqp eq listarAmostrasSolicitacaoRecebimentoController.amostraSeqpSelecionada)?'background-color:#EEE8AA':''}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ANTICOAGULANTE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemAmostra.anticoagulante != null ? _itemAmostra.anticoagulante : ''}"/>  
+                    </p:column>
+                  </mec:serverDataTable> 
+
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false" id="formExamesAmostra"> 
+        <p:outputPanel id="panelExamesAmostra" rendered="#{not empty listarAmostrasSolicitacaoRecebimentoController.listaAmostras}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_EXAMES_AMOSTRA}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelExamesAmostras" layout="block" style="height:165px;"> 
+                  <mec:serverDataTable id="tabelaExamesAmostra" scrollHeight="143" controller="listarAmostrasSolicitacaoRecebimentoController" list="#{listarAmostrasSolicitacaoRecebimentoController.listaExamesAmostras}" scrollable="true"> 
+                    <c:set var="_itemExameAmostra" value="#{item}"/>  
+                    <p:column style="width:80px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_SOLICITACAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemExameAmostra.id.iseSoeSeq}"/> 
+                    </p:column>  
+                    <p:column style="width:60px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ITEM}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemExameAmostra.id.iseSeqp}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_EXAME_BARRA_AMOSTRA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemExameAmostra.aelItemSolicitacaoExames.exame.descricao} / #{listarAmostrasSolicitacaoRecebimentoController.amostraMaterialAnalise}"/> 
+                    </p:column>  
+                    <p:column style="width:80px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_TIPO_COLETA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemExameAmostra.aelItemSolicitacaoExames.tipoColeta.descricao}"/> 
+                    </p:column>  
+                    <p:column style="width:60px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_LAB}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemExameAmostra.aelItemSolicitacaoExames.unidadeFuncional.seq}"/> 
+                    </p:column>  
+                    <p:column style="width:120px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_SITUACAO_ITEM_AMOSTRA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemExameAmostra.situacao != null ? _itemExameAmostra.situacao.descricao : ''}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoImpressaoEtiquetas" width="425" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoImpressaoEtiquetasWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CONFIRMAR_IMPRESSAO_ETIQUETA}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <p:outputPanel id="panelMensagemConfirmacaoImpressaoEtiquetas" layout="inline">#{listarAmostrasSolicitacaoRecebimentoController.mensagemConfirmacaoImpressaoEtiquetas}</p:outputPanel>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalImpressaoEtiquetas"> 
+            <mec:commandButton value="#{messages.LABEL_IMPRIMIR}" id="bt_ImprimirEtiquetaAmostra" onclick="PF('loadDialogWG').show();" oncomplete="PF('modalConfirmacaoImpressaoEtiquetasWG').hide();PF('loadDialogWG').hide();" action="#{listarAmostrasSolicitacaoRecebimentoController.reimprimirEtiquetaAmostra}" profile="print"/>  
+            <mec:commandButton value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoImpressaoEtiquetasWG').hide();" id="bt_cancelarImpressaoEtiquetaAmostra" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <h:form id="formRelatorioNumeroAp"> 
+        <h:outputText value="#{relatorioNroApPdfController.nroAp}" rendered="false"/> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

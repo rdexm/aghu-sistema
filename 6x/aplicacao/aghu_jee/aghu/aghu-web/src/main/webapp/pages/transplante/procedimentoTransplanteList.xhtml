@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{procedimentoTransplanteListPaginatorController.inicializar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{procedimentoTransplanteListPaginatorController}" />
+		<h:form prependId="false" id="pesquisaProcedimentoTransplante">
+			<aghu:panelGeral legend="#{messages.TITLE_TRANSPLANTE_PROCEDIMENTO}">
+				<aghu:linha>
+					<mec:selectOneMenu id="orgaoProcedimentoTransplanteList"
+						enum="DominioTipoOrgao"
+						label="#{messages.LABEL_ORGAO_TRANSPLANTE}"
+						title="#{messages.TITLE_TRANSPLANTE_PROCEDIMENTO_ORGAO}"
+						value="#{procedimentoTransplanteListPaginatorController.orgaoMtxProcedimento}"
+						style="width:100px !important">
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+					<mec:suggestionBox var="row" itemValue="#{row}"
+						id="sbProcedimentoTransplanteList" cache="false"
+						label="#{messages.LABEL_PROCEDIMENTO}"
+						title="#{messages.TITLE_TRANSPLANTE_PROCEDIMENTO_SG}"
+						suggestionAction="listarProcedimentoTransplantes"
+						descricaoInput="seq" descricaoLabel="descricao"
+						descricaoLimite="60" maxlength="100" width="40px" height="300px"
+						controller="#{procedimentoTransplanteListPaginatorController}"
+						size="95"
+						value="#{procedimentoTransplanteListPaginatorController.mbcProcedimentoCirurgicosSG}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_SEQ_PROCEDIMENTO_TRANSPLANTE}</b>
+							</f:facet> #{row.seq}
+		       			 </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO_DOENCA_BASE}</b>
+							</f:facet> #{row.descricao}
+		       			 </p:column>
+					</mec:suggestionBox>
+					<mec:selectBooleanCheckbox
+						label="#{messages.LABEL_ATIVO_DOENCA_BASE}"
+						title="#{messages.TITLE_TRANSPLANTE_PROCEDIMENTO_ATIVO}"
+						value="#{procedimentoTransplanteListPaginatorController.situacaoAtivoMtxProcedimento}"
+						id="chkAtivo" />
+					<mec:selectOneMenu id="transplanteProcedimentoTransplanteList"
+						enum="DominioTransplante" label="#{messages.LABEL_TIPO}"
+						title="#{messages.TITLE_TRANSPLANTE_PROCEDIMENTO_TIPO_TRANSPLANTE}"
+						value="#{procedimentoTransplanteListPaginatorController.tipoTransplanteMtxProcedimento}"
+						style="width:100px !important">
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR_ORIGEM_PACIENTE}"
+					action="#{procedimentoTransplanteListPaginatorController.pesquisar}"
+					profile="search"
+					render=" tabelaResultado" />
+				<mec:commandButton id="bt_limpar"
+					value="#{messages.LABEL_LIMPAR_ORIGEM_PACIENTE}"
+					action="#{procedimentoTransplanteListPaginatorController.limpar}"
+					immediate="true"
+					process="@this" profile="clear" />
+				<mec:commandButton id="bt_novo"
+					value="#{messages.LABEL_NOVO_ORIGEM_PACIENTE}"
+					action="#{procedimentoTransplanteListPaginatorController.gravar}"
+					profile="add"
+					rendered="#{procedimentoTransplanteListPaginatorController.dataModel.pesquisaAtiva}" />
+			</aghu:acao>
+		</h:form>
+		<br/>
+		<h:form prependId="false" id="formLista">
+			<aghu:panelGeral
+				legend="#{messages.TITLE_TRANSPLANTE_PROCEDIMENTO_GRID}"
+				id="tabelaResultado"
+				rendered="#{procedimentoTransplanteListPaginatorController.dataModel.pesquisaAtiva}">
+				<mec:serverDataTable id="lista" dataModel="dataModel"
+					selection="parametroSelecionado"
+					controller="#{procedimentoTransplanteListPaginatorController}">
+					<c:set var="_item" value="#{item}" />
+					<p:column width="50" style="text-align: center" headerText="Ação"
+						exportable="false">
+						<mec:commandLink id="procedimentoTransplanteEditar" profile="edit"
+							title="Editar"
+							action="#{procedimentoTransplanteListPaginatorController.editar}">
+							<f:setPropertyActionListener for="command"
+								target="#{procedimentoTransplanteCRUDController.edicaoAtiva}"
+								value="#{true}" />
+							<f:setPropertyActionListener
+								target="#{procedimentoTransplanteListPaginatorController.selecionadoEdicao}"
+								value="#{_item}" for="command" />
+						</mec:commandLink>
+						<mec:commandLink id="procedimentoTransplanteExcluir" title="Excluir" profile="delete"
+							action="#{procedimentoTransplanteListPaginatorController.excluir(_item)}"
+							styleClass="silk-icon silk-delete" >
+						</mec:commandLink>
+					</p:column>
+					<p:column width="115" style="text-align: left">
+						<f:facet name="header">
+							<h:outputText id="resultado_orgao"
+								value="#{messages.LABEL_ORGAO_PROCEDIMENTO_TRANSPLANTES}" />
+						</f:facet>
+						<h:outputText value="#{_item.orgao.getDescricao()}" />
+					</p:column>
+					<p:column style="text-align: left" text-transform="uppercase">
+						<h:outputText id="resultado_descricao"
+							value="#{procedimentoTransplanteListPaginatorController.obterHint(_item.pciSeq.seq,_item.pciSeq.descricao, 80)}" />
+						<p:overlayPanel id="hintDescricao" for="resultado_descricao"
+							showEvent="mouseover" hideEvent="mouseout"
+							rendered="#{_item.pciSeq.seq} - #{_item.pciSeq.descricao} > 80">
+							<h:outputText
+								value="#{_item.pciSeq.seq} - #{_item.pciSeq.descricao}" />
+						</p:overlayPanel>
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_PROCEDIMENTO}" />
+						</f:facet>
+					</p:column>
+					<p:column width="50" style="text-align: left">
+						<f:facet name="header">
+							<h:outputText id="resultado_situacao"
+								value="#{messages.LABEL_ATIVO_DOENCA_BASE}" />
+						</f:facet>
+						<h:outputText
+							value="#{_item.indSituacao.isAtivo()? 'Sim' : 'Não'}" />
+					</p:column>
+					<p:column width="50" style="text-align: left">
+						<f:facet name="header">
+							<h:outputText id="tipoTMO" value="#{messages.LABEL_TIPO_TMO}" />
+						</f:facet>
+						<h:outputText value="#{_item.tipo.getDescricao()}" />
+					</p:column>
+				</mec:serverDataTable>
+			</aghu:panelGeral>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

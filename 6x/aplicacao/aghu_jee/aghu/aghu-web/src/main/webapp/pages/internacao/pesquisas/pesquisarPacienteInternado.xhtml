@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisar Paciente Internado :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisarPacienteInternadoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_PACIENTE_INTERNADO}"> 
+          <aghu:linha> 
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" size="9" maxlength="10" title="#{messages.TITLE_PRONTUARIO_INTERNACAO}" value="#{pesquisarPacienteInternadoPaginatorController.prontuario}" id="prontuario"/>  
+            <mec:inputText label="#{messages.LABEL_NOME_PACIENTE}" title="#{messages.TITLE_LABEL_NOME_PACIENTE_PESQ}" size="50" maxlength="50" value="#{pesquisarPacienteInternadoPaginatorController.nomePaciente}" style="text-transform:uppercase" id="nomePac"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_ESPECIALIDADE}" title="#{messages.TITLE_LABEL_ESPECIALIDADE_PESQ}" converter="#{aghEspecialidadesSiglaNomeConverter}" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" suggestionAction="pesquisarEspecialidades" id="especialidade" controller="#{pesquisarPacienteInternadoPaginatorController}" value="#{pesquisarPacienteInternadoPaginatorController.especialidade}"> 
+              <p:column>#{item.sigla}</p:column>  
+              <p:column>#{item.nomeEspecialidade}</p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox width="300" label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_LABEL_UNIDADE_PESQ}" converter="#{aghUnidadesFuncionaisPorAndarAlaDescricaoAtivasInativasConverter}" descricaoInput="seq" descricaoLabel="andarAlaDescricao" suggestionAction="pesquisarUnidadeFuncionalPorCodigoEDescricao" id="unidadeFuncional" controller="#{pesquisarPacienteInternadoPaginatorController}" value="#{pesquisarPacienteInternadoPaginatorController.unidadeFuncional}"> 
+              <p:column>#{item.seq}</p:column>  
+              <p:column>#{item.andarAlaDescricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_LEITO}" title="#{messages.TITLE_LABEL_LEITO_PESQ}" converter="#{ainLeitosPorIdConverter}" descricaoInput="leitoID" descricaoLabel="leitoID" suggestionAction="pesquisarLeitos" id="leito" controller="#{pesquisarPacienteInternadoPaginatorController}" value="#{pesquisarPacienteInternadoPaginatorController.leito}"> 
+              <p:column>#{item.leitoID}</p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox label="#{LABEL_QUARTO}" title="#{messages.TITLE_LABEL_QUARTO_PESQ}" descricaoInput="numero" descricaoLabel="descricao" suggestionAction="pesquisarQuartos" id="quarto" controller="#{pesquisarPacienteInternadoPaginatorController}" value="#{pesquisarPacienteInternadoPaginatorController.quarto}"> 
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CRM}" title="#{messages.TITLE_LABEL_CONSELHO_PESQ}" converter="#{servidorConselhoVOConverter}" descricaoInput="nroRegConselho" descricaoLabel="nome" suggestionAction="pesquisarCRM" id="crm" controller="#{pesquisarPacienteInternadoPaginatorController}" value="#{pesquisarPacienteInternadoPaginatorController.servidorProfessor}"> 
+              <p:column>#{item.nroRegConselho}</p:column>  
+              <p:column>#{item.nome}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisarPacienteInternadoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{pesquisarPacienteInternadoPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao>  
+        <mec:serverDataTable id="tabelaResult" dataModel="dataModel" rendered="#{pesquisarPacienteInternadoPaginatorController.dataModel.pesquisaAtiva}" controller="#{pesquisarPacienteInternadoPaginatorController}"> 
+          <c:set var="_int" value="#{item}"/>  
+          <p:column width="40"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink id="bt_detalhes" title="#{messages.LABEL_DETALHES}" rendered="#{mf:hasPermission(securityController,'pesquisarPacienteInternado,habilitaAcaoDetalhar')}" action="#{pesquisarPacienteInternadoPaginatorController.pesquisarPacientesDetalhes()}" styleClass=" silk-table silk-icon"> 
+              <f:setPropertyActionListener target="#{pesquisarPacienteInternadoController.internacaoSeq}" value="#{_int.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="bt_transferir" rendered="#{_int.indPacienteInternado and mf:hasPermission(securityController,'pesquisarPacienteInternado,habilitaAcaoDetalhar')}" title="#{messages.LABEL_TRANSFERIR}" action="#{pesquisarPacienteInternadoPaginatorController.pesquisarDisponibilidadeLeito()}" styleClass=" silk-arrow-switch silk-icon" disabled="#{mf:hasPermission(securityController,'assistencial, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{disponibilidadeLeitoPaginatorController.cameFrom}" value="pesquisarPacienteInternado" for="command"/>  
+              <f:setPropertyActionListener target="#{disponibilidadeLeitoPaginatorController.internacaoSeq}" value="#{_int.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="bt_alta" rendered="#{_int.indPacienteInternado and mf:hasPermission(securityController,'pesquisarPacienteInternado,habilitaAcaoDetalhar')}" title="#{messages.LABEL_DAR_ALTA}" action="#{pesquisarPacienteInternadoPaginatorController.darAlta()}" styleClass=" silk-door-in silk-icon" disabled="#{mf:hasPermission(securityController,'assistencial, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{dadosAltaPacienteController.intSeq}" value="#{_int.seq}" for="command"/>  
+              <f:setPropertyActionListener target="#{dadosAltaPacienteController.cameFrom}" value="pesquisarPacienteInternado" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="bt_Solicitar_Transferencia" title="#{messages.LABEL_SOLICITAR_TRANSFERENCIA}" rendered="#{mf:hasPermission(securityController,'pesquisarPacienteInternado,habilitaAcaoDetalhar')}" action="#{pesquisarPacienteInternadoPaginatorController.solicitarTransferencia()}" styleClass=" silk-arrow-divide silk-icon" disabled="#{mf:hasPermission(securityController,'assistencial, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{solicitarTransferenciaPacientePaginatorController.internacaoSeq}" value="#{_int.seq}" for="command"/>  
+              <f:setPropertyActionListener target="#{solicitarTransferenciaPacientePaginatorController.cameFrom}" value="internacao-pesquisarPacienteInternado" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column width="50"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_LEITO}"/> 
+            </f:facet>  
+            <h:outputText value="#{(_int.leito) != null ? _int.leito.leitoID : ''}"/> 
+          </p:column>  
+          <p:column width="50"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_int.paciente.prontuario}"> 
+              <f:converter converterId="prontuarioConverter"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column width="330"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME_PACIENTE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_int.paciente.nome}"/> 
+          </p:column>  
+          <p:column width="70"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_INTERNACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_int.dthrInternacao}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column width="70"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ALTA}"/> 
+            </f:facet>  
+            <h:outputText value="#{(_int.dthrAltaMedica) != null ? 'Sim' : 'Não' }"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

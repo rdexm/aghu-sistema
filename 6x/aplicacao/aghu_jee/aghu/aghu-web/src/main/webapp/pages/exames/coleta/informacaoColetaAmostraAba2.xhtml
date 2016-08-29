@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <p:outputPanel id="panelCarregaInformacaoColeta" layout="inline"> 
+      <pe:remoteCommand name="selecionarSolicitacao" update="panelAmostras,panelExamesAmostra,panelAcoesAmostra" actionListener="#{informacaoAmostraController.obterAmostrasDaSolicitacao}"> 
+        <pe:assignableParam name="soeSeqSelecionado" assignTo="#{informacaoAmostraController.soeSeqSelecionado}"/> 
+      </pe:remoteCommand>  
+      <pe:remoteCommand name="carregarInformacoesColetaPorSolicitacao" update="labelSolicitacao, nomePaciente, panelFieldsInfoColeta, pacienteNaoSoubeInfoMedicamento, panelFieldsMedicamento, tabelaInformacaoMdtoColeta, bt_gravar" actionListener="#{informacaoColetaController.carregarInformacoesColetaPorSolicitacao}"> 
+        <pe:assignableParam name="soeSeqSelecionadoPorSolicitacao" assignTo="#{informacaoColetaController.soeSeqSelecionado}"/>  
+        <pe:assignableParam name="origemMenu" assignTo="#{informacaoColetaController.origemMenu}"/> 
+      </pe:remoteCommand>  
+      <pe:remoteCommand name="carregarInformacoesColeta" update="panelGravarAba1, labelSolicitacao, nomePaciente, panelFieldsInfoColeta, pacienteNaoSoubeInfoMedicamento, panelFieldsMedicamento, tabelaInformacaoMdtoColeta, bt_gravar" actionListener="#{informacaoColetaController.carregarInformacoesColeta}"> 
+        <pe:assignableParam name="soeSeqLista" assignTo="#{informacaoColetaController.soeSeqSelecionado}"/> 
+      </pe:remoteCommand>  
+      <pe:remoteCommand name="selecionarAmostra" update="panelExamesAmostra,panelAcoesAmostra,panelEditarAmostraInterno, panelAcoesExamesAmostra" actionListener="#{informacaoAmostraController.obterExamesDaAmostra}"> 
+        <pe:assignableParam name="seqpSelecionado" assignTo="#{informacaoAmostraController.seqpSelecionado}"/> 
+      </pe:remoteCommand>  
+      <p:outputPanel id="panelCarregaInformacaoColetaInterno" rendered="#{informacaoAmostraController.pesquisaOk}" layout="inline"> 
+        <script type="text/javascript" xml:space="preserve">
+			carregarInformacoesColeta(#{informacaoAmostraController.soeSeqSelecionado});
+			</script> 
+      </p:outputPanel> 
+    </p:outputPanel>  
+    <p:outputPanel id="panelPesquisa" rendered="#{informacaoAmostraController.origemMenu}" layout="inline" styleClass="aghu-panel-geral"> 
+      <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_AMOSTRAS_SOLICITACAO}"> 
+        <aghu:linha> 
+          <mec:inputNumero id="solicitacao" label="#{messages.LABEL_SOLICITACAO_SEQ}" title="#{messages.TITLE_SOLICITACAO_AMOSTRAS_SOLICITACAO}" size="10" maxlength="8" value="#{informacaoAmostraController.soeSeq}"/>  
+          <mec:inputNumero id="amostra" label="#{messages.LABEL_AMOSTRA}" title="#{messages.TITLE_AMOSTRA_AMOSTRAS_SOLICITACAO}" size="10" maxlength="8" value="#{informacaoAmostraController.amostraSeq}"/> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <p:outputPanel id="pacienteDecorate" layout="inline"> 
+            <mec:pesquisaPaciente id="pesqPaciente" valueChangeListener="#{informacaoAmostraController.pesquisaPaciente}" value="#{informacaoAmostraController.paciente}" render="pacienteDecorate"/>  
+            <br clear="none"/>  
+            <mec:commandButton id="botaoPesquisaFonetica" value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" action="#{informacaoAmostraController.redirecionarPesquisaFonetica}" styleClass=" bt_cinza icon-pesquisa-fonetica"> 
+              <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="exames-informacaoColetaAmostra" for="command"/> 
+            </mec:commandButton> 
+          </p:outputPanel> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <mec:suggestionBox id="unidadeExecutora" 
+                             label="#{messages.LABEL_CONSULTA_AGENDA_EXAMES_UNIDADE_EXECUTORA}" 
+                             title="#{messages.TITLE_CONSULTA_AGENDA_EXAMES_HORARIOS_UNIDADE_FUNCIONAL}" 
+                             width="500"                              
+                             required="true" 
+                             descricaoInput="seq" descricaoLabel="descricao" 
+                             controller="#{informacaoAmostraController}"
+                             suggestionAction="pesquisarUnidadeExecutora" 
+                             value="#{informacaoAmostraController.unidadeExecutora}"> 
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_CODIGO}</b> 
+              </f:facet> #{item.seq}
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_DESCRICAO}</b> 
+              </f:facet> #{item.descricao}
+            </p:column> 
+          </mec:suggestionBox> 
+        </aghu:linha>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" 
+                             value="#{messages.LABEL_PESQUISAR}" 
+                             rendered="#{mf:hasPermission(securityController,'informacaoColetaAmostra,pesquisar')}" 
+                             action="#{informacaoAmostraController.pesquisar}" 
+                             profile="search" ajax="true" 
+                             render="panelGravarAba1, panelMsgNaoEncontrado,panelSolicitacoes,panelAmostras, panelCarregaInformacaoColeta, panelExamesAmostra"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" 
+                             id="bt_limpar" 
+                             rendered="#{mf:hasPermission(securityController,'informacaoColetaAmostra,pesquisar')}" 
+                             action="#{informacaoAmostraController.limparPesquisa}" 
+                             ajax="true" 
+                             render="panelMsgNaoEncontrado,panelSolicitacoes,panelAmostras,panelPesquisa,panelExamesAmostra,panelAcoesExamesAmostra,panelAcoesAmostra,panelPacienteAba1,panelExamesAmostraInterno" 
+                             process="@this" 
+                             styleClass="bt_cinza" 
+                             profile="clear"/> 
+        </aghu:acao> 
+      </aghu:panelGeral>  
+      <p:outputPanel id="panelMsgNaoEncontrado" layout="inline"> 
+        <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{informacaoAmostraController.primeiraPesquisa and (empty informacaoAmostraController.listaSolicitacoes)}"> 
+          <h:outputText value="#{messages.NENHUMA_SOLICITACAO_EXAME_ENCONTRADA}"/> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </p:outputPanel>  
+    <p:outputPanel id="panelSolicitacoes" layout="inline"> 
+      <p:outputPanel id="panelSolicitacoesInterno" rendered="#{not empty informacaoAmostraController.listaSolicitacoes}" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_SOLICITACAO}"> 
+            <mec:serverDataTable rendered="#{mf:hasPermission(securityController,'informacaoColetaAmostra,pesquisar')}" 
+                                 list="#{informacaoAmostraController.listaSolicitacoes}" 
+                                 scrollable="true" scrollHeight="130"> 
+              <c:set var="_solicitacaoVO" value="#{item}"/>  
+              <p:column width="10%"> 
+                <p:outputPanel id="panelRadioSolicitacao" rendered="#{_solicitacaoVO.numero.equals(informacaoAmostraController.soeSeqSelecionado)}" layout="inline"> 
+                  <input type="radio" id="#{_solicitacaoVO.numero}" name="group" class="serverDataTable" onchange="selecionarSolicitacao(#{_solicitacaoVO.numero});carregarInformacoesColetaPorSolicitacao(#{_solicitacaoVO.numero},#{informacaoAmostraController.origemMenu})" checked="checked"/> 
+                </p:outputPanel>  
+                <p:outputPanel id="panelRadioSolicitacaoAux" rendered="#{not _solicitacaoVO.numero.equals(informacaoAmostraController.soeSeqSelecionado)}" layout="inline"> 
+                  <input type="radio" id="#{_solicitacaoVO.numero}" class="serverDataTable" onchange="selecionarSolicitacao(#{_solicitacaoVO.numero});carregarInformacoesColetaPorSolicitacao(#{_solicitacaoVO.numero},#{informacaoAmostraController.origemMenu})" name="group"/> 
+                </p:outputPanel> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_NUMERO_SOLICITACAO}"/> 
+                </f:facet>  
+                <h:outputText id="numeroSolicitacao" value="#{_solicitacaoVO.numero}"/>  
+                <p:tooltip for="numeroSolicitacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_INFORMACOES_CLINICAS}: "/>  
+                  <h:outputText value="#{_solicitacaoVO.informacoesClinicas}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_PRONTUARIO_PACIENTE}"/> 
+                </f:facet>  
+                <h:outputText id="prontuarioSolicitacao" value="#{_solicitacaoVO.prontuario}"/>  
+                <p:tooltip for="prontuarioSolicitacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_INFORMACOES_CLINICAS}: "/>  
+                  <h:outputText value="#{_solicitacaoVO.informacoesClinicas}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_NOME_PACIENTE}"/> 
+                </f:facet>  
+                <h:outputText id="nomePacienteSolicitacao" value="#{informacaoAmostraController.obterNomePacientePorPacCodigo(_solicitacaoVO.codPaciente)}"/>  
+                <p:tooltip for="nomePacienteSolicitacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_INFORMACOES_CLINICAS}: "/>  
+                  <h:outputText value="#{_solicitacaoVO.informacoesClinicas}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_CONVENIO_PLANO}"/> 
+                </f:facet>  
+                <h:outputText id="convenioPlanoSolicitacao" value="#{informacaoAmostraController.obterConvenioPlano(_solicitacaoVO.convenio,_solicitacaoVO.cspCnvCodigo,_solicitacaoVO.cspSeq)}"/>  
+                <p:tooltip for="convenioPlanoSolicitacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_INFORMACOES_CLINICAS}: "/>  
+                  <h:outputText value="#{_solicitacaoVO.informacoesClinicas}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_ORIGEM}"/> 
+                </f:facet>  
+                <h:outputText id="origemSolicitacao" value="#{_solicitacaoVO.origem}"/>  
+                <p:tooltip for="origemSolicitacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{_solicitacaoVO.origem.descricao}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_UNIDADE}"/> 
+                </f:facet>  
+                <h:outputText id="unfDescricaoSolicitacao" value="#{_solicitacaoVO.unfDescricao}"/>  
+                <p:tooltip for="unfDescricaoSolicitacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_INFORMACOES_CLINICAS}: "/>  
+                  <h:outputText value="#{_solicitacaoVO.informacoesClinicas}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_QUARTO}"/> 
+                </f:facet>  
+                <h:outputText id="quartoSolicitacao" value="#{_solicitacaoVO.quarto}"/>  
+                <p:tooltip for="quartoSolicitacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_INFORMACOES_CLINICAS}: "/>  
+                  <h:outputText value="#{_solicitacaoVO.informacoesClinicas}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_LEITO}"/> 
+                </f:facet>  
+                <h:outputText id="leitoSolicitacao" value="#{_solicitacaoVO.leito}"/>  
+                <p:tooltip for="leitoSolicitacao" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_INFORMACOES_CLINICAS}: "/>  
+                  <h:outputText value="#{_solicitacaoVO.informacoesClinicas}"/> 
+                </p:tooltip> 
+              </p:column> 
+            </mec:serverDataTable> 
+        </aghu:panelGeral> 
+      </p:outputPanel> 
+    </p:outputPanel>  
+    <p:outputPanel id="panelAmostras" layout="inline"> 
+      <p:outputPanel id="panelAmostrasInterno" 
+                     rendered="#{not empty informacaoAmostraController.listaAmostras}" 
+                     layout="inline" 
+                     styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_AMOSTRAS}"> 
+            <mec:serverDataTable rendered="#{mf:hasPermission(securityController,'informacaoColetaAmostra,pesquisar')}" 
+                                 list="#{informacaoAmostraController.listaAmostras}" 
+                                 scrollable="true" scrollHeight="130"> 
+              <c:set var="_amostra" value="#{item}"/>  
+              <p:column> 
+                <p:outputPanel layout="block" style="float:left;"> 
+                  <p:outputPanel id="panelRadioAmostra" layout="block" rendered="#{_amostra.id.seqp.equals(informacaoAmostraController.seqpSelecionado)}"> 
+                    <input type="radio" 
+                           id="#{_amostra.id.seqp}" 
+                           name="group2" 
+                           class="serverDataTable" 
+                           onchange="selecionarAmostra(#{_amostra.id.seqp})" 
+                           checked="checked"/> 
+                  </p:outputPanel>  
+                  <p:outputPanel id="panelRadioAmostraAux" 
+                                 layout="block" 
+                                 rendered="#{not _amostra.id.seqp.equals(informacaoAmostraController.seqpSelecionado)}"> 
+                    <input type="radio" 
+                           id="#{_amostra.id.seqp}" 
+                           class="serverDataTable" 
+                           onchange="selecionarAmostra(#{_amostra.id.seqp})" 
+                           name="group2"/> 
+                  </p:outputPanel> 
+                </p:outputPanel>  
+                <p:outputPanel layout="block" style="float:left;"> 
+                  <mec:commandLink title="#{messages.LABEL_EDITAR}" 
+                                   rendered="#{informacaoAmostraController.possuiCaracteristica and informacaoAmostraController.verificaSituacaoAmostraGeradaOuEmColeta(_amostra.situacao) and mf:hasPermission(securityController,'informacaoColetaAmostra,executar')}" 
+                                   oncomplete="PF('modalEditarAmostraWG').show();;" 
+                                   profile="edit" 
+                                   ajax="true" 
+                                   process="@this"/> 
+                </p:outputPanel> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_AMOSTRA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_amostra.id.seqp}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_RECIPIENTE}"/> 
+                </f:facet>  
+                <h:outputText id="recipienteColetaAmostra" value="#{informacaoAmostraController.truncarDescricao(_amostra.recipienteColeta.descricao)}"/>  
+                <p:tooltip for="recipienteColetaAmostra" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{_amostra.recipienteColeta.descricao}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_ANTICOAGULANTE}"/> 
+                </f:facet>  
+                <h:outputText id="anticoagulanteDescricaoAmostra" value="#{informacaoAmostraController.truncarDescricao(_amostra.anticoagulante.descricao)}"/>  
+                <p:tooltip for="anticoagulanteDescricaoAmostra" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{_amostra.anticoagulante.descricao}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_TEMPO_INTERVALO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_amostra.tempoIntervaloColeta}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_SITUACAO_ATUAL}"/> 
+                </f:facet>  
+                <h:outputText value="#{_amostra.situacao.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_SITUACAO_ANTERIOR}"/> 
+                </f:facet>  
+                <h:outputText value="#{informacaoAmostraController.obterSituacaoAnteriorAmostra(_amostra.id.soeSeq,_amostra.id.seqp)}"/>  
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_UNIDADE}"/> 
+                </f:facet>  
+                <h:outputText value="#{_amostra.salasExecutorasExames.unidadeFuncional.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_SALA}"/> 
+                </f:facet>  
+                <h:outputText id="numeroAmostra" value="#{_amostra.salasExecutorasExames.numero}"/>  
+                <p:tooltip for="numeroAmostra" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{_amostra.salasExecutorasExames.localizacao}"/> 
+                </p:tooltip> 
+              </p:column> 
+            </mec:serverDataTable> 
+        </aghu:panelGeral> 
+      </p:outputPanel> 
+    </p:outputPanel>  
+    <p:outputPanel id="panelAcoesAmostra" layout="inline"> 
+      <p:outputPanel id="panelAcoesAmostraInterno" rendered="#{informacaoAmostraController.listaAmostras!=null}" layout="inline"> 
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_COLETADO}" id="bt_coletado" action="#{informacaoAmostraController.confirmarColeta}" disabled="#{informacaoAmostraController.desabilitaBotaoColeta or not mf:hasPermission(securityController,'informacaoColetaAmostra,executar')}" ajax="true" render="panelAmostras,panelExamesAmostra,panelAcoesAmostra" process="@this" styleClass="bt_cinza"/>  
+          <mec:commandButton value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_VOLTAR_COLETA}" id="bt_cancela_coleta" action="#{informacaoAmostraController.voltarColeta}" disabled="#{informacaoAmostraController.desabilitaBotaoCancelarColeta or not mf:hasPermission(securityController,'voltarColeta,executar')}" ajax="true" render="panelAmostras,panelExamesAmostra,panelAcoesAmostra" process="@this" styleClass="bt_cinza"/>  
+          <mec:commandButton value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_IMPRIMIR_ETIQUETAS}" id="bt_imprime_etiquetas" rendered="#{mf:hasPermission(securityController,'reimprimirEtiquetasAmostras,executar')}" action="#{informacaoAmostraController.imprimirEtiquetaAmostra}" ajax="true" process="@this" styleClass="bt_cinza"/> 
+        </aghu:acao> 
+      </p:outputPanel> 
+    </p:outputPanel>  
+    <p:outputPanel id="panelExamesAmostra" layout="inline"> 
+      <p:outputPanel id="panelExamesAmostraInterno" rendered="#{informacaoAmostraController.listaExamesAmostra!=null}" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_EXAMES_DA_AMOSTRA}"> 
+          <p:outputPanel layout="block" style="width: 100%; height:150px;overflow-y:scroll;"> 
+            <mec:serverDataTable list="#{informacaoAmostraController.listaExamesAmostra}" scrollable="true"> 
+              <c:set var="_examesAmostraVO" value="#{item}"/>  
+              <p:column width="50px"> 
+				 <p:outputPanel style="text-align:center">
+				    <h:selectBooleanCheckbox id="selecionado" value="#{_examesAmostraVO.selecionado}">
+				      <p:ajax event="click" update="@(#panelAcoesExamesAmostra)" process="@this" 
+				      	listener="#{informacaoAmostraController.manterBotoesExames()}"/>
+				    </h:selectBooleanCheckbox>
+				 </p:outputPanel> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_SOLICITACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_examesAmostraVO.soeSeq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_ITEM}"/> 
+                </f:facet>  
+                <h:outputText value="#{_examesAmostraVO.seqp}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_EXAME_AMOSTRA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_examesAmostraVO.descricaoUsual}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_TIPO_COLETA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_examesAmostraVO.tipoColeta.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_LABORATORIO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_examesAmostraVO.unfSeq}"/>  
+                <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" for="descUnidadeFuncional"> 
+                  <h:outputText id="descUnidadeFuncional" value="#{informacaoAmostraController.obterDescricaoUnidadeFuncional(_examesAmostraVO.unfSeq)}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_SITUACAO_ITEM}"/> 
+                </f:facet>  
+                <h:outputText value="#{_examesAmostraVO.situacao.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_DATA_HORA_AGENDA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_examesAmostraVO.dthrAgenda}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </aghu:panelGeral> 
+      </p:outputPanel> 
+    </p:outputPanel>  
+    <p:outputPanel id="panelAcoesExamesAmostra" layout="inline"> 
+      <p:outputPanel id="panelAcoesExamesAmostraInterno" rendered="#{informacaoAmostraController.listaExamesAmostra!=null}" layout="inline"> 
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_COLETAR_EXAME}" id="bt_coletar_exame" action="#{informacaoAmostraController.coletarExame}" disabled="#{informacaoAmostraController.desabilitaBotaoColetarExame or not mf:hasPermission(securityController,'informacaoColetaAmostra,executar')}" ajax="true" render="panelExamesAmostra, panelAmostras, panelAcoesAmostra" process="@this" styleClass="bt_cinza"/>  
+          <mec:commandButton value="#{messages.LABEL_VOLTAR_EXAME}" id="bt_voltar_exame" action="#{informacaoAmostraController.voltarExame}" disabled="#{informacaoAmostraController.desabilitaBotaoVoltarExame or not mf:hasPermission(securityController,'informacaoColetaAmostra,executar')}" ajax="true" render="panelExamesAmostra, panelAmostras, panelAcoesAmostra" process="@this" styleClass="bt_cinza"/> 
+        </aghu:acao> 
+      </p:outputPanel> 
+    </p:outputPanel>  
+    <p:dialog id="modalEditarAmostra" width="550" height="350" modal="true" resizable="false" widgetVar="modalEditarAmostraWG"> 
+      <f:facet name="header"> 
+        <h:panelGroup> 
+          <h:outputText value="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_AMOSTRA}"/> 
+        </h:panelGroup> 
+      </f:facet>  
+      <p:outputPanel id="panelEditarAmostraInterno" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral style="padding:10px;" legend="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_AMOSTRA}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="solicitacaoNumero" value="#{informacaoAmostraController.amostraSelecionada.id.seqp	}" readonly="true" label="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_NUMERO_SOLICITACAO}" maxlength="8" size="10"/>    
+            <mec:inputNumero label="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_AMOSTRA}" id="amostraNumero" maxlength="8" value="#{informacaoAmostraController.amostraSelecionada.id.seqp}" size="10" readonly="true"/>  
+            <mec:inputText label="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_SITUACAO_AMOSTRA}" id="situacaoAmostra" maxlength="25" value="#{informacaoAmostraController.amostraSelecionada.situacao.descricao}" style="text-transform:uppercase" size="25" readonly="true"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_RECIPIENTE}" id="recipienteAmostra" maxlength="85" value="#{informacaoAmostraController.amostraSelecionada.recipienteColeta.descricao}" style="text-transform:uppercase" size="85" readonly="true"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_ANTICOAGULANTE}" id="anticoagulanteAmostra" maxlength="85" value="#{informacaoAmostraController.amostraSelecionada.anticoagulante.descricao}" style="text-transform:uppercase" size="85" readonly="true"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox id="salaEX" label="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_UNIDADE_SALA}" title="#{messages.LABEL_PREENCHER_INFORMACOES_AMOSTRA_UNIDADE_SALA_HELP}" descricaoInput="numero" descricaoLabel="localizacao" size="20" suggestionAction="pesquisarSalaExecutoraExamesPorUnidadeFuncional" width="450" controller="#{informacaoAmostraController}" value="#{informacaoAmostraController.sala}" render="panelEditarAmostraAcoesInterno"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_UNIDADE}</b> 
+                </f:facet> #{item.unidadeFuncional.descricao}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_NUMERO}</b> 
+                </f:facet> #{item.numero}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_LOCALIZACAO}</b> 
+                </f:facet> #{item.localizacao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelEditarAmostraAcoesInterno" layout="inline"> 
+        <aghu:acao> 
+          <mec:commandButton id="bt_confirmar" value="#{messages.LABEL_GRAVAR}" action="#{informacaoAmostraController.atualizarSalaExecutoraExamesDaAmostra}" disabled="#{informacaoAmostraController.sala eq null or not mf:hasPermission(securityController,'informacaoColetaAmostra,executar')}" rendered="#{mf:hasPermission(securityController,'amostraII,executar')}" oncomplete="PF('modalEditarAmostraWG').hide();" profile="ok" ajax="true" render="panelAmostras,panelExamesAmostra,panelAcoesAmostra" process="@this"/>  
+          <mec:commandButton value="#{messages.LABEL_FECHAR}" immediate="true" oncomplete="PF('modalEditarAmostraWG').hide();" styleClass="bt_fechar bt_cinza" ajax="true" process="@this"/> 
+        </aghu:acao> 
+      </p:outputPanel> 
+    </p:dialog> 
+  </ui:composition> 
+</html>

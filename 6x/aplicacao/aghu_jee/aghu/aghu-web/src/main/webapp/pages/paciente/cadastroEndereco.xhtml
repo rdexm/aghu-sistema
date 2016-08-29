@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CADASTRAR_ENDERECO_PACIENTE} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig ignoreEnter="true" controller="#{enderecoController}"/>  
+      <h:form prependId="false" id="formEnderecoCadastrado"> 
+        <pe:remoteCommand name="atualizarPanel" requestDelay="1000" process="@this"> 
+          <pe:assignableParam name="var1" assignTo="#{enderecoController.openedLogradouroCadastrado}"/> 
+        </pe:remoteCommand>  
+        <aghu:panelGeral legend="#{messages.DADOS_PACIENTE}"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_PRONTUARIO}" readonly="true" style="#{cadastrarPacienteController.getStyleProntuario()}" value="#{cadastrarPacienteController.aipPaciente.prontuario}" id="prontuario"/>  
+            <mec:inputText readonly="true" label="#{messages.LABEL_NOME}" maxlength="50" value="#{cadastrarPacienteController.aipPaciente.nome}" style="text-transform:uppercase" required="true" size="50" id="nome"/>  
+            <mec:inputText label="#{messages.LABEL_CODIGO}" size="10" maxlength="9" value="#{cadastrarPacienteController.aipPaciente.codigo}" readonly="true" id="codigo"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <p:accordionPanel id="togglePanelLogradouroCadastrado" oncollapse="SimpleTogglePanelManager.toggleOnClient(event,'togglePanelLogradouroNaoCadastrado'); atualizarPanel(false);" onTabChange="SimpleTogglePanelManager.toggleOnClient(event,'togglePanelLogradouroNaoCadastrado'); atualizarPanel(true);" prependId="false"> 
+          <p:tab title="#{messages.LOGRADOURO_CADASTRADO}"> 
+            <p:outputPanel id="panelLogradouroCadastrado" layout="inline"> 
+              <aghu:linha> 
+                <p:outputPanel id="regionCep" layout="inline"> 
+                  <mec:suggestionBox label="#{messages.LABEL_CEP}" title="#{messages.TITLE_CEP_ENDERECO_PACIENTE}" descricaoInput="cepFormatado" suggestionAction="buscarEnderecosCep" posSelectionAction="setarCepSelecionado" posDeleteAction="limparCepSelecionado" width="500" id="cep" controller="#{enderecoController}" value="#{enderecoController.cepCadastrado}" render="panelLogradouroCadastrado"> 
+                    <c:set var="_bairroCepLogradouro" value="#{item}"/>  
+                    <p:column> 
+                      <h:outputText value="#{_bairroCepLogradouro.id.cloCep}"/>  
+                      <h:outputText value=" - "/>  
+                      <h:outputText value="#{_bairroCepLogradouro.cepLogradouro.logradouro.aipCidade.nome}"/>  
+                      <h:outputText value=" - "/>  
+                      <h:outputText value="#{_bairroCepLogradouro.aipBairro.descricao}"/>  
+                      <h:outputText value=" - "/>  
+                      <h:outputText value="#{_bairroCepLogradouro.cepLogradouro.logradouro.nome}"/> 
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </p:outputPanel>  
+                <mec:suggestionBox label="#{messages.LABEL_CIDADE}" required="true" title="#{messages.TITLE_SUGGESTIONBOX_CIDADE}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarCidadePorNome" width="400" id="cidade" controller="#{enderecoController}" value="#{enderecoController.cidadeEnderecoCadastrado}" render="IBGE,UF"> 
+                  <c:set var="_cidade" value="#{item}"/>  
+                  <p:column>#{_cidade.nome}</p:column>  
+                  <p:column>#{_cidade.aipUf.sigla}</p:column> 
+                </mec:suggestionBox>  
+                <mec:inputText label="#{messages.LABEL_UF}" size="10" value="#{enderecoController.cidadeEnderecoCadastrado.aipUf.sigla}" readonly="true" id="UF"/>  
+                <mec:inputText label="#{messages.LABEL_IBGE}" size="10" value="#{enderecoController.cidadeEnderecoCadastrado.codIbge}" readonly="true" id="IBGE"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox label="#{messages.LABEL_LOGRADOURO}" required="true" title="#{messages.TITLE_LOGRADOURO_ENDERECO_PACIENTE}" size="45" maxlength="60" descricaoInput="cepLogradouro.logradouro.nome" suggestionAction="listarLogradourosPorTipoTituloNome" posDeleteAction="limparCepSelecionado" posSelectionAction="setarCepSelecionado" width="850" id="logradouroCadastrado" controller="#{enderecoController}" value="#{enderecoController.cepCadastrado}" render="panelLogradouroCadastrado"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_ENDERECO}</b> 
+                    </f:facet> #{item.cepLogradouro.logradouro.aipTipoLogradouro.descricao} #{item.cepLogradouro.logradouro.aipTituloLogradouro.descricao} #{item.cepLogradouro.logradouro.nome}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.TITLE_NUMERO_INICIAL}</b> 
+                    </f:facet> #{item.cepLogradouro.nroInicial}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.TITLE_NUMERO_FINAL}</b> 
+                    </f:facet> #{item.cepLogradouro.nroFinal}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_LADO}</b> 
+                    </f:facet> #{item.cepLogradouro.lado.descricao}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_BAIRRO}</b> 
+                    </f:facet> #{item.aipBairro.descricao}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CIDADE}</b> 
+                    </f:facet> #{item.cepLogradouro.logradouro.aipCidade.nome}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:inputText label="#{messages.LABEL_BAIRRO}" value="#{enderecoController.getValorBairroEnderecoCadastrado()}" readonly="true" size="45" style="text-transform:uppercase" id="bairro"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputNumero maxlength="5" ajaxValidation="false" required="true" label="#{messages.LABEL_NUMERO}" title="#{messages.TITLE_NUMERO_REL_ENDERECO_PACIENTE}" value="#{enderecoController.enderecoEdicao.nroLogradouro}" id="numeroCadastrado"/>  
+                <mec:inputText maxlength="20" value="#{enderecoController.enderecoEdicao.complLogradouro}" label="#{messages.LABEL_COMPLEMENTO}" title="#{messages.TITLE_COMPLEMENTO_REL_ENDERECO_PACIENTE}" style="text-transform:uppercase" emptyStringToNull="true" id="complementoCadastrado"/>  
+                <mec:selectOneMenu required="true" noSelectionOption="true" label="#{messages.LABEL_TIPO}" title="#{messages.TITLE_TIPO_ENDERECO_PACIENTE}" value="#{enderecoController.enderecoEdicao.tipoEndereco}" ajaxValidation="false" enum="DominioTipoEndereco" itemsType="enum" id="tipoCadastrado"/>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_CORRESPONDENCIA}" title="#{messages.TITLE_ENDERECO_CORRESPONDENCIA_PACIENTE}" value="#{enderecoController.enderecoEdicao.padrao}" id="correspondenciaCadastrado"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:commandButton block="true" style="margin-left: 2px !important;" value="#{messages.LABEL_CONFIRMAR}" id="bt_incluirCadastrado" action="#{enderecoController.salvarEnderecoCadastrado}" profile="ok"/>  
+                <mec:commandButton value="#{messages.LABEL_CANCELAR}" id="bt_cancelarCadastrado" action="#{enderecoController.limparEndereco}" profile="cancel" ajax="true" process="@this"/> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </p:tab> 
+        </p:accordionPanel> 
+      </h:form>  
+      <h:form prependId="false" id="formEnderecoNaoCadastrado"> 
+        <p:spacer height="10px"/>  
+        <p:accordionPanel id="togglePanelLogradouroNaoCadastrado" oncollapse="SimpleTogglePanelManager.toggleOnClient(event,'togglePanelLogradouroCadastrado'); atualizarPanel(true);" onTabChange="SimpleTogglePanelManager.toggleOnClient(event,'togglePanelLogradouroCadastrado'); atualizarPanel(false);" prependId="false"> 
+          <p:tab title="#{messages.LOGRADOURO_NAO_CADASTRADO}"> 
+            <p:outputPanel id="panelLogradouroNaoCadastrado" layout="inline"> 
+              <aghu:linha> 
+                <mec:suggestionBox label="#{messages.LABEL_CIDADE}" title="#{messages.TITLE_SUGGESTIONBOX_CIDADE}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarCidadePorNome" posDeleteAction="limparCidadeSelecionadaNaoCadastrada" width="500" posSelectionAction="buscarCepUnico" id="cidadeNaoCadastrada" controller="#{enderecoController}" value="#{enderecoController.enderecoEdicao.aipCidade}" render="UFCidadeNaoCadastrada,uc,cepNaoCadastrado,IBGENaoCadastrado"> 
+                  <c:set var="_cidade" value="#{item}"/>  
+                  <p:column>#{_cidade.nome}</p:column>  
+                  <p:column>#{_cidade.aipUf.sigla}</p:column> 
+                </mec:suggestionBox>  
+                <mec:inputText label="#{messages.LABEL_UF}" size="10" value="#{enderecoController.enderecoEdicao.aipCidade.aipUf.sigla}" readonly="true" id="UFCidadeNaoCadastrada"/>  
+                <mec:inputText label="#{messages.LABEL_IBGE}" size="10" value="#{enderecoController.enderecoEdicao.aipCidade.codIbge}" readonly="true" id="IBGENaoCadastrado"/>  
+                <mec:suggestionBox id="cepNaoCadastrado" required="#{enderecoController.requiredSuggestionCepNaoCadastrado()}" label="#{messages.LABEL_CEP}" title="#{messages.TITLE_CEP_ENDERECO_PACIENTE_LOGRADOURO_NAO_CADASTRADO}" descricaoInput="cep" suggestionAction="buscarEnderecosCepNaoCadastrado" width="600" controller="#{enderecoController}" value="#{enderecoController.vAipLocalidadeUc}" render="uc"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>CEP</b> 
+                    </f:facet>  
+                    <div style="width: 70px;">#{_item.cep}</div> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>Nome</b> 
+                    </f:facet> #{_item.id.nomeCidade}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>Bairro</b> 
+                    </f:facet> #{_item.descricaoBairro}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>Tipo</b> 
+                    </f:facet> #{_item.id.tipo}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:inputText label="#{messages.LABEL_NOME_BAIRRO_TIPO}" readonly="true" value="#{enderecoController.getUC()}" size="75" id="uc"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputText label="#{messages.LABEL_LOGRADOURO}" size="95" maxlength="120" value="#{enderecoController.enderecoEdicao.logradouro}" readonly="#{!enderecoController.habilitarLogradouroLivre()}" title="#{messages.TITLE_LOGRADOURO_NAO_ENCONTRADO_ENDER_PAC}" style="text-transform:uppercase" id="logradouroLivre"/>  
+                <mec:inputText label="#{messages.LABEL_BAIRRO}" value="#{enderecoController.enderecoEdicao.bairro}" size="95" maxlength="100" title="Digite o bairro relativo ao endereço do paciente." style="text-transform:uppercase" id="bairroLivre"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputText rendered="#{enderecoController.exibirCidadeLivre()}" label="#{messages.LABEL_CIDADE_NAO_CADASTRADA}" size="50" maxlength="40" value="#{enderecoController.enderecoEdicao.cidade}" readonly="#{!enderecoController.habilitarCidadeLivre()}" title="#{messages.TITLE_CIDADE_NAO_ENCONTRADA_ENDER_PAC}" style="text-transform:uppercase" emptyStringToNull="true" id="cidadeLivre"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputNumero maxlength="5" ajaxValidation="false" required="true" value="#{enderecoController.numeroLogradouroNaoCadastrado}" label="#{messages.LABEL_NUMERO}" title="#{messages.TITLE_NUMERO_RELATIVO_ENDER_PAC}" id="numero"/>  
+                <mec:inputText maxlength="20" value="#{enderecoController.complementoLogradouroNaoCadastrado}" label="#{messages.LABEL_COMPLEMENTO}" title="#{messages.TITLE_COMPLEMENTO_NAO_ENCONTRADO_ENDER_PAC}" style="text-transform:uppercase" emptyStringToNull="true" id="complemento"/>  
+                <mec:selectOneMenu value="#{enderecoController.tipoEnderecoNaoCadastrado}" required="true" noSelectionOption="true" label="#{messages.LABEL_TIPO}" title="#{messages.TITLE_TIPO_ENDERECO_PACIENTE}" ajaxValidation="false" enum="DominioTipoEndereco" itemsType="enum" id="tipo"/>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_CORRESPONDENCIA}" title="#{messages.TITLE_ENDERECO_CORRESPONDENCIA_PACIENTE}" value="#{enderecoController.padraoEnderecoNaoCadastrado}" id="correspondencia"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:commandButton block="true" style="margin-left: 2px !important;" value="#{messages.LABEL_CONFIRMAR}" id="bt_incluir" action="#{enderecoController.salvarEnderecoNaoCadastrado}" profile="ok"/>  
+                <mec:commandButton value="#{messages.LABEL_CANCELAR}" id="bt_cancelar" action="#{enderecoController.limparEndereco}" profile="cancel" ajax="true" process="@this"> 
+                  <f:setPropertyActionListener target="#{cadastrarPacienteController.ignoreInitPageConfig}" value="true" for="command"/> 
+                </mec:commandButton> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </p:tab> 
+        </p:accordionPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

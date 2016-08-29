@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition>
+	<p:outputPanel id="panelMedicamento" layout="inline">
+		<aghu:linha>
+			<mec:suggestionBox id="medicamento" width="360"
+				label="#{messages.LABEL_MEDICAMENTOS_RN}"
+				title="#{messages.TITLE_MEDICAMENTOS_RN}"
+				suggestionAction="pesquisarMedicamentos" descricaoInput="seqPni"
+				readonly="#{registrarGestacaoAbaRecemNascidoController.modoSelecao}"
+				descricaoLabel="descricaoPni" required="true"
+				descricaoLimite="60"
+				posSelectionAction="habilitarCamposComplementares"
+				posDeleteAction="desalitarCamposComplementares"
+				controller="#{registrarGestacaoAbaRecemNascidoController}"
+				value="#{registrarGestacaoAbaRecemNascidoController.medicamentoSB}"
+				render="camposCompPanel,acoesMedicamentoPanel"
+				var="row" itemValue="#{row}">
+				<p:column>
+					<f:facet name="header">
+						<b>#{messages.LABEL_DESCRICAO}</b>
+					</f:facet> #{row.descricaoPni}
+        </p:column>
+			</mec:suggestionBox>
+			<p:outputPanel id="camposCompPanel" layout="inline">
+				<mec:inputNumero
+					readonly="#{registrarGestacaoAbaRecemNascidoController.camposDesabilitados or registrarGestacaoAbaRecemNascidoController.modoSelecao}"
+					id="doseId" label="#{messages.LABEL_DOSE_RN}"
+					title="#{messages.TITLE_DOSE_RN}" size="5" maxlength="5"
+					value="#{registrarGestacaoAbaRecemNascidoController.medicamentoSB.dose}" />
+				<mec:inputText id="unidadeId"
+					readonly="#{registrarGestacaoAbaRecemNascidoController.camposDesabilitados or registrarGestacaoAbaRecemNascidoController.modoSelecao}"
+					label="#{messages.LABEL_UND_RN}" title="#{messages.TITLE_UND_RN}"
+					value="#{registrarGestacaoAbaRecemNascidoController.medicamentoSB.unidade}"
+					maxlength="5" size="5" style="text-transform:uppercase" />
+				<mec:suggestionBox id="viaAdministracao" width="360"
+					label="#{messages.LABEL_ADM_RN}"
+					readonly="#{registrarGestacaoAbaRecemNascidoController.camposDesabilitados or registrarGestacaoAbaRecemNascidoController.modoSelecao}"
+					requiredFake="#{!registrarGestacaoAbaRecemNascidoController.camposDesabilitados}"
+					title="#{messages.TITLE_ADM_RN}"
+					suggestionAction="pesquisarViasAdministracao"
+					descricaoInput="sigla" descricaoLimite="60"
+					descricaoLabel="descricao"
+					controller="#{registrarGestacaoAbaRecemNascidoController}"
+					value="#{registrarGestacaoAbaRecemNascidoController.administracaoVO}"
+					var="row" itemValue="#{row}">
+					<p:column>
+						<f:facet name="header">
+							<b>#{messages.LABEL_SIGLA}</b>
+						</f:facet> #{row.sigla}
+          </p:column>
+					<p:column>
+						<f:facet name="header">
+							<b>#{messages.LABEL_DESCRICAO}</b>
+						</f:facet> #{row.descricao}
+          </p:column>
+				</mec:suggestionBox>
+			</p:outputPanel>
+			<p:outputPanel id="acoesMedicamentoPanel" layout="inline">
+				<mec:commandButton id="btAdicionarMedicamento"
+					style="margin-top:17px !important;float:left !important;"
+					value="#{messages.LABEL_ADICIONAR}"
+					rendered="#{!registrarGestacaoAbaRecemNascidoController.modoEdicaoMedicamento and registrarGestacaoAbaRecemNascidoController.modoEdicao}"
+					disabled="#{!mf:hasPermission(securityController,'registrarRecemNascido, executar')}"
+					action="#{registrarGestacaoAbaRecemNascidoController.adicionarMedicamento}"
+					render="panelListaMedicamento,panelMedicamento" profile="add"
+					ajax="true"
+					process="@this, doseId, unidadeId" />
+				<mec:commandButton id="btAlterarMedicamento"
+					style="margin-top:17px !important;float:left !important;"
+					value="#{messages.LABEL_ALTERAR}"
+					rendered="#{registrarGestacaoAbaRecemNascidoController.modoEdicaoMedicamento and registrarGestacaoAbaRecemNascidoController.modoEdicao}"
+					disabled="#{!mf:hasPermission(securityController,'registrarRecemNascido, executar')}"
+					action="#{registrarGestacaoAbaRecemNascidoController.alterarMedicamento}"
+					render="panelListaMedicamento,panelMedicamento" profile="ok"
+					ajax="true"
+					process="@this, doseId, unidadeId" />
+				<mec:commandButton id="btCancelarEdicaoMedicamento"
+					style="margin-top:17px !important;float:left !important;"
+					value="#{messages.LABEL_CANCELAR_EDICAO}" immediate="true"
+					rendered="#{registrarGestacaoAbaRecemNascidoController.modoEdicaoMedicamento and registrarGestacaoAbaRecemNascidoController.modoEdicao}"
+					action="#{registrarGestacaoAbaRecemNascidoController.cancelarMedicamento}"
+					render="panelListaMedicamento,panelMedicamento" profile="cancel"
+					ajax="true"
+					process="@this" />
+			</p:outputPanel>
+		</aghu:linha>
+	</p:outputPanel>
+	<aghu:linha>
+		<p:outputPanel id="panelListaMedicamento" layout="block"
+			style="position:relative;">
+			<!-- LISTAGEM DE REGISTROS -->
+			<mec:serverDataTable id="panelListaMedicamento_table"
+				rowKeyVar="_index"
+				rendered="#{not empty registrarGestacaoAbaRecemNascidoController.medicamentos}"
+				list="#{registrarGestacaoAbaRecemNascidoController.medicamentos}"
+				scrollable="true" scrollHeight="85">
+				<c:set var="item" value="#{item}" />
+				<p:column style="text-align:right; width: 40px;"
+					rendered="#{mf:hasPermission(securityController,'registrarRecemNascido, executar')}">
+					<f:facet name="header">
+						<h:outputText value="#{messages.CASCA_LABEL_ACOES}" />
+					</f:facet>
+					<mec:commandLink id="editar"
+						action="#{registrarGestacaoAbaRecemNascidoController.editarMedicamento}"
+						rendered="#{!registrarGestacaoAbaRecemNascidoController.modoEdicaoMedicamento}"
+						title="#{messages.LABEL_EDITAR}" profile="edit" ajax="true"
+						render="panelListaMedicamento,panelMedicamento" process="@this">
+						<f:setPropertyActionListener
+							target="#{registrarGestacaoAbaRecemNascidoController.indexMedicamento}"
+							value="#{_index}" for="command" />
+					</mec:commandLink>
+					<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+						action="#{registrarGestacaoAbaRecemNascidoController.excluirMedicamento}"
+						rendered="#{!registrarGestacaoAbaRecemNascidoController.modoEdicaoMedicamento}"
+						profile="delete" ajax="true"
+						render="panelListaMedicamento,panelMedicamento" process="@this">
+						<f:setPropertyActionListener
+							target="#{registrarGestacaoAbaRecemNascidoController.indexMedicamento}"
+							value="#{_index}" for="command" />
+					</mec:commandLink>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MEDICAMENTOS_RN}" />
+					</f:facet>
+					<h:outputText value="#{item.descricaoPni}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_DOSE_RN}" />
+					</f:facet>
+					<h:outputText value="#{item.dose}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_UND_RN}" />
+					</f:facet>
+					<h:outputText value="#{item.unidade}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_ADM_RN}" />
+					</f:facet>
+					<h:outputText value="#{item.vadSigla}" />
+				</p:column>
+			</mec:serverDataTable>
+		</p:outputPanel>
+	</aghu:linha>
+</ui:composition>
+</html>

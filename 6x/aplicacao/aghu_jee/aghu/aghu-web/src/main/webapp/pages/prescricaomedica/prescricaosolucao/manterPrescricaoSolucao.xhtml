@@ -1,0 +1,667 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Manter Prescrição de Soluções :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterPrescricaoSolucaoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterPrescricaoSolucaoController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formPrescricaoCabecalho"> 
+        <p:outputPanel id="cabecalho" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prontuario}" size="8" maxlength="9" emptyStringToNullConverter="emptyStringToNullConverter" readonly="true" id="prontuarioPaciente" converter="#{prontuarioConverter}"/>  
+              <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.nome}" size="56" maxlength="50" style="text-transform:uppercase" readonly="true" id="nomePaciente"/>  
+              <mec:inputText label="#{messages.LABEL_LOCAL}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.local}" size="15" maxlength="15" style="text-transform:uppercase" readonly="true" id="localPaciente"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.dthrInicio}" readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm" id="dataValidadeInicial"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.dthrFim}" readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm" id="dataValidadeFinal"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false" id="formDadosCabecalho"> 
+        <p:outputPanel id="panelCampos" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_MANTER_PRESCRICAO_SOLUCOES}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panel_medicamento" layout="inline"> 
+                <mec:suggestionBox label="#{messages.LABEL_MEDICAMENTOS}" 
+                		title="#{messages.TITLE_MEDICAMENTOS}" 
+                		required="true" 
+                		readonly="#{manterPrescricaoSolucaoController.edicao}" 
+                		descricaoInput="matCodigo" 
+                		descricaoLabel="descricaoEditada" 
+                		suggestionAction="obterMedicamentos" 
+                		posSelectionAction="realizarVerificacoesMedicamento" 
+                		posDeleteAction="limparCamposRelacionados" width="800" 
+                		id="medicamentos" 
+                		cache="false"
+                		controller="#{manterPrescricaoSolucaoController}" 
+                		value="#{manterPrescricaoSolucaoController.medicamentoVO}" 
+                		render="panelUnidade, panelVia, panelDose, panel_dosePediatrica, panel_obs, panelInformacoesFarmaco, todasVias_panel, modalProtocolo, panelDadosSecundarios"
+                		rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.descricaoMat}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CONCENTRACAO}</b> 
+                    </f:facet> #{item.concentracaoFormatada}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_UNID}</b> 
+                    </f:facet> #{item.descricaoUnidadeMedica}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_APRES}</b> 
+                    </f:facet> #{item.tprSigla}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_IND_PADR}</b> 
+                    </f:facet> #{item.indPadronizacao ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_EXIGE_JUST}</b> 
+                    </f:facet> #{item.indExigeJustificativa ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DURAC}</b> 
+                    </f:facet> #{item.indExigeDuracaoSolicitada ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_IND_ANTIMIC}</b> 
+                    </f:facet> #{item.indAntimicrobiano ? 'S' : 'N'}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel>  
+              <p:outputPanel id="panel_medicamento_enfermeiro_obstetra" layout="inline"> 
+                <mec:suggestionBox label="#{messages.LABEL_MEDICAMENTOS}" 
+                		title="#{messages.TITLE_MEDICAMENTOS}" 
+                		required="true" 
+                		readonly="#{manterPrescricaoSolucaoController.edicao}" 
+                		descricaoInput="matCodigo" 
+                		descricaoLabel="descricaoEditada" 
+                		suggestionAction="obterMedicamentosEnfermeiroObstetra" 
+                		posSelectionAction="realizarVerificacoesMedicamento" 
+                		posDeleteAction="limparCamposRelacionados" width="800" 
+                		id="medicamentosEnfermeiroObstetra" 
+                		controller="#{manterPrescricaoSolucaoController}" 
+                		value="#{manterPrescricaoSolucaoController.medicamentoVO}" 
+                		render="panelUnidade, panelVia, panelDose, panel_dosePediatrica, panel_obs, panelInformacoesFarmaco, todasVias_panel, modalProtocolo, panelModalProtocolo"
+                 		rendered="#{mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar')}" >
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.descricaoMat}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CONCENTRACAO}</b> 
+                    </f:facet> #{item.concentracaoFormatada}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_UNID}</b> 
+                    </f:facet> #{item.descricaoUnidadeMedica}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_APRES}</b> 
+                    </f:facet> #{item.tprSigla}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_IND_PADR}</b> 
+                    </f:facet> #{item.indPadronizacao ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_EXIGE_JUST}</b> 
+                    </f:facet> #{item.indExigeJustificativa ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DURAC}</b> 
+                    </f:facet> #{item.indExigeDuracaoSolicitada ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_IND_ANTIMIC}</b> 
+                    </f:facet> #{item.indAntimicrobiano ? 'S' : 'N'}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel>               
+              <p:outputPanel id="panelListaMedicamentos" layout="inline"> 
+                <mec:selectOneMenu label="#{messages.LABEL_LISTA_MEDICAMENTOS}" title="#{messages.TITLE_LISTA_MEDICAMENTOS}" noSelectionOption="false" id="listaMedicamentos" value="#{manterPrescricaoSolucaoController.listaMedicamentosAux}" enum="DominioQuimioterapico" ajaxSingle="true"> 
+                  <p:ajax event="change" async="true" global="false" ignoreAutoUpdate="true"  update="@(#panelListaMedicamentos)" process="@this" listener="#{manterPrescricaoSolucaoController.selecionarTipoMedicamento}"/> 
+                </mec:selectOneMenu> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelBotoesCalcDosePed" layout="inline"> 
+                <br clear="none"/>
+                	<mec:commandButton id="btCalculoDose_add"
+                                       value="#{messages.LABEL_CALCULO_DA_DOSE}"
+                                       action="#{manterPrescricaoSolucaoController.calculoDosePediatrica}"
+                                       disabled="#{!manterPrescricaoSolucaoController.prescricaoMedicaVO.indPacPediatrico}"
+                                       rendered="#{!manterPrescricaoSolucaoController.exibirCalculoDosePediatrica}"
+                                       profile="add"
+                                       ajax="true"
+                                       render="panelBotoesCalcDosePed, panelModalPesoAltura, panel_dosePediatrica"
+                                       process="@this"/>
+                	<mec:commandButton id="btCalculoDose_minus"
+                                       value="#{messages.LABEL_CALCULO_DA_DOSE}"
+                                       action="#{manterPrescricaoSolucaoController.calculoDosePediatrica}"
+                                       disabled="#{!manterPrescricaoSolucaoController.prescricaoMedicaVO.indPacPediatrico}"
+                                       rendered="#{manterPrescricaoSolucaoController.exibirCalculoDosePediatrica}"
+                                       styleClass=" icon-minus bt_cinza"
+                                       ajax="true"
+                                       render="panelBotoesCalcDosePed, panel_dosePediatrica"
+                                       process="@this"/>
+              </p:outputPanel> 
+            </aghu:linha>  
+            <p:outputPanel id="panel_dosePediatrica" layout="inline"> 
+              <p:outputPanel rendered="#{manterPrescricaoSolucaoController.exibirCalculoDosePediatrica}" layout="inline"> 
+                <aghu:linha> 
+                  <aghu:panelGeral legend="#{messages.LABEL_CALCULO_DOSE_PEDIATRICA}"> 
+                    <aghu:linha> 
+                      <mec:inputDecimal id="pesoExib"
+                                        label="#{messages.LABEL_PESO_MODAL}"
+                                        size="9"
+                                        inteiros="3"
+                                        decimais="3"
+                                        title="#{messages.TITLE_PESO_MODAL}"
+                                        value="#{manterPrescricaoSolucaoController.peso}"
+                                        converter="#{bigDecimalPrecisao4Converter}"
+                                        readonly="true"
+                                        disabled="true"/>
+                      <mec:selectOneMenu id="tipoMedicaoExib" enum="DominioTipoMedicaoPeso" value="#{manterPrescricaoSolucaoController.tipoMedicao}" label="#{messages.LABEL_TIPO_MEDICAO_PESO_MODAL}" title="#{messages.TITLE_TIPO_MEDICAO_PESO_MODAL}" readonly="true" disabled="true"/>  
+                      <mec:inputDecimal id="alturaExib"
+                                        label="#{messages.LABEL_ALTURA_MODAL}"
+                                        size="9"
+                                        inteiros="3"
+                                        decimais="2"
+                                        title="#{messages.TITLE_ALTURA_MODAL}"
+                                        value="#{manterPrescricaoSolucaoController.altura}"
+                                        converter="#{bigDecimalPrecisao4Converter}"
+                                        readonly="true"
+                                        disabled="true"/>
+                      <mec:inputDecimal id="scExib"
+                                        label="#{messages.LABEL_SC_MODAL}"
+                                        size="9"
+                                        inteiros="3"
+                                        decimais="2"
+                                        title="#{messages.TITLE_SC_MODAL}"
+                                        value="#{manterPrescricaoSolucaoController.sc}"
+                                        converter="#{bigDecimalPrecisao4Converter}"
+                                        readonly="true"
+                                        disabled="true"/>
+                    </aghu:linha>  
+                    <aghu:linha> 
+                      <p:outputPanel id="panelViaDosePed" layout="inline"> 
+                        <mec:suggestionBox label="#{messages.LABEL_VIA}" title="#{messages.TITLE_VIA_ADM}" required="false" descricaoInput="sigla" descricaoLabel="descricao" suggestionAction="listarViasMedicamentoPed" id="viaDosePed" controller="#{manterPrescricaoSolucaoController}" value="#{manterPrescricaoSolucaoController.viaDosePed}"> 
+                          <p:column>#{item.descricao}</p:column>  
+                          <p:column>#{item.sigla}</p:column> 
+                        </mec:suggestionBox> 
+                      </p:outputPanel>  
+                      <p:outputPanel id="panelFrequenciaDosePed" layout="inline"> 
+                        <mec:inputNumero id="frequenciaDosePed" size="3" maxlength="3" label="#{messages.LABEL_FREQUENCIA}" title="#{messages.TITLE_FREQUENCIA_MEDICAMENTO}" value="#{manterPrescricaoSolucaoController.frequenciaDosePed}"> 
+                          <p:ajax id="frequenciaDosePedSupOnChange" event="change" async="true" global="false" ignoreAutoUpdate="true"  bypassUpdates="false" update="@(#panelVia) @(#panelFrequencia) @(#panelTipoFrequenciaAprazamento) @(#panelDose) @(#tipoAprazamentoLabelPanelDosePed)" process="@this" listener="#{manterPrescricaoMedicamentoController.calculoDose}"/> 
+                        </mec:inputNumero> 
+                      </p:outputPanel>  
+                      <p:outputPanel id="panelTipoFrequenciaAprazamentoDosePed" layout="inline"> 
+                        <mec:suggestionBox id="tipoAprazamentoDosePed" label="#{messages.LABEL_TIPO_APRAZAMENTO}" title="Selecione um Tipo de Frequência de Aprazamento." required="false" descricaoInput="sigla" externalDescricaoLabel="descricaoTipoFrequenciaAprazamentoPed" labelId="tipoAprazamentoLabelPanelDosePed" suggestionAction="buscarTiposFrequenciaAprazamento" posSelectionAction="verificarFrequenciaPed" controller="#{manterPrescricaoSolucaoController}" value="#{manterPrescricaoSolucaoController.tipoAprazamentoDosePed}" render="panelVia, panelFrequencia, panelTipoFrequenciaAprazamento, panelDose, panelFrequenciaDosePed"> 
+                          <p:column>#{manterPrescricaoSolucaoController.buscaDescricaoTipoFrequenciaAprazamentoPed(item)}</p:column>  
+                          <p:column>#{item.sigla}</p:column> 
+                        </mec:suggestionBox> 
+                      </p:outputPanel> 
+                    </aghu:linha>  
+                    <aghu:linha> 
+                      <mec:inputDecimal 
+							id="qtdeDosePed" label="#{messages.LABEL_QTDE_DOSE}" 
+							value="#{manterPrescricaoSolucaoController.dosePediatrica}" 
+							required="true"
+							title="#{messages.TITLE_QTDE_DOSE}"
+							maxlength="15">
+                          <p:ajax id="qtdeDosePedOnChange" event="change" async="true" global="false" ignoreAutoUpdate="true"  update="@(#panelVia) @(#panelFrequencia) @(#panelTipoFrequenciaAprazamento) @(#panelUnidade) @(#panelDose)" process="@this" listener="#{manterPrescricaoSolucaoController.calculoDose}"/> 
+                     </mec:inputDecimal>
+                      <mec:field name="unidadeQtde" label="#{messages.LABEL_UNIDADE}"> 
+                        <p:selectOneMenu id="unidadeQtdePed" value="#{manterPrescricaoSolucaoController.unidadeDosagemPediatrica}" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" requiredMessage="Um valor é obrigatório para o campo #{messages.LABEL_UNIDADE}" title="#{messages.TITLE_UNIDADE_DOSE}"> 
+                          <f:selectItem id="selecione_ped" itemLabel="Selecione" itemValue=""/>  
+                          <f:converter converterId="baseEntityConverter" for="inputId"/>  
+                          <f:selectItems id="unidade_lista_ped" var="item" value="#{manterPrescricaoSolucaoController.buscarDosagensPed()}" itemLabel="#{item.descricao}"/>  
+                          <p:ajax id="unidadeQtdePedOnChange" event="change" async="true" global="false" ignoreAutoUpdate="true"  update="@(#panelVia) @(#panelFrequencia) @(#panelTipoFrequenciaAprazamento) @(#panelUnidade) @(#panelDose)" process="@this" listener="#{manterPrescricaoSolucaoController.calculoDose}"/> 
+                        </p:selectOneMenu> 
+                      </mec:field>  
+                      <mec:selectOneMenu label="#{messages.LABEL_BASE}" id="basePed" value="#{manterPrescricaoSolucaoController.unidadeBaseParametroCalculo}" title="#{messages.TITLE_BASE}"> 
+                        <f:converter converterId="dominioConverter" for="inputId"/>  
+                        <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{manterPrescricaoSolucaoController.listaUnidadeBaseParametroCalculo}"/>  
+                        <p:ajax id="basePedOnChange" event="change" async="true" global="false" ignoreAutoUpdate="true"  update="@(#panelVia) @(#panelFrequencia) @(#panelTipoFrequenciaAprazamento) @(#panelUnidade) @(#panelDose)" process="@this" listener="#{manterPrescricaoSolucaoController.calculoDose}"/> 
+                      </mec:selectOneMenu>  
+                      <mec:selectOneMenu label="#{messages.LABEL_TIPO_CALC}" id="tipoCalcPed" value="#{manterPrescricaoSolucaoController.tipoCalculoDose}" title="#{messages.TITLE_TIPO_CALC}"> 
+                        <f:converter converterId="dominioConverter" for="inputId"/>  
+                        <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{manterPrescricaoSolucaoController.listaTipoCalculoDose}"/>  
+                        <p:ajax id="tipoCalcPedOnChange" event="change" async="true" global="false" ignoreAutoUpdate="true"  update="@(#panelVia) @(#panelFrequencia) @(#panelTipoFrequenciaAprazamento) @(#panelUnidade) @(#panelDose)" process="@this" listener="#{manterPrescricaoSolucaoController.calculoDose}"/> 
+                      </mec:selectOneMenu>  
+                      <mec:inputNumero id="duracaoDosePed" label="#{messages.LABEL_DURACAO_DOSE}" size="10" maxlength="7" title="#{messages.TITLE_DURACAO_DOSE}" value="#{manterPrescricaoSolucaoController.duracao}"> 
+                        <p:ajax id="duracaoDosePedOnChange" event="change" async="true" global="false" ignoreAutoUpdate="true"  update="@(#panelVia) @(#panelFrequencia) @(#panelTipoFrequenciaAprazamento) @(#panelUnidade) @(#panelDose)" process="@this" listener="#{manterPrescricaoSolucaoController.calculoDose}"/> 
+                      </mec:inputNumero>  
+                      <mec:selectOneMenu label="#{messages.LABEL_UNID_TEMPO_DOSE}" id="unidTmpDuracaoPed" value="#{manterPrescricaoSolucaoController.unidadeTempo}" title="#{messages.TITLE_UNID_TEMPO_DOSE}"> 
+                        <f:converter converterId="dominioConverter" for="inputId"/>  
+                        <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{manterPrescricaoSolucaoController.listaDuracaoCalculo}"/>  
+                        <p:ajax id="unidTmpDuracaoOnChange" event="change" async="true" global="false" ignoreAutoUpdate="true"  update="@(#panelVia) @(#panelFrequencia) @(#panelTipoFrequenciaAprazamento) @(#panelUnidade) @(#panelDose)" process="@this" listener="#{manterPrescricaoSolucaoController.calculoDose}"/> 
+                      </mec:selectOneMenu> 
+                    </aghu:linha> 
+                  </aghu:panelGeral> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </p:outputPanel>  
+            <aghu:linha> 
+              <p:outputPanel id="panelDose" layout="inline">
+                 <mec:inputDecimal 
+					id="dose" label="#{messages.LABEL_DOSE}" 
+					title="#{messages.TITLE_DOSE}" 
+					value="#{manterPrescricaoSolucaoController.dose}" 
+					required="true"
+					maxlength="15"/>
+              </p:outputPanel>  
+              <p:outputPanel id="panelUnidade" layout="inline"> 
+                <mec:field id="combo_unidade" name="unidade" required="true" label="#{messages.LABEL_UNIDADE}" title="#{messages.TITLE_UNIDADE_DOSE}"> 
+                  <p:selectOneMenu id="input_unidade" name="unidade" required="true" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" requiredMessage="Unidade: Digite um valor obrigatório para o campo." value="#{manterPrescricaoSolucaoController.unidadeDosagem}"> 
+                    <f:selectItem id="selecione" itemLabel="Selecione" itemValue=""/>  
+                    <f:converter converterId="baseEntityConverter" for="inputId"/>  
+                    <f:selectItems id="unidade_lista" var="item" value="#{manterPrescricaoSolucaoController.buscarDosagens()}" itemLabel="#{item.siglaUnidadeMedidaMedica}"/>  
+                    <p:ajax id="unidadeSupOnchange" event="change" async="true" global="false" ignoreAutoUpdate="true"  process="@this"/> 
+                  </p:selectOneMenu> 
+                </mec:field> 
+              </p:outputPanel>  
+              <p:outputPanel id="panel_obs" layout="inline"> 
+                <mec:inputText label="#{messages.LABEL_COMPLEMENTO}" size="70" removerCaratersEspeciais="false" maxlength="75" title="#{messages.TITLE_COMPLEMENTO}" style="text-transform:uppercase" value="#{manterPrescricaoSolucaoController.complemento}" required="#{manterPrescricaoSolucaoController.medicamento.indExigeObservacao}" id="complemento"/> 
+              </p:outputPanel>  
+              <p:outputPanel id="panel_botoes" layout="inline"> 
+                <p:outputPanel id="panel_botoes_adicionar" rendered="#{!manterPrescricaoSolucaoController.edicao}" layout="inline"> 
+                  <br clear="none"/>  
+                  <mec:commandButton id="bt_adicionarMedicamento" 
+                 					 value="#{messages.LABEL_ADICIONAR_MED}" 
+                 					 process="@this @(#medicamentos) @(#panelUnidade) @(#dose) @(#complemento)" 
+                 					 rendered="#{!manterPrescricaoSolucaoController.edicao}" 
+                 					 action="#{manterPrescricaoSolucaoController.adicionarMedicamento}" 
+                 					 oncomplete="document.getElementById('medicamentos').focus(); return false;" 
+                 					 profile="add" ajax="true" 
+                 					 render="formDadosCabecalho, panel_dosePediatrica, panelBotoesCalcDosePed, panel_medicamento, listaMedicamentos, panelDose, panelUnidade,  panel_obs, panel_botoes, lista_medSol, panelInformacoesFarmaco, panelDataInicioTratamento,panelVia"/> 
+                </p:outputPanel>  
+                <p:outputPanel id="panel_botoes_alterar" rendered="#{manterPrescricaoSolucaoController.edicao}" layout="inline"> 
+                  <br clear="none"/>  
+                  <mec:commandButton id="bt_alterarMedicamento" value="#{messages.LABEL_ALTERAR_MED}" process="@this @(#medicamentos) @(#panelUnidade) @(#dose) @(#complemento)" limitToList="true" rendered="#{manterPrescricaoSolucaoController.edicao}" status="commonstatus" action="#{manterPrescricaoSolucaoController.alterarMedicamento}" profile="ok" styleClass=" icon-margin " ajax="true" render="panel_dosePediatrica, panelBotoesCalcDosePed, panel_medicamento, listaMedicamentos, listaMedicamentos, panelDose, panelUnidade, panel_obs, panel_botoes, lista_medSol, panelDataInicioTratamento, panelDadosSecundarios"/> 
+                </p:outputPanel>  
+                <p:outputPanel id="panel_botoes_cancelar" rendered="#{manterPrescricaoSolucaoController.edicao}" layout="inline"> 
+                  <mec:commandButton id="bt_cancelarEdicMedicamento" value="#{messages.LABEL_CANCEL_EDI}" immedite="true" rendered="#{manterPrescricaoSolucaoController.edicao}" status="commonstatus" action="#{manterPrescricaoSolucaoController.cancelarEdiMed}" ajax="true" render="panel_dosePediatrica, panelBotoesCalcDosePed, panel_medicamento, listaMedicamentos, listaMedicamentos, panelDose, panelUnidade, panel_obs, panel_botoes, lista_medSol, panelDataInicioTratamento, panelDadosSecundarios" process="@this" styleClass="bt_cinza"/> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="lista_medSol" styleClass="tabela-hachurada" layout="inline">  
+                  <mec:serverDataTable id="tabelaSolMed" title="" style="margin: 0px !important;" 
+                  	list="#{manterPrescricaoSolucaoController.listaMedicamentosSolucao}" scrollable="true"
+                  	scrollHeight="125"> 
+                    <c:set var="_medicamentoSolucao" value="#{item}"/>
+                    <p:column style="#{(_medicamentoSolucao.medicamento.matCodigo == manterPrescricaoSolucaoController.matCodigo)?'background-color:#EEE8AA;':''}width:120px;">
+	                  <f:facet name="header">
+	                  	<h:outputText value="#{messages.LABEL_ACAO}"/> 
+	                  </f:facet> 
+                      <mec:commandLink id="btn_editar" action="#{manterPrescricaoSolucaoController.editarMedicamento(_medicamentoSolucao)}" title="#{messages.LABEL_EDITAR}" rendered="#{_medicamentoSolucao.medicamento.matCodigo != manterPrescricaoSolucaoController.matCodigo}" profile="edit" ajax="true" render="panel_medicamento, panelDose, panelUnidade, panel_obs, panel_botoes, lista_medSol, panelDataInicioTratamento, panelDadosSecundarios" process="@this"/>  
+                      <mec:commandLink id="btn_vazio" rendered="#{_medicamentoSolucao.medicamento.matCodigo == manterPrescricaoSolucaoController.matCodigo}" onclick="return false;" styleClass=" silk-blank silk-icon" ajax="true"/>  
+                      <mec:commandLink id="btn_delete" action="#{manterPrescricaoSolucaoController.removerMedicamento(_medicamentoSolucao)}" title="#{messages.LABEL_EXCLUIR}" profile="delete" ajax="true" render="panel_botoes, lista_medSol, panelDataInicioTratamento" process="@this"/> 
+                    </p:column>  
+                    <p:column width="auto" style="#{(_medicamentoSolucao.medicamento.matCodigo == manterPrescricaoSolucaoController.matCodigo)?'background-color:#EEE8AA':''}">
+                      <f:facet name="header">
+	                  	<h:outputText value="#{messages.LABEL_DESCRICAO_MEDICAMENTO}"/> 
+	                  </f:facet> 
+                      <h:outputText value="#{_medicamentoSolucao.medicamento.descricao} #{_medicamentoSolucao.medicamento.concentracaoFormatada != null ?' ':''} #{_medicamentoSolucao.medicamento.concentracaoFormatada} #{_medicamentoSolucao.medicamento.mpmUnidadeMedidaMedicas != null ?' ':''} #{_medicamentoSolucao.medicamento.mpmUnidadeMedidaMedicas.descricao} #{_medicamentoSolucao.observacao != null ?' ':''} #{_medicamentoSolucao.observacao}"/> 
+                    </p:column>  
+                    <p:column style="#{(_medicamentoSolucao.medicamento.matCodigo == manterPrescricaoSolucaoController.matCodigo)?'background-color:#EEE8AA;':''}width:50px;">
+                      <f:facet name="header">
+	                  	<h:outputText value="#{messages.LABEL_DOSE}"/> 
+	                  </f:facet> 
+                      <h:outputText value="#{_medicamentoSolucao.dose}" rendered="#{manterPrescricaoSolucaoController.verificarSeDoseFracionaria(_medicamentoSolucao.dose)}"> 
+                        <f:convertNumber minFractionDigits="0" maxFractionDigits="4" maxIntegerDigits="11" type="currency" currencySymbol=""/> 
+                      </h:outputText>  
+                      <h:outputText value="#{_medicamentoSolucao.dose}" rendered="#{not manterPrescricaoSolucaoController.verificarSeDoseFracionaria(_medicamentoSolucao.dose)}"/> 
+                    </p:column>  
+                    <p:column style="#{(_medicamentoSolucao.medicamento.matCodigo == manterPrescricaoSolucaoController.matCodigo)?'background-color:#EEE8AA;':''}width:50px;">
+                      <f:facet name="header">
+	                  	<h:outputText value="#{messages.LABEL_UNID}"/> 
+	                  </f:facet>  
+                      <h:outputText value="#{manterPrescricaoSolucaoController.obtemDescricaoUnidadeDosagem(_medicamentoSolucao.medicamento.matCodigo, _medicamentoSolucao.formaDosagem.seq)}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+            <p:outputPanel id="panelDadosSecundarios">
+	            <aghu:linha> 
+	              <p:outputPanel id="panelVia" layout="inline"> 
+	                <mec:suggestionBox label="#{messages.LABEL_VIA}" title="#{messages.TITLE_VIA_ADM}" required="true" descricaoInput="sigla" descricaoLabel="descricao" suggestionAction="listarViasMedicamento" posSelectionAction="verificarViaAssociadaAoMedicamento" posDeleteAction="limparAtributosViaAssociadaAoMedicamento" id="via" controller="#{manterPrescricaoSolucaoController}" value="#{manterPrescricaoSolucaoController.via}" render="modalConfirmacao, bombaInfusao"> 
+	                  <p:column>#{item.descricao}</p:column>  
+	                  <p:column>#{item.sigla}</p:column> 
+	                </mec:suggestionBox> 
+	              </p:outputPanel>  
+	              <p:outputPanel id="todasVias_panel" layout="inline"> 
+	                <!-- <ui:fragment> 
+	                  <script type="text/javascript" xml:space="preserve">
+										function callTodasAsVias() {
+											if(#{manterPrescricaoSolucaoController.via != null}) {										
+												document.getElementById('linkLimparvia').onclick();
+												window.setTimeout(callTodasAsViasInterval, 500);
+											} else {
+												setarInformacoesPesquisavia();
+												PF('suggestion_viaWG').callSuggestion(true);
+											}
+										}
+	
+										function callTodasAsViasInterval() {
+											setarInformacoesPesquisavia();										
+											PF('suggestion_viaWG').callSuggestion(true);
+										}
+										
+									</script> 
+	                </ui:fragment> -->  
+	                <mec:selectBooleanCheckbox label="#{messages.LABEL_TODAS_AS_VIAS}" title="#{messages.TITLE_TODAS_AS_VIAS}" value="#{manterPrescricaoSolucaoController.todasAsVias}" id="todasAsVias"> 
+	                  <p:ajax event="change" async="true" global="false" ignoreAutoUpdate="true"  update="@(#todasVias_panel) @(#via) @(#panelVia)" process="@this"/>
+	                   <!-- oncomplete="#{(manterPrescricaoSolucaoController.todasAsVias)?'callTodasAsVias();':''}" update="@(#todasVias_panel)" -->
+	                </mec:selectBooleanCheckbox> 
+	              </p:outputPanel>  
+	              <p:outputPanel id="panelFrequencia" layout="inline"> 
+	                <mec:inputNumero id="frequencia" size="3" maxlength="3" label="#{messages.LABEL_FREQUENCIA}" title="#{messages.TITLE_FREQUENCIA_MEDICAMENTO}" value="#{manterPrescricaoSolucaoController.frequencia}" styleClassField="#{manterPrescricaoSolucaoController.verificaRequiredFrequencia() ? 'frm_obrigatorio' : ''}"> 
+	                  <p:ajax id="frequenciaSupOnChange" event="change" async="true" global="false" ignoreAutoUpdate="true"  bypassUpdates="false" update="@(#tipoAprazamentoLabelPanel)" process="@this"/> 
+	                </mec:inputNumero> 
+	              </p:outputPanel>  
+	              <p:outputPanel id="panelTipoFrequenciaAprazamento" layout="inline">
+					<mec:suggestionBox 
+						label="#{messages.LABEL_TIPO_APRAZAMENTO}"
+						title="Selecione um Tipo de Frequência de Aprazamento."
+						required="true" descricaoInput="sigla"
+						externalDescricaoLabel="descricaoTipoFrequenciaAprazamento"
+						labelId="tipoAprazamentoLabelPanel"
+						suggestionAction="buscarTiposFrequenciaAprazamento"
+						posSelectionAction="verificarFrequencia" id="tipoAprazamento"
+						controller="#{manterPrescricaoSolucaoController}"
+						value="#{manterPrescricaoSolucaoController.tipoAprazamento}"
+						render="panelFrequencia">
+						<p:column>#{manterPrescricaoSolucaoController.buscaDescricaoTipoFrequenciaAprazamento(item)}</p:column>
+						<p:column>#{item.sigla}</p:column>
+					</mec:suggestionBox>
+				  </p:outputPanel>  
+	              <p:outputPanel id="panelDataInicioTratamento" layout="inline"> 
+	                <mec:inputTextData label="#{messages.LABEL_DATA_INICIO_TRATAMENTO}" title="#{messages.TITLE_DATA_INICIO_TRATAMENTO}" required="true" id="dthrInicioTratamento" readonly="#{manterPrescricaoSolucaoController.edicaoPrescricaoMedicamento}" value="#{manterPrescricaoSolucaoController.dataInicioTratamento}" rendered="#{manterPrescricaoSolucaoController.medicamentoSelecionadoAntimicrobiano()}" tipo="data"/> 
+	              </p:outputPanel> 
+	            </aghu:linha>  
+	            <aghu:linha> 
+	              <p:outputPanel id="correrEm_panel" layout="inline"> 
+	                <mec:inputNumero label="#{messages.LABEL_CORRER_EM}" size="4" maxlength="2" title="#{messages.TITLE_CORRER_EM}" required="false" value="#{manterPrescricaoSolucaoController.qtdeHorasCorrer}" id="correrEm"/> 
+	              </p:outputPanel>  
+	              <p:outputPanel id="correrEmUnidade_panel" layout="inline"> 
+	                <mec:selectOneMenu enum="DominioUnidadeHorasMinutos" label="#{messages.LABEL_UNIDADE_TEMPO}" title="#{messages.TITLE_CORRER_EM_UNIDADE}" required="false" value="#{manterPrescricaoSolucaoController.unidHorasCorrer}" id="correrEmUnidade"/> 
+	              </p:outputPanel>  
+	              <p:outputPanel id="panel_velocidadeInfusao" layout="inline">
+	              	<mec:inputDecimal 
+                  		label="#{messages.LABEL_VELOCIDADE_INFUSAO}"
+                  		value="#{manterPrescricaoSolucaoController.gotejo}" id="velocidadeInfusao"
+						title="#{messages.TITLE_VELOCIDADE_INFUSAO}"                  		
+                  		required="false"	
+                  		inteiros="3"
+                  		decimais="2"
+                  		pattern="###.##"		
+						size="8" />	              	 
+	              </p:outputPanel>  
+	              <p:outputPanel id="tipoVelocidadeInfusao_panel" layout="inline"> 
+	                <mec:selectOneMenu label="#{messages.LABEL_UNIDADE_INFUSAO}" title="#{messages.TITLE_TIPO_VELOCIDADE_INFUSAO}" itemLabel="descricao" required="false" value="#{manterPrescricaoSolucaoController.tipoVelocAdministracao}" items="#{manterPrescricaoSolucaoController.buscarTiposVelocidadeAdministracao()}" id="tipoVelocidadeInfusao"/> 
+	              </p:outputPanel>  
+	              <mec:selectBooleanCheckbox label="#{messages.LABEL_BOMBA_INFUSAO}" title="#{messages.TITLE_BOMBA_INFUSAO}" value="#{manterPrescricaoSolucaoController.indBombaInfusao}" id="bombaInfusao"/> 
+	            </aghu:linha>  
+	            <aghu:linha> 
+	              <p:outputPanel id="panel_inicioAdministracao" layout="inline"> 
+	                <mec:inputText label="#{messages.LABEL_INICIO_ADM}" size="5" maxlength="5" ajaxValidation="false" title="#{messages.TITLE_INICIO_ADM}" incluirMascaraHora="true" value="#{manterPrescricaoSolucaoController.horaAdministracao}" id="inicioAdministracao"/>  
+	                <mec:field id="textoAprazamentoRotina"> 
+	                  <br clear="none"/> (Se aprazamento 
+	                  <br clear="none"/>diferente da rotina)
+	                </mec:field> 
+	              </p:outputPanel>  
+	              <mec:selectBooleanCheckbox label="#{messages.LABEL_SE_NECESSARIO}" 
+	              		title="#{messages.TITLE_SE_NECESSARIO}" 
+	              		value="#{manterPrescricaoSolucaoController.indSeNecessario}" 
+	              		id="seNecessario">
+	              	<p:ajax event="change" async="true" global="false" ignoreAutoUpdate="true"  process="@this"/>
+	              </mec:selectBooleanCheckbox>
+	              <p:outputPanel id="panel_observacao" layout="inline"> 
+	                <mec:inputTextArea label="#{messages.LABEL_OBSERVACAO_MED}" 
+	                	id="observacao" rows="2" cols="75" 
+	                	value="#{manterPrescricaoSolucaoController.observacao}" 
+	                	title="#{messages.TITLE_OBSERVACAO_MED}" 
+	                	maxlength="240"/> 
+	              </p:outputPanel> 
+	            </aghu:linha>  
+            </p:outputPanel>
+          </aghu:panelGeral>  
+          <aghu:acao>
+            <mec:commandButton id="bt_gravar_solucao" 
+            	value="#{messages.LABEL_GRAVAR}" 
+            	process="@this, via, todasAsVias, frequencia, tipoAprazamento, correrEm, correrEmUnidade, velocidadeInfusao, tipoVelocidadeInfusao, bombaInfusao, inicioAdministracao, seNecessario, observacao, informacoesFarmaco, dthrInicioTratamento, formListaSolc" 
+            	requestDelay="750" 
+            	action="#{manterPrescricaoSolucaoController.gravar}" 
+            	profile="ok" 
+            	ajax="true" 
+            	render="panel_medicamento, listaMedicamentos, panelDose, panelUnidade, panel_obs, panel_botoes, lista_medSol, lista_sol_panel, panelVia, todasAsVias, panelFrequencia, panelTipoFrequenciaAprazamento, correrEm_panel, panelDataInicioTratamento, correrEmUnidade_panel, panel_velocidadeInfusao, tipoVelocidadeInfusao_panel, bombaInfusao, panel_inicioAdministracao, seNecessario, panel_observacao, panelInformacoesFarmaco, formListaSolc, panelDadosSecundarios"/>  
+            <mec:commandButton id="bt_limparPesquisa" 
+             	value="#{messages.LABEL_LIMPAR}" 
+             	ajax="true"
+             	process="@this" 
+             	render="formDadosCabecalho, formListaSolc"
+             	action="#{manterPrescricaoSolucaoController.limpar}" 
+             	styleClass="bt_cinza" 
+             	profile="clear"/>  
+            <mec:commandButton id="btPesquisarExames" 
+            	value="#{messages.LABEL_PESQUISAR_EXAMES}" 
+            	disabled="true" 
+            	ajax="true" 
+            	styleClass="bt_cinza"/>  
+            <mec:commandButton id="btAtualizarPesoAltura" 
+            	value="#{messages.LABEL_ATUALIZAR_PESO_ALTURA}" 
+            	action="#{manterPrescricaoSolucaoController.pesoAlturaPaciente}" 
+            	ajax="true" 
+            	render="panelModalPesoAltura" 
+            	process="@this" 
+            	styleClass="bt_cinza"/>  
+            <mec:commandButton id="bt_voltar" 
+            	immediate="true" 
+            	action="#{manterPrescricaoSolucaoController.cancelar}" 
+            	value="#{messages.LABEL_VOLTAR}" 
+            	ajax="true" 
+				process="@this"
+            	styleClass=" alinha-direita bt_cinza" 
+            	profile="back"> 
+              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+            </mec:commandButton>
+          </aghu:acao> 
+        </p:outputPanel>  
+      </h:form>  
+      <br clear="none"/>  
+      <br clear="none"/>  
+      
+      <h:form id="formListaSolc" prependId="false"> 
+        <p:outputPanel id="lista_sol_panel" rendered="#{not empty manterPrescricaoSolucaoController.listaPrescricaoSolucoes}" layout="inline"> 
+            <aghu:panelGeral legend="#{messages.LABEL_SOLUCOES_PRESCRITAS}"> 
+              <aghu:linha> 
+                <mec:serverDataTable id="tabelaSolucoesPrescritas" rendered="#{not empty manterPrescricaoSolucaoController.listaPrescricaoSolucoes}" 
+                	list="#{manterPrescricaoSolucaoController.listaPrescricaoSolucoes}" scrollable="true" 
+                	scrollHeight="125"> 
+                  <c:set var="_prescricaoSolucao" value="#{item}"/>  
+                  <p:column style="width:60px; #{(_prescricaoSolucao.id.seq == manterPrescricaoSolucaoController.seq)?'background-color:#EEE8AA':''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                    </f:facet>  
+                    <mec:commandLink rendered="#{_prescricaoSolucao.id.seq == manterPrescricaoSolucaoController.seq}" onclick="return false;" styleClass=" silk-blank silk-icon" ajax="true"/>  
+                    <mec:commandLink action="#{manterPrescricaoSolucaoController.editar(_prescricaoSolucao.id.seq)}" title="#{messages.LABEL_EDITAR}" rendered="#{_prescricaoSolucao.id.seq != manterPrescricaoSolucaoController.seq}" profile="edit" ajax="true" render="panel_medicamento, listaMedicamentos, panelDose, panelUnidade, panel_obs, panel_botoes, lista_medSol, panelVia, panelFrequencia,           panelTipoFrequenciaAprazamento, todasAsVias, correrEm_panel, correrEmUnidade_panel, panel_velocidadeInfusao, panelDataInicioTratamento, panelDadosSecundarios, tipoVelocidadeInfusao_panel, bombaInfusao, panel_inicioAdministracao, seNecessario, panel_observacao, panelInformacoesFarmaco, lista_sol_panel" process="@this"/>  
+                    <h:selectBooleanCheckbox name="marcador" id="marcador" value="#{manterPrescricaoSolucaoController.listaPrescricaoSolucoesSelecionadas[_prescricaoSolucao]}" title="#{messages.EXCLUIR}"> 
+                      <p:ajax event="click" bypassUpdates="false" update="@(#lista_sol_panel)" process="@this"/> 
+                    </h:selectBooleanCheckbox> 
+                  </p:column>  
+                  <p:column style="#{((manterPrescricaoSolucaoController.listaPrescricaoSolucoesSelecionadas.get(_prescricaoSolucao))?'background-color:#FF6347':((_prescricaoSolucao.id.seq == manterPrescricaoSolucaoController.seq)?'background-color:#EEE8AA':''))}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SOLUCOES_PRESCRITAS}"/> 
+                    </f:facet>  
+                    <h:outputText escape="false" value="#{_prescricaoSolucao.descricaoFormatada}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha>  
+              <aghu:acao> 
+                <mec:commandButton value="#{messages.LABEL_EXCLUIR}" status="commonstatus" id="bt_excluir_selecionados" action="#{manterPrescricaoSolucaoController.removerPrescricaoSolucoesSelecionadas}" ajax="true" render="lista_sol_panel, formListaSolc" process="@this" styleClass="bt_cinza"/> 
+              </aghu:acao> 
+            </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form> 
+       
+      <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalPendencias"> 
+            <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{manterPrescricaoSolucaoController.voltar}" profile="search"> 
+              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      
+      <p:dialog id="modalConfirmacao" width="400" height="170" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="Confirmação"/> 
+          </h:panelGroup> 
+        </f:facet> #{manterPrescricaoSolucaoController.mensagemExibicaoModal} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModal"> 
+            <mec:commandButton name="btOk" value="#{messages.LABEL_OK}" onclick="PF('modalConfirmacaoWG').hide();" profile="ok" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      
+      <p:dialog id="modalProtocolo" width="400" height="175" modal="true" resizable="false" widgetVar="modalProtocoloWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_PROTOCOLO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:outputText value="#{messages.LABEL_PROTOCOLO_MSG}"/>  
+        <aghu:acao> 
+        	<h:form>
+          		<mec:commandButton name="btOk" style="float:left" value="#{messages.LABEL_OK}" onclick="window.open('#{manterPrescricaoSolucaoController.medicamento.linkProtocoloUtilizacao}'); PF('modalProtocoloWG').hide();; return false;" profile="search" ajax="true"/>  
+          		<mec:commandButton name="btCancelar" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalProtocoloWG').hide();; return false;" profile="cancel" ajax="true"/>
+          	</h:form> 
+        </aghu:acao> 
+      </p:dialog>
+      
+      <p:outputPanel id="panelModalPesoAltura" layout="inline"> 
+        <p:dialog id="modalPesoAltura" width="710"  modal="true" resizable="false" widgetVar="modalPesoAlturaWG">
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_PESO_ALTURA}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <h:form prependId="false" id="formPesoAltura"> 
+            <aghu:panelGeral> 
+              <aghu:linha> 
+                <mec:inputTextProntuario id="prontuarioModalPesoAltura" label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO}" readonly="true" size="9" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prontuario}"/>  
+                <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" id="nomePacienteModalPesoAltura" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.nome}" size="70" style="text-transform:uppercase" readonly="true"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputText label="#{messages.LABEL_LOCAL}" id="localPacienteModalPesoAltura" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.local}" size="15" style="text-transform:uppercase" readonly="true"/>  
+                <mec:inputText label="#{messages.LABEL_CLINICA}"
+                               id="clinicaModalPesoAltura"
+                               value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prescricaoMedica.atendimento.especialidade.clinica.descricao}"
+                               size="60" style="text-transform:uppercase"
+                               readonly="true"/>
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputText label="#{messages.LABEL_INICIO_ATENDIMENTO}" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prescricaoMedica.atendimento.dthrInicio}" readonly="true" size="16" datePattern="dd/MM/yyyy HH:mm" id="dataValidadeInicialModalPesoAltura"/>  
+                <mec:inputText label="#{messages.LABEL_IDADE}" id="idadeModalPesoAltura" value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prescricaoMedica.atendimento.paciente.idadeAnoMesFormat}" size="20" style="text-transform:uppercase" readonly="true"/> 
+                <mec:selectBooleanCheckbox id="pacPediatricoModalPesoAltura"
+                                           label="#{messages.LABEL_PACIENTE_PEDIATRICO}"
+                                           title="#{messages.TITLE_PACIENTE_PEDIATRICO}"
+                                           value="#{manterPrescricaoSolucaoController.prescricaoMedicaVO.prescricaoMedica.atendimento.indPacPediatrico}"
+                                           readonly="true"
+                                           disabled="true"/>
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:panelGeral> 
+              <aghu:linha> 
+                <mec:inputTextArea id="mensagemModalPesoAltura"
+                                   label="#{messages.LABEL_MENSAGEM}"
+                                   cols="70" rows="1"
+                                   disabled="true"
+                                   value="#{manterPrescricaoSolucaoController.mensagemModal}"
+                                   maxlength="500" />
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:panelGeral legend="#{messages.LABEL_PARAMETROS_CALCULO}"> 
+              <aghu:linha> 
+                <mec:inputText label="#{messages.LABEL_CRIADOEM}" id="criadoEmModalPesoAltura" value="#{manterPrescricaoSolucaoController.parametroCalculo.id.criadoEm}" readonly="true" size="12" datePattern="dd/MM/yyyy"/>
+                <mec:inputDecimal id="pesoModalPesoAltura"
+                               label="#{messages.LABEL_PESO_MODAL}"
+                               size="9"
+                               inteiros="3"
+                               decimais="3"
+                               title="#{messages.TITLE_PESO_MODAL}"
+                               value="#{manterPrescricaoSolucaoController.peso}" ajax="true" converter="#{bigDecimalPrecisao4Converter}" >
+                    <p:ajax event="change" listener="#{manterPrescricaoSolucaoController.calcularSC}" update="@(#scPanel)" process="@this"/>
+                </mec:inputDecimal>
+                <mec:selectOneMenu id="tipoMedicaoModalPesoAltura" enum="DominioTipoMedicaoPeso" value="#{manterPrescricaoSolucaoController.tipoMedicao}" label="#{messages.LABEL_TIPO_MEDICAO_PESO_MODAL}" title="#{messages.TITLE_TIPO_MEDICAO_PESO_MODAL}"/>
+                <mec:inputDecimal id="alturaModalPesoAltura"
+                               label="#{messages.LABEL_ALTURA_MODAL}"
+                               size="9"
+                               inteiros="3"
+                               decimais="2"
+                               title="#{messages.TITLE_ALTURA_MODAL}"
+                               value="#{manterPrescricaoSolucaoController.altura}"
+                               converter="#{bigDecimalPrecisao4Converter}">
+                    <p:ajax event="change" listener="#{manterPrescricaoSolucaoController.calcularSC}" update="@(#scPanel)" process="@this"/>
+                </mec:inputDecimal>
+                  <p:outputPanel id="scPanel" layout="inline">
+                      <mec:inputDecimal id="scModalPesoAltura" label="#{messages.LABEL_SC_MODAL}"
+                                        inteiros="3" decimais="2"
+                                        title="#{messages.TITLE_SC_MODAL}" value="#{manterPrescricaoSolucaoController.sc}" converter="#{bigDecimalPrecisao4Converter}"/>
+                  </p:outputPanel>
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:acao> 
+              <mec:commandButton id="bt_gravar_dados_peso_altura" value="#{messages.LABEL_GRAVAR}" action="#{manterPrescricaoSolucaoController.persistirDadosPesoAltura}" profile="ok" ajax="true" process="@form" render="panel_dosePediatrica, panelDose"/>  
+              <mec:commandButton id="btCancelar" value="#{messages.LABEL_CANCELAR}" action="#{manterPrescricaoSolucaoController.cancelarModalPesoAltura}" profile="cancel" ajax="true" render="panel_dosePediatrica, panelDose"/> 
+            </aghu:acao> 
+          </h:form> 
+        </p:dialog>  
+      </p:outputPanel>      
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:fragment> 
+     <div class="menu-direita" style="width: auto"> 
+      <p:outputPanel id="tabelaAcao" layout="inline"> 
+          <mec:commandButton id="bt_encaminhar" rendered="#{mf:hasPermission(securityController,'encaminharSolicitacaoServico,gravar')}" action="#{solicitacaoServicoController.mostrarModalEncaminhamento()}" value="#{messages.LABEL_ENCAMINHAR}" disabled="#{solicitacaoServicoController.solicitacaoServico.numero==null or !solicitacaoServicoController.habEncaminharSS}" ajax="true" onclick="PF('modalEncaminharScoWG').show();" styleClass="bt_cinza"/> 
+       
+          <mec:commandButton id="bt_autorizar" rendered="#{mf:hasPermission(securityController,'autorizarSolicitacaoServico,gravar')}" action="#{solicitacaoServicoController.autorizarSS()}" value="#{messages.LABEL_BOTAO_AUTORIZAR}" disabled="#{solicitacaoServicoController.solicitacaoServico.numero==null or !solicitacaoServicoController.habAutorizarSS}" ajax="true" styleClass="bt_cinza"/> 
+         
+          <mec:commandButton value="#{messages.LABEL_FASES}" id="bt_fases" immediate="true" disabled="#{solicitacaoServicoController.solicitacaoServico.numero==null}" action="#{solicitacaoServicoController.redirecionaAndamentoSS}" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{fasesSolicitacaoServicoController.numero}" value="#{solicitacaoServicoController.numero}" for="command"/>  
+            <f:setPropertyActionListener target="#{fasesSolicitacaoServicoController.voltarPara}" value="compras-solicitacaoServicoCRUD" for="command"/>  
+            <f:setPropertyActionListener target="#{fasesSolicitacaoServicoController.mostrarBotaoVoltar}" value="true" for="command"/> 
+          </mec:commandButton> 
+        
+          <mec:commandButton value="#{messages.LABEL_ASSOCIAR_SS_SC_ASSOCIAR_SC}" id="bt_associarSC" disabled="#{solicitacaoServicoController.solicitacaoServico.numero==null}" action="#{solicitacaoServicoController.redirecionaAssociarSC}" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{solicitacaoServicoCompraController.numeroSolicitacaoServico}" value="#{solicitacaoServicoController.numero}" for="command"/>  
+            <f:setPropertyActionListener target="#{solicitacaoServicoCompraController.voltarPara}" value="compras-solicitacaoServicoCRUD" for="command"/> 
+          </mec:commandButton> 
+        
+          <mec:commandButton id="bt_imprime" value="#{messages.LABEL_IMPRIMIR}" action="#{imprimirSolicitacaoDeServicoController.print(solicitacaoServicoController.solicitacaoServico.numero)}" disabled="#{solicitacaoServicoController.solicitacaoServico.numero==null}" profile="print">
+           <f:setPropertyActionListener target="#{imprimirSolicitacaoDeServicoController.voltarParaUrl}" value="compras-solicitacaoServicoCRUD" for="command"/> 
+          </mec:commandButton>          
+        
+          <mec:commandButton immediate="true" value="#{messages.LABEL_ANEXOS}" id="bt_anexos" action="#{solicitacaoServicoController.redirecionaAnexos()}" disabled="#{solicitacaoServicoController.solicitacaoServico.numero==null or !solicitacaoServicoController.habBtAnexo}" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{anexarDocumentoController.numeroSolicitacao}" value="#{solicitacaoServicoController.numero}" for="command"/>  
+            <f:setPropertyActionListener target="#{anexarDocumentoController.origemSolicitacao}" value="SS" for="command"/>  
+            <f:setPropertyActionListener target="#{anexarDocumentoController.modoEdit}" value="#{solicitacaoServicoController.edicaoArquivo}" for="command"/>  
+            <f:setPropertyActionListener target="#{anexarDocumentoController.telaOrigem}" value="compras-solicitacaoServicoCRUD" for="command"/> 
+          </mec:commandButton> 
+        
+          <mec:commandButton id="bt_duplicarSS" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoServico,gravar')}" onclick="PF('modalConfirmacaoDuplicarSSWG').show();" value="#{messages.LABEL_DUPLICAR_SS}" disabled="#{solicitacaoServicoController.solicitacaoServico.numero==null}" ajax="true" immediate="true"  styleClass="bt_cinza"/> 
+        
+          <mec:commandButton ajax="true" value="#{messages.LABEL_NOVA_SS}" id="bt_novoSS" action="#{solicitacaoServicoController.abrirNovo()}" disabled="#{solicitacaoServicoController.solicitacaoServico.numero==null}" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoServico,gravar')}" render="formDados" styleClass="bt_cinza"/> 
+        
+          <mec:commandButton id="bt_preferencias" onclick="PF('modalPreferenciaSSWG').show();" value="#{messages.LABEL_PREFERENCIA_SC}" ajax="true" immediate="true" styleClass="bt_cinza"/> 
+        </p:outputPanel> 
+    </div>  
+     
+    <p:outputPanel id="panelModalDuplicarSS"> 
+      <p:outputPanel layout="inline"> 
+        <p:dialog id="modalConfirmacaoDuplicarSS" width="480" height="180" modal="true" resizable="false" widgetVar="modalConfirmacaoDuplicarSSWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_DUPLICAR_SS}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_DUPLICAR_SS} 
+          <br/>  
+          <br/>  
+          <aghu:linha> 
+            <mec:selectBooleanCheckbox id="chkCcOriginal" posicaoLabel="direita" value="#{solicitacaoServicoController.chkCcOriginal}" label="#{messages.LABEL_CHECK_CC_ORIGINAL}" title="#{messages.TITLE_CHECK_CC_ORIGINAL}"> 
+              <p:ajax event="change" process="@this" listener="#{solicitacaoServicoController.atualizarPreferenciaSugestaoCc(false, true)}"/> 
+            </mec:selectBooleanCheckbox> 
+          </aghu:linha>  
+          <br/>  
+          <br/>  
+          <br/>           
+          <p:commandButton id="bt_simDuplicar" style="margin: 10px" icon="ui-icon-check" value="#{messages.LABEL_SIM}" onclick="PF('modalConfirmacaoDuplicarSSWG').hide();" action="#{solicitacaoServicoController.duplicarSS}" render="formDados" profile="search" ajax="true"/> 
+          <p:commandButton id="bt_naoDuplicar" style="margin: 10px;float:right;" icon="ui-icon-close" onclick="PF('modalConfirmacaoDuplicarSSWG').hide();" value="#{messages.LABEL_NAO}" profile="cancel" ajax="true" />
+        </p:dialog>
+      </p:outputPanel> 
+    </p:outputPanel>  
+    <p:outputPanel id="panelModalPreferenciaSS"> 
+      <p:dialog id="modalPreferenciaSS" width="480" height="170"  modal="true" resizable="false" widgetVar="modalPreferenciaSSWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PREFERENCIA_SC}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <aghu:linha> 
+          <mec:selectBooleanCheckbox id="chkCcSolic" posicaoLabel="direita" value="#{solicitacaoServicoController.chkCcSolic}" label="#{messages.LABEL_CHECK_CC_SOLIC}" title="#{messages.TITLE_CHECK_CC_SOLIC}"> 
+            <p:ajax event="change" process="@this" listener="#{solicitacaoServicoController.atualizarPreferenciaSugestaoCc(false, false)}"/> 
+          </mec:selectBooleanCheckbox> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <mec:selectBooleanCheckbox id="chkCcAplic" posicaoLabel="direita" value="#{solicitacaoServicoController.chkCcAplic}" label="#{messages.LABEL_CHECK_CC_APLIC}" title="#{messages.TITLE_CHECK_CC_APLIC}"> 
+            <p:ajax event="change" process="@this" listener="#{solicitacaoServicoController.atualizarPreferenciaSugestaoCc(true, false)}"/> 
+          </mec:selectBooleanCheckbox> 
+        </aghu:linha> 
+      </p:dialog>      
+    </p:outputPanel> 
+  </ui:fragment> 
+</html>

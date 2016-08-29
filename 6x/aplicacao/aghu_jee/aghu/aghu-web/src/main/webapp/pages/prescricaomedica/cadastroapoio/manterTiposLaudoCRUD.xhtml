@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_CADASTRAR_TIPO_LAUDO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterTiposLaudoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterTiposLaudoController}" ignoreEnter="true"/>  
+      <p:outputPanel id="panelTodo" layout="block"> 
+        <h:form prependId="false" id="formDados"> 
+          <p:accordionPanel id="toggleTipoLaudo" name="toggleTipoLaudo" prependId="false"> 
+            <p:tab title="#{messages.LABEL_TIPO_LAUDO}"> 
+              <aghu:linha> 
+                <aghu:linha> 
+                  <mec:inputNumero value="#{manterTiposLaudoController.tipoLaudo.seq}" label="#{messages.LABEL_CODIGO}" maxlength="4" size="4" readonly="true" id="seq"/>  
+                  <mec:inputText label="#{messages.LABEL_DESCRICAO}" size="60" maxlength="120" title="#{messages.TITLE_DESCRICAO_TIPO_LAUDO}" value="#{manterTiposLaudoController.tipoLaudo.descricao}" style="text-transform:uppercase" readonly="#{manterTiposLaudoController.edicao}" required="true" id="descricao"/>  
+                  <mec:selectOneMenu enum="DominioSituacao" label="#{messages.LABEL_SITUACAO}" value="#{manterTiposLaudoController.tipoLaudo.situacao}" title="#{messages.TITLE_SITUACAO_TIPO_LAUDO}" required="true" id="situacao"/> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:selectBooleanCheckbox label="#{messages.LABEL_INFORMAR_TEMPO_TRATAMENTO}" title="#{messages.TITLE_INFORMAR_TEMPO_TRATAMENTO}" value="#{manterTiposLaudoController.tipoLaudo.informaTempoTratamento}" id="informaTempoTratamento"/>  
+                  <mec:inputNumero label="#{messages.LABEL_VALIDADE_EM_DIAS}" title="#{messages.TITLE_VALIDADE_EM_DIAS}" value="#{manterTiposLaudoController.tipoLaudo.tempoValidade}" maxlength="3" size="4" id="tempoValidade"/>  
+                  <mec:selectBooleanCheckbox label="#{messages.LABEL_LAUDO_UNICO_PARA_ATENDIMENTO}" title="#{messages.TITLE_LAUDO_UNICO_PARA_ATENDIMENTO}" value="#{manterTiposLaudoController.tipoLaudo.laudoUnicoAtend}" id="laudoUnicoAtend"/> 
+                </aghu:linha> 
+              </aghu:linha> 
+            </p:tab> 
+          </p:accordionPanel>  
+          <mec:commandButton id="bt_salvar_tipo_laudo" value="#{messages.LABEL_GRAVAR}" action="#{manterTiposLaudoController.salvarTipoLaudo}" disabled="#{!mf:hasPermission(securityController, 'manterTipoLaudo,editarTipoLaudo')}" profile="ok"/>  
+          <mec:commandButton id="bt_cancelar" styleClass="bt_error icon-no" value="#{messages.LABEL_VOLTAR}" action="#{manterTiposLaudoController.cancelar}" profile="back" immediate="true"/>
+        </h:form>  
+        <p:outputPanel rendered="#{manterTiposLaudoController.edicao}" layout="inline"> 
+          <p:accordionPanel id="toggleListaConvenios" name="toggleListaConvenios" prependId="false"> 
+            <p:tab title="#{messages.LABEL_LISTA_CONVENIOS}"> 
+              <p:outputPanel id="convenioPanel" layout="inline"> 
+                <h:form prependId="false" id="formConvenio"> 
+                  <aghu:linha> 
+                    <p:outputPanel id="modalConvenioPanel" layout="inline"> 
+                      <aghu:linha> 
+                        <p:outputPanel id="panelCodigoConvenio" layout="inline">
+							<mec:inputText name="codigoConvenio" id="codigoConvenio"
+								required="false" label="#{messages.LABEL_COD_CONVENIO_FAT}"
+								title="#{messages.TITLE_CODIGO_CONVENIO_TIPO_LAUDO}"
+								size="10" converter="#{javax.faces.Short}"
+								styleClass="numerico"
+								readonly="#{not empty manterTiposLaudoController.convenioSaudePlano}"
+								disabled="#{not empty manterTiposLaudoController.convenioSaudePlano}"
+								maxlength="3"
+								value="#{manterTiposLaudoController.convenioId}"
+								render="panelCodigoPlano, panelPlanoConvenio">
+								<p:ajax event="change"
+									listener="#{manterTiposLaudoController.escolherPlanoConvenio()}"
+									bypassUpdates="false"
+									update="@(#panelCodigoPlano) @(#panelPlanoConvenio)"
+									process="@this"/>
+							</mec:inputText>
+						</p:outputPanel>  
+                        <p:outputPanel id="panelCodigoPlano" layout="inline">
+							<mec:inputText name="codigoPlano" id="codigoPlano"
+								required="false" label="#{messages.LABEL_COD_PLANO_FAT}"
+								title="#{messages.TITLE_LABEL_CODIGO_PLANO_TIPO_LAUDO}"
+								size="8" converter="#{javax.faces.Byte}"
+								styleClass="numerico"
+								readonly="#{not empty manterTiposLaudoController.convenioSaudePlano}"
+								disabled="#{not empty manterTiposLaudoController.convenioSaudePlano}"
+								maxlength="2" value="#{manterTiposLaudoController.planoId}"
+								render="panelCodigoConvenio, panelPlanoConvenio">
+								<p:ajax event="change"
+									listener="#{manterTiposLaudoController.escolherPlanoConvenio()}"
+									bypassUpdates="false"
+									update="@(#panelCodigoPlano) @(#panelPlanoConvenio)"
+									process="@this"/>
+							</mec:inputText>
+						</p:outputPanel>  
+                        <p:outputPanel id="panelPlanoConvenio" layout="inline">
+							<mec:suggestionBox id="planoConvenio" var="_convenioPlano"
+								itemValue="#{_convenioPlano}"
+								label="#{messages.LABEL_CONVENIO_PLANO}"
+								title="#{messages.TITLE_LABEL_CONVENIO_TIPO_LAUDO}"
+								width="400" size="50" maxlength="50"
+								converter="#{fatConvenioSaudePlanoInternacaoConverter}"
+								descricaoInput="descricao"
+								descricaoLabel="descricaoPlanoConvenio"
+								suggestionAction="pesquisarConvenioSaudePlanos"
+								posSelectionAction="atribuirPlanoSug"
+								posDeleteAction="atribuirPlanoSug" required="true"
+								controller="#{manterTiposLaudoController}"
+								value="#{manterTiposLaudoController.convenioSaudePlano}"
+								render="panelCodigoConvenio, panelCodigoPlano">
+								<p:column>
+									<h:outputText value="#{_convenioPlano.convenioSaude.descricao} - #{_convenioPlano.descricao}" />
+								</p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>  
+                        <br clear="none"/>  
+                        <mec:commandButton id="bt_salvar_convenio" value="#{messages.LABEL_GRAVAR}" action="#{manterTiposLaudoController.salvarConvenio}" status="commonstatus" rendered="#{mf:hasPermission(securityController, 'manterTipoLaudo,editarTipoLaudo')}" profile="ok" ajax="true" render="convenioPanel, lista_convenio_panel"/> 
+                      </aghu:linha> 
+                    </p:outputPanel> 
+                  </aghu:linha> 
+                </h:form> 
+              </p:outputPanel>  
+              <p:outputPanel id="lista_convenio_panel" layout="inline"> 
+                <h:form id="formListaConvenios"> 
+                  <p:outputPanel id="lista_convenios" rendered="#{not empty manterTiposLaudoController.convenios}"> 
+                    <aghu:linha> 
+                      <mec:serverDataTable rendered="#{not empty manterTiposLaudoController.convenios}" list="#{manterTiposLaudoController.convenios}"> 
+                        <c:set var="_itemConvenios" value="#{item}"/>  
+                        <p:column style="width:60px;" rendered="#{mf:hasPermission(securityController, 'manterTipoLaudo,editarTipoLaudo')}"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                          </f:facet>  
+                          <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{manterTiposLaudoController.excluirConvenio()}" profile="delete" ajax="true" render="lista_convenio_panel">
+                          	<f:setPropertyActionListener for="command" target="#{manterTiposLaudoController.tipoLaudoConvenioId}" value="#{_itemConvenios.id}"/> 
+                          </mec:commandLink> 
+                        </p:column>  
+                        <p:column width="auto"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_COD_CONVENIO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{_itemConvenios.id.cspCnvCodigo}"/> 
+                        </p:column>  
+                        <p:column width="auto"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_COD_PLANO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{_itemConvenios.id.cspSeq}"/> 
+                        </p:column>  
+                        <p:column width="auto"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_CONVENIO_PLANO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{_itemConvenios.convenioSaudePlano.convenioSaude.descricao} - #{_itemConvenios.convenioSaudePlano.descricao}"/> 
+                        </p:column> 
+                      </mec:serverDataTable> 
+                    </aghu:linha> 
+                  </p:outputPanel> 
+                </h:form> 
+              </p:outputPanel>  
+            </p:tab> 
+          </p:accordionPanel>  
+          <p:accordionPanel id="toggleTextoPadrao" name="toggleTextoPadrao" prependId="false"> 
+            <p:tab title="#{messages.LABEL_LISTA_TEXTO_PADRAO}"> 
+              <p:outputPanel id="textoPadraoPanel" layout="inline"> 
+                <h:form prependId="false" id="formTextoPadrao"> 
+                  <aghu:linha> 
+                    <mec:suggestionBox id="textoPadrao" var="_textoPadrao" itemValue="#{_textoPadrao}" label="#{messages.LABEL_TEXTO}" title="#{messages.TITLE_INFORME_TEXTO_PADRAO}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarTextosPadrao" required="true" controller="#{manterTiposLaudoController}" value="#{manterTiposLaudoController.textoPadrao}"> 
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <b>#{messages.LABEL_CODIGO}</b> 
+                        </f:facet> #{_textoPadrao.seq}
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <b>#{messages.LABEL_DESCRICAO}</b> 
+                        </f:facet> #{_textoPadrao.descricao}
+                      </p:column> 
+                    </mec:suggestionBox>  
+                    <br clear="none"/>  
+                    <mec:commandButton id="bt_salvar_texto_padrao" value="#{messages.LABEL_GRAVAR}" action="#{manterTiposLaudoController.salvarTextoPadrao}" rendered="#{mf:hasPermission(securityController, 'manterTipoLaudo,editarTipoLaudo')}" profile="ok" ajax="true" render="textoPadraoPanel, lista_textos_padrao"/>  
+                    <mec:commandButton action="#{manterTiposLaudoController.redirecionarTextoPadrao}" value="#{messages.LABEL_NOVO_TEXTO_PADRAO}" immediate="true" styleClass="bt_cinza"> 
+                      <f:setPropertyActionListener target="#{manterTextoPadraoLaudoPaginatorController.cameFrom}" value="manterTiposLaudoCRUD" for="command"/> 
+                    </mec:commandButton> 
+                  </aghu:linha> 
+                </h:form> 
+              </p:outputPanel>  
+              <p:outputPanel id="lista_textos_padrao" layout="inline"> 
+                <h:form prependId="false" id="formListaTextosPadrao"> 
+                  <p:outputPanel id="lista_txt_pdr" rendered="#{not empty manterTiposLaudoController.textosPadrao}"> 
+                    <aghu:linha> 
+                      <mec:serverDataTable rendered="#{not empty manterTiposLaudoController.textosPadrao}" list="#{manterTiposLaudoController.textosPadrao}"> 
+                        <c:set var="_itemTextosPadrao" value="#{item}"/>  
+                        <p:column style="width:60px;" rendered="#{mf:hasPermission(securityController, 'manterTipoLaudo,editarTipoLaudo')}"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                          </f:facet>  
+                          <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{manterTiposLaudoController.excluirTextoPadrao()}" profile="delete" ajax="true" render="lista_textos_padrao">
+		                    <f:setPropertyActionListener target="#{manterTiposLaudoController.tipoLaudoTextoPadraoId}" value="#{_itemTextosPadrao.id}" for="command"/> 
+                          </mec:commandLink>
+                        </p:column>  
+                        <p:column width="auto"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{_itemTextosPadrao.textoPadraoLaudo.seq}"/> 
+                        </p:column>  
+                        <p:column width="auto"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{_itemTextosPadrao.textoPadraoLaudo.descricao}"/> 
+                        </p:column> 
+                      </mec:serverDataTable> 
+                    </aghu:linha> 
+                  </p:outputPanel> 
+                </h:form> 
+              </p:outputPanel>  
+            </p:tab> 
+          </p:accordionPanel> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

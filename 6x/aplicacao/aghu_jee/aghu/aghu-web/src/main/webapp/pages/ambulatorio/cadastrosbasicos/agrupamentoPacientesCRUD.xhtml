@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_CRUD_AGRUPAMENTO_FAMILIAR} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{agrupamentoFamiliarController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{agrupamentoFamiliarController}" ignoreEnter="true" />
+		<h:form prependId="false" id="formAgrupamentoFamiliar">
+			<aghu:panelGeral legend="#{messages.LABEL_DADOS_DO_PACIENTE_TITULO_AGRUPAMENTO_FAMILIAR}">
+				<aghu:linha>
+					<mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" size="6" maxlength="6" readonly="true"
+						value="#{agrupamentoFamiliarController.pacienteContexto.prontuario}" id="prontuario" />
+					<mec:inputText label="#{messages.LABEL_NOME}" size="50" maxlength="50" readonly="true"
+						value="#{agrupamentoFamiliarController.pacienteContexto.nome}" id="nome" />
+					<mec:inputText label="#{messages.LABEL_PRONTUARIO_FAMILIA}" size="6" maxlength="6" readonly="true"
+						id="prontuarioFamilia" value="#{agrupamentoFamiliarController.pacienteContexto.grupoFamiliarPaciente.agfSeq}" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText label="#{messages.LABEL_NOME_MAE}" size="50" maxlength="50" readonly="true"
+						value="#{agrupamentoFamiliarController.pacienteContexto.nomeMae}" id="nomePai" />
+					<mec:inputText label="#{messages.LABEL_NOME_PAI}" size="50" maxlength="50" readonly="true"
+						value="#{agrupamentoFamiliarController.pacienteContexto.nomePai}" id="nomeMae" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="btnDesvincularPaciente" value="#{messages.LABEL_DESVINCULAR_PACIENTE_AGRUPAMENTO_FAMILIAR}" block="true" rendered="#{mf:hasPermission(securityController,'manterCadastroProntuarioFamiliar,executar')}"
+					ajax="true" render="formAgrupamentoFamiliar"
+					process="@this" oncomplete="PF('modalExclusaoPacienteContexto').show();;" />
+			</aghu:acao>
+			<aghu:panelGeral id="familiarPanel" legend="#{messages.LABEL_FAMILIARES_VINCULADOS_AGRUPAMENTO_FAMILIAR}">
+				<mec:serverDataTable  dataModel="dataModel" value="#{familiaresVinculadosPaginatorController}" id="familiaresVinculados"
+					controller="#{familiaresVinculadosPaginatorController}">
+					<c:set var="_familiar" value="#{item}" />
+					<p:column style="width:10px; white-space:nowrap;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_ACAO}" />
+						</f:facet>
+						<mec:commandLink title="#{messages.TITLE_DESVINCULAR_PACIENTE_AGRUPAMENTO_FAMILIAR}" rendered="#{mf:hasPermission(securityController,'manterCadastroProntuarioFamiliar,executar')}"
+							oncomplete="PF('modalExclusaoAba1WG2').show();;" styleClass="silk-icon silk-delete" ajax="true"
+							render="formAgrupamentoFamiliar" process="@this" block="true">
+							<f:setPropertyActionListener target="#{agrupamentoFamiliarController.familiarVinculadoSelecionado}"
+								value="#{_familiar}" for="command" />
+						</mec:commandLink>
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+						</f:facet>
+
+						<h:outputText value="#{agrupamentoFamiliarController.formatar(_familiar.prontuario)}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_CODIGO}" />
+						</f:facet>
+						<h:outputText value="#{_familiar.codigo}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_NOME}" />
+						</f:facet>
+						<h:outputText value="#{_familiar.nome}" />
+					</p:column>
+					<p:column style="width:350px">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_ENDERECO}" />
+						
+						</f:facet>
+								<h:outputText title="#{agrupamentoFamiliarController.formatarEndereco(_familiar).length() gt 50  ?  agrupamentoFamiliarController.formatarEndereco(_familiar) : ''}" 
+									value="#{agrupamentoFamiliarController.formatarEndereco(_familiar).length() lt 50 ? agrupamentoFamiliarController.formatarEndereco(_familiar) :  fn:substring(agrupamentoFamiliarController.formatarEndereco(_familiar), 0, 50).concat('...')}" />
+					</p:column>
+				</mec:serverDataTable>
+			</aghu:panelGeral>
+			<aghu:linha>
+				<p:tabView id="tabPanelAbas" dynamic="true" activeIndex="#{agrupamentoFamiliarController.abaAtiva}" prependId="false" rendered="#{mf:hasPermission(securityController,'manterCadastroProntuarioFamiliar,executar')}">
+					<p:tab id="aba1" labelWidth="200px" immediate="true"
+						title="#{messages.LABEL_PRONTUARIOS_SUGERIDOS_AGRUPAMENTO_FAMILIAR}">
+						<mec:serverDataTable dataModel="dataModel" value="#{prontuariosSugeridosPaginatorController}" id="prontuariosSugeridos"
+							controller="#{prontuariosSugeridosPaginatorController}">
+							<c:set var="_prontuario" value="#{item}" />
+							<p:column headerText="#{messages.LABEL_ACAO}" rendered="#{mf:hasPermission(securityController,'manterCadastroProntuarioFamiliar,executar')}" styleClass="first-column auto-adjust" exportable="false">
+								<p:commandLink  styleClass="silk-icon silk-add" id="link_Vincular"
+									title="#{messages.TITLE_VINCULAR_PACIENTE_AGRUPAMENTO_FAMILIAR}" block="true"
+									action="#{agrupamentoFamiliarController.vincularPacienteSugerido}" ajax="true" update="@(#formAgrupamentoFamiliar)"
+									process="@this">
+									<f:setPropertyActionListener target="#{agrupamentoFamiliarController.prontuarioSugeridoSelecionado}"
+										value="#{_prontuario}" for="command" />
+								</p:commandLink>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+								</f:facet>
+								<h:outputText value="#{agrupamentoFamiliarController.formatar(_familiar.prontuario)}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_CODIGO}" />
+								</f:facet>
+								<h:outputText value="#{_prontuario.codigo}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_NOME}" />
+								</f:facet>
+								<h:outputText value="#{_prontuario.nome}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ENDERECO}" />
+								</f:facet>
+								<h:outputText title="#{agrupamentoFamiliarController.formatarEndereco(_prontuario).length() gt 50  ?  agrupamentoFamiliarController.formatarEndereco(_prontuario) : ''}" 
+									value="#{agrupamentoFamiliarController.formatarEndereco(_prontuario).length() lt 50 ? agrupamentoFamiliarController.formatarEndereco(_prontuario) :  fn:substring(agrupamentoFamiliarController.formatarEndereco(_prontuario), 0, 47).concat('...')}" />
+							</p:column>
+						</mec:serverDataTable>
+					</p:tab>
+					<p:tab id="aba2" labelWidth="200px" immediate="true"
+						title="#{messages.LABEL_PESQUISAR_PRONTUARIOS_AGRUPAMENTO_FAMILIAR}">
+						<aghu:panelGeral id="pesquisaPaciente" style="none" >
+						<aghu:linha>
+						
+								<mec:pesquisaPaciente id="pesqPaciente" valueChangeListener="#{agrupamentoFamiliarController.pesquisaPaciente}"
+									value="#{agrupamentoFamiliarController.paciente}"  
+									onchange="#{agrupamentoFamiliarController.limparCampos()}"
+									 /> 
+									<aghu:acao newLine="false">
+										<mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true"
+											action="#{agrupamentoFamiliarController.redirecionarPesquisaFonetica}"
+											styleClass=" bt_cinza icon-pesquisa-fonetica">
+											<f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}"
+												value="ambulatorio-agrupamentoFamiliar" for="command" />
+											<f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="false" for="command" />
+											<f:setPropertyActionListener target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" 
+	                 							value="false" for="command"/>
+	                 						<f:setPropertyActionListener target="#{pesquisaPacienteController.dataModel.pesquisaAtiva}" 
+	                 							value="false" for="command"/>
+	                 					    <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/>
+										</mec:commandButton>
+									</aghu:acao>
+									
+							
+						</aghu:linha>
+						<aghu:linha>
+						<mec:commandButton id="btnVincularPaciente" value="#{messages.LABEL_VINCULAR_PACIENTE_AGRUPAMENTO_FAMILIAR}"  block="true"
+										action="#{agrupamentoFamiliarController.vincularPacientePesquisado}"  render="formAgrupamentoFamiliar"
+										rendered="#{mf:hasPermission(securityController,'manterCadastroProntuarioFamiliar,executar')}"/>
+					  </aghu:linha>
+					  	</aghu:panelGeral>
+					</p:tab>
+				</p:tabView>
+			</aghu:linha>
+			<aghu:linha>
+				<mec:commandButton id="btnVoltar" value="#{messages.LABEL_VOLTAR}" style="float:right" 
+					action="#{agrupamentoFamiliarController.voltar}" ajax="true" process="@this" />
+			</aghu:linha>
+			<p:dialog id="modalExclusaoAba1" width="400" height="160" autosized="false" resizeable="false" modal="true"
+				resizable="false" widgetVar="modalExclusaoAba1WG2">
+				<f:facet name="header">
+					<h:outputText value="#{messages.TITLE_POPUP_CONFIRMACAO_DESVINCULAR_AGRUPAMENTO_FAMILIAR}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText value="#{messages.LABEL_CONFIRMACAO_DESVINCULAR_AGRUPAMENTO_FAMILIAR}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="bt_sim_confirmacao_exclusao" value="#{messages.CASCA_LABEL_SIM}"
+						action="#{agrupamentoFamiliarController.desvincularFamiliar}" oncomplete="PF('modalExclusaoAba1WG2').hide();"
+						profile="ok" ajax="true" render="formAgrupamentoFamiliar" process="@this"/>
+					<mec:commandButton id="bt_nao_confirmacao_exclusao" value="#{messages.CASCA_LABEL_NAO}"
+						onclick="PF('modalExclusaoAba1WG2').hide();;return false;" profile="cancel" ajax="true" />
+				</aghu:acao>
+			</p:dialog>
+			<p:dialog id="modalExclusaoAba2" width="400" height="160" autosized="false" resizeable="false" modal="true"
+				resizable="false" widgetVar="modalExclusaoPacienteContexto">
+				<f:facet name="header">
+					<h:outputText value="#{messages.TITLE_POPUP_CONFIRMACAO_DESVINCULAR_AGRUPAMENTO_FAMILIAR}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText value="#{messages.LABEL_CONFIRMACAO_DESVINCULAR_PACIENTE_AGRUPAMENTO_FAMILIAR}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="bt_sim_confirmacao_exclusao2" value="#{messages.CASCA_LABEL_SIM}" block="true"
+						action="#{agrupamentoFamiliarController.desvincularPacienteContexto}" oncomplete="PF('modalExclusaoPacienteContexto').hide();"
+						profile="ok" ajax="true" render="formAgrupamentoFamiliar" process="@this" />
+					<mec:commandButton id="bt_nao_confirmacao_exclusao2" value="#{messages.CASCA_LABEL_NAO}"
+						onclick="PF('modalExclusaoPacienteContexto').hide();;return false;" profile="cancel" ajax="true" />
+				</aghu:acao>
+			</p:dialog>
+			<p:dialog id="modalConfirmaOperacao" width="400" height="160" autosized="false" resizeable="false" modal="true"
+				resizable="false" widgetVar="modalConfirmaOperacaoWG">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_VINCULAR_PACIENTE_AGRUPAMENTO_FAMILIAR}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText value="#{messages.LABEL_CONFIRMACAO_VINCULO_EXISTENTE_AGRUPAMENTO_FAMILIAR}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="bt_sim_confirmacao_operacao" value="#{messages.CASCA_LABEL_SIM}"
+						action="#{agrupamentoFamiliarController.alterarGrupoFamiliarPacientePesquisado}"
+						oncomplete="PF('modalConfirmaOperacaoWG').hide();" profile="ok" ajax="true" render="formAgrupamentoFamiliar"
+						process="@this">
+					</mec:commandButton>
+					<mec:commandButton id="bt_nao_confirmacao_operacao" value="#{messages.CASCA_LABEL_NAO}"
+						onclick="PF('modalConfirmaOperacaoWG').hide();;return false;" profile="cancel" ajax="true">
+					</mec:commandButton>
+				</aghu:acao>
+			</p:dialog>
+			<p:dialog id="modalInformarProntuarioFamilia" width="380" height="70" autosized="false" resizeable="false" modal="true"
+                    resizable="false" widgetVar="modalInformaProntuarioFamiliaWG">
+                    <f:facet name="header">
+                    	<h:outputText value="#{messages.LABEL_INFORMAR_MATRICULA_PACIENTE_AGRUPAMENTO_FAMILIAR}" />
+                    </f:facet>
+                    <p:outputPanel id="modalInformarProntuarioFamiliaPanel" layout="inline">
+	                    <aghu:linha>
+	                    	<mec:inputNumero readonly="false"
+	                            label="#{messages.LABEL_MATRICULA}" maxlength="8"
+	                            value="#{agrupamentoFamiliarController.prontuarioFamiliarInformado}"
+	                            id="prontuarioFamiliarInformado" 
+	                            process="@this"/>
+	
+	                        <p:outputPanel layout="block" style="text-align:left;padding-top:15px;">
+		                        <aghu:acao>
+		                                <mec:commandButton value="#{messages.LABEL_OK}" action="#{agrupamentoFamiliarController.realizarAgrupamentoFamiliarProntuarioInformado}" oncomplete="PF('modalInformaProntuarioFamiliaWG').hide();" profile="ok" ajax="true" render="formAgrupamentoFamiliar" process="@this,prontuarioFamiliarInformado"/>
+		                                <mec:commandButton value="#{messages.LABEL_FECHAR}" immediate="true" onclick="PF('modalInformaProntuarioFamiliaWG').hide();" styleClass="bt_fechar silk-application-form-delete bt_cinza" ajax="true" process="@this" profile="cancel"/>
+		                        </aghu:acao>
+	                       </p:outputPanel>
+						</aghu:linha>
+					</p:outputPanel>
+		   </p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

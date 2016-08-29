@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_MOVIMENTACAO_FORNECEDOR}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{imprimeMovimentacaoFornecedorController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{imprimeMovimentacaoFornecedorController}" ignoreEnter="true"/>
+		<h:form prependId="false" id="formPesquisaContatoFornecedor">
+			<p:outputPanel id="panelPesquisaFornecedor" layout="inline">
+				<aghu:panelGeral legend="#{messages.TITLE_MOVIMENTACAO_FORNECEDOR_PESQUISA}">
+					<aghu:linha>
+						<mec:inputTextData id="dataInicio" label="#{messages.LABEL_MOVIMENTACAO_FORNECEDOR_PERIODO}" required="true" size="10" value="#{imprimeMovimentacaoFornecedorController.dataInicio}" tipo="data">
+							<p:ajax  event="change" update="@(#panelListaContatoFornecedor)" process="@this" listener="#{imprimeMovimentacaoFornecedorController.pesquisar}" />
+						</mec:inputTextData>
+						<mec:inputTextData id="dataFim" label="" required="true" size="10" value="#{imprimeMovimentacaoFornecedorController.dataFim}" tipo="data">
+							<p:ajax   event="change" update="@(#panelListaContatoFornecedor)" process="@this" listener="#{imprimeMovimentacaoFornecedorController.pesquisar}" />
+						</mec:inputTextData>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox var="vscoFornecedor" itemValue="#{vscoFornecedor}" id="vscoFornecedor" label="#{messages.LABEL_MOVIMENTACAO_FORNECEDOR_FORNECEDOR}" title="#{messages.TITLE_MOVIMENTACAO_FORNECEDOR_FORNECEDOR}" required="true" suggestionAction="pesquisarVFornecedorPorCgcCpfRazaoSocial" posSelectionAction="pesquisar" descricaoInput="numeroFornecedor" descricaoLabel="razaoSocial" maxlength="30" width="500" controller="#{imprimeMovimentacaoFornecedorController}" value="#{imprimeMovimentacaoFornecedorController.vscoFornecedor}" render="panelListaContatoFornecedor">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{vscoFornecedor.numeroFornecedor}
+						</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CPF_CNPJ}</b>
+								</f:facet> #{vscoFornecedor.cgcCpf}
+						</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_RAZAO_SOCIAL}</b>
+								</f:facet> #{vscoFornecedor.razaoSocial}
+						</p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+				</aghu:panelGeral>
+			</p:outputPanel>
+			<aghu:acao>
+				<mec:commandButton id="bt_print_buttonView" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" action="#{imprimeMovimentacaoFornecedorController.visualizarRelatorio}" profile="view" rendered="#{mf:hasPermission(securityController, 'imprimirMovimentacaoFornecedor,imprimir')}" />
+				<mec:commandButton id="bt_print_buttonPrint" value="#{messages.LABEL_IMPRIMIR}" action="#{imprimeMovimentacaoFornecedorController.imprimirRelatorio}" profile="print" onclick="PF('loadDialogWG').show()" rendered="#{mf:hasPermission(securityController, 'imprimirMovimentacaoFornecedor,imprimir')}" />
+				<mec:commandButton id="btnLimpar" value="#{messages.LABEL_LIMPAR}" ajax="true" process="@this" action="#{imprimeMovimentacaoFornecedorController.limpar}" render="panelPesquisaFornecedor,panelListaContatoFornecedor" styleClass="bt_cinza" profile="clear" />
+			</aghu:acao>
+		</h:form>
+		<p:outputPanel id="panelListaContatoFornecedor" layout="inline">
+			<p:outputPanel id="panelListaContatoFornecedorInferior" rendered="#{imprimeMovimentacaoFornecedorController.exibirListagem}" layout="inline" styleClass="aghu-panel-geral">
+				<aghu:panelGeral legend="#{messages.TITLE_MOVIMENTACAO_FORNECEDOR_CONTATOS}">
+					<h:form prependId="false" id="formLista" name="formLista">
+						<mec:serverDataTable id="tabelaBacteriasMultir"
+							selectionEvent="true" scrollHeight="400" scrollable="true"
+							list="#{imprimeMovimentacaoFornecedorController.scoContatoFornecedores}"
+							selection="scoContatoFornecedorSelecionado" controls="false"
+							controller="#{imprimeMovimentacaoFornecedorController}">
+							<c:set var="_item" value="#{item}" />
+							<p:ajax event="rowSelect"
+								update="@(#panelBotoes) @(#tabelaConsultoriasInternacao)"
+								listener="#{imprimeMovimentacaoFornecedorController.selecionarItem}">
+								<f:setPropertyActionListener
+									target="#{imprimeMovimentacaoFornecedorController.scoContatoFornecedorSelecionado}"
+									value="#{_item}" for="command" />
+							</p:ajax>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.TITLE_MOVIMENTACAO_FORNECEDOR_NOME}" />
+								</f:facet>
+								<h:outputText value="#{_item.nome}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.TITLE_MOVIMENTACAO_FORNECEDOR_FUNCAO}" />
+								</f:facet>
+								<h:outputText value="#{_item.funcao}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.TITLE_MOVIMENTACAO_FORNECEDOR_EMAIL}" />
+								</f:facet>
+								<h:outputText value="#{_item.EMail}" />
+							</p:column>
+						</mec:serverDataTable>
+					</h:form>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<h:form prependId="false" id="formListaBotoes" name="formListaBotoes">
+						<mec:commandButton id="btnEnviarEmail" value="#{messages.LABEL_MOVIMENTACAO_FORNECEDOR_ENVIAR_EMAIL}" action="#{imprimeMovimentacaoFornecedorController.enviarEmail}" />
+						<mec:commandButton id="btnAdicionarContato" value="#{messages.LABEL_MOVIMENTACAO_FORNECEDOR_ADICIONAR_CONTATO}" action="#{imprimeMovimentacaoFornecedorController.verContatos}" disabled="#{not mf:hasPermission(securityController,'imprimirMovimentacaoFornecedor,imprimir')}" ajaxSingle="true" profile="add">
+							<f:setPropertyActionListener target="#{cadastroContatoFornecedorController.numeroFrn}" value="#{imprimeMovimentacaoFornecedorController.vscoFornecedor.numeroFornecedor}" for="command" />
+							<f:setPropertyActionListener target="#{cadastroContatoFornecedorController.voltarParaUrl}" value="#{imprimeMovimentacaoFornecedorController.voltar}" for="command" />
+						</mec:commandButton>
+					</h:form>
+				</aghu:acao>
+			</p:outputPanel>
+		</p:outputPanel>
+		<br clear="none" />
+	</ui:define>
+</ui:composition>
+</html>

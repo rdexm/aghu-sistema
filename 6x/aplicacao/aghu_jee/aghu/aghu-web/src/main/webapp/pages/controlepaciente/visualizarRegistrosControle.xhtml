@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_VISUALIZAR_REGISTROS_CONTROLE_PACIENTE}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{registrosPacienteController.carregar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="style">
+      .ui-datatable-frozenlayout-left{ 
+        width:150px;
+      } 
+      .ui-datatable-frozenlayout-right{ 
+        width:800px;
+      }
+      .ui-datatable tbody td {
+        height:33px !important;
+      }
+      </ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{registrosPacienteController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formConfigurarLista">
+      	<p:dialog id="pacienteDlg" header="Paciente" widgetVar="pacienteDlgWG" minHeight="80" minWidth="300" style="opacity:0.7;"  
+			closable="false" resizable="false" position="top" onShow="PF('pacienteDlgWG').jq.css('top', '52px')" >
+		    <h:outputText value="#{registrosPacienteController.paciente.prontuario}-#{registrosPacienteController.paciente.nome}"/>		    
+		</p:dialog>		
+      	 
+        <aghu:panelGeral id="panelPesquisa" legend="#{messages.LABEL_PACIENTE}"> 
+          <aghu:linha> 
+            <p:outputPanel id="prontuarioPanel" layout="inline"> 
+              <mec:suggestionBox 
+              	label="#{messages.LABEL_PRONTUARIO}" 
+              	title="#{messages.TITLE_PRONTUARIO_CONTROLE_PACIENTE}" 
+              	suggestionAction="pesquisarPacientes" 
+              	descricaoInput="prontuario" 
+              	size="15" 
+              	maxlength="9" 
+              	id="suggestionProntuario" 
+              	controller="#{registrosPacienteController}" 
+              	value="#{registrosPacienteController.paciente}" 
+              	readonly="#{registrosPacienteController.somenteLeitura}" 
+              	descricaoLabel="nome" 
+              	posDeleteAction="limparDadosPacienteLeito" 
+              	render="leitoPanel">
+              	 
+                <p:column> 
+                  <h:outputText value="#{item.prontuario}"/>
+                </p:column>  
+                <p:column> 
+                  <h:outputText value="#{item.nome}"/>
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <p:outputPanel id="leitoPanel" layout="inline" rendered="#{!registrosPacienteController.isFromAmbulatorio()}" > 
+              <mec:suggestionBox 
+              	id="suggestionLeito" 
+              	label="#{messages.LABEL_LEITO}" 
+              	title="#{messages.TITLE_LEITO_CONTROLE_PACIENTE}" 
+              	descricaoInput="leitoID" 
+              	size="15" 
+              	maxlength="14" 
+              	readonly="#{registrosPacienteController.somenteLeitura}" 
+              	descricaoLabel="leitoID" 
+              	suggestionAction="pesquisarLeitos" 
+              	posDeleteAction="limparDadosPacienteLeito" 
+              	controller="#{registrosPacienteController}" 
+              	value="#{registrosPacienteController.leito}" 
+              	render="prontuarioPanel">
+              	 
+                <p:column> 
+                  <h:outputText value="#{item.leitoID}"/> 
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+            
+            <p:outputPanel id="zonaAmbulatorioPanel" layout="inline" rendered="#{registrosPacienteController.isFromAmbulatorio()}" >
+              <mec:suggestionBox var="zona" itemValue="#{zona}" required="true" label="#{registrosPacienteController.labelZona}"  
+	              width="400" descricaoInput="sigla" 
+	              readonly="true"
+	              descricaoLabel="descricao" id="zona" controller="#{registrosPacienteController}" 
+	              value="#{registrosPacienteController.zona}"> 
+              </mec:suggestionBox>  
+            </p:outputPanel> 
+            
+          </aghu:linha>  
+          <aghu:linha>  
+              <mec:selectOneMenu name="periodo" id="sPeriodo" style="width: 150px" value="#{registrosPacienteController.periodo}" label="#{messages.LABEL_PERIODO}" title="#{messages.TITLE_PERIODO_CONTROLE_PACIENTE}"> 
+                <f:converter converterId="dominioConverter" for="inputId"/>  
+                <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioPeriodoRegistroControlePaciente')}"/>  
+                <p:ajax event="change" requestDelay="100" update="@(#datasPanel)" process="@this" listener="#{registrosPacienteController.ajustarDatasConformePeriodo}"/> 
+              </mec:selectOneMenu>   
+            <p:outputPanel id="datasPanel" layout="inline"> 
+              <mec:inputTextData id="dataInicio" value="#{registrosPacienteController.dataInicial}" 
+              	title="Informar a data e hora inicial no formato (dd/mm/aaaa hh:mm)" 
+              	label="#{messages.LABEL_DATA_HORA_INICIAL}" required="true" tipo="datahora" /> 
+               
+              <mec:inputTextData id="dataFim" value="#{registrosPacienteController.dataFinal}" 
+              	title="Informar a data e hora final no formato (dd/mm/aaaa hh:mm), deve ser maior que a data inicial"  
+              	required="true" label="#{messages.LABEL_DATA_HORA_FINAL}"  tipo="datahora" /> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{registrosPacienteController.pesquisar}" render="panelAbasExterno" profile="search" />  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{registrosPacienteController.limpar}" profile="clear" ajax="true" render="panelPesquisa,panelAbasExterno" process="@this"/>  
+          <mec:commandButton id="bt_imprimir" immediate="true" value="#{messages.LABEL_IMPRIMIR}" disabled="#{not registrosPacienteController.habilitaImprimir}" rendered="#{mf:hasPermission(securityController,'visualizarRegistrosControlePaciente,imprimir')}" action="#{registrosPacienteController.imprimir}" profile="print" />  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" rendered="#{registrosPacienteController.notFromMenu and registrosPacienteController.voltarPara ne 'listarPacientesEmergencia' and registrosPacienteController.voltarPara ne 'ambulatorio-atenderPacientesAgendados'}" immediate="true" action="#{registrosPacienteController.cancelarEdicao}" profile="back"/>
+          <mec:commandButton id="voltarEmergencia" value="#{messages.LABEL_VOLTAR}" rendered="#{registrosPacienteController.notFromMenu and registrosPacienteController.voltarPara eq 'listarPacientesEmergencia'}" immediate="true" action="#{registrosPacienteController.voltar}" profile="back"/>  
+        </aghu:acao>  
+        <aghu:linha> 
+          <aghu:panelGeral id="panelAbasExterno"> 
+            <p:tabView id="tabPanelAbas" dynamic="true" activeIndex="#{registrosPacienteController.selectedTab}" prependId="false">
+              <p:ajax event="tabChange" listener="#{registrosPacienteController.tabChange}" /> 
+              <p:tab id="TAB_0" action="#{registrosPacienteController.pesquisar}" title="#{messages.LABEL_MONITORIZACAO}"> 
+                <ui:include src="/pages/controlepaciente/listarTabelaMonitorizacao.xhtml"/> 
+              </p:tab>  
+              <p:tab id="TAB_1" disabled="#{not registrosPacienteController.exibeBH}" action="#{registrosPacienteController.pesquisar}" title="#{messages.LABEL_BALANCO_HIDRICO}"> 
+                <ui:include src="/pages/controlepaciente/listarTabelaBalancoHidrico.xhtml"/> 
+              </p:tab> 
+            </p:tabView> 
+          </aghu:panelGeral> 
+        </aghu:linha> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Procedimento Hospitalar Interno</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{procedimentoRelacionadoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{procedimentoRelacionadoController}"/>  
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+        <h:form prependId="false" id="procedimentoRelacionadoControllerForm"> 
+          <aghu:panelGeral legend="#{messages.LEGEND_PROCEDIMENTO_HOSPITALAR_INTERNO}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelConvenio" layout="inline"> 
+                <mec:suggestionBox id="suggestionConvenio_id" label="#{messages.LABEL_CONVENIO}" title="#{messages.TITLE_EXC_CONVENIO}" descricaoInput="cphCspCnvCodigo" descricaoLabel="cnvDescricao" suggestionAction="listarConvenios" requiredFake="true" width="300" readonly="#{procedimentoRelacionadoController.editandoProcedimentosRelacionados}" controller="#{procedimentoRelacionadoController}" value="#{procedimentoRelacionadoController.convenio}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.cphCspCnvCodigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.cnvDescricao}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelProcedSus" layout="inline"> 
+                <mec:suggestionBox id="suggestionProcedimentoSUS_id" label="#{messages.LABEL_PROCED_SUS}" title="#{messages.TITLE_PROCED_SUS}" descricaoInput="codTabela" descricaoLabel="seqDescricao" requiredFake="true" suggestionAction="listarItensProcedHospAtivosPorCodTabelaOuDescricaoEPhoSeqOrdenadoPorSeq" width="500" controller="#{procedimentoRelacionadoController}" value="#{procedimentoRelacionadoController.fatItensProcedHospitalar}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_SIGLA_COD_SUS}</b> 
+                    </f:facet> #{item.codTabela}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_IPH}</b> 
+                    </f:facet> #{item.id.seq}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel>  
+              <p:outputPanel id="painel_acao" layout="inline"> 
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton id="bt_adicionar" rendered="#{!procedimentoRelacionadoController.editandoProcedimentosRelacionados}" value="#{messages.LABEL_ADICIONAR}" process="procedSus, convenio" action="#{procedimentoRelacionadoController.adicionarProcedimentosRelacionados}" immediate="true" profile="add" ajax="true" render="procedimentos_relacionados_panel, bt_justificar, convenio, procedSus, panelProcedSus, panelConvenio"/>  
+                  <mec:commandButton id="bt_alterar" rendered="#{procedimentoRelacionadoController.editandoProcedimentosRelacionados}" value="#{messages.LABEL_ALTERAR}" process="procedSus, convenio" action="#{procedimentoRelacionadoController.alterarProcedimentoRelacionado}" immediate="true" profile="ok" ajax="true" render="procedimentos_relacionados_panel,painel_acao, convenio, procedSus, panelProcedSus, panelConvenio"/>  
+                  <mec:commandButton id="bt_cancelar" rendered="#{procedimentoRelacionadoController.editandoProcedimentosRelacionados}" value="#{messages.CANCELAR_EDICAO_LISTA}" action="#{procedimentoRelacionadoController.cancelarProcedimentoRelacionado}" immediate="true" profile="cancel" ajax="true" render="procedimentos_relacionados_panel,painel_acao, convenio, procedSus, panelProcedSus, panelConvenio" process="@this"/> 
+                </aghu:acao> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <p:outputPanel id="procedimentos_relacionados_panel" layout="inline"> 
+              <aghu:linha> 
+                <mec:serverDataTable id="lista_procedimento_relacionados" rowKeyVar="row" rendered="#{not empty procedimentoRelacionadoController.listaFatProcedimentoRelacionadosVO}" list="#{procedimentoRelacionadoController.listaFatProcedimentoRelacionadosVO}" scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column style="width:60px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink title="#{messages.LABEL_EDITAR}" immediate="true" action="#{procedimentoRelacionadoController.editarProcedimentoRelacionado(_item)}" profile="edit" ajax="true" render="painel_acao,convenio, procedSus, panelProcedSus, panelConvenio"/>  
+                    <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{procedimentoRelacionadoController.excluirProcedimentoRelacionado(_item)}" immediate="true" disabled="#{procedimentoRelacionadoController.verificaQuantidade()}" readOnly="#{procedimentoRelacionadoController.verificaQuantidade()}" profile="delete" ajax="true" render="procedimentos_relacionados_panel, bt_justificar" process="@this"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_PROCED_SUS}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.fatItensProcedHospitalar.codTabela} - #{_item.fatItensProcedHospitalar.descricao}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_CONVENIO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.cnvDescricao}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText styleClass="headerText" value="#{messages.LABEL_PLANO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.cphCspSeq} - #{_item.cspDescricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextArea id="justificativaTextArea" cols="100" rows="4" rendered="#{not empty procedimentoRelacionadoController.justificativaProcRel}" label="#{messages.LABEL_MATERIAL_JUSTIFICATIVA}" title="#{messages.TITLE_MATERIAL_JUSTIFICATIVA}" size="125" value="#{procedimentoRelacionadoController.justificativaProcRel}" removerCaratersEspeciais="false" readonly="true"/> 
+              </aghu:linha> 
+            </p:outputPanel>  
+            <aghu:acao style="margin-bottom: 5px;margin-left: 5px; margin-right: 5px"> 
+	            <mec:commandButton includePageParams="false" id="bt_gravar" block="true" value="#{messages.LABEL_GRAVAR}" action="#{procedimentoRelacionadoController.gravarProcedimentosRelacionados}" profile="ok"/>
+
+				<mec:commandButton id="bt_justificar"
+					value="#{messages.LABEL_JUSTIFICAR}"
+					action="#{procedimentoRelacionadoController.justificar}"
+					rendered="#{procedimentoRelacionadoController.voltarPara eq 'estoque-manterMaterialCRUD' ? true : false}"
+					disabled="#{procedimentoRelacionadoController.serMatriculaJusProcRel != null or not empty procedimentoRelacionadoController.listaFatProcedimentoRelacionadosVO ? true : false}"
+					styleClass="bt_cinza">
+					<f:setPropertyActionListener
+						target="#{manterMaterialJustificativaController.phiSeq}"
+						value="#{procedimentoRelacionadoController.phiSeq}"
+						for="command" />
+				</mec:commandButton>
+
+				<mec:commandButton includePageParams="false" id="bt_voltar" ajaxSingle="true" value="#{messages.LABEL_VOLTAR}" action="#{procedimentoRelacionadoController.cancelar}" styleClass="bt_cinza" profile="back"/> 
+            </aghu:acao>  
+            <p:outputPanel id="modalConfirmarSemVinculo_outer" layout="inline"> 
+              <p:outputPanel id="modalConfirmarSemVinculo_inner" rendered="#{procedimentoRelacionadoController.chamarConfirmarSemVinculos}" layout="inline"> 
+                <script type="text/javascript" xml:space="preserve">
+						//<![CDATA[
+							PF('modalConfirmarSemVinculoWG').show();;
+						//]]> 
+					</script> 
+              </p:outputPanel> 
+            </p:outputPanel>  
+            <p:outputPanel id="mostrarModalCancelar_outer" layout="inline"> 
+              <p:outputPanel id="mostrarModalCancelar" rendered="#{procedimentoRelacionadoController.chamarCancelar}" layout="inline"> 
+                <script type="text/javascript" xml:space="preserve">
+						//<![CDATA[
+							PF('modalCancelamentoWG').show();;
+						//]]> 
+					</script> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <p:dialog id="modalCancelamento" width="400" height="150" modal="true" resizable="false" widgetVar="modalCancelamentoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.MENSAGEM_PROCEDIMENTOS_NAO_SALVOS_HEADER}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_PROCEDIMENTOS_NAO_SALVOS} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalCancelar" name="formModalCancelar"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_confirmar_cancelar" block="true" action="#{procedimentoRelacionadoController.cancelar}" profile="search"/>  
+              <mec:commandButton id="btCancelarCancelar" name="btCancelarCancelar" value="#{messages.LABEL_NAO}" block="true" oncomplete="PF('modalCancelamentoWG').hide();" action="#{procedimentoRelacionadoController.alterarValorChamarCancelar}" profile="cancel"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <p:dialog id="modalConfirmarSemVinculo" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmarSemVinculoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.MENSAGEM_ALERTA_NAO_VINCULACAO_PROCEDIMENTOS_HEADER}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALERTA_NAO_VINCULACAO_PROCEDIMENTOS} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formmodalConfirmarSemVinculo" name="formmodalConfirmarSemVinculo"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_confirmar_modalConfirmarSemVinculo" block="true" action="#{procedimentoRelacionadoController.confirmar}" profile="search"/>  
+              <mec:commandButton id="btCancelarCancelarmodalConfirmarSemVinculo" name="btCancelarCancelarmodalConfirmarSemVinculo" value="#{messages.LABEL_NAO}" block="true" oncomplete="PF('modalConfirmarSemVinculoWG').hide();;" action="#{procedimentoRelacionadoController.alterarValorChamarConfirmarSemVinculos}" profile="cancel"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

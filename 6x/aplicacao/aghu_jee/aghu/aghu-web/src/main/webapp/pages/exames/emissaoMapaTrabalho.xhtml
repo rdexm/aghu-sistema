@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_EMISSAO_MAPA_TRABALHO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{emissaoMapaTrabalhoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{emissaoMapaTrabalhoController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="form"> 
+        <p:outputPanel id="campos" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_MAPAS_TRABALHO}"> 
+            <aghu:linha>
+						<mec:suggestionBox id="sbIdentificacaoUnidade"
+							label="#{messages.LABEL_UNID_EXEC}"
+							title="#{messages.TITLE_DESCRICAO_UNID_EXEC_SUGGESTION}"
+							suggestionAction="obterAghUnidadesFuncionaisExecutoras"
+							posSelectionAction="persistirIdentificacaoUnidadeExecutora"
+							descricaoInput="seq" descricaoLabel="descricao" maxlength="30"
+							width="500" required="true" block="true"
+							controller="#{emissaoMapaTrabalhoController}"
+							value="#{emissaoMapaTrabalhoController.unidadeExecutora}"
+							render="panelResultados">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.descricao}
+                			</p:column>
+						</mec:suggestionBox>
+						<mec:inputText id="mapa" label="#{messages.LABEL_MAPA}" title="#{messages.TITLE_MAPA_EMISSAO_MAPA_TRABALHO}" value="#{emissaoMapaTrabalhoController.mapa}" style="text-transform:uppercase" size="30" maxlength="100"/>  
+              <mec:selectOneMenu id="origemPesq" label="#{messages.LABEL_ORIGEM}" title="#{messages.TITLE_ORIGEM_EMISSAO_MAPA_TRABALHO}" value="#{emissaoMapaTrabalhoController.origem}" enum="DominoOrigemMapaAmostraItemExame"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton block="true" value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" disabled="#{not mf:hasPermission(securityController,'emissaoMapaTrabalho,pesquisar')}" action="#{emissaoMapaTrabalhoController.pesquisar}" profile="search"/>  
+            <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{emissaoMapaTrabalhoController.limpar}" immediate="true" styleClass="bt_cinza" profile="clear"/> 
+          </aghu:acao> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:outputPanel id="panelResultados" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.LABEL_LISTA_EMISSAO_MAPAS_TRABALHO}"> 
+          <aghu:linha> 
+            <h:form prependId="false" id="formResultados"> 
+              <mec:serverDataTable dataModel="dataModel" id="mapasDeTrabalho" value="#{emissaoMapaTrabalhoController}" rendered="#{emissaoMapaTrabalhoController.dataModel.pesquisaAtiva}" controller="#{emissaoMapaTrabalhoController}"> 
+                <c:set var="_item" value="#{item}"/>  
+                <p:column headerCustomizado="true" width="30" style="text-align:center" filterStyle="float:center"> 
+                  <f:facet name="header"> 
+                    <h:selectBooleanCheckbox id="checkall" value="#{emissaoMapaTrabalhoController.allChecked}"> 
+                      <p:ajax event="click" update="@(#panelResultados)" process="@this" listener="#{emissaoMapaTrabalhoController.checkAll()}"/> 
+                    </h:selectBooleanCheckbox> 
+                  </f:facet>  
+                  <h:selectBooleanCheckbox id="checkbox_#{_item.seq}" value="#{emissaoMapaTrabalhoController.allChecked}" > 
+                    <p:ajax event="click" process="@this" listener="#{emissaoMapaTrabalhoController.addSeqMapa(_item)}"> 
+                      <f:setPropertyActionListener target="#{emissaoMapaTrabalhoController.seqMapaSelecionado}" value="#{_item.seq}" for="command"/> 
+                    </p:ajax> 
+                  </h:selectBooleanCheckbox> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MAPA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.nomeMapa}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ORIGEM}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.origem.descricao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_UNIDADE_RESPONSAVEL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.aghUnidadesFuncionais.seq}"/>  
+                  <h:outputText value=" - "/>  
+                  <h:outputText value="#{_item.aghUnidadesFuncionais.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </h:form> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <h:form prependId="false" id="formBotoes"> 
+              <mec:commandButton id="btnGerarMapas" value="#{messages.LABEL_GERAR_MAPAS}" block="true" disabled="#{not mf:hasPermission(securityController,'emissaoMapaTrabalho,pesquisar')}" rendered="#{emissaoMapaTrabalhoController.dataModel.pesquisaAtiva}" action="#{emissaoMapaTrabalhoController.emitirRelatorio}" styleClass=" icon-see-print bt_cinza"/>  
+              <mec:commandButton id="btnImprimirLaudo" value="#{messages.LABEL_REIMPRIMIR_MAPAS}" disabled="#{not mf:hasPermission(securityController,'emissaoMapaTrabalho,pesquisar')}" rendered="#{emissaoMapaTrabalhoController.dataModel.pesquisaAtiva}" action="#{emissaoMapaTrabalhoController.validaExibicaoModal}" render="panelModalEmissaoMapaTrabalho" styleClass=" icon-print bt_cinza" ajax="true"/>
+              <mec:commandButton id="voltar" value="#{messages.LABEL_VOLTAR}" action="#{emissaoMapaTrabalhoController.voltar}" rendered="#{emissaoMapaTrabalhoController.cameFrom != null}" styleClass="icon-back bt_cinza" profile="back"/> 
+            </h:form> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+           
+        </aghu:linha> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelModalEmissaoMapaTrabalho" layout="inline"> 
+        <p:outputPanel rendered="#{emissaoMapaTrabalhoController.exibeModal}" layout="inline"> 
+          <ui:include src="/pages/exames/modalEmissaoMapaTrabalho.xhtml"/>  
+          <script type="text/javascript" xml:space="preserve">
+					PF('modalEmissaoMapaTrabalhoWG').show();;
+				</script> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

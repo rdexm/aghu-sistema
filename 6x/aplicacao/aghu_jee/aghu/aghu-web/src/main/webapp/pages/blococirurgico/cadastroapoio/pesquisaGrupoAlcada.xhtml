@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CADASTRO_GRUPO_ALCADA}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaGruposAlcadaPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+	<ui:define name="style">.ui-datatable table{ table-layout: auto !important;} .ui-datatable-scrollable table{table-layout: auto !important;}</ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaGruposAlcadaPaginatorController}"/>  
+      <p:outputPanel id="panelPrincipal" layout="inline"> 
+        <h:form prependId="false" id="formGrupoAlcada"> 
+          <aghu:panelGeral legend="#{messages.TITLE_CADASTRO_GRUPO_ALCADA_PESQUISA}"> 
+            <aghu:linha> 
+              
+              <mec:selectOneMenu 
+	              enum="DominioTipoConvenioOpms"
+		          required="true" 
+		          label="#{messages.LABEL_TIPOS_CONVENIOS}" 
+		          id="tipoConvenio" 
+		          value="#{pesquisaGruposAlcadaPaginatorController.tipoConvenioOpms}"
+		          var="varTipCon"
+		          title="#{messages.TITLE_TIPO_CONVENIO_PESQ_GRUPO_ALC}">
+	          <f:setPropertyActionListener target="#{pesquisaGruposAlcadaPaginatorController.tipoConvenioOpms}" value="#{varTipCon}" for="command"/>
+	          </mec:selectOneMenu>  
+              
+              <mec:suggestionBox id="sbEspecialidade"
+	               label="#{messages.LABEL_ESPECIALIDADE_DESCRICAO_PADRAO}" 
+	               title="#{messages.TITLE_ESPECIALIDADE_PESQ_GRUPO_ALC}" 
+	               suggestionAction="obterEspecialidades" 
+	               descricaoInput="sigla" 
+	               descricaoLabel="nomeEspecialidade" 
+	               width="450" 
+	               onkeydown="return disableEnterKey(event);" 
+	               controller="#{pesquisaGruposAlcadaPaginatorController}" 
+	               value="#{pesquisaGruposAlcadaPaginatorController.aghEspecialidades}"> 
+	                <p:column> 
+	                  <f:facet name="header"> 
+	                    <b>#{messages.LABEL_SIGLA}</b> 
+	                  </f:facet> #{item.sigla}
+	                </p:column>  
+	                <p:column> 
+	                  <f:facet name="header"> 
+	                    <b>#{messages.LABEL_DESCRICAO}</b> 
+	                  </f:facet> #{item.nomeEspecialidade}
+	                </p:column>
+	                <f:setPropertyActionListener target="#{pesquisaGruposAlcadaPaginatorController.tipoConvenioOpms}" value="#{item.especialidadeSeq}" for="command"/> 
+              </mec:suggestionBox>
+              <mec:selectOneMenu   id="tipoObrigatoriedade"
+              					label="#{messages.LABEL_GRUPO_ALCADA_OBRIGATORIEDADE}" 
+              					value="#{pesquisaGruposAlcadaPaginatorController.tipoObrigatoriedadeOpms}" 
+              					title="#{messages.TITLE_OBRIGATORIEDADE_PESQ_GRUPO_ALC}"
+              					var="varTipObr"
+              					enum="DominioTipoObrigatoriedadeOpms">
+             <f:setPropertyActionListener target="#{pesquisaGruposAlcadaPaginatorController.tipoConvenioOpms}" value="#{item.especialidadeSeq}" for="command"/>
+             </mec:selectOneMenu> 
+              <mec:inputNumero id="versao" readonly="false" label="#{messages.LABEL_VERSAO}" title="#{messages.TITLE_VERSAO_PESQ_GRUPO_ALC}" size="4" maxlength="4" value="#{pesquisaGruposAlcadaPaginatorController.versao}"/>  
+              <mec:selectOneMenu enum="DominioSituacao" label="#{messages.LABEL_SITUACAO}" id="situacao" value="#{pesquisaGruposAlcadaPaginatorController.dominioSituacao}" title="#{messages.TITLE_SITUACAO_PESQ_GRUPO_ALC}"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <p:outputPanel id="panelBotoesFiltro" layout="inline" > 
+              <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{pesquisaGruposAlcadaPaginatorController.pesquisar}" render="formListaGrupos" profile="search" style="margin-top:5px !important; margin-bottom:5px !important;"/>  
+              <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{pesquisaGruposAlcadaPaginatorController.limparPesquisa}" profile="clear" ajax="true" render="tipoConvenio,sbEspecialidade,versao,situacao,panelBotoesFiltro,panelGruposFora" process="@this"/>  
+              <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" rendered="#{pesquisaGruposAlcadaPaginatorController.mostrarBotaoNovo}" block="true" action="#{pesquisaGruposAlcadaPaginatorController.iniciarInclusao}" profile="add"> 
+                 <f:setPropertyActionListener target="#{cadastroGrupoAlcadaController.limpaCampos}" value="#{true}" for="command"/>
+                 <f:setPropertyActionListener target="#{cadastroGrupoAlcadaController.codigoGrupo}" value="#{null}" for="command"/>
+              </mec:commandButton> 
+            </p:outputPanel> 
+          </aghu:acao> 
+        </h:form>  
+        <p:outputPanel id="panelGruposFora" layout="inline"> 
+          <p:outputPanel id="panelGrupos" layout="inline"> 
+            <aghu:linha> 
+              <h:form prependId="false" id="formListaGrupos"> 
+                <mec:serverDataTable id="tabelaGrupoAlcada" name="tabelaGrupoAlcada" list="#{pesquisaGruposAlcadaPaginatorController.listaPesquisada}" scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet> 
+                    <mec:commandLink 
+                    	action="#{pesquisaGruposAlcadaPaginatorController.redirecionaManterGrupoAlcada(_item)}"
+                    	title="#{messages.HINT_EDITAR_ALCADAS}" 
+                    	id="btnRedirecionamento" 
+                    	profile="edit"
+                    	style="margin-right:4px !important;">
+                      <f:setPropertyActionListener target="#{cadastroGrupoAlcadaController.codigoGrupo}" value="#{_item.seq}" for="command"/>
+                    </mec:commandLink> 
+
+					<mec:commandLink title="#{messages.LABEL_EXCLUIR}" requestDelay="1000" ignoreDupResponses="true" eventsQueue="filaDelete" 
+					action="#{pesquisaGruposAlcadaPaginatorController.excluir}" render="panelGrupos"
+					profile="delete" ajax="true" process="@this"
+					style="margin-right:4px !important;"> 
+					  <f:setPropertyActionListener target="#{pesquisaGruposAlcadaPaginatorController.itemExclusao}" value="#{_item}" for="command"/>  
+					</mec:commandLink> 
+
+                   <mec:commandLink
+	                   id="btnRedirecionamentoMapeamento" 
+	                   action="#{pesquisaGruposAlcadaPaginatorController.redirecionaNiveisAlcada(_item)}" 
+	                   title="#{messages.HINT_MANTER_NIVEIS_ALCADA}"
+	                   styleClass="silk-icon  silk-mapeamento"
+	                   profile="search"
+	                   style="margin-right:4px !important;">
+	                    <f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.grupoAlcadaSeq}" value="#{_item.seq}" for="command"/>
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.grupoAlcada}" value="#{_item}" for="command"/>
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.tipoConvenio}" value="#{_item.tipoConvenio}" for="command"/>
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.situacao}" value="#{_item.situacao}" for="command"/>
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.especialidade}" value="#{_item.aghEspecialidades.nomeEspecialidade}" for="command"/>
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.especialidadeSeq}" value="#{_item.aghEspecialidades.seq}" for="command" />
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.versao}" value="#{_item.versao}" for="command" />
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.tipoConvenioFiltro}" value="#{pesquisaGruposAlcadaPaginatorController.tipoConvenioFiltro}" for="command"/>
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.especialidadeSeqFiltro}" value="#{pesquisaGruposAlcadaPaginatorController.especialidadeSeqFiltro}" for="command"/>
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.versaoFiltro}" value="#{pesquisaGruposAlcadaPaginatorController.versaoFiltro}" for="command"/>
+                   		<f:setPropertyActionListener target="#{pesquisaNiveisAlcadaAprovacaoPaginatorController.situacaoFiltro}" value="#{pesquisaGruposAlcadaPaginatorController.situacaoFiltro}" for="command"/>
+                   </mec:commandLink>
+                   <mec:commandLink 
+                    	id="btnRedirecionamentoHistorico"
+                    	action="#{pesquisaGruposAlcadaPaginatorController.carregaHistoricoAlteracoesGrupoAlcada(_item)}" 
+                    	oncomplete="PF('modalHistoricoWG').show();" 
+                    	title="#{messages.HINT_HISTORICO_GRUPO_ALCADA}" 
+                    	ajax="true"
+                    	render="@(#modalHistorico)"
+                    	styleClass=" silk-icon silk-historico-cirurgias"
+                    	style="margin-right:4px !important;">
+                    </mec:commandLink>
+				  </p:column>  
+                  <p:column id="colTipoConvenio"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_TIPOS_CONVENIOS}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.tipoConvenio.descricao}" style="text-transform:uppercase" id="colTextoTipoConvenio"/> 
+                  </p:column>  
+                  <p:column id="colEspecialidade" style="width:30% !important;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ESPECIALIDADE_DESCRICAO_PADRAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.aghEspecialidades.nomeEspecialidade}" style="text-transform:uppercase" id="colTextoEspecialidade"/> 
+                  </p:column>
+                  <p:column id="colTipoObrigatoriedade"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GRUPO_ALCADA_OBRIGATORIEDADE}" /> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.tipoObrigatoriedade.descricao}"  id="colTextoTipoObrigatoriedade"/> 
+                  </p:column>  
+                  <p:column id="colVersao"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VERSAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.versao}" style="text-transform:uppercase" id="colTextoVersao"/> 
+                  </p:column>  
+                  <p:column id="colSituacao"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.situacao.descricao}" id="colTextoSituacao"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </h:form> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+
+		<p:dialog id="modalHistorico" width="1000" height="300" modal="true" resizable="false" widgetVar="modalHistoricoWG" closable="true"> 
+			<f:facet name="header" id="headerModalHistoricoAlteracoesGrupoAlcada">
+				<h:panelGroup id="headeGroupHistoricoAlteracoesGrupoAlcada">
+					<h:outputText value="#{messages.TITLE_HISTORICO_ALTERACOES_GRUPO_ALC}"
+						id="textLabelHistoricoAlteracoesGrupoAlcada" />
+				</h:panelGroup>
+			</f:facet>
+
+			<h:form prependId="false" id="formHistoricoAlteracoesGrupoAlcada">
+				<mec:serverDataTable id="tabelaHistoricoAlteracoesGrupoAlcada"
+					scrollable="true"
+					list="#{pesquisaGruposAlcadaPaginatorController.historicoGrupoAlcada}">
+					<c:set var="item" value="#{item}"/>
+					<p:column width="60">
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.LABEL_HISTORICO_ALTERACOES_GRUPO_ALC_GRUPO}"/> 
+	                    </f:facet> 
+						<h:outputText style="text-transform:uppercase" value="#{_item.descricaoGrupo}" id="colTextoGrupo" />
+					</p:column>
+					<p:column width="60">
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.LABEL_HISTORICO_ALTERACOES_GRUPO_ALC_NIVEL}"/> 
+	                    </f:facet> 
+						<h:outputText style="text-transform:uppercase" value="#{_item.descricaoNivel}" id="colTextoNivel" />
+					</p:column>
+					<p:column width="70">
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.LABEL_HISTORICO_ALTERACOES_GRUPO_ALC_SERVIDOR}"/> 
+	                    </f:facet> 
+						<h:outputText value="#{_item.descricaoServidor}"
+							style="text-transform:uppercase" id="colTextoServidor" />
+					</p:column>
+					<p:column width="30">
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+	                    </f:facet> 
+						<h:outputText value="#{_item.indSituacao.descricao}"
+							id="colTextoSituacao" />
+					</p:column>
+					<p:column width="50">
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.LABEL_HISTORICO_ALTERACOES_GRUPO_ALC_CRIADOEM}"/> 
+	                    </f:facet> 
+						<h:outputText value="#{_item.criadoEm}" id="colTextoCriadoEm">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+						</h:outputText>
+					</p:column>
+					<p:column width="70">
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.LABEL_HISTORICO_ALTERACOES_GRUPO_ALC_RESP_CRIACAO}"/> 
+	                    </f:facet> 
+						<h:outputText value="#{_item.criacaoNome}"
+							id="colTextoRespCriacao" />
+					</p:column>
+					<p:column width="50">
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.LABEL_HISTORICO_ALTERACOES_GRUPO_ALC_MODIFICADOEM}"/> 
+	                    </f:facet> 
+						<h:outputText value="#{_item.modificadoEm}" 
+							id="colTextoModificadoEm" >
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+						</h:outputText>
+					</p:column>
+					<p:column width="70">
+	                    <f:facet name="header"> 
+	                      <h:outputText value="#{messages.LABEL_HISTORICO_ALTERACOES_GRUPO_ALC_RESP_MOD}"/> 
+	                    </f:facet> 
+						<h:outputText value="#{_item.modificadoNome}"
+							id="colTextoRespMod" />
+					</p:column>
+				</mec:serverDataTable>
+			</h:form>
+		</p:dialog> 
+     
+      <p:dialog id="modalConfirmacaoAtivacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoAtivacaoWG"> 
+        <f:facet name="header" id="headerModalConfirmacaoAtivacao"> 
+          <h:panelGroup id="panelHeaderGroupModalConfirmacaoAtivacao"> 
+            <h:outputText value="#{messages.TITULO_GRUPO_ALCADA_CONFIRMACAO_ALTERACAO_SITUACAO}" id="textLabelAtivacao"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:outputFormat value="#{messages.MENSAGEM_GRUPO_ALCADA_CONFIRMACAO_ATIVACAO}"> 
+          <f:param value="#{pesquisaGruposAlcadaPaginatorController.grupoAtivo.versao}"/>  
+          <f:param value="#{pesquisaGruposAlcadaPaginatorController.grupoAtivo.tipoConvenio}"/>  
+          <c:choose xmlns:c="http://java.sun.com/jstl/core">  
+            <c:when test="#{pesquisaGruposAlcadaPaginatorController.grupoAtivo.aghEspecialidades}"> 
+              <f:param value="#{pesquisaGruposAlcadaPaginatorController.grupoAtivo.aghEspecialidades.nomeReduzido}"/> 
+            </c:when>  
+            <c:otherwise> 
+              <f:param value="#{' '}"/> 
+            </c:otherwise> 
+          </c:choose> 
+        </h:outputFormat>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup id="panelFormGroupModalConfirmacaoAtivacao"> 
+          <h:form prependId="false" id="formModalAtivacao"> 
+            <mec:commandButton id="ativar" value="#{messages.LABEL_SIM}" block="true" action="#{pesquisaGruposAlcadaPaginatorController.ativar}" render="panelGrupos" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoAtivacaoWG').hide();" id="bt_cancelarAtivacao" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_PRONTUARIO_PESQUISA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{solicitarProntuarioController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_MANTER_PRONTUARIO_PESQUISA}"> 
+          <aghu:linha> 
+            <mec:inputText style="text-transform:uppercase" value="#{solicitarProntuarioController.solicitacaoProntuario.solicitante}" label="#{messages.LABEL_SOLICITANTE}" title="#{messages.TITLE_SOLICITANTE}" maxlength="50" required="true" size="60" id="solicitante"/>  
+            <mec:inputText style="text-transform:uppercase" value="#{solicitarProntuarioController.solicitacaoProntuario.responsavel}" label="#{messages.LABEL_RESPONSAVEL}" title="#{messages.TITLE_RESPONSAVEL}" maxlength="50" size="60" id="responsavel"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox width="600" label="#{messages.LABEL_ESPECIALIDADE}" title="#{messages.TITLE_ESPECIALIDADE_SOLICITACAO_PRONTURAIO}" suggestionAction="listarEspecialidadesSolicitacaoProntuario" converter="#{aghEspecialidadesSolicitacaoProntuarioConverter}" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" id="suggestionEspecialidade" controller="#{solicitarProntuarioController}" value="#{solicitarProntuarioController.solicitacaoProntuario.aghEspecialidades}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.sigla}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.nomeEspecialidade}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText value="#{solicitarProntuarioController.solicitacaoProntuario.observacao}" label="#{messages.LABEL_OBSERVACAO}" title="#{messages.TITLE_OBSERVACAO}" style="text-transform:uppercase" maxlength="60" size="60" id="observacao"/>  
+            <mec:inputNumero maxlength="5" size="5" value="#{solicitarProntuarioController.totalProntuarios}" label="#{messages.LABEL_TOTAL_PRONTUARIOS}" readonly="true" id="totalProntuarios"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_PRONTUARIO}"> 
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_PRONTUARIO_CODIGO}" title="#{messages.TITLE_PRONTUARIO_PACIENTE_SOL_PRONT}" descricaoInput="codigo" size="10" maxlength="8" descricaoLabel="dsSuggestion" suggestionAction="pesquisarPacientesPorProntuarioOuCodigo" converter="#{aipPacientesComProntuarioConverter}" width="600" id="prontuario" controller="#{solicitarProntuarioController}" value="#{solicitarProntuarioController.aipPaciente}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_COD_PAC}</b> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.NOME_PAC}</b> 
+                </f:facet> #{item.nome}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_PRONTUARIO_PAC}</b> 
+                </f:facet> #{item.prontuario}
+              </p:column> 
+            </mec:suggestionBox>  
+            <aghu:acao style="margin-top: 0 !important" newLine="false"> 
+              <p:column> 
+                <mec:commandButton value="Adicionar" 
+                		id="bt_adicionar" 
+                		style="margin: 19px 0 10px 10px;" 
+                		disabled="#{mf:hasPermission(securityController, 'paciente,somenteLeitura')}"
+                		action="#{solicitarProntuarioController.adicionarProntuario}" 
+                		render="totalProntuarios" 
+                		profile="add" 
+                		styleClass="bt_verde"/> 
+              </p:column> 
+            </aghu:acao> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="tabelaProntuariosDS" layout="inline"> 
+              <aghu:linha style="text-align: center"> 
+                <h:outputText value="#{messages.LABEL_NENHUM_PRONTUARIO_ENCONTRADO}" rendered="#{empty solicitarProntuarioController.pacienteList}"/>  
+                <mec:serverDataTable rendered="#{not empty solicitarProntuarioController.pacienteList}" cellspacing="2" list="#{solicitarProntuarioController.pacienteList}" scrollable="true"> 
+                  <c:set var="_pacienteDS" value="#{item}"/>  
+                  <p:column label="#{messages.LABEL_ACAO}" styleClass="tdAcao"> 
+                  	<mec:commandLink action="#{solicitarProntuarioController.excluirPacienteDeSolicitante(_pacienteDS.codigo)}" 
+                  		title="#{messages.LABEL_EXCLUIR}" ajax="true" render="tabelaProntuariosDS, botoes_visualizar, 
+                  		botoes_imprimir, totalProntuarios" process="@this" 
+                  		styleClass="silk-icon silk-delete" profile="delete"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_pacienteDS.prontuario}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_pacienteDS.nome}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_GRAVAR}" id="bt_gravar" action="#{solicitarProntuarioController.salvar}" profile="ok" disabled="#{mf:hasPermission(securityController, 'paciente,somenteLeitura')}"/>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" immediate="true" action="#{solicitarProntuarioController.cancelar}" profile="cancel" ajax="true"/>  
+          <p:outputPanel id="botoes_visualizar" layout="inline"> 
+            <mec:commandButton value="#{messages.LABEL_VISUALIZAR}" rendered="#{solicitarProntuarioController.totalProntuarios != 0 and solicitarProntuarioController.solicitacaoProntuario.codigo != null and solicitarProntuarioController.pacientesAlteradosNaoSalvos}" onclick="PF('modalAlertaAlteracaoVisualizacaoWG').show();;return false;" id="bt_visualizar_modal" styleClass=" icon-display bt_cinza"/>  
+            <mec:commandButton value="#{messages.LABEL_VISUALIZAR}" propagation="nest" rendered="#{solicitarProntuarioController.totalProntuarios != 0 and solicitarProntuarioController.solicitacaoProntuario.codigo != null and !solicitarProntuarioController.pacientesAlteradosNaoSalvos}" action="#{solicitarProntuarioController.imprimirDetalhe}" id="bt_visualizar" styleClass=" icon-display bt_cinza"/> 
+          </p:outputPanel>  
+          <p:outputPanel id="botoes_imprimir" layout="inline"> 
+            <mec:commandButton id="bt_imprimir_modal" value="#{messages.LABEL_IMPRIMIR}" propagation="nest" rendered="#{solicitarProntuarioController.totalProntuarios != 0 and solicitarProntuarioController.solicitacaoProntuario.codigo != null and solicitarProntuarioController.pacientesAlteradosNaoSalvos}" action="#{solicitarProntuarioController.imprimirDiretoDetalhe}" onclick="PF('modalAlertaAlteracaoImpressaoWG').show();;return false;" profile="print"/>  
+            <mec:commandButton id="bt_imprimir" value="#{messages.LABEL_IMPRIMIR}" propagation="nest" rendered="#{solicitarProntuarioController.totalProntuarios != 0 and solicitarProntuarioController.solicitacaoProntuario.codigo != null and !solicitarProntuarioController.pacientesAlteradosNaoSalvos}" onclick="PF('loadDialogWG').show();" profile="print"/> 
+          </p:outputPanel> 
+        </aghu:acao> 
+      </h:form>  
+      <p:dialog id="modalAlertaAlteracaoVisualizacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalAlertaAlteracaoVisualizacaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ALTERACAO_PRONTUARIO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_PRONTUARIOS_ALTERADOS} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formmodalAlertaAlteracaoVisualizacao"> 
+            <mec:commandButton value="#{messages.LABEL_SALVAR_VISUALIZAR}" id="bt_modal_visualizar" oncomplete="PF('modalAlertaAlteracaoVisualizacaoWG').hide();" action="#{solicitarProntuarioController.salvarVisualizar}" profile="ok" ajax="true"/>  
+            <mec:commandButton id="bt_cancelarVisualizacao" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalAlertaAlteracaoVisualizacaoWG').hide();" profile="cancel" ajax="true"/>
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalAlertaAlteracaoImpressao" width="400" height="150" modal="true" resizable="false" widgetVar="modalAlertaAlteracaoImpressaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ALTERACAO_PRONTUARIO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_PRONTUARIOS_ALTERADOS} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formmodalAlertaAlteracaoImpressao"> 
+            <mec:commandButton value="#{messages.LABEL_SALVAR_IMPRIMIR}" id="bt_modal_imprimir" action="#{solicitarProntuarioController.salvarImprimir}" oncomplete="PF('modalAlertaAlteracaoImpressaoWG').hide();" profile="ok" ajax="true"/>  
+            <mec:commandButton id="bt_cancelarImpressao" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalAlertaAlteracaoImpressaoWG').hide();;return false;" profile="cancel" ajax="true"/>  
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

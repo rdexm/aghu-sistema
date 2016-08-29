@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+	
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisar Censo Diário dos Pacientes :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisarCensoDiarioPacientesPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_CENSO_DIARIO_PACIENTES}"> 
+          <aghu:linha> 
+            <mec:suggestionBox width="500" var="unFunc" itemValue="#{unFunc}" label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_LABEL_UNIDADE_PESQ}" styleClassField="frm_obrigatorio" descricaoInput="seq" descricaoLabel="andarAlaDescricao" suggestionAction="pesquisarUnidadeFuncional" id="unidadeFuncional" controller="#{pesquisarCensoDiarioPacientesPaginatorController}" value="#{pesquisarCensoDiarioPacientesPaginatorController.unidadeFuncional}"> 
+              <p:column>#{unFunc.seq}</p:column>  
+              <p:column>#{unFunc.andarAlaDescricao}</p:column> 
+            </mec:suggestionBox>  
+            <mec:inputTextData label="#{messages.LABEL_DATA}" required="true" title="Digite a data no formato DD/MM/AAAA para efetuar a pesquisa por este campo. Use apenas números ou selecione a data no calendário." value="#{pesquisarCensoDiarioPacientesPaginatorController.data}" id="data" tipo="data"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_STATUS}" enum="DominioSituacaoUnidadeFuncional" noSelectionOption="false" value="#{pesquisarCensoDiarioPacientesPaginatorController.status}" title="#{messages.TITLE_STATUS_CENSO}" id="status"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox width="500" var="pai" itemValue="#{pai}" label="#{messages.LABEL_UNIDADE_FUNCIONAL_PAI}" title="#{messages.TITLE_LABEL_UNIDADE_FUNCIONAL_PAI_PESQ}" descricaoInput="seq" descricaoLabel="andarAlaDescricao" suggestionAction="pesquisarUnidadeFuncionalMae" id="unidadeFuncionalMae" controller="#{pesquisarCensoDiarioPacientesPaginatorController}" value="#{pesquisarCensoDiarioPacientesPaginatorController.unidadeFuncionalMae}"> 
+              <p:column>#{pai.seq}</p:column>  
+              <p:column>#{pai.andarAlaDescricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" block="true" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisarCensoDiarioPacientesPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{pesquisarCensoDiarioPacientesPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+          <mec:commandButton id="bt_imprimir" block="true" value="#{messages.LABEL_IMPRIMIR}" action="#{pesquisarCensoDiarioPacientesPaginatorController.imprimirCensoDiario}" profile="print"/>  	
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false"> 
+        <mec:serverDataTable id="tabelaCensoDiario" dataModel="dataModel" controller="#{pesquisarCensoDiarioPacientesPaginatorController}" selection="censoSelecionado" rowsPerPage="false" showExportButtons="true"> 
+          <c:set var="censo" value="#{item}"/>  
+          <p:column headerText="Ações" width="170" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink title="#{messages.LABEL_OBSERVACAO}" oncomplete="PF('modalObservacaoWG').show();;" action="#{pesquisarCensoDiarioPacientesPaginatorController.obterObservacaoDaInternacao}" rendered="#{!censo.origemNomeSituacao}" styleClass=" silk-eye silk-icon" ajax="true" render="modalObservacao" disabled="#{mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}" value="#{censo}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarBotaoAlta}" title="#{messages.LABEL_ALTA}" rendered="#{censo.exibirBotaoAlta and (!mf:hasPermission(securityController,'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}"  styleClass=" silk-door-in silk-icon" disabled="#{mf:hasPermission(securityController,'assistencial, somenteLeitura')}" > 
+              <f:setPropertyActionListener target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}" value="#{censo}" for="command"/>  
+              <f:setPropertyActionListener target="#{dadosAltaPacienteController.cameFrom}" value="internacao-pesquisarCensoDiarioPacientes" for="command"/>  
+              <f:setPropertyActionListener target="#{dadosAltaPacienteController.intSeq}" value="#{censo.internacaoSeq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages[censo.labelBotaoInternacao]}" action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarBotaoInternacao}" rendered="#{censo.exibirBotaoInternacao and !pesquisarCensoDiarioPacientesPaginatorController.exibirBotaoInternacao}" styleClass="#{censo.iconeBotaoInternacao}" ajax="true" render="panelModal" process="@this" disabled="#{mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}" value="#{censo}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarBotaoInternacao}" title="#{messages[censo.labelBotaoInternacao]}" rendered="#{censo.exibirBotaoInternacao and pesquisarCensoDiarioPacientesPaginatorController.exibirBotaoInternacao}" styleClass="#{censo.iconeBotaoInternacao}" disabled="#{mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}" value="#{censo}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{pesquisarCensoDiarioPacientesPaginatorController.transferirPaciente}" title="#{messages.LABEL_TRANSFERENCIA}" rendered="#{censo.exibirBotaoTransferencia and (!mf:hasPermission(securityController,'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}"  styleClass=" silk-arrow-switch silk-icon" disabled="#{mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}" value="#{censo}" for="command"/>  
+              <f:setPropertyActionListener target="#{transferirPacienteController.internacaoSeq}" value="#{censo.internacaoSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{transferirPacienteController.cameFrom}" value="internacao-pesquisarCensoDiarioPacientes" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarBotaoExtrato}" title="#{messages.LABEL_EXTRATO}" rendered="#{censo.exibirBotaoExtrato and (!mf:hasPermission(securityController,'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" styleClass=" silk-page-white-text silk-icon" disabled="#{mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}" value="#{censo}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{pesquisarCensoDiarioPacientesPaginatorController.cadastrarPaciente}" title="#{messages.LABEL_CADASTRO_DE_PACIENTES}" rendered="#{censo.exibirBotaoCadastroDePacientes and (!mf:hasPermission(securityController,'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" styleClass=" silk-group-add silk-icon" disabled="#{mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura')}"> 
+              <f:setPropertyActionListener target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}" value="#{censo}" for="command"/> 
+            </mec:commandLink>  
+             <mec:commandLink title="#{messages.LABEL_IMPRIMIR_PULSEIRA}" rendered="#{censo.internacaoSeq != null and (!mf:hasPermission(securityController,'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" 
+            	action="#{impressaoPulseiraController.imprimePulseira}" 
+            	onclick="PF('loadDialogWG').hide();" styleClass=" silk-printer silk-icon" ajax="true"
+            	disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura') or (mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura'))}" > 
+              <f:setPropertyActionListener target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}" value="#{censo}" for="command"/>  
+              <f:setPropertyActionListener target="#{impressaoPulseiraController.aipPacCodigo}" value="#{censo.pacCodigo}" for="command"/>  
+              <f:setPropertyActionListener target="#{impressaoPulseiraController.internacaoCodigo}" value="#{censo.internacaoSeq}" for="command"/> 
+            </mec:commandLink>
+			<mec:commandLink
+				action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarSolicitarTransferencia}"
+				title="#{messages.LABEL_SOLICITAR_TRANSFERENCIA}"
+				rendered="#{(!mf:hasPermission(securityController,'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}"
+				styleClass=" silk-arrow-divide silk-icon"
+				disabled="#{mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura') or mf:hasPermission(securityController, 'assistencial,somenteLeitura') or mf:hasPermission(securityController,'internacao, somenteLeitura')}">
+				<f:setPropertyActionListener
+					target="#{pesquisarCensoDiarioPacientesPaginatorController.censoSelecionado}"
+					value="#{censo}" for="command" />
+				<f:setPropertyActionListener
+					target="#{solicitarTransferenciaPacientePaginatorController.internacaoSeq}"
+					value="#{censo.internacaoSeq}" for="command" />
+				<f:setPropertyActionListener
+					target="#{solicitarTransferenciaPacientePaginatorController.prontuario}"
+					value="#{censo.prontuario}" for="command" />
+				<f:setPropertyActionListener
+					target="#{solicitarTransferenciaPacientePaginatorController.cameFrom}"
+					value="internacao-pesquisarCensoDiarioPacientes" for="command" />
+			</mec:commandLink>
+			<mec:commandLink
+				title="#{messages.LABEL_IMPRIMIR_ETIQUETAS_MEDICAMENTOS}"
+				rendered="#{censo.internacaoSeq != null}"
+				action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarImprimirEtiquetasMedicamentos}"
+				onclick="PF('loadDialogWG').hide();"
+				styleClass=" silk-page silk-icon" ajax="true"
+				disabled="#{mf:hasPermission(securityController,'censoDiarioAlta, somenteLeitura') or mf:hasPermission(securityController,'internacao, somenteLeitura')}">
+				<f:setPropertyActionListener
+					target="#{relatorioEtiquetasIdentificacaoController.pacCodigoFonetica}"
+					value="#{censo.pacCodigo}" for="command" />
+				<f:setPropertyActionListener
+					target="#{relatorioEtiquetasIdentificacaoController.voltarPara}"
+					value="internacao-pesquisarCensoDiarioPacientes" for="command" />
+				<f:setPropertyActionListener
+					target="#{relatorioEtiquetasIdentificacaoController.previsaoAlta}"
+					value="#{false}" for="command" />
+			</mec:commandLink>
+		</p:column>  
+          <p:column  width="60" style="#{censo.estiloColunaQrto ? 'background-color:violet;' : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_QUARTO}"/> 
+            </f:facet>  
+           	<h:outputText id="outQrtoLto" value="#{censo.qrtoLto}" rendered="#{censo.qrtoLto != null and censo.qrtoLto.length() gt 1}"/>
+           	<p:tooltip for="outQrtoLto" rendered="#{censo.estiloColunaQrto}"> 
+              <h:outputText value="#{messages.LABEL_DATA_NASCIMENTO_PAC}: "/>  
+              <h:outputText value="#{censo.dtNascPaciente}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_DESCRICAO_COLUNA_QUARTO}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column  width="60" id="colProntuario" style="#{censo.estiloColunaProntuario ? 'background-color:yellow;' : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+            </f:facet>
+            <h:outputText id="outProntuario" value="#{censo.prontuario}"> 
+              <f:converter converterId="prontuarioConverter"/> 
+            </h:outputText>
+            <p:tooltip for="outProntuario" style="width:300px; word-wrap: break-word;" rendered="#{censo.estiloColunaProntuario}"> 
+              <h:outputText value="#{messages.LABEL_OBSERVACAO}: #{pesquisarCensoDiarioPacientesPaginatorController.obterObservacaoDaInternacaoTooltip(censo)}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column style="#{pesquisarCensoDiarioPacientesPaginatorController.getObterEstiloNomeSituacao(censo)}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME_SITUACAO}"/> 
+            </f:facet>
+            <h:outputText id="outNomeSituacao" value="#{censo.nomeSituacao}"/>
+            <p:tooltip for="outNomeSituacao" style="width:300px; word-wrap: break-word;" rendered="#{censo.descPacienteNotifGMR != null}"> 
+              <h:outputText value="#{messages.LABEL_NOME_SITUACAO}: #{censo.descPacienteNotifGMR}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column  width="40"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_INT}"/> 
+            </f:facet>
+            <h:outputText id="outDataInt" value="#{censo.dataInternacao}"> 
+              <f:convertDateTime pattern="dd/MM"/> 	
+            </h:outputText>
+            <p:tooltip for="outDataInt"> 
+              <h:outputText value="#{censo.dataInternacao}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+              </h:outputText> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column  width="40"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ESPEC}"/> 
+            </f:facet>
+            <h:outputText id="outSiglaEsp" value="#{censo.siglaEsp}"/>
+            <p:tooltip for="outSiglaEsp" rendered="#{censo.siglaEsp != null}"> 
+              <h:outputText value="#{censo.descricaoEsp}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column  width="70"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_MEDICO}"/> 
+            </f:facet>
+            <h:outputText id="outNomeMedico" value="#{censo.nomeMedicoAbreviado}"/>
+            <p:tooltip for="outNomeMedico" rendered="#{censo.nomeMedico != null}"> 
+              <h:outputText value="#{censo.nomeMedico}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column  width="40"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_MVTO}"/> 
+            </f:facet>
+           	<h:outputText id="outDthrLanc" value="#{censo.dthrLancamento}"> 
+             		<f:convertDateTime pattern="dd/MM"/> 
+           	</h:outputText>
+            <p:tooltip for="outDthrLanc"> 
+              <h:outputText value="#{censo.dthrLancamento}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+              </h:outputText> 
+            </p:tooltip>
+          </p:column>  
+          <p:column  width="60"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DAR_ALTA}"/> 
+            </f:facet>
+            <h:outputText id="outTam" value="#{censo.tamCodigo}"/>
+            <p:tooltip for="outTam" rendered="#{censo.tamCodigo != null}"> 
+              <h:outputText value="#{censo.tamDescricao}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column  width="60" style="#{pesquisarCensoDiarioPacientesPaginatorController.obterEstiloOrigemDestino(censo)}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ORIGEM_DESTINO_CENSO}"/> 
+            </f:facet>  
+           	<h:outputText id="outLocal" value="#{censo.local}"/>
+            <p:tooltip for="outLocal" style="width:300px; word-wrap: break-word;" styleClass="tooltip" rendered="#{censo.descPrevisaoDeAltaNasProximasHoras != null}"> 
+              <h:outputText value="#{messages.LABEL_ORIGEM_DESTINO}: #{censo.descPrevisaoDeAltaNasProximasHoras}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column  width="40" style="#{(censo.estiloColunaTempo == 1 or empty censo.estiloColunaTempo or censo.estiloColunaTempo == ' ') ? '' : ((censo.estiloColunaTempo == 2) ? 'background-color:#6495ED;' : 'text-decoration: underline;') }"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COLUNA_TEMPO}" />
+            </f:facet>
+           	<h:outputText id="outTempo" value="#{censo.tempo}"/>
+            <p:tooltip for="outTempo" rendered="#{censo.estiloColunaTempo == 2}" styleClass="tooltip"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO_COLUNA_TEMPO}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column  width="140"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO_CONVENIO_CENSO}"/> 
+            </f:facet>
+         	<h:outputText id="outCspCnv" value="#{censo.cspCnvCodigo} #{censo.cspCnvCodigo == null ? '' : '-' } #{censo.getDescConvenioAbreviada()}"/>
+            <p:tooltip for="outCspCnv" rendered="#{censo.cspCnvCodigo != null}" styleClass="tooltip"> 
+              <h:outputText value="#{censo.cspCnvCodigo} #{censo.cspCnvCodigo == null ? '' : '-' } #{censo.descConvenio}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column rendered="#{pesquisarCensoDiarioPacientesPaginatorController.getMostrarEstadoSaude()}"> 
+            <f:facet name="header"> 	
+              <h:outputText value="#{messages.LABEL_ESTADO_SAUDE}"/> 
+            </f:facet>  
+            <h:outputText value="#{censo.estadoSaude}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:outputPanel id="panelModal" rendered="#{pesquisarCensoDiarioPacientesPaginatorController.exibirModalConfirmacaoInternacao}" layout="inline"> 
+        <p:dialog id="modalConfirmacao" width="450" height="170" showWhenRendered="true" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.MENSAGEM_CONFIRMA_INTERNACAO}"/> 
+          </f:facet> #{messages.MENSAGEM_CONFIRMA_INTERNACAO} 
+          <br clear="none"/>  
+          <h:form prependId="false" id="formModalConfirmacao"> 
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <mec:commandButton name="btDetalhar" value="#{messages.LABEL_DETALHAR}" action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarIngressarPacienteSalaObservacao()}" onclick="PF('modalConfirmacaoWG').hide();" disabled="true" rendered="false" profile="search"/>  
+              <mec:commandButton name="btInternar" value="#{messages.LABEL_INTERNAR}" action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarPesquisarPaciente()}" onclick="PF('modalConfirmacaoWG').hide();" profile="search"/>  
+              <mec:commandButton name="btDispLeito" value="#{messages.LABEL_DISP_LEITO}" action="#{pesquisarCensoDiarioPacientesPaginatorController.redirecionarPesquisarPaciente()}" onclick="PF('modalConfirmacaoWG').hide();" profile="search"/>  
+              <mec:commandButton name="cancelarConfirmacao" value="#{messages.LABEL_CANCELAR}" action="#{pesquisarCensoDiarioPacientesPaginatorController.cancelarModalConfirmacao()}" oncomplete="PF('modalConfirmacaoWG').hide();" profile="cancel" ajax="true" render="formModalConfirmacao"/> 
+            </h:panelGroup> 
+          </h:form> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:dialog id="modalObservacao" onshow="jQuery('input.obsTextArea').focus()" width="540" height="350" modal="false" resizable="false" widgetVar="modalObservacaoWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.OBSERVACOES_RELATIVAS_PACIENTE}"/> 
+        </f:facet>  
+        <h:form prependId="false" id="formModal"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextArea id="obs" styleClass="obsTextArea" cols="60" rows="4" readonly="#{!pesquisarCensoDiarioPacientesPaginatorController.permitirAlterarObservacao}" label="#{messages.LABEL_OBSERVACOES}" value="#{pesquisarCensoDiarioPacientesPaginatorController.observacaoCensoInternacao}" title="#{messages.LABEL_OBSERVACOES}" maxlength="240"/>               
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText size="10" label="#{messages.LABEL_CRIADO_EM}" title="#{messages.LABEL_CRIADO_EM}" value="#{pesquisarCensoDiarioPacientesPaginatorController.dataCriacaoObs}" readonly="true" id="criado_em"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText size="50" label="#{messages.LABEL_CRIADO_POR}" title="#{messages.LABEL_CRIADO_POR}" value="#{pesquisarCensoDiarioPacientesPaginatorController.nomeCriouObs}" readonly="true" id="criado_por"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText size="50" label="#{messages.LABEL_ALTERADO_POR}" title="#{messages.LABEL_ALTERADO_POR}" value="#{pesquisarCensoDiarioPacientesPaginatorController.nomeAlterouObs}" readonly="true" id="alterado_por"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <h:panelGroup>
+			<mec:commandButton id="bt_gravar_obs"
+				value="#{messages.LABEL_GRAVAR}" block="true"
+				rendered="#{pesquisarCensoDiarioPacientesPaginatorController.permitirAlterarObservacao}"
+				action="#{pesquisarCensoDiarioPacientesPaginatorController.gravarObservacao}"
+				profile="ok" render="tabelaCensoDiario" 
+				readonly="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/>  
+			<mec:commandButton name="cancelarModalObs"
+				value="#{messages.LABEL_EXCLUIR}" process="@this"
+				action="#{pesquisarCensoDiarioPacientesPaginatorController.excluirObservacao}"
+				oncomplete="PF('modalObservacaoWG').hide();"
+				icon="aghu-icons-16x16 aghu-icon-lixeira" ajax="true"
+				style="float:right" render="modalObservacao,tabelaCensoDiario"
+				disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/> 
+		  </h:panelGroup> 
+        </h:form> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

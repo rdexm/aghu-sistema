@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component">
+	
+	<ui:composition>
+  
+  	<script type="text/javascript">
+ //<![CDATA[  	
+  	function abrirJanelaModal(urlBase, params) {
+  		var url = urlBase;
+  		
+  		if (params != null) {
+  			var auxParams = '';
+  			var parameters = params.parameters;
+  			if (parameters != null) {
+  				for (var prefix in parameters) {
+  					if (auxParams != '') {
+  						auxParams += '&';
+  					}
+  					var aux = prefix + '=' + parameters[ prefix ];
+  					auxParams += aux;
+  				}
+  			}
+  			url += '?' + auxParams;
+  		}
+  		
+  		window.showModalDialog(url, null, "dialogWidth:1024px;dialogHeight:768px;center:yes");
+  		
+  		if (params != null) {
+  			var closeFunction = params.onClose;
+  			if (closeFunction != null) {
+  				closeFunction.call();
+  			}
+  		}
+  	}  	
+  	
+		function pendenciaAssinatura(url, token) {
+			abrirJanelaModal(url, {parameters: {aghw_token: token}, onClose: function() {} });
+		}
+//]]>		
+	</script>
+  
+  		<p:dialog id="central_pendencias" width="700" height="340" showEffect="fade" modal="#{pendenciaController.existePendenciaBloqueante}" widgetVar="centralpendenciasWG" 
+  			resizable="false" closeOnEscape="true" closable="true" maximizable="true" dynamic="true" styleClass="casca-pendencias" header="Central de Pendências">
+
+	      <h:form prependId="false" rendered="#{pendenciaController.pendencias.size() gt 0}">
+	      	<p:outputPanel id="form_pendencias">
+	      
+		        <p>Você têm #{pendenciaController.pendencias.size()} pendência(s) aberta(s) no sistema.</p>  
+		        <p> 
+		          <h:outputText value="Você precisa resolver as pendências bloqueantes para liberar o sistema." style="color:red;font-weight:bold;" 
+		          	rendered="#{pendenciaController.existePendenciaBloqueante}"/> 
+		        </p>  
+		        <p> 
+		          <p:commandLink id="link_atualizar" value="Atualizar" title="Clique aqui para atualizar as pendências" action="#{pendenciaController.atualizaPendencias}" ajax="true" 
+		          	update="form_pendencias" process="@this"/> 
+		        </p>
+		        
+				<p:dataTable id="tb_pendencias"   
+					value="#{pendenciaController.pendencias}" var="row" styleClass="aghu-server-datatable">     
+		            
+		          <p:column style="width:42px;background-color:#{row.tipo.htmlColor}"> 
+		            <f:facet name="header"> 
+		              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+		            </f:facet>         
+		            
+		            <p:commandLink rendered="#{row.tipoAcao eq 'SEM_ACAO'}" title="#{messages.TITLE_BOTAO_VISUALIZAR_PENDENCIA}" 
+		            	onclick="PF('modalMensagemPendenciaWG').show();return false;" styleClass="silk-icon silk-zoom" ajax="true" />
+		              
+		            <p:commandLink rendered="#{(row.tipoAcao eq 'LINK_E_EXCLUSAO' or row.tipoAcao eq 'LINK')}" title="#{messages.TITLE_BOTAO_VISUALIZAR_PENDENCIA}" 
+		            	action="#{pendenciaController.resolvePendencia(row.tipo eq 'BLOQUEANTE')}" oncomplete="pendencia.resolve('#{row.nomeMenu}', '#{row.nomeMenu}', '#{row.url}', #{row.tipo eq 'BLOQUEANTE'})" styleClass="silk-zoom silk-icon" ajax="true" process="@this"/>
+		              
+		            <p:commandLink rendered="#{(row.tipoAcao eq 'LINK_E_EXCLUSAO' or row.tipoAcao eq 'INFORMACAO' or row.tipoAcao == 'METODO')}" 
+		            	title="#{messages.TITLE_BOTAO_EXCLUIR_PENDENCIA}"  
+		            	oncomplete="PF('modalExcluirPendenciaWG').show();" ajax="true" process="@this" styleClass="silk-icon silk-delete">
+		             	<f:setPropertyActionListener target="#{pendenciaController.seqCaixaPostal}" value="#{row.seqCaixaPostal}"/> 
+		            </p:commandLink> 
+		          </p:column>  
+		          
+		          <p:column style="width:25px;background-color:#{row.tipo.htmlColor};width:75px;" sortBy="#{row.dataInicio}" sortable="true"> 
+		            <f:facet name="header"> 
+		              <h:outputText value="#{messages.LABEL_DATA_HORA}"/> 
+		            </f:facet>  
+		            <h:outputText value="#{row.dataInicio}"> 
+		              <f:convertDateTime pattern="dd/MM/yy HH:mm"/> 
+		            </h:outputText> 
+		          </p:column>  
+		          <p:column style="background-color:#{row.tipo.htmlColor}" sortBy="#{row.mensagem}" sortable="true"> 
+		            <f:facet name="header"> 
+		              <h:outputText value="#{messages.LABEL_MENSAGEM}"/> 
+		            </f:facet>  
+		            <h:outputText value="#{row.mensagem}"/> 
+		          </p:column> 
+		        </p:dataTable>
+			</p:outputPanel>
+	    </h:form>
+	        
+	      <p:outputPanel id="semPendencias" rendered="#{pendenciaController.pendencias.size()==0}" style="font-weight:bold;" layout="inline"> 
+	        <br/>  
+	        <p>Você não têm pendências abertas no sistema!</p> 
+	      </p:outputPanel>
+	    </p:dialog>
+      
+	  <p:dialog id="modalExcluirPendencia" width="400" height="120" modal="true" showEffect="bounce" resizable="false" widgetVar="modalExcluirPendenciaWG"> 
+	    <f:facet name="header"> 
+	      <h:outputText value="#{messages.LABEL_MENSAGEM_EXCLUIR_PENDENCIA}"/> 
+	    </f:facet>  
+	    <h:outputText value="#{messages.MENSAGEM_EXCLUIR_PENDENCIA}"/>  
+	    <br /><br /><br />
+	    <h:form prependId="false" id="formModalExcluirPendencia"> 
+	      <p:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{pendenciaController.excluirPendencia}" oncomplete="PF('modalExcluirPendenciaWG').hide();"  
+	      	ajax="true" update="@(#form_pendencias)" process="@this" profile="ok" />  
+	      <p:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalExcluirPendenciaWG').hide(); return false;" ajax="true" profile="cancel"/> 
+	    </h:form>
+	      
+	    <br />  
+	    <br /> 
+	  </p:dialog>
+	    
+	  <p:dialog id="modalMensagemPendencia" width="400" height="100" modal="true" resizable="false" widgetVar="modalMensagemPendenciaWG"> 
+	    <f:facet name="header"> 
+	      <h:outputText value="#{messages.LABEL_MENSAGEM_PENDENCIA}"/> 
+	    </f:facet>  
+	    <h:outputText value="#{messages.MENSAGEM_PENDENCIA_NAO_PODE_SER_RESOLVIDA}"/>  
+	    <br />  
+	    <br />  
+	    <br />  
+	    <h:panelGroup> 
+	      <h:form prependId="false" id="formModalMensagemPendencia" style="text-align:center"> 
+	        <mec:commandButton id="bt_ok" value="#{messages.LABEL_OK}" onclick="PF('modalMensagemPendenciaWG').hide();; return false;" styleClass=" icon-ok bt_cinza" ajax="true"/> 
+	      </h:form>  
+	      <br />  
+	      <br /> 
+	    </h:panelGroup> 
+	  </p:dialog>
+	  
+</ui:composition>
+
+</html>  

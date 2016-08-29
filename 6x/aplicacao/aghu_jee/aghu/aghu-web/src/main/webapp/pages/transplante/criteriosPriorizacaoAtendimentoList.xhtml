@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+		<ui:define name="head">
+			<title>#{messages.LABEL_PESQUISAR_CRITERIOS_PRIORIZACAO}</title>
+		</ui:define>
+		<ui:define name="metadata">
+		</ui:define>
+		<ui:define name="body">
+			<mec:pageConfig	controller="#{criteriosPriorizacaoAtendimentoPaginatorController}" />
+			<h:form prependId="false" name="formPesquisaCriterios">
+				<aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_CRITERIOS_PRIORIZACAO}">
+					<aghu:linha>
+							<mec:selectOneMenu id="filtroTipo"
+											label="#{messages.LABEL_TIPO}"
+											title="#{messages.TITLE_TIPO_TMO}"
+											value="#{criteriosPriorizacaoAtendimentoPaginatorController.filtro.tipoTmo}"
+											enum="DominioSituacaoTmo" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" 
+											style="width:100px !important"/>
+							<mec:inputText id="status" label="#{messages.LABEL_STATUS}" title="#{messages.TITLE_STATUS_TMO}" 
+							value="#{criteriosPriorizacaoAtendimentoPaginatorController.filtro.status}" size="55" maxlength="200" 
+							style="text-transform:uppercase"/>  
+
+							<mec:field label="#{messages.LABEL_GRAVIDADE_CCPA}" 
+                                       title="#{messages.TITLE_GRAVIDADE_CCPA}" id="idGravidade"> 
+                                <p:selectOneMenu id="comboGravidade" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+                                        value="#{criteriosPriorizacaoAtendimentoPaginatorController.gravidade}" style="width:100px !important">
+                                    <f:selectItem itemLabel="#{messages.VALUE_COMBO_SELECIONE}" itemValue="" />
+                                    <f:selectItems value="#{criteriosPriorizacaoAtendimentoPaginatorController.listaGravidade}" />
+                                </p:selectOneMenu>
+                            </mec:field> 
+								
+							<mec:field label="#{messages.LABEL_CRITICIDADE_CCPA}"
+                                       title="#{messages.TITLE_CRITICIDADE_CCPA}" id="idCriticidade"> 
+                                <p:selectOneMenu id="comboCriticidade" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+                                        value="#{criteriosPriorizacaoAtendimentoPaginatorController.criticidade}" style="width:100px !important">
+                                    <f:selectItem itemLabel="#{messages.VALUE_COMBO_SELECIONE}" itemValue="" />
+                                    <f:selectItems value="#{criteriosPriorizacaoAtendimentoPaginatorController.listaCriticidade}" />
+                                </p:selectOneMenu>
+                            </mec:field> 		
+                            						
+							<mec:selectOneMenu id="cbSituacao" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO_CCPA}" 
+								value="#{criteriosPriorizacaoAtendimentoPaginatorController.filtro.situacao}"/> 
+					</aghu:linha>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<mec:commandButton id="btPesquisar"
+						value="#{messages.LABEL_PESQUISAR}"
+						action="#{criteriosPriorizacaoAtendimentoPaginatorController.pesquisar}"
+						profile="search" />						
+					<mec:commandButton id="btLimpar" value="#{messages.LABEL_LIMPAR}"
+						action="#{criteriosPriorizacaoAtendimentoPaginatorController.limparPesquisa}"
+						styleClass="bt_cinza" profile="clear" render="formPesquisaCriterios" immediate="true" process="@this"/>
+					<mec:commandButton id="btNovo" value="#{messages.LABEL_NOVO}"
+						action="#{criteriosPriorizacaoAtendimentoPaginatorController.novoCriterioPriorizacao}"
+						profile="add" render="formPesquisaCriterios"
+						rendered="#{criteriosPriorizacaoAtendimentoPaginatorController.dataModel.pesquisaAtiva}"
+						disabled="#{!mf:hasPermission(securityController, 'cadastrarCriteriosPriorizacaoTMO,cadastrar')}">
+						<f:setPropertyActionListener target="#{criteriosPriorizacaoAtendimentoController.voltarPara}"
+						value="criteriosPriorizacaoAtendimentoList" for="command"/>
+					</mec:commandButton>						
+				</aghu:acao>
+				<br/>			
+			</h:form>
+			<h:form prependId="false" name="formGridPesquisaCriterios">
+				<aghu:panelGeral legend="#{messages.LABEL_CRITERIOS_PRIORIZACAO_ATEND}" 
+					rendered="#{criteriosPriorizacaoAtendimentoPaginatorController.dataModel.pesquisaAtiva}">
+					<mec:serverDataTable dataModel="dataModel" id="gridCriteriosPriorAtend"	title="#{messages.TITLE_ACAO}"
+						controller="#{criteriosPriorizacaoAtendimentoPaginatorController}" selection="parametroSelecionado">
+						<c:set var="item" value="#{item}" />
+						<p:column headerText="Ação" styleClass="first-column auto-adjust" exportable="false" style="width:6%">
+							<mec:commandLink id="tabelaCriterios_link_editar" profile="edit" title="Editar" action="#{criteriosPriorizacaoAtendimentoPaginatorController.editar}"
+								disabled="#{!mf:hasPermission(securityController, 'cadastrarCriteriosPriorizacaoTMO,cadastrar')}"> 
+							  <f:setPropertyActionListener target="#{criteriosPriorizacaoAtendimentoController.emEdicao}" value="true" for="command" />
+							  <f:setPropertyActionListener target="#{criteriosPriorizacaoAtendimentoController.filtro}" value="#{item}" for="command" />							  		 			               
+	            			</mec:commandLink>  
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_STATUS}" />
+							</f:facet>
+							<h:outputText id="txt_status" style="text-transform:uppercase" value="#{criteriosPriorizacaoAtendimentoPaginatorController.obterHint(item.status, 60)}"/>							
+							<p:tooltip for="txt_status" direction="bottom-right" 
+										styleClass="tooltip" layout="block" rendered="#{item.status.length() > 60}">
+										<h:outputText id="hint_status" value="#{item.status}"/>
+							</p:tooltip>
+						</p:column>						
+						<p:column style="width: 55px">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_TIPO_TMO}" />
+							</f:facet>
+							<p:outputPanel id="panelTipoTmo">
+								<h:outputText value="#{item.situacaoTmo}" />
+							</p:outputPanel>					
+						</p:column>
+						<p:column style="width: 55px">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CRITICIDADE_CCPA}" />
+							</f:facet>
+							<p:outputPanel id="panelCriticidade">
+								<h:outputText value="#{item.criticidade}" />
+							</p:outputPanel>
+						</p:column>	
+						<p:column style="width: 62px">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_COEFICIENTE_CCPA}" />
+							</f:facet>
+							<p:outputPanel id="panelCoeficiente">
+								<h:outputText value="#{item.coeficiente}" />
+							</p:outputPanel>
+						</p:column>
+						<p:column style="width: 30px">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ATIVO_CCPA}" />
+							</f:facet>
+							<p:outputPanel id="panelAtivo">
+								<h:outputText value="#{item.ativo}" />
+							</p:outputPanel>
+						</p:column>									
+					</mec:serverDataTable>
+				</aghu:panelGeral>			
+			</h:form>		
+		</ui:define>
+	</ui:composition>
+</html>

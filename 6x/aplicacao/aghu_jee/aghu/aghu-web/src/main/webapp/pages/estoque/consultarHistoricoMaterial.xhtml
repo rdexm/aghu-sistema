@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_HISTORICO_MATERIAL_CABECALHO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{consultarHistoricoMaterialController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{consultarHistoricoMaterialController}"
+			ignoreEnter="true" />
+			<h:form prependId="false" id="formHistoricoMaterial" nome="formHistoricoMaterial">
+				<aghu:panelGeral
+					legend="#{messages.LABEL_HISTORICO_MATERIAL_CABECALHO}">
+					<aghu:linha>
+						<mec:inputNumero id="codigo" readonly="true"
+							label="#{messages.LABEL_MANTER_MATERIAL_CODIGO}" size="12"
+							maxlength="6"
+							value="#{consultarHistoricoMaterialController.material.codigo}" />
+						<mec:inputText id="nome" size="60" maxlength="60"
+							label="#{messages.LABEL_MANTER_MATERIAL_NOME}"
+							value="#{consultarHistoricoMaterialController.material.nome}"
+							style="text-transform:uppercase" readonly="true" />
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputTextData
+							label="#{messages.LABEL_MANTER_MATERIAL_CRIADO_EM}" id="criadoEm"
+							value="#{consultarHistoricoMaterialController.material.dtDigitacao}"
+							readonly="true" tipo="data" />
+						<mec:inputText id="criadoPor" size="50" maxlength="50"
+							label="#{messages.LABEL_MANTER_MATERIAL_CRIADO_POR}"
+							value="#{consultarHistoricoMaterialController.material.servidor.pessoaFisica.nome}"
+							style="text-transform:uppercase" readonly="true" />
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputTextData
+							label="#{messages.LABEL_MANTER_MATERIAL_DESATIVADO_EM}"
+							id="desativoEm"
+							value="#{consultarHistoricoMaterialController.material.dtDesativacao}"
+							readonly="true" tipo="data" />
+						<mec:inputText id="desativadoPor" size="50" maxlength="50"
+							label="#{messages.LABEL_MANTER_MATERIAL_DESATIVO_POR}"
+							value="#{consultarHistoricoMaterialController.material.servidorDesativado.pessoaFisica.nome}"
+							style="text-transform:uppercase" readonly="true" />
+					</aghu:linha>
+				</aghu:panelGeral>
+			</h:form>
+			<h:form prependId="false" id="formListagemHistorico">
+				<aghu:panelGeral>
+					<aghu:linha>
+						<p:outputPanel id="panelResultado" layout="inline">
+							<div style="overflow: auto; width: 100%; height: 400px">
+								<mec:serverDataTable name="tabelaHistoricoAlteracoesMaterial"
+									rowKeyVar="_itemJNId" sortMode="single"
+									style="margin: 0px !important;" width="99%"
+									list="#{consultarHistoricoMaterialController.logsAlteracoesMaterial}"
+									>
+									<c:set var="_itemJN" value="#{item}" />
+									<p:column 
+										style="auto-adjust; white-space:nowrap; text-align:center;">
+										<f:facet name="header">#{messages.LABEL_MANTER_MATERIAL_ACAO_VISUALIZAR}</f:facet>
+										<mec:commandLink id="bt_visualizar"
+											title="#{messages.TITLE_MANTER_MATERIAL_VISUALIZAR}"
+											oncomplete="PF('modalItensWG').show();;"
+											action="#{consultarHistoricoMaterialController.pesquisarAlteracoes(_itemJNId)}"
+											immediate="true" includePageParams="false"
+											styleClass=" silk-zoom silk-icon" ajax="true"
+											render="modalItens" />
+									</p:column>
+									<p:column style="width:70px">
+										<f:facet name="header">#{messages.LABEL_MANTER_MATERIAL_ALTERADO_EM}</f:facet>
+										<h:outputText value="#{_itemJN.dtAlteracao}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:column >
+									<p:column style="auto-adjust">
+										<f:facet name="header">#{messages.LABEL_MANTER_MATERIAL_ALTERADO_POR}</f:facet>
+										<h:outputText
+											value="#{_itemJN.servidorAlteracao.pessoaFisica.nome}" />
+									</p:column>
+									<p:column style="auto-adjust">
+										<f:facet name="header">#{messages.LABEL_MANTER_MATERIAL_OBSERVACAO}</f:facet>
+										<h:outputText value="#{_itemJN.observacao}" />
+									</p:column>
+								</mec:serverDataTable>
+							</div>
+						</p:outputPanel>
+					</aghu:linha>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<mec:commandButton immediate="true" id="bt_voltar"
+						value="#{messages.LABEL_MANTER_MATERIAL_VOLTAR}"
+						profile="back"
+						action="#{consultarHistoricoMaterialController.voltar}"
+						ajax="true" />
+				</aghu:acao>
+			</h:form>
+			<p:dialog name="modalItens" id="modalItens" width="1000"
+				autosized="true" style="overflow:auto;" modal="true"
+				resizable="false" widgetVar="modalItensWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.LABEL_MANTER_MATERIAL_ALTERACOES}" />
+					</h:panelGroup>
+				</f:facet>
+				<br />
+				<h:form id="formTabelaItens">
+					<h:panelGroup>					
+						<div style="width: 100%; overflow: auto;">					
+							<mec:serverDataTable id="tabelaItens"
+								onRowMouseOver="this.style.backgroundColor='#F1F1F1'"
+								onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'"
+								list="#{consultarHistoricoMaterialController.listaItens}">
+								<c:set var="_item" value="#{item}" />
+								<p:column>
+									<f:facet name="header">#{messages.LABEL_MANTER_MATERIAL_CAMPO}</f:facet>
+									<h:outputText value="#{_item.campo}" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">#{messages.LABEL_MANTER_MATERIAL_ALTERADO_DE}</f:facet>
+									<h:outputText value="#{_item.valorAnterior}" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">#{messages.LABEL_MANTER_MATERIAL_ALTERADO_PARA}</f:facet>
+									<h:outputText value="#{_item.valorAtual}" />
+								</p:column>
+							</mec:serverDataTable>						
+						</div>					
+						<br />
+					</h:panelGroup>
+				</h:form>
+			</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

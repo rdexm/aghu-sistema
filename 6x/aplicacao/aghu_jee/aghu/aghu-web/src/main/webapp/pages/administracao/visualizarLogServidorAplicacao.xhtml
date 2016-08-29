@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_VISUALIZAR_LOG_APLICACAO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{logServidorAplicacaoController.carregarLog}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{logServidorAplicacaoController}" />
+		<h:form prependId="false" id="formLog">
+			<aghu:panelGeral
+				legend="#{messages.LABEL_LOG_APLICACAO} - #{logServidorAplicacaoController.arquivo}">
+				<aghu:linha>
+					<mec:field label="#{messages.LABEL_TEMPO_REFRESH}"
+						id="tempoRefresh">
+						<p:selectOneMenu id="tempo"
+							value="#{logServidorAplicacaoController.tempoRefresh}"
+							styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+							style="z-index:100;">
+							<f:selectItem itemValue="5" itemLabel="5 segundos" />
+							<f:selectItem itemValue="15" itemLabel="15 segundos" />
+							<f:selectItem itemValue="30" itemLabel="30 segundos" />
+							<f:selectItem itemValue="60" itemLabel="1 minuto" />
+							<f:selectItem itemValue="300" itemLabel="5 minutos" />
+							<p:ajax event="change"
+								listener="#{logServidorAplicacaoController.carregarLog}"
+								process="@form" update="@form" />
+						</p:selectOneMenu>
+					</mec:field>
+					<mec:field label="#{messages.LABEL_TAMANHO_MAXIMO_VISUALIZADO}"
+						id="tamanhoArquivo">
+						<p:selectOneMenu id="tamanho"
+							value="#{logServidorAplicacaoController.tamanhoArquivo}"
+							styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+							style="z-index:100;">
+							<f:selectItem itemValue="100" itemLabel="100kb" />
+							<f:selectItem itemValue="250" itemLabel="250kb" />
+							<f:selectItem itemValue="500" itemLabel="500kb" />
+							<f:selectItem itemValue="1024" itemLabel="1mb" />
+							<f:selectItem itemValue="2048" itemLabel="2mb" />
+							<p:ajax event="change"
+								listener="#{logServidorAplicacaoController.carregarLog}"
+								process="@form" update="@form" />
+						</p:selectOneMenu>
+					</mec:field>
+					<mec:field label="Pause Refresh" id="pause_btn">
+						<p:outputPanel id="panelRefresh">
+							<p:poll id="poll" widgetVar="pollWG" process="@form"
+								interval="#{logServidorAplicacaoController.tempoRefresh}"
+								listener="#{logServidorAplicacaoController.carregarLog}"
+								autoStart="#{not logServidorAplicacaoController.pause}"
+								rendered="#{not logServidorAplicacaoController.pause}"
+								update="@(#panelLog)" />
+							<p:commandButton
+								action="#{logServidorAplicacaoController.setPause(true)}"
+								rendered="#{not logServidorAplicacaoController.pause}" onclick="PF('poll').stop();"
+								value="Pause" process="panelRefresh" update="panelRefresh"
+								styleClass="button-acao bt_vermelho">
+								<f:param name="cid"
+									value="#{javax.enterprise.context.conversation.id}" />
+							</p:commandButton>
+							<p:commandButton
+								action="#{logServidorAplicacaoController.setPause(false)}"
+								rendered="#{logServidorAplicacaoController.pause}" onclick="PF('poll').start();"
+								value="Continuar" process="panelRefresh" update="panelRefresh"
+								styleClass="button-acao bt_cinza">
+								<f:param name="cid"
+									value="#{javax.enterprise.context.conversation.id}" />
+							</p:commandButton>
+						</p:outputPanel>
+					</mec:field>
+				</aghu:linha>
+				<aghu:linha>
+					<p:outputPanel id="panelLog" style="width: 100%">
+						<p:inputTextarea id="logServidorAplicacao"
+							value="#{logServidorAplicacaoController.logContent}" rows="27"
+							readonly="true" style="width: 98%" autoResize="false">
+						</p:inputTextarea>
+						<script type="text/javascript" xml:space="preserve">
+					var textArea = document.getElementById('logServidorAplicacao');
+					textArea.scrollTop = textArea.scrollHeight;
+				</script>
+					</p:outputPanel>
+				</aghu:linha>
+				<aghu:acao>
+
+					<mec:commandButton
+						action="#{logServidorAplicacaoController.carregarLog}"
+						value="#{messages.LABEL_ATUALIZAR}" render="panelLog">
+						<f:param name="cid"
+							value="#{javax.enterprise.context.conversation.id}" />
+					</mec:commandButton>
+					<mec:commandButton
+						action="#{logServidorAplicacaoController.baixarLog(logServidorAplicacaoController.arquivo)}"
+						value="#{messages.LABEL_DOWNLOAD_ARQUIVO_COMPACTADO}"
+						styleClass="bt_cinza">
+						<f:param name="cid"
+							value="#{javax.enterprise.context.conversation.id}" />
+					</mec:commandButton>
+					<mec:commandButton
+						action="#{logServidorAplicacaoController.voltar}"
+						value="#{messages.LABEL_VOLTAR}" profile="back" />
+				</aghu:acao>
+			</aghu:panelGeral>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

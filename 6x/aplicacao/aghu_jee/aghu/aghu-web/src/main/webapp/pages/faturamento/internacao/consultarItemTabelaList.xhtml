@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_ITEM_PROCEDIMENTO_HOSPITALAR} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{consultarItemTabelaPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_MANTER_ITEM_PROCEDIMENTO_HOSPITALAR}"> 
+          <aghu:linha> 
+            <p:outputPanel id="outputTabelaSuggestion" layout="inline"> 
+              <mec:suggestionBox label="#{messages.LABEL_TABELA_PROCEDIMENTOS_ITENS}" title="#{messages.TITLE_TABELA_ITENS}" descricaoInput="seq" descricaoLabel="descricao" width="400" ajaxRendered="true" size="8" disabled="false" suggestionAction="pesquisarTabela" id="suggestionTabela" controller="#{consultarItemTabelaPaginatorController}" value="#{consultarItemTabelaPaginatorController.procedimentoHospitalar}" render="outputTabelaSuggestion"> 
+                <p:column> 
+                  <h:outputText value="#{item.seq}"/> 
+                </p:column>  
+                <p:column> 
+                  <h:outputText value="#{item.descricao}"/> 
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <mec:inputNumero value="#{consultarItemTabelaPaginatorController.codTabela}" label="#{messages.LABEL_CODIGO_SUS}" title="#{messages.TITLE_CODIGO_PROCEDIMENTO_SUS}" maxlength="10" size="11" id="codigoTabela"/>  
+            <mec:inputText value="#{consultarItemTabelaPaginatorController.descricao}" label="#{messages.LABEL_DESCRICAO_ITEM}" title="#{messages.TITLE_DESCRICAO_ITEM_PROCED_HOSP_CAD}" style="text-transform:uppercase" maxlength="250" size="80" id="descricaoTabela"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" block="true" action="#{consultarItemTabelaPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" block="true" immediate="true" action="#{consultarItemTabelaPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}"
+                             id="bt_iniciarInclusao"
+                             immediate="true"
+                             rendered="#{consultarItemTabelaPaginatorController.exibirBotaoNovo and mf:hasPermission(securityController,'itemProcedimentoHospitalar,alterar')}"
+                             block="true"
+                             action="#{consultarItemTabelaPaginatorController.iniciarInclusao}"
+                             profile="add"/>
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formItens"> 
+        <mec:serverDataTable dataModel="dataModel" title="#{messages.TITLE_ITENS_NAO_ENCONTRADOS}" rendered="#{consultarItemTabelaPaginatorController.dataModel.pesquisaAtiva}" id="tabelaItens" controller="#{consultarItemTabelaPaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column exportable="false">
+            <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ACAO}"/>
+            </f:facet>  
+            <mec:commandLink action="#{consultarItemTabelaPaginatorController.encaminharManterItemPrincipal}"
+                             profile="edit"
+                             ajax="true">
+              <f:setPropertyActionListener target="#{manterItemPrincipalController.phoSeq}" value="#{_item.id.phoSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterItemPrincipalController.seq}" value="#{_item.id.seq}" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_IPH}"/>
+            </f:facet>
+            <h:outputText value="#{_item.id.seq}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_TABELA_ITENS}"/>
+            </f:facet>
+            <h:outputText value="#{_item.procedimentoHospitalar.seq}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_CODIGO_SUS}"/>
+            </f:facet>
+            <h:outputText value="#{_item.codTabela}"/> 
+          </p:column>  
+          <p:column width="60%" label=""> 
+            <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_DESCRICAO_ITEM}"/>
+            </f:facet>
+            <h:outputText value="#{_item.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_INTERNACAO_ITEM}"/>
+            </f:facet>
+            <h:outputText rendered="#{_item.internacao ne null}" value="#{_item.internacao?(messages.LABEL_ATIVO_S_ITEM):(messages.LABEL_ATIVO_N_ITEM)}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ATIVO_ITEM}"/>
+            </f:facet>
+            <h:outputText rendered="#{_item.situacao ne null}" value="#{_item.situacao eq 'A'?(messages.LABEL_ATIVO_S_ITEM):(messages.LABEL_ATIVO_N_ITEM)}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

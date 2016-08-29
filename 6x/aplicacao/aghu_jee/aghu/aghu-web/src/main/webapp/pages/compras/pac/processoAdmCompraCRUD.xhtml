@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_GERAR_PAC}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{processoAdmComprasController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{processoAdmComprasController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formDados"> 
+        <aghu:panelGeral legend="#{messages.LABEL_GERAR_PAC}"> 
+          <aghu:column type="table">
+                <aghu:panelGeral> 
+                  <aghu:linha> 
+                    <mec:inputNumero value="#{processoAdmComprasController.licitacao.numero}" label="#{messages.LABEL_NUMERO_PAC}" title="#{messages.TITLE_NUMERO_PAC}" maxlength="7" size="8" readonly="true" id="numero"/>  
+                    <mec:inputText value="#{processoAdmComprasController.licitacao.descricao}" label="#{messages.LABEL_DESCRICAO_PAC}" title="#{messages.TITLE_DESCRICAO_PAC}" maxlength="60" size="60" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" removerCaratersEspeciais="false" required="true" id="descricao" panelView="true"/> 
+                  </aghu:linha>  
+                  <aghu:linha> 
+                    <mec:suggestionBox id="suggestModalidade" label="#{messages.LABEL_MODALIDADE_PAC}" title="#{messages.TITLE_MODALIDADE_PAC}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarModalidadeLicitacao" required="true" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" controller="#{processoAdmComprasController}" value="#{processoAdmComprasController.licitacao.modalidadeLicitacao}" posSelectionAction="limparDocumentoEditalAno" render="panelDocEditalAno"> 
+                      <p:column> 
+                        <h:outputText value="#{item.codigo}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <h:outputText value="#{item.descricao}"/> 
+                      </p:column> 
+                    </mec:suggestionBox>  
+                    <mec:selectOneMenu readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" label="#{messages.LABEL_TIPO_PAC}" enum="DominioTipoPregao" title="#{messages.TITLE_TIPO_PAC}" value="#{processoAdmComprasController.licitacao.tipoPregao}" id="tipoPregaoPac"/>  
+                    <mec:inputNumero readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" value="#{processoAdmComprasController.licitacao.idEletronico}" label="#{messages.LABEL_ID_ELETRONICO}" title="#{messages.TITLE_ID_ELETRONICO}" maxlength="10" size="10" id="numeroIdEletronico"/> 
+                  </aghu:linha>  
+                  <aghu:linha> 
+                    <p:outputPanel id="panelDocEditalAno">
+	                    <mec:inputNumero value="#{processoAdmComprasController.licitacao.numDocLicit}" label="#{messages.LABEL_NUM_DOC}" title="#{messages.TITLE_NUM_DOC}" maxlength="7" size="8" required="false" readonly="true" ajaxValidation="false" id="numDocLicit"/>  
+	                    <mec:inputNumero value="#{processoAdmComprasController.licitacao.numEdital}" label="#{messages.LABEL_NUM_EDITAL}" title="#{messages.TITLE_NUM_EDITAL}" maxlength="7" size="8" required="false" readonly="true" ajaxValidation="false" id="numEdital"/>  
+	                    <mec:inputNumero value="#{processoAdmComprasController.licitacao.anoComplemento}" label="#{messages.LABEL_ANO}" title="#{messages.TITLE_ANO}" maxlength="7" size="8" required="false" readonly="true" ajaxValidation="false" id="ano"/>
+	                </p:outputPanel>  
+                    <mec:inputNumero value="#{processoAdmComprasController.licitacao.artigoLicitacao}" label="#{messages.LABEL_ARTIGO}" title="#{messages.TITLE_ARTIGO}" maxlength="3" size="3" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" required="false" ajaxValidation="false" id="artigo"/>  
+                    <mec:inputText value="#{processoAdmComprasController.licitacao.incisoArtigoLicitacao}" label="#{messages.LABEL_INCISO}" title="#{messages.TITLE_INCISO}" maxlength="2" size="2" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" required="false" ajaxValidation="false" id="inciso"/> 
+                  </aghu:linha> 
+                </aghu:panelGeral>  
+                <aghu:panelGeral legend="#{messages.INFO_COMPLEMENTARES}"> 
+                  <aghu:linha> 
+                    <mec:selectOneMenu label="#{messages.LABEL_TP_PAC}" enum="DominioTipoLicitacao" title="#{messages.TITLE_TP_PAC}" required="true" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" value="#{processoAdmComprasController.licitacao.tipo}" id="tipoPac"> 
+                      <p:ajax event="change" oncomplete="if (#{processoAdmComprasController.exigeVarMaxima}) Document.getElementById('varMaxima').required = true;" update="@(#varMaximaPanel)" process="@this" listener="#{processoAdmComprasController.validaTipoPac}"/> 
+                    </mec:selectOneMenu>  
+                    <p:outputPanel id="varMaximaPanel" layout="inline"> 
+                      <mec:inputNumero id="varMaxima" value="#{processoAdmComprasController.licitacao.varMaxima}" label="#{messages.LABEL_VAR_MAXIMA}" title="#{messages.TITLE_VAR_MAXIMA}" maxlength="3" size="3" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" required="#{processoAdmComprasController.exigeVarMaxima}" ajaxValidation="false"/> 
+                    </p:outputPanel>  
+                    <mec:selectOneMenu label="#{messages.LABEL_MOD_EMPENHO}" enum="DominioModalidadeEmpenho" title="#{messages.TITLE_MOD_EMPENHO}" required="true" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" value="#{processoAdmComprasController.licitacao.modalidadeEmpenho}" id="modEmpenho"/>  
+                    <p:outputPanel id="freqComprasPanel" layout="inline"> 
+                      <mec:inputNumero id="freqCompras" value="#{processoAdmComprasController.licitacao.frequenciaEntrega}" label="#{messages.LABEL_FCOMPRAS}" title="#{messages.TITLE_FCOMPRAS}" maxlength="3" size="3" required="true" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" ajaxValidation="false"> 
+                        <p:ajax event="change" oncomplete="if (#{processoAdmComprasController.focoFreqCompras}) Document.getElementById('freqCompras').focus();" update="@(#freqComprasPanel)" process="@this" listener="#{processoAdmComprasController.validaFrequenciaCompras}"/> 
+                      </mec:inputNumero> 
+                    </p:outputPanel>  
+                    <mec:selectOneMenu label="#{messages.LABEL_PERIODICIDADE_PAC}" enum="DominioFrequenciaEntrega" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" title="#{messages.TITLE_PERIODICIDADE_PAC}" value="#{processoAdmComprasController.licitacao.tipoFreqEntrega}" required="false" id="periodicidade"/> 
+                  </aghu:linha>  
+                  <aghu:linha> 
+                    <mec:selectOneMenu label="#{messages.LABEL_CRIT_ORCAMENTO}" enum="DominioCriterioJulgamentoOrcamento" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" title="#{messages.TITLE_CRIT_ORCAMENTO}" value="#{processoAdmComprasController.licitacao.critJulgOrcamento}" required="true" id="critOrca"/>  
+                    <mec:inputNumero value="#{processoAdmComprasController.licitacao.tempoAtendimento}" label="#{messages.LABEL_TEMPO_ATD}" title="#{messages.TITLE_TEMPO_ATD}" maxlength="5" size="5" ajaxValidation="false" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" required="true" id="tempoAtend"/>  
+                    <mec:inputMesAno maxlength="10" label="#{messages.LABEL_INI_FORNECIMENTO}" title="#{messages.TITLE_INI_FORNECIMENTO}" value="#{processoAdmComprasController.licitacao.dtInicioFornecimento}" required="true" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" size="10" id="dtSol"/>  
+                    <mec:selectBooleanCheckbox readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" label="#{messages.LABEL_ENGENHARIA}" title="#{messages.TITLE_ENGENHARIA}" value="#{processoAdmComprasController.licitacao.indEngenharia}" id="engenharia"/>  
+                    <mec:selectBooleanCheckbox readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" label="#{messages.LABEL_URGENTE_PAC}" title="#{messages.TITLE_URGENTE_PAC}" value="#{processoAdmComprasController.licitacao.indUrgente}" id="URGENTE"/> 
+                  </aghu:linha> 
+                </aghu:panelGeral>  
+                <aghu:panelGeral legend="#{messages.PROPOSTA}"> 
+                  <aghu:linha> 
+                    <mec:inputTextData maxlength="10" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" label="#{messages.LABEL_DT_PUBLICACAO}" title="#{messages.TITLE_DT_PUBLICACAO}" value="#{processoAdmComprasController.licitacao.dtPublicacao}" size="10" id="dtPublicacao" tipo="data"/>  
+                    <mec:inputTextData maxlength="10" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" label="#{messages.LABEL_DT_RECEBIMENTO}" title="#{messages.TITLE_DT_RECEBIMENTO}" value="#{processoAdmComprasController.licitacao.dtLimiteAceiteProposta}" size="10" id="dtRecebimento" tipo="data"/>  
+                    <mec:inputTextData maxlength="10" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" label="#{messages.LABEL_DT_ABERTURA}" title="#{messages.TITLE_DT_ABERTURA}" value="#{processoAdmComprasController.licitacao.dthrAberturaProposta}" id="dtAbertura" tipo="datahora"/> 
+                  </aghu:linha> 
+                </aghu:panelGeral>  
+                <aghu:panelGeral legend="#{messages.OBSERVACOES}"> 
+                  <aghu:linha> 
+                    <mec:inputText readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" value="#{processoAdmComprasController.licitacao.justificativa}" label="#{messages.LABEL_PAC_JUSTIFICATIVA}" title="#{messages.TITLE_PAC_JUSTIFICATIVA}" maxlength="500" size="60" removerCaratersEspeciais="false" id="justificativa" panelView="true"/>  
+                    <mec:inputText readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" value="#{processoAdmComprasController.licitacao.periodoFornecimento}" label="#{messages.LABEL_PAC_PER_FORNECIMENTO}" title="#{messages.TITLE_PAC_PER_FORNECIMENTO}" maxlength="500" size="60" removerCaratersEspeciais="false" id="periodoFornecimento" panelView="true"/>  
+                    <mec:inputText readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" value="#{processoAdmComprasController.licitacao.obsLicitacao}" label="#{messages.LABEL_PAC}" title="#{messages.LABEL_PAC_OBS}" maxlength="100" size="60" removerCaratersEspeciais="false" id="observacao" panelView="true"/>  
+                    <mec:inputText readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" value="#{processoAdmComprasController.licitacao.obsQuadroPropostas}" label="#{messages.LABEL_QUADRO}" title="#{messages.TITLE_QUADRO}" maxlength="100" size="60" removerCaratersEspeciais="false" id="quadroObs" panelView="true"/> 
+                  </aghu:linha>  
+                  <aghu:linha> 
+                    <mec:inputNumero label="#{messages.LABEL_VINCULO_PAC}" readonly="true" size="5" maxlength="3" value="#{processoAdmComprasController.licitacao.servidorDigitado.id.vinCodigo}" rendered="#{processoAdmComprasController.numeroPac!=null}" id="vinServDig"/>  
+                    <mec:suggestionBox label="#{messages.LABEL_GERADOR}" width="500" descricaoInput="id.matricula" descricaoLabel="pessoaFisica.nome" suggestionAction="pesquisarservidorDigitadoPac" readonly="true" rendered="#{processoAdmComprasController.numeroPac!=null}" id="suggestionServdigitado" controller="#{processoAdmComprasController}" value="#{processoAdmComprasController.licitacao.servidorDigitado}" render="vinServDig"> 
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <b>#{messages.LABEL_VINCULO_COMPRADOR_SOL_SERVICO}</b> 
+                        </f:facet> #{item.id.vinCodigo}
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <b>#{messages.LABEL_MATRICULA_COMPRADOR_SOL_SERVICO}</b> 
+                        </f:facet> #{item.id.matricula}
+                      </p:column>  
+                      <p:column> 
+                        <f:facet name="header"> 
+                          <b>#{messages.LABEL_NOME_COMPRADOR_SOL_SERVICO}</b> 
+                        </f:facet> #{item.pessoaFisica.nome}
+                      </p:column> 
+                    </mec:suggestionBox>  
+                    <mec:inputNumero label="#{messages.LABEL_VINCULO_PAC}" readonly="true" size="5" maxlength="3" value="#{processoAdmComprasController.licitacao.servidorGestor.id.vinCodigo}" id="vinGestorPac"/>  
+                    <p:outputPanel id="panelServidorGestor" layout="inline"> 
+                      <mec:suggestionBox var="servGestor" itemValue="#{servGestor}" readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" label="#{messages.LABEL_GESTOR}" title="#{messages.TITLE_GESTOR}" width="500" descricaoInput="id.matricula" descricaoLabel="pessoaFisica.nome" suggestionAction="pesquisarGestorPac" id="suggestionGestor" controller="#{processoAdmComprasController}" value="#{processoAdmComprasController.licitacao.servidorGestor}" render="vinGestorPac"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_VINCULO_COMPRADOR_SOL_SERVICO}</b> 
+                          </f:facet> #{servGestor.id.vinCodigo}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_MATRICULA_COMPRADOR_SOL_SERVICO}</b> 
+                          </f:facet> #{servGestor.id.matricula}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_NOME_COMPRADOR_SOL_SERVICO}</b> 
+                          </f:facet> #{servGestor.pessoaFisica.nome}
+                        </p:column> 
+                      </mec:suggestionBox>  
+                      <p:tooltip  id="ramalToolTip" for="panelServidorGestor" rendered="#{not empty processoAdmComprasController.licitacao.servidorGestor}">  
+                        <h:outputText value="#{messages.LABEL_GRID_RAMAL}: #{processoAdmComprasController.licitacao.servidorGestor.ramalTelefonico.numeroRamal}"/> 
+                      </p:tooltip> 
+                    </p:outputPanel> 
+                  </aghu:linha> 
+                </aghu:panelGeral>  
+                <p:outputPanel id="panelExclusao" rendered="#{processoAdmComprasController.numeroPac!=null}" layout="inline" styleClass="aghu-panel-geral"> 
+                  <aghu:panelGeral style="margin-bottom: 2px ! important;" legend="#{messages.EXCLUSAO}"> 
+                    <aghu:linha> 
+                      <mec:selectBooleanCheckbox readonly="#{not mf:hasPermission(securityController,'cadastrarPAC,gravar')}" label="#{messages.LABEL_EXCLUSAO}" title="#{messages.TITLE_EXCLUSAO}" value="#{processoAdmComprasController.licitacao.exclusao}" id="excluido">
+                        <p:ajax update="@(#motivoExclusao)" event="change" process="@this"  listener="#{processoAdmComprasController.limparMotivoExclusao}"/>
+                      </mec:selectBooleanCheckbox>  
+                      <p:outputPanel id="motivoExclusaoPanel" layout="inline"> 
+                        <mec:inputText value="#{processoAdmComprasController.licitacao.motivoExclusao}" label="#{messages.LABEL_MOTIVO_EXCLUSAO}" title="#{messages.TITLE_MOTIVO_EXCLUSAO}" readonly="#{!mf:hasPermission(securityController,'cadastrarPAC,gravar')}" maxlength="240" size="80" removerCaratersEspeciais="false" id="motivoExclusao" panelView="true">
+                          <p:ajax update="@(#excluido)" event="change" process="@this" listener="#{processoAdmComprasController.marcaIndExclusao}"/>
+                        </mec:inputText> 
+                      </p:outputPanel> 
+                    </aghu:linha> 
+                  </aghu:panelGeral> 
+                </p:outputPanel> 
+               </aghu:column>     
+               <aghu:column type="button" id="tabelaMenu">    
+                <ui:insert name="menu"> 
+                  <ui:include src="pacMenuCRUD.xhtml"/> 
+                </ui:insert> 
+             </aghu:column>  
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar" rendered="#{mf:hasPermission(securityController,'cadastrarPAC,gravar')}" value="#{messages.LABEL_GRAVAR}" action="#{processoAdmComprasController.gravar}" profile="ok"/>  
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{processoAdmComprasController.voltar}" styleClass="bt_voltar bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form> 
+      
+       <p:dialog id="impressaoQuadroAprovacaoModal" width="400" height="150" modal="true" resizable="false" widgetVar="impressaoQuadroAprovacaoModalWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_IMPRESSAO_QUADRO_APROVACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MESSAGE_EFETUAR_IMPRESSAO_QUADRO_ASSINATURAS} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{relatorioQuadroAprovacaoComprasLicitacaoController.printPac(processoAdmComprasController.licitacao.numero, true)}" profile="search"> 
+              <f:setPropertyActionListener target="#{relatorioQuadroAprovacaoComprasLicitacaoController.origem}" value="compras-processoAdmCompraCRUD" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" action="#{relatorioQuadroAprovacaoComprasLicitacaoController.printPac(processoAdmComprasController.licitacao.numero, false)}" profile="cancel"> 
+              <f:setPropertyActionListener target="#{relatorioQuadroAprovacaoComprasLicitacaoController.origem}" value="compras-processoAdmCompraCRUD" for="command"/> 
+            </mec:commandButton> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+      
+       <p:dialog id="impressaoTermoAberturaModal" width="500" height="100" modal="true" resizable="false" widgetVar="impressaoTermoAberturaModalWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_IMPRESSAO_TERMO_ABERTURA}"/> 
+          </h:panelGroup> 
+        </f:facet> 
+        <h:form prependId="false"> 
+             <mec:inputText value="#{processoAdmComprasController.remetenteTermoAbertura}" label="#{messages.LABEL_TERMO_ABERTURA_REMETENTE}" maxlength="60" size="60" id="remetente"/> 
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <br clear="none"/>  
+                <mec:commandButton value="#{messages.LABEL_SIM}" action="#{processoAdmComprasController.imprimirTermoAberturaRemetente()}" profile="ok" />   
+                    
+        </h:form>        
+      </p:dialog> 
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisar Pessoas :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pessoaFisicaPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisarPessoasFisicas"> 
+        <aghu:panelGeral legend="#{messages.LEGENDA_PESQUISAR_PESSOAS}"> 
+          <aghu:linha> 
+            <mec:inputNumero value="#{pessoaFisicaPaginatorController.rapPessoaFisica.codigo}" label="#{messages.LABEL_CODIGO}" maxlength="9" size="9" title="#{messages.LABEL_CODIGO}" id="codigo" converter="javax.faces.Integer"/>  
+            <mec:inputText value="#{pessoaFisicaPaginatorController.rapPessoaFisica.nome}" label="#{messages.LABEL_NOME}" maxlength="50" size="50" style="text-transform:uppercase" title="#{messages.LABEL_NOME}" id="nome"/>   
+         	<mec:inputTextCPF label="#{messages.LABEL_CPF}" title="#{messages.LABEL_CPF}" value="#{pessoaFisicaPaginatorController.rapPessoaFisica.cpf}" converter="#{javax.faces.String}" style="text-transform:uppercase" ajaxValidation="true" id="cpf"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pessoaFisicaPaginatorController.pesquisar}" profile="search" styleClass="bt_verde "/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" action="#{pessoaFisicaPaginatorController.limpar}" styleClass="bt_cinza" ajax="true" render="formPesquisarPessoasFisicas, formLinks" profile="clear"/>  
+          <p:outputPanel rendered="#{pessoaFisicaPaginatorController.exibirNovo}" layout="inline"> 
+            <mec:commandButton id="novo" value="#{messages.LABEL_NOVO}" action="#{pessoaFisicaPaginatorController.incluirPessoa}" profile="add" styleClass="bt_verde "> 
+              <f:setPropertyActionListener target="#{pessoaFisicaController.nomePesquisar}" value="#{pessoaFisicaPaginatorController.rapPessoaFisica.nome}" for="command"/> 
+            </mec:commandButton> 
+          </p:outputPanel> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formLinks"> 
+        <mec:serverDataTable dataModel="dataModel" value="#{pessoaFisicaPaginatorController}" id="tabelaPessoaFisica" controller="#{pessoaFisicaPaginatorController}"> 
+          <c:set var="_pessoaFisica" value="#{item}"/>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink action="#{pessoaFisicaPaginatorController.editarPessoa(_pessoaFisica.codigo)}" immediate="true" title="#{messages.LABEL_EDITAR}" profile="edit" ajax="true" process="@this"> 
+              <f:setPropertyActionListener target="#{pessoaFisicaController.codigoPessoa}" value="#{_pessoaFisica.codigo}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{pessoaFisicaPaginatorController.navegarServidor(_pessoaFisica.codigo)}" immediate="true" title="#{messages.LABEL_SERVIDOR}" styleClass=" silk-servidores silk-icon" ajax="true" process="@this"> 
+              <f:setPropertyActionListener target="#{servidorPaginatorController.parametroCodigoPessoa}" value="#{_pessoaFisica.codigo}" for="command"/>  
+              <f:setPropertyActionListener target="#{servidorPaginatorController.voltarPara}" value="pesquisarPessoaFisica" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{pessoaFisicaPaginatorController.navegarDependente()}" rendered="#{pessoaFisicaPaginatorController.permiteAdicionarDependente(_pessoaFisica)}" title="#{messages.LABEL_DEPENDENTE}" styleClass=" silk-dependentes silk-icon" ajax="true" process="@this"> 
+              <f:setPropertyActionListener target="#{dependentePaginatorController.parametroCodigoPessoa}" value="#{_pessoaFisica.codigo}" for="command"/>  
+              <f:setPropertyActionListener target="#{dependentePaginatorController.voltarPara}" value="pesquisarPessoaFisica.xhtml" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_pessoaFisica.codigo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME}"/> 
+            </f:facet>  
+            <h:outputText value="#{_pessoaFisica.nome}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME_MAE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_pessoaFisica.nomeMae}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CPF}"/> 
+            </f:facet>  
+            <h:outputText value="#{_pessoaFisica.cpf}">
+          		<f:converter converterId="cpfConverter"/>
+          	</h:outputText>
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_NASCIMENTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_pessoaFisica.dtNascimento}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+            </h:outputText> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

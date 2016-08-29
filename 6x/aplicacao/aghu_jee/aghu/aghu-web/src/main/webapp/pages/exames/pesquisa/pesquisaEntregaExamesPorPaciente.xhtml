@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+xmlns:mf="http://www.mec.gov.br/taglib">
+
+  <ui:composition>  
+    <script type="text/javascript" xml:space="preserve">
+		/*  <![CDATA[ */
+			function sliderClick(sliderIndex) {
+				setSliderPosAlta(sliderIndex);
+				var tpArray = new Array();
+				tpArray[0] = "togglePanelEntregaPaciente";					
+				controlaSliderClick(sliderIndex, tpArray);
+			}
+			
+		/* ]]> */
+		</script>  
+    <!-- ############## INICIO SLIDER PESQUISA  ############## -->  
+    <p:accordionPanel id="togglePanelEntregaExamesPaciente" prependId="false"> 
+      <!--  
+				Resultado dos exames 
+			  -->  
+      <p:tab title="#{messages.LABEL_PESQUISA_LAUDO_ENTREGA}">
+        <aghu:panelGeral legend="#{messages.LABEL_PACIENTE}"  layout="block"> 
+          <aghu:linha> 
+            
+                <mec:serverDataTable id="tblistaPacientes" 
+                					 scrollHeight="100"
+                					 controller="#{pesquisaExamesPorPacienteController}"
+                					 list="#{pesquisaExamesPorPacienteController.listaPacientes}" 
+                					 selection="pacienteSelecionado"
+                					 scrollable="true"> 
+                
+                					  
+                  <c:set var="_item" value="#{item}"/>
+                  <p:ajax event="rowSelect" update="@(#tblistaPacientes) @(#tblistaExames) @(#btLimparSelecao)" listener="#{pesquisaExameController.selecionarPaciente()}" />    
+                  <p:column width="50%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(_item.codigo, _item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME_SOCIAL_DO_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.nomePaciente}"/> 
+                  </p:column>  
+                  <p:column width="25%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(_item.codigo, _item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PRONTUARIO_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.prontuario}" styleClass="mask_prontuario"> 
+                    	<f:converter converterId="prontuarioConverter"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column width="25%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(_item.codigo, _item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CONSULTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.consulta}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+            
+          </aghu:linha> 
+        </aghu:panelGeral>
+        
+        <aghu:panelGeral legend="#{messages.LABEL_LAUDO_PARA_ENTREGA}"> 
+            <aghu:column type="table">
+                
+                  <p:outputPanel id="panelExames" layout="block"> 
+                  
+                      <mec:serverDataTable id="tblistaExames" 
+                      					   list="#{pesquisaExamesPorPacienteController.listaResultadoPesquisa}" 
+                      					   scrollHeight="350"
+                                       	   style="width: 60px"
+                      					   scrollable="true">  
+                      					   
+                        <c:set var="item" value="#{item}"/>
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                          </f:facet>  
+                          <h:selectBooleanCheckbox name="marcador" id="marcador" 
+	                          value="#{item.verResultado}" title="Exibir Resultados"> 
+	                            <p:ajax event="click" update="@(#panelPesquisarPorPaciente) @(#btLimparSelecao)" process="@this" listener="#{pesquisaExameController.selecionaItemExame(item.codigoSoe, item.iseSeq, item.situacaoCodigo)}"/> 
+                          </h:selectBooleanCheckbox>  
+<!--                           Painel de download   -->
+                          <p:outputPanel id="panelDownload" rendered="#{item.isExisteDocAnexado()}" layout="inline"> 
+                            <mec:commandLink id="btDownload" name="btDownload" title="#{messages.LABEL_DOWNLOAD_ARQUIVO_LAUDO}" styleClass=" silk-attach silk-icon" action="exames-visualizarResultado" > 
+                               <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSoeSeq}" value="#{item.codigoSoe}" for="command"/>
+	                           <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSeqp}" value="#{item.iseSeq}" for="command"/>
+	                           <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.voltarPara}" value="exames-pesquisaExames" for="command"/> 
+                            </mec:commandLink>
+                          </p:outputPanel> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.LABEL_DTHR_PROG}" 
+	                            action="#{pesquisaExamesPorPacienteController.ordenar('dtHrProgramada')}" 
+	                            ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.dtHrProgramada}"> 
+                           	<f:convertDateTime pattern="dd/MM/yy HH:mm"/>
+                          </h:outputText> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.LABEL_SOLICITACAO}"
+	                             action="#{pesquisaExamesPorPacienteController.ordenar('codigoSoe')}"
+	                             ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.codigoSoe}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.LABEL_ITEM}" 
+	                            action="#{pesquisaExamesPorPacienteController.ordenar('iseSeq')}" 
+	                            ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.iseSeq}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.LABEL_EXAME}" 
+	                            action="#{pesquisaExamesPorPacienteController.ordenar('exame')}" 
+	                            ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.exame}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.SITUACAO_EXAME}" 
+	                            action="#{pesquisaExamesPorPacienteController.ordenar('situacaoItem')}" 
+	                            ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.situacaoItem}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.LABEL_DATA}" 
+	                            action="#{pesquisaExamesPorPacienteController.ordenar('dtHrEvento')}" 
+	                            ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.dtHrEvento}"> 
+                            <f:convertDateTime pattern="dd/MM/yy HH:mm"/>
+                          </h:outputText> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.LABEL_ORIGEM}" 
+	                            action="#{pesquisaExamesPorPacienteController.ordenar('origemAtendimento')}" 
+	                            ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.origemAtendimento.descricao}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.LABEL_TIPO}" 
+	                            action="#{pesquisaExamesPorPacienteController.ordenar('tipoColeta')}" 
+	                            ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.tipoColeta}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <mec:commandLink immediate="true" value="#{messages.LABEL_ETI}" 
+	                            action="#{pesquisaExamesPorPacienteController.ordenar('etiologia')}" 
+	                            ajax="true" render="panelExames">
+                            </mec:commandLink> 
+                          </f:facet>  
+                          <h:outputText value="#{item.etiologia}"/> 
+                        </p:column> 
+                      </mec:serverDataTable> 
+                  
+                  </p:outputPanel> 
+                
+            </aghu:column>
+         </aghu:panelGeral> 
+      
+        <aghu:linha> 
+          <p:outputPanel id="panelPesquisarPorPaciente" layout="inline"> 
+            <mec:commandButton id="btGerarProtocolo"  
+            	value="#{messages.LABEL_GERAR_PROTOCOLO}" 
+            	action="#{pesquisaExameController.gerarProtocolo}"
+            	profile="ok"
+	            disabled="#{!pesquisaExameController.itensSelecionados}"> 
+	              <f:setPropertyActionListener target="#{protocoloEntregaExamesController.solicitacoesExames}" value="#{pesquisaExameController.solicitacoes}" for="command"/>  
+	              <f:setPropertyActionListener target="#{protocoloEntregaExamesController.listaPacientes}" value="#{pesquisaExamesPorPacienteController.listaPacientes}" for="command"/>  
+	              <f:setPropertyActionListener target="#{protocoloEntregaExamesController.listaResultado}" value="#{pesquisaExamesPorPacienteController.listaResultadoPesquisa}" for="command"/> 
+            </mec:commandButton> 
+          </p:outputPanel> 
+        </aghu:linha>
+      </p:tab>
+    </p:accordionPanel> 
+  </ui:composition>
+</html>

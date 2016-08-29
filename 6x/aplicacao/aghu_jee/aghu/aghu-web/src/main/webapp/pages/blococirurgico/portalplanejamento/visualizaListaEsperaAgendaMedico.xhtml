@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+	<h:form id="formListaEsperaAgendaMedicoResultados" prependId="false">
+		<aghu:acao>
+			<mec:commandButton id="bt_imprime_pacientes_lista_espera_buttonView"
+				value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+				action="#{relatorioCirurgiasListaEsperaController.print}"
+				profile="view" onclick="PF('loadDialog').show()"
+				rendered="#{mf:hasPermission(securityController,'imprimirPacienteListaEspera,imprimir') and visualizaListaEsperaAgendaMedicoController.dataModelEspera.pesquisaAtiva}" />
+			<mec:commandButton id="bt_imprime_pacientes_lista_espera_buttonPrint"
+				value="#{messages.LABEL_IMPRIMIR}"
+				action="#{relatorioCirurgiasListaEsperaController.directPrint}"
+				profile="print" onclick="PF('loadDialog').show()"
+				rendered="#{mf:hasPermission(securityController,'imprimirPacienteListaEspera,imprimir') and visualizaListaEsperaAgendaMedicoController.dataModelEspera.pesquisaAtiva}" />
+			<mec:commandButton id="bt_incluir_lista_espera"
+				value="#{messages.LABEL_NOVO}"
+				rendered="#{mf:hasPermission(securityController,'incluirPacienteListaEspera,persistir')}"
+				action="#{visualizaListaEsperaAgendaMedicoController.incluirNaListaEspera}"
+				profile="add" />
+		</aghu:acao>
+		<aghu:table>
+			<mec:serverDataTable dataModel="dataModelEspera"
+				id="listaEsperaAgendaMedico"
+				value="#{visualizaListaEsperaAgendaMedicoController}"
+				rendered="#{visualizaListaEsperaAgendaMedicoController.dataModelEspera.pesquisaAtiva}"				
+				controller="#{visualizaListaEsperaAgendaMedicoController}"
+				parameterPrefix="listaCrgEspera_"
+				draggableColumns="false"
+				autoRender="true"
+				selection="itemSelecionado">
+				<c:set var="cirurgiaEspera" value="#{item}" />
+				<p:column style="width:100px;" id="acao_listaespera">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_ACAO}" />
+					</f:facet>
+					<mec:commandLink title="#{messages.LABEL_EDITAR}"
+						action="#{visualizaListaEsperaAgendaMedicoController.editarListaEspera()}"
+						rendered="#{mf:hasPermission(securityController,'incluirPacienteListaEspera,persistir')}"
+						profile="edit" ajax="true">
+						<f:setPropertyActionListener target="#{visualizaListaEsperaAgendaMedicoController.agdSeq}" value="#{cirurgiaEspera.seq}" for="command"/>
+					</mec:commandLink>
+					<mec:commandLink
+						action="#{visualizaListaEsperaAgendaMedicoController.redirectTrocarLocalEspEquipeListaEspera}"
+						rendered="#{mf:hasPermission(securityController,'permitirTrocarLocalEspecialidadeEquipeListaEspera,executar')}"
+						title="#{messages.LABEL_TROCAR_LOCAL_ESP_EQUIPE}"
+						styleClass=" silk-trocar silk-icon" requestDelay="1000" ajax="true" process="@this">
+						<f:setPropertyActionListener target="#{trocarLocalEspEquipeListaEsperaController.agdSeq}" value="#{cirurgiaEspera.seq}" for="command"/>
+						<f:setPropertyActionListener target="#{trocarLocalEspEquipeListaEsperaController.cameFrom}" value="blococirurgico-visualizaListaEsperaAgendaMedico" for="command"/>
+					</mec:commandLink>
+					
+					
+					
+					<mec:commandLink id="btn_excluir" title="#{messages.LABEL_EXCLUIR}"
+					action="#{justificativaExcluirAgendamentoController.openDialog('modalJustificativaCirurgiasWG')}"
+					rendered="#{mf:hasPermission(securityController,'excluirPacienteListaEspera,excluir')}"
+					styleClass="silk-icon silk-delete" ajax="true"
+					render="modalExclusaoPanel,modalJustificativaCirurgiaPanel"
+					process="@this">
+					<f:setPropertyActionListener value="#{null}"
+						target="#{justificativaExcluirAgendamentoController.justificativa}"
+						for="command" />	
+					<f:setPropertyActionListener value="listaEspera"
+						target="#{justificativaExcluirAgendamentoController.cameFrom}"
+						for="command" />					
+					<f:setPropertyActionListener
+						value="#{justificativaExcluirAgendamentoController.obterTituloExcluirCirurgia(cirurgiaEspera.seq)}"
+						target="#{justificativaExcluirAgendamentoController.tituloModal}"
+						for="command" />
+					<f:setPropertyActionListener
+						value="#{justificativaExcluirAgendamentoController.buscarListaEsperaSeqId(cirurgiaEspera.seq)}"
+						target="#{justificativaExcluirAgendamentoController.seq}" for="command" />						
+				</mec:commandLink>				
+
+					<mec:commandLink id="bt_mostrarModalReagendamento"
+						title="#{messages.LABEL_AGENDAR_PACIENTE_LISTA_ESPERA}"
+						action="#{remarcarPacienteAgendaController.inicio}"
+						oncomplete="PF('remarcarPacienteAgendaModalWG').show()"
+						rendered="#{mf:hasPermission(securityController,'remarcarAgendamentoPaciente,remarcar')}"
+						styleClass=" silk-reagendar-cirurgias silk-icon" ajax="true"
+						render="remarcarPacienteAgendaModal" process="@this">
+						<f:setPropertyActionListener
+							value="#{cirurgiaEspera.seq}"	target="#{remarcarPacienteAgendaController.agdSeq}"	for="command" />
+						<f:setPropertyActionListener
+							value="cameFromListaEspera"	target="#{remarcarPacienteAgendaController.cameFrom}"	for="command" />
+					</mec:commandLink>
+					<mec:commandLink id="bt_mostrarAgendaHistorico"
+						oncomplete="PF('modalHistoricoAgenda').show();"
+						title="#{messages.LABEL_HISTORICO_AGENDA}"
+						action="#{historicoAgendaController.informarHistoricoAgenda(cirurgiaEspera.seq)}"
+						rendered="#{mf:hasPermission(securityController,'consultarHistoricoPaciente,executar')}"
+						styleClass=" silk-historico-cirurgias silk-icon" ajax="true"
+						render="modalHistoricoAgenda" process="@this" />
+				</p:column>
+				<p:column id="prontuario">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+					</f:facet>
+					<h:outputText value="#{visualizaListaEsperaAgendaMedicoController.obterProntuarioFormatado(cirurgiaEspera.paciente.prontuario)}" />
+					<mec:commandLink title="#{messages.TITLE_ABRIR_PRONTUARIO_ONLINE}"
+						style="float:right;padding: 0px 4px;"
+						rendered="#{not empty cirurgiaEspera.paciente.prontuario and mf:hasPermission(securityController, '/paciente/prontuarioonline/arvorePOL.xhtml,render')}"
+						onclick="parent.addPOLProntuario(#{cirurgiaEspera.paciente.prontuario})"
+						styleClass="silk-icon silk-pol16 silk-icon" ajax="true" />
+				</p:column>
+				<p:column id="pacienteCirg" sortBy="#{paciente.nome}">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PESQUISA_AGENDA_CIRURGIA_COLUNA_NOME_PACIENTE}" />
+					</f:facet>
+					<p:tooltip for="toolTipPacNome" direction="bottom-right" styleClass="tooltip"
+						layout="block" rendered="#{cirurgiaEspera.paciente.nome.length() &gt; 30}">
+						<h:outputText value="#{cirurgiaEspera.paciente.nome}" />
+					</p:tooltip>
+					<h:outputText id="toolTipPacNome"
+						value="#{(cirurgiaEspera.paciente.nome.length() &gt; 30) ? fn:substring(cirurgiaEspera.paciente.nome,0,30) : cirurgiaEspera.paciente.nome}" />
+					<h:outputText value="..."
+						rendered="#{(cirurgiaEspera.paciente.nome.length() &gt; 30)}" />
+				</p:column>
+				<p:column id="procedimentoCig">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PROCEDIMENTO}" />
+					</f:facet>
+					<p:outputPanel
+						rendered="#{cirurgiaEspera.procedimentoCirurgico.descricao != null}"
+						layout="inline">
+						<p:tooltip for="toolTipProcedimento" direction="bottom-right" styleClass="tooltip"
+							layout="block"
+							rendered="#{cirurgiaEspera.procedimentoCirurgico.descricao.length() &gt; 30}">
+							<h:outputText value="#{cirurgiaEspera.procedimentoCirurgico.descricao}" />
+						</p:tooltip>
+						<h:outputText id="toolTipProcedimento"
+							value="#{(cirurgiaEspera.procedimentoCirurgico.descricao.length() &gt; 30) ? fn:substring(cirurgiaEspera.procedimentoCirurgico.descricao,0,30) : cirurgiaEspera.procedimentoCirurgico.descricao}" />
+						<h:outputText value="..."
+							rendered="#{(cirurgiaEspera.procedimentoCirurgico.descricao.length() &gt; 30)}" />
+					</p:outputPanel>
+				</p:column>
+				<p:column id="dataInclusaoCirg" sortBy="#{dthrInclusao}">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_DATA_INCLUSAO}" />
+					</f:facet>
+					<h:outputText value="#{cirurgiaEspera.dthrInclusao}">
+						<f:convertDateTime pattern="dd/MM/yyyy" />
+					</h:outputText>
+				</p:column>
+			</mec:serverDataTable>
+		</aghu:table>
+	</h:form>
+</ui:composition>
+</html>

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>Envio Contrato SIASG - SICON</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{envioContratoSiasgSiconController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{envioContratoSiasgSiconController}" />
+		<h:form prependId="false" id="formGeralAcoes">
+			<aghu:panelGeral>
+				<aghu:linha>
+					<p:outputPanel id="panelGeral" layout="inline">
+						<h:inputTextarea
+							value="#{envioContratoSiasgSiconController.retornoEnvioContrato}"
+							readonly="true" rows="10" cols="180" />
+					</p:outputPanel>
+				</aghu:linha>
+				<aghu:linha>
+					<p:outputPanel id="panelItens" rendered="true" ajaxRendered="true"
+						layout="inline">
+						<table id="tbListItens" width="80%">
+							<tr>
+								<td width="100%" rowspan="1" colspan="1"><p:outputPanel
+										layout="block"
+										style="width: 80%; height:450px; overflow:auto; padding:3px;">
+										<mec:serverDataTable id="tabelaItensContrato" width="80%"
+											rendered="#{envioContratoSiasgSiconController.response.statusEnvio eq 'PENDENTE' }"
+											list="#{envioContratoSiasgSiconController.response.listEnvioItemVO}"
+											scrollable="true">
+											<c:set var="itemVO" value="#{item}" />
+											<p:column sortBy="#{itemVO.numItem}">
+												<f:facet name="header">
+													<h:outputText value="#{messages.LABEL_NUM_ITEM}" />
+												</f:facet>
+												<h:outputText value="#{itemVO.numItem}" />
+											</p:column>
+											<p:column sortBy="#{itemVO.indicadorMatServ}">
+												<f:facet name="header">
+													<h:outputText value="#{messages.LABEL_IND_MAT_SERV}" />
+												</f:facet>
+												<h:outputText
+													value="#{(itemVO.indicadorMatServ eq 'S') ? 'Serviço' : 'Material'}" />
+											</p:column>
+											<p:column sortBy="#{itemVO.codigoInterno}">
+												<f:facet name="header">
+													<h:outputText value="#{messages.LABEL_COD_ITEM_INTERNO}" />
+												</f:facet>
+												<h:outputText value="#{itemVO.codigoInterno}" />
+											</p:column>
+											<p:column sortBy="#{itemVO.codigoMatServ}">
+												<f:facet name="header">
+													<h:outputText value="#{messages.LABEL_COD_ITEM_SICON}" />
+												</f:facet>
+												<h:outputText value="#{itemVO.codigoMatServ}" />
+											</p:column>
+											<p:column sortBy="#{itemVO.descricao}">
+												<f:facet name="header">
+													<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+												</f:facet>
+												<h:outputText value="#{itemVO.descricao}" />
+											</p:column>
+											<p:column sortBy="#{itemVO.codigoErro}">
+												<f:facet name="header">
+													<h:outputText value="#{messages.LABEL_COD_ERRO}" />
+												</f:facet>
+												<h:outputText value="#{itemVO.codigoErro}" />
+											</p:column>
+											<p:column sortBy="#{itemVO.descricaoErro}">
+												<f:facet name="header">
+													<h:outputText value="#{messages.LABEL_DESC_ERRO}" />
+												</f:facet>
+												<h:outputText value="#{itemVO.descricaoErro}" />
+											</p:column>
+										</mec:serverDataTable>
+									</p:outputPanel></td>
+							</tr>
+						</table>
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+					action="#{envioContratoSiasgSiconController.voltar}"
+					styleClass=" alinha-direita bt_cinza" profile="back" />
+			</aghu:acao>
+		</h:form>
+		<p:outputPanel id="panelOrigemDadosReenvio" layout="inline">
+			<p:dialog id="modalReenvio"
+				rendered="#{envioContratoSiasgSiconController.confirmarReenvio}"
+				width="400" height="150" modal="true" resizable="false"
+				widgetVar="modalReenvioWG" update="@(#panelGeral)">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_AVISO_ORIGEM_DADOS_REENVIO}" />
+					</h:panelGroup>
+				</f:facet> #{messages.MENSAGEM_CONFIRMAR_REENVIO_CONTRATO_PARTE1} 
+          <br clear="none" /> #{messages.MENSAGEM_CONFIRMAR_REENVIO_CONTRATO_PARTE2} 
+          <br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalReenvio">
+						<mec:commandButton id="bt_simReenvio"
+							value="#{messages.LABEL_SIM}"
+							action="#{envioContratoSiasgSiconController.executarReenvioContrato}"
+							render="panelPoolAtualizacao"
+							profile="search" ajax="true" />
+						<mec:commandButton id="bt_naoReenvio"
+							value="#{messages.LABEL_NAO}"
+							onclick="PF('modalReenvioWG').hide();"
+							action="#{envioContratoSiasgSiconController.cancelarReenvio}"
+							profile="cancel" ajax="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+			<h:form>
+				<script>
+					PF('modalReenvioWG').show();
+		  		</script>
+			</h:form>
+		</p:outputPanel>
+		
+		<p:outputPanel id="panelPoolAtualizacao">
+			<h:form>
+				<p:poll id="poll" delay="50" update="@(#panelEnvio) @(#panelGeral)"
+				        rendered="#{!envioContratoSiasgSiconController.confirmarReenvio}"
+					    stop="#{!envioContratoSiasgSiconController.mostrarModalAndamento}" />
+			</h:form>
+		</p:outputPanel>
+		
+		<p:dialog id="andamentoLoadingModalBox" style="text-align:center;"
+			height="200" top="200" resizeable="false" moveable="false"
+			width="400" zindex="2000" modal="true" resizable="false"
+			widgetVar="andamentoLoadingModalBoxWG">
+			<f:facet name="header">
+				<h:outputText value="Em Andamento" />
+			</f:facet>
+			<div style="text-align: center;">
+				<br clear="none" /> <br clear="none" />
+				<h:graphicImage value="/resources/img/loading.gif" />
+				<br clear="none" /> <br clear="none" />
+				<p:outputPanel id="panelEnvio">
+					<h:outputText
+						value="#{envioContratoSiasgSiconController.executarEnvioContrato()}" />
+				</p:outputPanel>
+			</div>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

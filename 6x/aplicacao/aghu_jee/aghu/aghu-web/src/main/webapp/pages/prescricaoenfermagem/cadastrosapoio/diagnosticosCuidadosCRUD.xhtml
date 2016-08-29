@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['LABEL_DIAGNOSTICO']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{diagnosticosCuidadosCRUDController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{diagnosticosCuidadosCRUDController}" ignoreEnter="true"/>  
+	  <p:outputPanel id="corpoPagina" layout="inline"> 
+			<h:form prependId="false" id="formDadosCabecalho"> 
+        		<aghu:panelGeral legend="#{messages['LABEL_DIAGNOSTICO_MANTER_DIAGNOSTICO_CUIDADOS']}"> 
+          			<aghu:linha> 
+            			<mec:inputText id="grupo" label="#{messages.LABEL_GRUPO_MANTER_DIAGNOSTICO}" value="#{diagnosticosCuidadosCRUDController.grupo.descricao}" size="50" readonly="true"/>  
+            			<mec:inputText id="subGrupo" label="#{messages.LABEL_SUBGRUPO_MANTER_DIAGNOSTICO}" 
+							value="#{diagnosticosCuidadosCRUDController.subGrupo.descricao}" size="50" readonly="true"/> 
+         			</aghu:linha>  
+          			<aghu:linha> 
+            			<mec:inputText id="diagnostico" label="#{messages.LABEL_DIAGNOSTICO_MANTER_DIAGNOSTICO_CUIDADOS}" 
+							value="#{diagnosticosCuidadosCRUDController.diagnostico.descricao}" size="50" readonly="true"/>  
+			            <mec:inputText id="etiologia" label="#{messages.LABEL_ETIOLOGIA_MANTER_DIAGNOSTICO_CUIDADOS}" 
+							value="#{diagnosticosCuidadosCRUDController.etiologia.descricao}" size="50" readonly="true"/>  
+            			<mec:selectBooleanCheckbox id="situacao" readonly="true" label="#{messages.LABEL_ATIVO}" 
+							value="#{diagnosticosCuidadosCRUDController.diagnosticoSituacao}"/> 
+          			</aghu:linha> 
+        		</aghu:panelGeral> 
+      		</h:form>  
+      		<h:form prependId="false" id="formListaCuidados"> 
+        		<aghu:panelGeral legend="#{messages['LABEL_CUIDADOS']}"> 
+          			<aghu:linha> 
+            			<mec:suggestionBox id="cuidado" 
+							label="#{messages.LABEL_CUIDADO_MANTER_DIAGNOSTICO_CUIDADOS}" 
+							title="#{messages.TITLE_CUIDADO_MANTER_DIAGNOSTICO_CUIDADOS}" width="800"
+							requiredFake="true" 
+							descricaoInput="seq" 
+							descricaoLabel="descricao" 
+							suggestionAction="pesquisarCuidados" 
+							rendered="#{diagnosticosCuidadosCRUDController.diagnosticoSituacao}" 
+							readonly="#{!mf:hasPermission(securityController,'manterCuidadoPorDiagnostico,alterar')}" 
+							posDeleteAction="limparPesquisa" 
+							posSelectionAction="ativarBotaoAdicionar" 
+							controller="#{diagnosticosCuidadosCRUDController}" 
+							value="#{diagnosticosCuidadosCRUDController.cuidado}" render="botaoAdicionarPanel"> 
+              				<p:column> 
+                				<f:facet name="header"> 
+                  					<b>#{messages.LABEL_CUIDADO_CODIGO}</b> 
+                				</f:facet> #{item.seq}
+              				</p:column>  
+              				<p:column> 
+                				<f:facet name="header"> 
+                  					<b>#{messages.LABEL_CUIDADO_DESCRICAO}</b> 
+                				</f:facet> #{item.descricao}
+              				</p:column> 
+            			</mec:suggestionBox>  
+            			<mec:selectBooleanCheckbox id="situacaoDiagnostico" label="#{messages.LABEL_ATIVO}" title="#{messages.TITLE_SITUACAO_MANTER_DIAGNOSTICO_CUIDADOS}" 
+							rendered="#{diagnosticosCuidadosCRUDController.diagnosticoSituacao}" 
+							readonly="#{!mf:hasPermission(securityController,'manterCuidadoPorDiagnostico,alterar')}" 
+							value="#{diagnosticosCuidadosCRUDController.situacao}"/>  
+            			<aghu:acao newLine="false"> 
+							<p:outputPanel id="botaoAdicionarPanel">
+								<mec:commandButton id="bt_adicionar" 
+									value="#{messages.LABEL_ADICIONAR}" 
+									action="#{diagnosticosCuidadosCRUDController.adicionar}" 
+									disabled="#{diagnosticosCuidadosCRUDController.suggestionAdiconar or !mf:hasPermission(securityController,'manterCuidadoPorDiagnostico,alterar')}" 
+									rendered="#{diagnosticosCuidadosCRUDController.diagnosticoSituacao}" 
+									reRender="formListaCuidados, modalConfirmacaoExclusao, formModalExclusao" 
+									profile="add" styleClass="bt_verde "/> 
+							</p:outputPanel> 
+            			</aghu:acao> 
+          			</aghu:linha> 
+				</aghu:panelGeral> 	 
+             </h:form>
+			 <h:form prependId="false" id="formListaCuidadosTable">	
+          			<aghu:linha> 
+            			<mec:serverDataTable dataModel="dataModel" 
+							id="tableResultadosCuidadosDiagnosticos" 
+							value="#{diagnosticosCuidadosCRUDController}" 
+							controller="#{diagnosticosCuidadosCRUDController}"> 
+              				<c:set var="_diagnosticosCuidados" value="#{item}"/>  
+              				<p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                				<mec:commandLink id="ativarInativar" 
+									immediate="true" 
+									title="#{not diagnosticosCuidadosCRUDController.isAtivo(_diagnosticosCuidados) ? messages.LABEL_ATIVAR : messages.LABEL_DESATIVAR}" 
+									rendered="#{mf:hasPermission(securityController,'manterCuidadoPorDiagnostico,alterar')}" 
+									action="#{diagnosticosCuidadosCRUDController.ativarDesativar(_diagnosticosCuidados)}" 
+									styleClass="#{not diagnosticosCuidadosCRUDController.isAtivo(_diagnosticosCuidados) ? ' silk-deactivate' : ' silk-activate'} silk-icon"/>  
+                				<mec:commandLink id="tableResultadosCuidadosDiagnosticos_link_remover" 
+									profile="delete" 
+									title="excluir" 
+									action="#{diagnosticosCuidadosCRUDController.excluir}" 
+									permission="manterCuidadoPorDiagnostico,alterar"> 
+                  					<f:setPropertyActionListener for="command" target="#{diagnosticosCuidadosCRUDController.cuidadoDiagnostico}" value="#{_diagnosticosCuidados}"/> 
+                				</mec:commandLink> 
+              				</p:column>  
+              				<p:column id="columnCodigo"> 
+                				<f:facet name="header"> 
+                  					<h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                				</f:facet>  
+                				<h:outputText value="#{_diagnosticosCuidados.cuidado.seq}"/> 
+              				</p:column>  
+              				<p:column id="columnDescricao"> 
+                				<f:facet name="header"> 
+                  					<h:outputText value="#{messages.LABEL_CUIDADO_MANTER_DIAGNOSTICO_CUIDADOS}"/> 
+                				</f:facet>  
+                				<h:outputText value="#{_diagnosticosCuidados.cuidado.descricao}"/> 
+              				</p:column>  
+              				<p:column id="columnSituacao"> 
+                				<f:facet name="header"> 
+                  					<h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                				</f:facet>  
+                				<h:outputText value="#{_diagnosticosCuidados.situacao.descricao}" style="text-transform:uppercase"/> 
+              				</p:column> 
+            			</mec:serverDataTable> 
+          			</aghu:linha> 
+        		 
+        		<aghu:acao> 
+          			<mec:commandButton id="bt_voltar" 
+          				value="#{messages.LABEL_VOLTAR}"
+          				profile="back" 
+          				immediate="true" 
+          				action="#{diagnosticosCuidadosCRUDController.cancelar}"/> 
+        		</aghu:acao> 
+      		 </h:form>	
+
+	  	</p:outputPanel>		
+    </ui:define> 
+  </ui:composition> 
+</html>

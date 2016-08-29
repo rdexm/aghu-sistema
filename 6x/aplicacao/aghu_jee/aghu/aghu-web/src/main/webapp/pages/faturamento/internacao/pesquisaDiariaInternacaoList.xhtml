@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+<ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    
+ 	<ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_DIARA_AUTORIZADA}</title> 
+      
+      <script type="text/javascript" xml:space="preserve">		
+				function Pesquisar(Event)
+				{
+				        if(document.all)
+				        {
+				                Tecla = Event.keyCode; // Internet Explorer
+				        }
+				        else
+				        {
+				                Tecla = Event.which; // Mozilla, etc.
+				        }
+
+				        if(Tecla == 9) document.getElementById('bt_pesquisar:button').click();
+				        if(Tecla == 13) document.getElementById('bt_pesquisar:button').click();
+				}
+		</script>
+    </ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{pesquisaDiariaAutorizadaPaginatorController}" />
+		<h:form prependId="false" id="campos">
+			<aghu:panelGeral legend="#{messages.TITLE_PESQUISA_DIARA_AUTORIZADA}">
+					<mec:inputNumero id="codigoInternacao"
+						style="margin-left:-5px !important; margin-right:5px !important;"
+						label="#{messages.LABEL_CODIGO_PESQUISA_DIARA_AUTORIZADA}" size="2"
+						maxlength="2"
+						onkeypress="Pesquisar(Event);"
+						title="#{messages.HELP_NUMERO_PESQUISA_DIARIA}"
+						value="#{pesquisaDiariaAutorizadaPaginatorController.seq}">
+					</mec:inputNumero>
+
+					<mec:inputText id="descricaoInternacao"
+						label="#{messages.LABEL_DESCRICAO_PESQUISA_DIARA_AUTORIZADA}" size="91"
+						maxlength="60"
+						onkeypress="Pesquisar(Event);"
+						style="text-transform: uppercase; margin-left:-10px !important;"
+						title="#{messages.HELP_DESCRICAO_PESQUISA_DIARIA}"
+						value="#{pesquisaDiariaAutorizadaPaginatorController.descricao}">
+					</mec:inputText>
+					
+					<mec:inputNumero id="diasInternacao"
+						label="#{messages.LABEL_DIAS_PESQUISA_DIARA_AUTORIZADA}" size="3"
+						maxlength="3"
+						onkeypress="Pesquisar(Event);"
+						title="#{messages.HELP_DIAS_PESQUISA_DIARIA}"
+						value="#{pesquisaDiariaAutorizadaPaginatorController.quantidadeDias}">
+					</mec:inputNumero>
+
+					<mec:selectOneMenu id="tipoInternacao"
+						title="#{messages.HELP_TIPO_PESQUISA_DIARIA}"
+						enum="DominioDiariaInternacao"
+						onkeypress="Pesquisar(Event);"
+						label="#{messages.LABEL_TIPO_PESQUISA_DIARA_AUTORIZADA}"
+						value="#{pesquisaDiariaAutorizadaPaginatorController.tipoValorConta}">
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+			</aghu:panelGeral>
+			
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR_EXCLUSAO_CRITICA}"
+					action="#{pesquisaDiariaAutorizadaPaginatorController.pesquisar}"
+					profile="search">
+				</mec:commandButton>
+				<mec:commandButton id="bt_limpar"
+					value="#{messages.LABEL_LIMPAR_EXCLUSAO_CRITICA}"
+					action="#{pesquisaDiariaAutorizadaPaginatorController.limpar}"
+					immediate="true"
+					ajaxSingle="true" profile="clear">
+				</mec:commandButton>
+				<p:outputPanel rendered="#{pesquisaDiariaAutorizadaPaginatorController.exibirBotaoNovo}" layout="inline">
+				<mec:commandButton id="bt_novo" profile="add"
+					value="#{messages.LABEL_NOVO_EXCLUSAO_CRITICA}" immediate="true"
+					disabled="#{!mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}"
+					ajax="true"
+					action="#{pesquisaDiariaAutorizadaPaginatorController.novo}">
+				</mec:commandButton>
+				</p:outputPanel>
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formLista"
+			rendered="#{pesquisaDiariaAutorizadaPaginatorController.dataModel.pesquisaAtiva}">
+			<aghu:panelGeral legend="#{messages.TITLE_DIARA_AUTORIZADA}">	
+				<mec:serverDataTable 
+					id="lista"
+					dataModel="dataModel" 
+					controller="#{pesquisaDiariaAutorizadaPaginatorController}" 
+					selection="fatDiariaInternacaoFiltro">
+					<c:set var="item" value="#{item}" />
+					
+					<p:column headerText="#{messages.LABEL_ACAO_MENSAGEM_ERRO}"
+						rendered="#{mf:hasPermission(securityController,'manterCadastrosBasicosFaturamento,executar')}"
+						styleClass="first-column auto-adjust" exportable="false">
+						<mec:commandLink 
+							id="lista_link_editar" 
+							profile="edit"
+							title="#{messages.LABEL_EDITAR}"
+							action="#{pesquisaDiariaAutorizadaPaginatorController.editar}"
+							permission="manterCadastrosBasicosFaturamento,executar">
+							<f:setPropertyActionListener
+								target="#{cadastroDiariaInternacaoController.fatDiariaInternacao}"
+								value="#{item}" for="command" />
+						</mec:commandLink>
+						<mec:commandLink
+							action="#{pesquisaDiariaAutorizadaPaginatorController.remover}"
+							profile="delete"		
+							id="lista_link_excluir"
+							title="#{messages.LABEL_EXCLUIR}"
+							permission="manterCadastrosBasicosFaturamento,executar">
+							<f:setPropertyActionListener
+								target="#{pesquisaDiariaAutorizadaPaginatorController.fatDiariaInternacao}"
+								value="#{item}" for="command" />
+						</mec:commandLink>
+					</p:column>
+					<p:column style="width: 50px;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_CODIGO_PESQUISA_DIARA_AUTORIZADA}" />
+						</f:facet>
+						<h:outputText value="#{item.seq}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_DESCRICAO_PESQUISA_DIARA_AUTORIZADA}" />
+						</f:facet>
+						<h:outputText id="descricaoDiaria" value="#{pesquisaDiariaAutorizadaPaginatorController.obterHint(item.descricao, 30)}" />
+							<p:overlayPanel id="hintDescricaoDiaria" for="descricaoDiaria" showEvent="mouseover"
+								hideEvent="mouseout" rendered="#{item.descricao.length() > 30}">
+								<h:outputText value="#{item.descricao}" />
+							</p:overlayPanel>
+					</p:column>
+					<p:column style="width:80px;">
+						<f:facet name="header">
+							<h:outputLabel value="#{messages.LABEL_DIAS_PESQUISA_DIARA_AUTORIZADA}" />
+						</f:facet>
+						<h:outputText value="#{item.quantidadeDias}" />
+					</p:column>
+					<p:column style="width:150px;">
+						<f:facet name="header">
+							<h:outputLabel
+								value="#{messages.LABEL_TIPO_PESQUISA_DIARA_AUTORIZADA}" />
+						</f:facet>
+						<h:outputText value="#{item.tipoValorConta.descricao}" />
+					</p:column>
+				</mec:serverDataTable>
+			</aghu:panelGeral>
+		</h:form>
+	</ui:define>
+		<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{pesquisaDiariaAutorizadaPaginatorController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+</ui:composition>
+</html>

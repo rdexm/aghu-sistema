@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisa de Equipes :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{equipePaginatorController}"/>  
+      <h:form> 
+        <pe:remoteCommand name="excluir"> 
+          <pe:assignableParam name="param1" assignTo="#{equipePaginatorController.seqEquipe}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="Pesquisar"> 
+          <aghu:linha> 
+            <mec:inputNumero value="#{equipePaginatorController.codigoPesquisaEquipe}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_EQUIPE}" maxlength="4" size="5" id="codigo"/>  
+            <mec:inputText label="#{messages.LABEL_NOME}" size="50" maxlength="50" title="#{messages.TITLE_NOME_EQUIPE}" value="#{equipePaginatorController.nomePesquisaEquipe}" style="text-transform:uppercase" id="nome"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_PROFISSIONAL_RESPONSAVEL}" title="Selecione ou digite o nome do profissional responsável pela equipe para efetuar a pesquisa por este campo." descricaoInput="matriculaVinculo" descricaoLabel="nome" width="600" suggestionAction="pesquisarRapServidoresVOPorCodigoDescricao" id="responsavel" controller="#{equipePaginatorController}" value="#{equipePaginatorController.responsavelPesquisaEquipe}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_VINCULO}</b> 
+                </f:facet> #{item.vinculo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_MATRICULA}</b> 
+                </f:facet> #{item.matricula}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_MATRICULA}</b> 
+                </f:facet> #{item.nome}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectOneMenu enum="DominioSituacao" label="#{messages.LABEL_ATIVO}" value="#{equipePaginatorController.ativoPesquisaEquipe}" title="#{messages.TITLE_EQUIPE_ATIVA}" id="ativo"/>  
+            <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_PLACAR_RISCO_NEONATAL}" value="#{equipePaginatorController.placarRiscoNeonatalPesquisaEquipe}" title="#{messages.TITLE_PLACAR_RISCO_NEONATAL_EQUIPE}" id="placarRiscoNeonatalPesquisaEquipe"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{equipePaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{equipePaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+          <p:outputPanel rendered="#{equipePaginatorController.exibirBotaoIncluirEquipe}" layout="inline"> 
+            <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{equipePaginatorController.iniciarInclusao}" profile="add"/> 
+          </p:outputPanel> 
+        </aghu:linha>  
+        <p:outputPanel rendered="#{equipePaginatorController.dataModel.pesquisaAtiva}" layout="inline"> 
+          <mec:serverDataTable id="tabelaEquipes" dataModel="dataModel" controller="#{equipePaginatorController}"> 
+            <c:set var="_equipe" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false" width="40"> 
+              <mec:commandLink id="tabelaEquipes_link_editar" profile="edit" title="editar" action="#{equipePaginatorController.editar}"> 
+                <f:setPropertyActionListener target="#{equipeController.aghEquipe}" value="#{_equipe}" for="command"/>  
+                <f:setPropertyActionListener for="command" target="#{equipePaginatorController.equipeSelecionada}" value="#{_equipe}"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="tabelaEquipes_link_remover" profile="delete" title="excluir" action="#{equipePaginatorController.excluir}"> 
+                <f:setPropertyActionListener for="command" target="#{equipePaginatorController.equipeSelecionada}" value="#{_equipe}"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column width="50"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_equipe.seq}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_EQUIPE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_equipe.nome}"/> 
+            </p:column>  
+            <p:column width="50"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_equipe.indSituacao.descricao}"/> 
+            </p:column>  
+            <p:column width="110"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PLACAR_RISCO_NEONATAL}"/> 
+              </f:facet>  
+              <h:outputText value="#{_equipe.indPlacarCo.descricao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PROFISSIONAL_RESPONSAVEL}"/> 
+              </f:facet>  
+              <h:outputText value="#{_equipe.profissionalResponsavel.id.vinCodigo} #{_equipe.profissionalResponsavel.id.matricula} - #{_equipe.profissionalResponsavel.pessoaFisica.nome}"/> 
+            </p:column> 
+            <p:column width="70"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO_IME}"/> 
+              </f:facet>  
+              <h:outputText value="#{_equipe.codigoIme}"/>  
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

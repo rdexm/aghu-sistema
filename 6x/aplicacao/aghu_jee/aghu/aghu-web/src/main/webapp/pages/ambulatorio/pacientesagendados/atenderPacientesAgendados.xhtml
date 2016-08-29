@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO} :: AGHU - MEC</title>
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{atenderPacientesAgendadosController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>
+    <ui:define name="script">
+    	function ubs_exames_aghweb(url, prontuario, consulta, token, banco) {
+			var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+p_prontuario=' + prontuario + '+p_consulta=' + consulta;
+			if (prontuario != null) {
+				abrirJanelaModal(url,{
+					parameters: {	
+						config: 'aghweb',
+						form: 'aelf_solicitar_exame.fmx',
+						otherparams: otherParams },
+						onClose: function() {}
+				});
+			}
+		}
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{atenderPacientesAgendadosController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="form_1"> 
+        <p:outputPanel id="panelAtenderPacientesAgendados" layout="inline"> 
+          <p:outputPanel  rendered="#{atenderPacientesAgendadosController.consultaSelecionada != null}" layout="inline" > 
+            <aghu:panelGeral legend="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO}" > 
+              <aghu:linha> 
+                <h:outputText value="#{messages.LABEL_PESQUISAR_CONSULTAS_AGENDA_PACIENTE}:" style="padding-right:5px;"/>  
+                <h:outputText value="#{atenderPacientesAgendadosController.consultaSelecionada.paciente.nome}" style="font-weight:bold;padding-right:10px;"/>  
+                <h:outputText value="#{messages.LABEL_IDADE}:" style="padding-right:5px;"/>  
+                <h:outputText value="#{atenderPacientesAgendadosController.idadeFormatada}" style="font-weight:bold;padding-right:10px;"/>  
+                <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PRONTUARIO}:" style="padding-right:5px;"/>  
+                <h:outputText value="#{atenderPacientesAgendadosController.consultaSelecionada.paciente.prontuario}" style="font-weight:bold;padding-right:10px;"/>  
+               </aghu:linha>
+               <aghu:linha>
+                <h:outputText value="#{atenderPacientesAgendadosController.labelZona}:" style="padding-right:5px;"/>  
+                <h:outputText value="#{atenderPacientesAgendadosController.consultaSelecionada.gradeAgendamenConsulta.siglaUnfSala.sigla}" style="font-weight:bold;padding-right:10px;"/>  
+                <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_ESPECIALIDADE_AGENDA}:" style="padding-right:5px;"/>  
+                <h:outputText value="#{atenderPacientesAgendadosController.consultaSelecionada.gradeAgendamenConsulta.especialidade.nomeEspecialidade}" style="font-weight:bold;padding-right:10px;"/>  
+                <h:outputText value="#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_EQUIPE}: " style="padding-right:5px;padding-left:10px;"/>  
+                <h:outputText value="#{atenderPacientesAgendadosController.consultaSelecionada.gradeAgendamenConsulta.equipe.nome}" style="font-weight:bold;padding-right:10px;"/>  
+                <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PROFISSIONAL}: " style="padding-right:5px;"/>  
+                <h:outputText value="#{atenderPacientesAgendadosController.consultaSelecionada.gradeAgendamenConsulta.profEspecialidade.rapServidor.pessoaFisica.nome}" style="font-weight:bold;"/> 
+             
+
+			  
+              <mec:commandButton style="float:right" value="#{messages.LABEL_BT_PRONTUARIO_FAMILIARES}" immediate="true"
+         			rendered="#{cadastrarPacienteController.prontuarioFamiliaVisivel}"
+         			action="#{atenderPacientesAgendadosController.redirecionarAgrupamentoPacientes}"
+				 	ajax="true" >
+				<f:setPropertyActionListener
+					target="#{agrupamentoFamiliarController.pacienteContexto}"
+					value="#{atenderPacientesAgendadosController.consultaSelecionada.paciente}"
+					for="command" />
+				<f:setPropertyActionListener
+					target="#{agrupamentoFamiliarController.cameFrom}"
+					value="ambulatorio-atenderPacientesAgendados"
+					for="command" />
+			  </mec:commandButton>
+              </aghu:linha> 
+              <aghu:linha> 
+	              <p:tabView id="atenderTab" 
+	              	dynamic="true" 
+	              	activeIndex="#{atenderPacientesAgendadosController.selectedTab}" 
+	              	prependId="false">
+	              	
+	                <p:ajax event="tabChange"  
+	                	listener="#{atenderPacientesAgendadosController.obtemDescricaoConsultaAtual}" 
+	                	process="@this" update="@this"
+	                	/>
+	                <p:tab name="aba1-amb" id="aba1-amb" title="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA1}">  
+                    	<p:outputPanel id="tabs-1">
+	                  		<ui:include src="/pages/ambulatorio/pacientesagendados/atenderPacientesAgendadosAba1.xhtml"/> 
+	                	</p:outputPanel>
+	                </p:tab>  
+	                <p:tab name="aba2-amb" id="aba2-amb" disabled="#{not atenderPacientesAgendadosController.habilitaAnamnese}" title="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA2}"> 
+	                 	<p:outputPanel id="tabs-2">
+	                  		<ui:include src="/pages/ambulatorio/pacientesagendados/atenderPacientesAgendadosAba2.xhtml"/> 
+	                 	</p:outputPanel>
+	                </p:tab>  
+	                <p:tab name="aba3-amb" id="aba3-amb" disabled="#{not atenderPacientesAgendadosController.habilitaEvolucao}" title="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA3}">         
+	                	<p:outputPanel id="tabs-3">	               
+	                 		<ui:include src="/pages/ambulatorio/pacientesagendados/atenderPacientesAgendadosAba3.xhtml"/>                 	
+	                	</p:outputPanel>
+	                </p:tab>  
+	                <p:tab name="aba4-amb" id="aba4-amb" disabled="#{not atenderPacientesAgendadosController.habilitaProcedimento}" title="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA4}"> 
+	                  <p:outputPanel id="tabs-4">
+	                  		<ui:include src="/pages/ambulatorio/pacientesagendados/atenderPacientesAgendadosAba4.xhtml"/> 
+	               	   </p:outputPanel>
+	                </p:tab>  
+	                <p:tab name="aba5-amb" id="aba5-amb" disabled="#{not atenderPacientesAgendadosController.habilitaReceita}" title="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA5}"> 
+	                  <p:outputPanel id="tabs-5">
+	                  		<ui:include src="/pages/ambulatorio/pacientesagendados/atenderPacientesAgendadosAba5.xhtml"/> 
+	              	  </p:outputPanel>
+	                </p:tab>  
+	                <p:tab name="aba6-amb" id="aba6-amb" disabled="#{not atenderPacientesAgendadosController.habilitaAtestado}" title="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA6}" > 
+	                  <p:outputPanel id="tabs-6">
+	                  		<ui:include src="/pages/ambulatorio/pacientesagendados/atenderPacientesAgendadosAba6.xhtml"/> 
+	               	   </p:outputPanel>
+	                </p:tab>
+	                <p:tab name="aba7-amb" id="aba7-amb" title="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA7}" > 
+	                   <p:outputPanel id="tabs-7">
+	                  		<ui:include src="/pages/ambulatorio/pacientesagendados/atenderPacientesAgendadosAba7.xhtml"/> 
+	                	</p:outputPanel>
+	                </p:tab>
+	              </p:tabView>
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:acao id="panelButtons"> 
+               <mec:commandButton id="bt_pendente" value="#{messages.LABEL_PENDENTE}" oncomplete="PF('modalMotivoPendenciaWG').show();" ajax="true" process="@this" styleClass="bt_cinza"/> 
+                
+                <mec:commandButton 
+			   		id="bt_controle_paciente2" 
+			   		value="#{messages.LABEL_PESQUISAR_PACIENTES_CONTROLE_PACIENTE}" 
+            		action="#{atenderPacientesAgendadosController.redirecionarControlePaciente}" 
+             		ajax="true"
+            		process="@this" styleClass="bt_cinza" />
+
+               <mec:commandButton id="bt_cancelar_" oncomplete="PF('modalCancelarAtendimentoWG').show();" value="#{messages.LABEL_CANCELAR_ATENDIMENTO}" profile="cancel" ajax="true" process="@this"/>
+            </aghu:acao> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form>  
+      
+      <p:dialog id="modalCancelarAtendimento" width="400" height="150" modal="true" resizable="false" widgetVar="modalCancelarAtendimentoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CANCELAR_ATENDIMENTO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CANCELAR_ATENDIMENTO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalCancelarAtendimento"> 
+            <mec:commandButton id="bt_cancelar_atendimento" action="#{atenderPacientesAgendadosController.cancelarAtendimento}" oncomplete="PF('modalCancelarAtendimentoWG').show();;" value="#{messages.LABEL_SIM}" profile="ok" ajax="true" process="@this"/>  
+            <mec:commandButton id="bt_nao_cancelar_atendimento" value="#{messages.LABEL_NAO}" onclick="PF('modalCancelarAtendimentoWG').hide();" profile="cancel" ajax="true" process="@this"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>
+        
+      <p:dialog id="modalMotivoPendencia" width="480" height="250" modal="true" resizable="false" widgetVar="modalMotivoPendenciaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_MOTIVO_PENDENCIA}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:form prependId="false" id="formModalMotivoPendencia"> 
+          <aghu:panelGeral legend="#{messages.LABEL_PENDENTE}"> 
+            <mec:selectOneRadio label="#{messages.LABEL_RADIO_ATENDIMENTO_PENDENTE}" enum="DominioMotivoPendencia" value="#{atenderPacientesAgendadosController.motivoPendencia}" title="#{messages.TITLE_MOTIVO_PENDENCIA_ATENDIMENTO}" layout="pageDirection" id="pendencia"> 
+              <p:ajax update="@(#bt_gravar_pendencia)" event="change"/> 
+            </mec:selectOneRadio> 
+          </aghu:panelGeral>  
+          <h:panelGroup> 
+            <mec:commandButton id="bt_gravar_pendencia" action="#{atenderPacientesAgendadosController.gravarPendencia}" value="#{messages.LABEL_GRAVAR}" oncomplete="PF('modalConfirmacaoMarcarFaltaWG').hide();" profile="ok" ajax="true" render="modalImpressao"/>  
+            <mec:commandButton id="bt_cancelar_pendencia" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalMotivoPendenciaWG').hide();" immediate="true" profile="cancel" ajax="true"/> 
+          </h:panelGroup> 
+        </h:form> 
+      </p:dialog>
+
+		<p:outputPanel id="panelModalFinalizarAtendimento" layout="inline"> 
+        <p:outputPanel rendered="#{atenderPacientesAgendadosController.consultaSelecionada != null}" layout="inline"> 
+          <ui:include src="/pages/ambulatorio/pacientesagendados/modalFinalizarAtendimento.xhtml"/> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+      
+      <h:form prependId="false" id="formModalImpressao"> 
+        <p:outputPanel id="modalImpressao" layout="inline"> 
+          <p:outputPanel rendered="#{atenderPacientesAgendadosController.mostrarModalImpressao}" layout="inline"> 
+            <script xml:space="preserve">
+						PF('modalFinalizarAtendimentoWG').show();
+					</script> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+    
+  </ui:composition> 
+</html>

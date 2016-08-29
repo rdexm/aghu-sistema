@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PRONTUARIO_ONLINE_CONSULTAR_DESTALHES_CONSULTORIA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{consultaDetalheConsultoriaController.inicio}" />
+		</f:metadata>
+	</ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{consultaDetalheConsultoriaController}"/>  
+      <h:form prependId="false" id="formConsultoria"> 
+        <aghu:panelGeral legend="#{messages.LABEL_CONSULTORIAS}"> 
+          <aghu:linha> 
+            <mec:serverDataTable width="600px" id="listaConsultorias" name="listaConsultorias" 
+            					 list="#{consultaDetalheConsultoriaController.solicitacoes}" 
+								 controller="#{consultaDetalheConsultoriaController}"
+            					 scrollable="true" scrollHeight="218" selection="selecionado"> 
+              <c:set var="_consultoria" value="#{item}"/>  
+              <p:ajax event="rowSelect" update="@(#panelMotivo) @(#panelResposta) @(#listaConsultorias)" listener="#{consultaDetalheConsultoriaController.carregaMotivoResposta}"/>
+              		    
+              <p:column style="width: 85px"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DTSOLICITACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_consultoria.dtHrSolicitada}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column style="width: 300px"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SOLICITANTE}"/> 
+                </f:facet>  
+                <h:outputText value="#{_consultoria.nomePessoaServidorCriacao}"/> 
+              </p:column>  
+              <p:column style="width: 130px"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ESPECIALIDADE}"/> 
+                </f:facet>  
+                <h:outputText value="#{_consultoria.nomeReduzidoEspecialidade}"/> 
+              </p:column>  
+              <p:column style="width: 85px"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_consultoria.indSituacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:tabView id="tabPanelAbas" dynamic="false" prependId="false"> 
+              <p:tab id="tabs-0" title="#{messages.LABEL_MOTIVO}"> 
+                <p:outputPanel id="panelMotivo" layout="inline"> 
+                  <p:outputPanel layout="block" style="width:100%; height:140px;overflow-y:scroll;border-width:2px;border-style:solid;border-color:gray;"> 
+                    <h:outputText escape="false" value="#{consultaDetalheConsultoriaController.motivo}"/> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </p:tab>  
+              <p:tab id="tabs-1" title="#{messages.LABEL_RESPOSTA}"> 
+                <p:outputPanel id="panelResposta" layout="inline"> 
+                  <p:outputPanel layout="block" style="width:100%; height:140px;overflow-y:scroll;border-width:2px;border-style:solid;border-color:gray;"> 
+                    <h:outputText escape="false" value="#{consultaDetalheConsultoriaController.resposta}"/> 
+                  </p:outputPanel> 
+                </p:outputPanel>
+				<aghu:linha>
+				</aghu:linha>
+				<mec:commandButton id="bt_imprimir_resposta"
+					value="#{messages.LABEL_IMPRIMIR}"
+					disabled="#{not mf:hasPermission(securityController, 'permiteImprimirCirurgiaInternacaoPOL,imprimir')}"
+					action="#{relatorioRetornoConsultoriaController.directPrint}"
+					block="true">
+					<f:setPropertyActionListener for="command"
+						target="#{relatorioRetornoConsultoriaController.atdSeq}"
+						value="#{consultaDetalheConsultoriaController.atdSeq}" />
+					<f:setPropertyActionListener for="command"
+						target="#{relatorioRetornoConsultoriaController.scnSeq}"
+						value="#{consultaDetalheConsultoriaController.selecionado.seq}" />
+				 </mec:commandButton>
+              </p:tab> 
+            </p:tabView> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar1" rendered="#{!consultaDetalheConsultoriaController.exibirCancelarDetalheInternacao and consultaDetalheConsultoriaController.voltarPara == null}" action="consultarInternacoes" styleClass="bt_voltar bt_cinza" profile="back"/>  
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar2" rendered="#{consultaDetalheConsultoriaController.exibirCancelarDetalheInternacao and consultaDetalheConsultoriaController.voltarPara == null}" action="consultaDetalheInternacao" styleClass="bt_voltar bt_cinza" profile="back"/>  
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar3" rendered="#{consultaDetalheConsultoriaController.voltarPara != null}" action="#{consultaDetalheConsultoriaController.getVoltarPara()}" styleClass="bt_voltar bt_cinza" profile="back"> 
+            <f:param name="pagina" value="#{consultaDetalheConsultoriaController.voltarPara}"/> 
+          </mec:commandButton> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

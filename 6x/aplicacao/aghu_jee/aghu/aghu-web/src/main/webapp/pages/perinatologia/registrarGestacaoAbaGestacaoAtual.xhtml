@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<script type="text/javascript">//<![CDATA[
+        function alterarFocoTab(campo, totalCol, totalLin, ant, post, e) {
+            var tecla = ( window.event ) ? e.keyCode : e.which;/*pega qual tecla foi pressionada*/
+            if ( tecla != 9 ) return true; /*retorna verdadeiro se foi diferente de TAB*/
+           
+            var next = "input_" + (e.shiftKey ? ant : post);
+           
+            var tam = campo.length;
+            var iLin = campo.indexOf(":") + 1;
+            var fLin = campo.lastIndexOf(":");
+            var iCol = campo.lastIndexOf("_") + 1;
+            var parte1 = campo.substr(0, iLin);
+            var tamLin = fLin-iLin;
+            var linha =  parseInt(campo.substr(iLin, tamLin));
+            var tamParte2 = iCol-fLin;
+            var parte2 = campo.substr(fLin, tamParte2);
+            var coluna = parseInt(campo.substr(iCol));
+           
+            coluna = e.shiftKey ? coluna - 1 : coluna + 1;
+           
+            if(coluna == totalCol){
+                linha = linha + 1;
+                coluna = 0;
+                if(linha < totalLin){
+                    next = parte1 + linha + parte2 + coluna;
+                }
+            } else if(coluna < 0){
+                linha = linha - 1;
+                coluna = totalCol-1;
+                if(linha >= 0){
+                    next = parte1 + linha + parte2 + coluna;
+                }
+            } else {
+                next = parte1 + linha + parte2 + coluna;               
+            }       
+            $(next).focus();
+        }
+    //]]> </script>
+<ui:composition>
+	<p:outputPanel id="panelGestacaoGeral"> 
+	<aghu:panelGeral legend="#{messages.LABEL_GESTACAO_REGISTRAR_GESTACAO}">
+		<aghu:linha>
+			<p:outputPanel id="panelGestacao">
+				<mec:inputNumero id="gestacao"
+					label="#{messages.LABEL_GESTACAO_REGISTRAR_GESTACAO}" size="2"
+					maxlength="2" converter="javax.faces.Byte" requiredFake="true"
+					value="#{registrarGestacaoController.dadosGestacaoVO.gestacao}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+						<p:ajax event="change" process="@this" update="@(#panelGestacao)" listener="#{registrarGestacaoController.atualizarCampoGestacao()}"/>
+				</mec:inputNumero>
+				<mec:inputNumero id="parto"
+					label="#{messages.LABEL_PARTO_REGISTRAR_GESTACAO}" size="2"
+					maxlength="2" converter="javax.faces.Byte"
+					value="#{registrarGestacaoController.dadosGestacaoVO.parto}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<p:ajax event="change" bypassUpdates="false"
+						update="@(#panelGrupoSanguineoMae)" process="@this"
+						listener="#{registrarGestacaoController.validarParto}" />
+				</mec:inputNumero>
+				<mec:inputNumero id="cesariana"
+					label="#{messages.LABEL_CESARIANA_REGISTRAR_GESTACAO}" size="2"
+					maxlength="2" converter="javax.faces.Byte"
+					value="#{registrarGestacaoController.dadosGestacaoVO.cesariana}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<p:ajax event="change" process="@this" />
+				</mec:inputNumero>
+				<mec:inputNumero id="aborto"
+					label="#{messages.LABEL_ABORTO_REGISTRAR_GESTACAO}" size="2"
+					maxlength="2" converter="javax.faces.Byte"
+					value="#{registrarGestacaoController.dadosGestacaoVO.aborto}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<p:ajax event="change" process="@this" />
+				</mec:inputNumero>
+				<mec:inputNumero id="ectopica"
+					label="#{messages.LABEL_ECTOPICA_REGISTRAR_GESTACAO}" size="2"
+					maxlength="2" converter="javax.faces.Byte"
+					value="#{registrarGestacaoController.dadosGestacaoVO.ectopica}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<p:ajax event="change" process="@this" />
+				</mec:inputNumero>
+				<mec:selectOneMenu id="gravidez"
+					label="#{messages.LABEL_GRAVIDEZ_REGISTRAR_GESTACAO}"
+					value="#{registrarGestacaoController.dadosGestacaoVO.gravidez}"
+					enum="DominioGravidez" noSelectionOption="false"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<p:ajax event="change" process="@this" />
+				</mec:selectOneMenu>
+				<mec:selectOneMenu id="gemelar"
+					label="#{messages.LABEL_GEMELAR_REGISTRAR_GESTACAO}"
+					value="#{registrarGestacaoController.dadosGestacaoVO.gemelar}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<f:selectItem itemValue="N" itemLabel="Não" />
+					<f:selectItem itemValue="2" itemLabel="2" />
+					<f:selectItem itemValue="3" itemLabel="3" />
+					<f:selectItem itemValue="4" itemLabel="4" />
+					<f:selectItem itemValue="5" itemLabel="5" />
+					<f:selectItem itemValue="6" itemLabel="6" />
+					<p:ajax event="change" process="@this" />
+				</mec:selectOneMenu>
+			</p:outputPanel>
+		</aghu:linha>
+		<p:outputPanel id="panelInformacoesIg"
+			rendered="#{not empty registrarGestacaoController.dadosGestacaoVO.informacoesIg}">
+			<aghu:linha style="text-align:center;border:1px solid grey">
+				<p:outputPanel id="panelTextoIg">
+					<h:outputText
+						value="#{registrarGestacaoController.dadosGestacaoVO.informacoesIg}"
+						style="font-size:12px;text-align:center;background-color:white" />
+				</p:outputPanel>
+			</aghu:linha>
+		</p:outputPanel>
+		<aghu:linha>
+			<mec:inputTextData id="dtUltimaMenstruacao"
+				label="#{messages.LABEL_DT_ULTIMA_MENSTRUACAO_REGISTRAR_GESTACAO}"
+				title=""
+				value="#{registrarGestacaoController.dadosGestacaoVO.dtUltimaMenstruacao}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}"
+					render="dtUltimaMenstruacao" tipo="data">
+					<p:ajax event="change" process="@this" />
+					<p:ajax process="@this" event="dateSelect"/>
+					</mec:inputTextData>
+			<mec:inputTextData id="dtPrimeiraEco"
+				label="#{messages.LABEL_DT_PRIMEIRA_ECO_REGISTRAR_GESTACAO}"
+				title="#{messages.TITLE_DT_PRIMEIRA_ECO_REGISTRAR_GESTACAO}"
+				value="#{registrarGestacaoController.dadosGestacaoVO.dtPrimeiraEco}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}"
+				reRender="dtUltimaMenstruacao" tipo="data">
+					<p:ajax process="@this" event="dateSelect" update="@(#panelIgAtual)"
+					listener="#{registrarGestacaoController.validarEcoSemanasDias(true)}" />
+					<p:ajax event="change" process="@this" update="@(#panelIgAtual)" 
+						listener="#{registrarGestacaoController.validarEcoSemanasDias(true)}"/>
+			</mec:inputTextData>
+			<p:outputPanel id="panelPrimeiraEco">
+				<mec:field id="IgPrimeiraEcoSemanas"
+					label="#{messages.LABEL_IG_PRIMEIRA_ECO_REGISTRAR_GESTACAO}"
+					title="#{messages.TITLE_IG_PRIMEIRA_ECO_REGISTRAR_GESTACAO}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual()}">
+					<h:inputText id="ecoSemanas"
+						value="#{registrarGestacaoController.dadosGestacaoVO.ecoSemanas}"
+						maxlength="3" size="3" converter="javax.faces.Byte"
+						readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+						<p:ajax event="change" bypassUpdates="false"
+							update="@(#panelIgAtual)" process="@this"
+							listener="#{registrarGestacaoController.validarEcoSemanasDias(true)}" />
+					</h:inputText>
+					<span style="margin-right: 2px">semanas</span>
+					<h:inputText id="ecoDias"
+						value="#{registrarGestacaoController.dadosGestacaoVO.ecoDias}"
+						maxlength="3" size="3" converter="javax.faces.Byte"
+						readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+						<p:ajax event="change" bypassUpdates="false"
+							update="@(#panelIgAtual)" process="@this"
+							listener="#{registrarGestacaoController.validarEcoSemanasDias(false)}" />
+					</h:inputText>
+					<span>dias</span>
+				</mec:field>
+			</p:outputPanel>
+			<p:outputPanel id="panelIgAtual">
+				<mec:field id="IgAtual"
+					label="#{messages.LABEL_IG_ATUAL_REGISTRAR_GESTACAO}"
+					title="#{messages.TITLE_IG_ATUAL_REGISTRAR_GESTACAO}"
+					readonly="#{registrarGestacaoController.dadosGestacaoVO.ecoSemanas le 20 or not registrarConsultaCOController.isPermiteAlterarAbaGestAtual()}">
+					<h:inputText id="igAtualSemanas"
+						value="#{registrarGestacaoController.dadosGestacaoVO.igAtualSemanas}"
+						maxlength="3" size="3"
+						readonly="#{registrarGestacaoController.dadosGestacaoVO.ecoSemanas le 20 or not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}"
+						converter="javax.faces.Byte">
+						<p:ajax event="change" bypassUpdates="false"
+							update="@(#panelIgAtual)" process="@this"
+							listener="#{registrarGestacaoController.calcularDtProvavelParto}" />
+					</h:inputText>
+					<span style="margin-right: 2px">semanas</span>
+					<h:inputText id="igAtualDias"
+						value="#{registrarGestacaoController.dadosGestacaoVO.igAtualDias}"
+						maxlength="3" size="3"
+						readonly="#{registrarGestacaoController.dadosGestacaoVO.ecoSemanas le 20 or not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}"
+						converter="javax.faces.Byte">
+						<p:ajax event="change" update="@(#panelIgAtual)" process="@this"
+							listener="#{registrarGestacaoController.calcularDtProvavelParto}" />
+					</h:inputText>
+					<span>dias</span>
+				</mec:field>
+				<mec:inputTextData id="dtProvavelParto"
+					label="#{messages.LABEL_DPP_REGISTRAR_GESTACAO}"
+					title="#{messages.TITLE_DPP_REGISTRAR_GESTACAO}"
+					value="#{registrarGestacaoController.dadosGestacaoVO.dtProvavelParto}"
+					readonly="true" tipo="data"></mec:inputTextData>
+			</p:outputPanel>
+		</aghu:linha>
+	</aghu:panelGeral>
+	<aghu:panelGeral
+		legend="#{messages.LABEL_PRE_NATAL_REGISTRAR_GESTACAO}">
+		<aghu:linha>
+			<mec:inputNumero id="nroConsultas"
+				label="#{messages.LABEL_NRO_CONSULTAS_REGISTRAR_GESTACAO}"
+				title="#{messages.TITLE_NRO_CONSULTAS_REGISTRAR_GESTACAO}" size="3"
+				maxlength="3"
+				value="#{registrarGestacaoController.dadosGestacaoVO.nroConsultas}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}"
+				converter="javax.faces.Byte"></mec:inputNumero>
+			<mec:inputTextData id="dtPrimeiraConsulta"
+				label="#{messages.LABEL_PRIMEIRA_CONSULTA_REGISTRAR_GESTACAO}"
+				title=""
+				value="#{registrarGestacaoController.dadosGestacaoVO.dtPrimeiraConsulta}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}"
+				tipo="data"></mec:inputTextData>
+			<mec:selectBooleanCheckbox id="vatCompleta"
+				label="#{messages.LABEL_VAT_COMPLETA_REGISTRAR_GESTACAO}"
+				title="#{messages.TITLE_VAT_COMPLETA_REGISTRAR_GESTACAO}"
+				value="#{registrarGestacaoController.dadosGestacaoVO.vatCompleta}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}"></mec:selectBooleanCheckbox>
+		</aghu:linha>
+	</aghu:panelGeral>
+	<aghu:panelGeral
+		legend="#{messages.LABEL_TIPO_SANGUINEO_REGISTRAR_GESTACAO}">
+		<aghu:linha>
+			<p:outputPanel id="panelGrupoSanguineoMae">
+				<mec:selectOneMenu id="tipoSanguineoMae"
+					label="#{messages.LABEL_TIPO_SANGUINEO_MAE_REGISTRAR_GESTACAO}"
+					value="#{registrarGestacaoController.dadosGestacaoVO.tipoSanguineoMae}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<f:selectItem itemValue="O" itemLabel="O" />
+					<f:selectItem itemValue="A" itemLabel="A" />
+					<f:selectItem itemValue="B" itemLabel="B" />
+					<f:selectItem itemValue="AB" itemLabel="AB" />
+				</mec:selectOneMenu>
+				<mec:selectOneMenu id="fatorRHMae"
+					label="#{messages.LABEL_FATOR_RH_MAE_REGISTRAR_GESTACAO}"
+					value="#{registrarGestacaoController.dadosGestacaoVO.fatorRHMae}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<f:selectItem itemValue="+" itemLabel="+" />
+					<f:selectItem itemValue="-" itemLabel="-" />
+				</mec:selectOneMenu>
+				<mec:selectOneMenu id="coombs"
+					label="#{messages.LABEL_COOMBS_REGISTRAR_GESTACAO}"
+					title="#{messages.TITLE_COOMBS_REGISTRAR_GESTACAO}"
+					value="#{registrarGestacaoController.dadosGestacaoVO.coombs}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<f:selectItem itemValue="P" itemLabel="Pos" />
+					<f:selectItem itemValue="N" itemLabel="Neg" />
+				</mec:selectOneMenu>
+			</p:outputPanel>
+			<mec:selectOneMenu id="mesmoPai"
+				label="#{messages.LABEL_MESMO_PAI_REGISTRAR_GESTACAO}"
+				value="#{registrarGestacaoController.dadosGestacaoVO.mesmoPai}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+				<f:selectItem itemValue="true" itemLabel="Sim" />
+				<f:selectItem itemValue="false" itemLabel="Não" />
+			</mec:selectOneMenu>
+			<mec:selectOneMenu id="tipoSanguineoPai"
+				label="#{messages.LABEL_TIPO_SANGUINEO_PAI_REGISTRAR_GESTACAO}"
+				value="#{registrarGestacaoController.dadosGestacaoVO.tipoSanguineoPai}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+				<f:selectItem itemValue="O" itemLabel="O" />
+				<f:selectItem itemValue="A" itemLabel="A" />
+				<f:selectItem itemValue="B" itemLabel="B" />
+				<f:selectItem itemValue="AB" itemLabel="AB" />
+			</mec:selectOneMenu>
+			<mec:selectOneMenu id="fatorRHPai"
+				label="#{messages.LABEL_FATOR_RH_PAI_REGISTRAR_GESTACAO}"
+				value="#{registrarGestacaoController.dadosGestacaoVO.fatorRHPai}"
+				readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+				<f:selectItem itemValue="+" itemLabel="+" />
+				<f:selectItem itemValue="-" itemLabel="-" />
+			</mec:selectOneMenu>
+		</aghu:linha>
+	</aghu:panelGeral>
+	<aghu:panelGeral legend="#{messages.LABEL_REGISTRAR_GESTACAO_EXAMES}">
+		<p:outputPanel id="panelInformarCargaExame" style="width: 100%;">
+			<aghu:linha>
+				<p:outputPanel id="panelExameRegistrarGestacao">
+					<mec:suggestionBox id="sgExameRegistrarGestacao"
+						label="#{messages.LABEL_REGISTRAR_GESTACAO_EXAME}"
+						descricaoInput="emaExaSigla" descricaoLabel="descricao"
+						suggestionAction="pesquisarExames" width="400"
+						readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}"
+						controller="#{registrarGestacaoController}"
+						value="#{registrarGestacaoController.exameSelecionado}"
+						var="_itemExames" itemValue="#{_itemExames}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_REGISTRAR_GESTACAO_SIGLA}</b>
+							</f:facet>
+							<h:outputLabel value="#{_itemExames.emaExaSigla}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_REGISTRAR_GESTACAO_DESCRICAO}</b>
+							</f:facet>#{_itemExames.descricao}
+                </p:column>
+					</mec:suggestionBox>
+					<aghu:acao newLine="false">
+						<mec:commandButton id="bt_adicionarCargaExame"
+							value="#{messages.LABEL_ADICIONAR}"
+							action="#{registrarGestacaoController.adicionarExameSelecionado}"
+							render="panelTabelaExamesPerinato, sgExameRegistrarGestacao"
+							immediate="true" ajax="true"
+							disabled="#{not registrarGestacaoController.permInformarCargaExame or not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled or not registrarGestacaoController.temPermissaoManter}"
+							style="float:left; margin-top:16px;" profile="add" />
+					</aghu:acao>
+				</p:outputPanel>
+			</aghu:linha>
+			<aghu:linha>
+				<p:outputPanel id="panelTabelaExamesPerinato">
+					<mec:serverDataTable id="tabelaExamesPerinato"
+						width="99.6%"
+						list="#{registrarGestacaoController.examesResultados}"
+						controller="#{registrarGestacaoController}" 
+						scrollable="true"
+						scrollHeight="auto"
+						>
+						<c:set var="exameResultados" value="#{item}" />
+						<p:column
+							width="#{registrarGestacaoController.obterTamanhoPrimeiraColuna()}">
+							<f:facet name="header">
+								<p:outputPanel style="width: 100%;">
+									<h:outputText value="Exame"
+										style="font-weight:bold; color:#000000; " />
+									<p:spacer width="10" />
+									<p:commandLink id="bt_now_data" title="Adicionar Data"
+										styleClass="silk-icon silk-calendar-add"
+										style="vertical-align: middle; text-align: right;" ajax="true"
+										process="@this"
+										rendered="#{registrarGestacaoController.permInformarCargaExame and registrarConsultaCOController.isPermiteAlterarAbaGestAtual()             and not registrarConsultaCOController.disabled and registrarGestacaoController.temPermissaoManter}"
+										action="#{registrarGestacaoController.informarNovaDataExame}"
+										render="panelModalNovaData" />
+								</p:outputPanel>
+							</f:facet>
+							<h:outputText value="#{exameResultados.exame.descricao}"
+								style="font-weight:bold; color:#000000;" />
+						</p:column>
+						<p:columns id="resultado#{exameResultados.ind}" var="data"
+							columnIndexVar="ind"
+							value="#{registrarGestacaoController.datasExames}"
+							sortable="false" width="110">
+							<f:facet name="header">
+								<p:outputPanel style="width: 100%;">
+									<h:outputText value="#{data}"
+										style="font-weight:bold; vertical-align: middle;">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+									<p:spacer width="10" />
+									<p:commandLink id="bt_alt_data#{ind}" title="Alterar Data"
+										styleClass="silk-icon silk-calendar-edit"
+										style="vertical-align: middle; text-align: right;"
+										rendered="#{registrarGestacaoController.permInformarCargaExame and registrarConsultaCOController.isPermiteAlterarAbaGestAtual() and not registrarConsultaCOController.disabled and registrarGestacaoController.temPermissaoManter}"
+										action="#{registrarGestacaoController.alterarDataExame(data)}"
+										ajax="true"
+										process="@this"
+										render="panelModalNovaData" />
+									<p:commandLink id="bt_del_data#{ind}" title="Excluir Data"
+										styleClass="silk-icon silk-calendar-delete"
+										style="vertical-align: middle; text-align: right;"
+										rendered="#{registrarGestacaoController.permInformarCargaExame and registrarConsultaCOController.isPermiteAlterarAbaGestAtual() and not registrarConsultaCOController.disabled and registrarGestacaoController.temPermissaoManter}"
+										action="#{registrarGestacaoController.excluirDataExame(data)}"
+										ajax="true"
+										process="@this"
+										render="modalExcluirData" />
+								</p:outputPanel>
+							</f:facet>
+							<p:outputPanel>
+								<div style="text-align: center !important;">
+									<h:inputText id="it_resultado_#{ind}" maxlength="55"
+										value="#{exameResultados.resultados[ind].resultado}"
+										disabled="#{not registrarGestacaoController.permInformarCargaExame or not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled}"
+										style="width: 95%;"
+										onkeyup="alterarFocoTab(this.id, #{registrarGestacaoController.datasExames.size()}, #{registrarGestacaoController.examesResultados.size()}, 'sgExameRegistrarGestacao', 'itaObservacaoExameRegistrarGestacao', event)"
+										readonly="#{not registrarGestacaoController.temPermissaoManter}">
+										<p:ajax event="change" process="@this"
+											action="#{registrarGestacaoController.setAlterouExames(true)}" />
+									</h:inputText>
+								</div>
+							</p:outputPanel>
+						</p:columns>
+						<p:column></p:column>
+					</mec:serverDataTable>
+				</p:outputPanel>
+			</aghu:linha>
+			<aghu:linha>
+				<mec:inputTextArea id="itaObservacaoExameRegistrarGestacao"
+					label="#{messages.LABEL_REGISTRAR_GESTACAO_OBSERVACOES}"
+					title="#{messages.TITLE_REGISTRAR_GESTACAO_OBSERVACOES}"
+					autoresize="true" style="width:900px;" maxlength="2000"
+					value="#{registrarGestacaoController.dadosGestacaoVO.observacaoExame}"
+					readonly="#{not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or registrarConsultaCOController.disabled         or registrarConsultaCOController.internacaoDisabled or not registrarGestacaoController.temPermissaoManter}">
+					<p:ajax event="change" process="@this" />
+				</mec:inputTextArea>
+			</aghu:linha>
+		</p:outputPanel>
+	</aghu:panelGeral>
+	<aghu:acao>
+		<mec:commandButton id="bt_gravar" profile="ok"
+			controller="#{registrarGestacaoController}"
+				action="#{registrarGestacaoController.preGravar}" 
+			disabled="#{not registrarGestacaoController.permManterGestacoes or not registrarGestacaoController.permInformarCargaExame or not registrarConsultaCOController.isPermiteAlterarAbaGestAtual() or !registrarGestacaoController.temPermissaoManter}"
+			value="#{messages.LABEL_GRAVAR}"
+				ajax="true"
+				process="@(#panelGestacaoGeral)"
+			render="modalJustificativa, panelAbas" />
+			
+		<mec:commandButton id="bt_solicitar_exames_aba_gestacao_atual"
+          value="#{messages.LABEL_SOLICITAR_EXAMES_REGISTRAR_GESTACAO}"          
+          disabled="#{not registrarGestacaoController.habilitarSolicitarExames}"
+          action="#{registrarGestacaoController.solicitarExames}"
+          ajax="true"
+          process="@this"          
+          render="panelModalAutenticacaoSolicitarExamesAbaGestacaoAtual"
+         />
+         
+		<mec:commandButton id="bt_consultar_exames"
+			disabled="#{!registrarGestacaoController.habilitarBtConsultaExames}"
+			value="#{messages.LABEL_CONSULTAR_EXAMES_REGISTRAR_GESTACAO}"
+			onclick="parent.addPOLProntuario(#{registrarGestacaoController.prontuario})"
+			ajax="true" immediate="true"/>
+		<mec:commandButton id="btnVisualizarAcolhimento"
+			disabled="#{!registrarGestacaoController.permVisualizarAcolhimento}"
+			value="#{messages.LABEL_VER_ACOLHIMENTO}"
+			action="#{registrarGestacaoController.prepararTelaAcolhimento}"
+			ajax="true" process="@this" />
+		<mec:commandButton id="bt_desbloqueio"
+			value="#{messages.LABEL_DESBLOQUEIO_REGISTRAR_GESTACAO}"
+			disabled="true"></mec:commandButton>
+	</aghu:acao>
+	</p:outputPanel>
+	
+	<p:dialog id="modalJustificativa" width="400" height="auto"
+		overlapEmbedObjects="true" autosized="true"
+		domElementAttachment="parent" resizeable="false" zindex="1000"
+		widgetVar="modalJustificativaWG">
+		<f:facet name="controls">
+			<h:panelGroup>
+				<h:graphicImage id="hidelinkModal" value="/resources/img/close.png"
+					onclick="PF('modalJustificativa').hide(); return false;"
+					styleClass="hidelink" />
+			</h:panelGroup>
+		</f:facet>
+		<f:facet name="header">
+			<h:outputText value="#{messages.LABEL_JUSTIFICATIVA}" />
+		</f:facet>
+		<p:outputPanel id="modalJustificativaPanelInterno">#{registrarGestacaoController.dadosGestacaoVO.mensagemModalJustificativa} 
+          <aghu:linha>
+				<mec:inputTextArea id="justificativa"
+					style="width: 360px; height: 100px;resize: none" maxlength="200"
+					cols="120" rows="10"
+					value="#{registrarGestacaoController.justificativa}"
+					requiredFake="true" styleClass="maxlength_(200)" />
+			</aghu:linha>
+		</p:outputPanel>
+		<br />
+		<aghu:acao>
+			<mec:commandButton id="bt_Justificar" profile="search"
+				value="#{messages.LABEL_JUSTIFICAR}"
+				process="@this @(#modalJustificativaPanelInterno)" ajax="true"
+				action="#{registrarGestacaoController.gravarJustificativa}"
+				render="modalJustificativa" />
+			<mec:commandButton id="bt_cancelar_operacao_gestacao_atual"
+				profile="cancel" value="#{messages.LABEL_CANCELAR}"
+				action="#{registrarGestacaoController.cancelarGravarJustificativa}"
+				oncomplete="PF('modalJustificativa').hide(); return false;" />
+		</aghu:acao>
+	</p:dialog>
+	<p:outputPanel id="panelModalNovaData">
+		<p:dialog id="modalNovaData" width="400" height="150" autosized="true"
+			resizable="false" widgetVar="modalNovaDataWG">
+			<f:facet name="header">
+				<h:outputText value="Adicionar Data" />
+			</f:facet>
+			<h:form prependId="false" id="formModalNovaData">
+				<p:outputPanel id="modalNovaDataPanelInterno">Selecione uma data 
+              <aghu:linha>
+						<mec:inputTextData id="novaData"
+							value="#{registrarGestacaoController.novaData}" required="true"
+							tipo="data" />
+					</aghu:linha>
+				</p:outputPanel>
+				<br />
+				<aghu:acao>
+					<mec:commandButton id="bt_confirmar_nova_data" value="Confirmar"
+						process="@this @(#novaData)" ajax="true"
+						action="#{registrarGestacaoController.confirmarNovaDataExame}"
+						render="panelTabelaExamesPerinato" profile="ok" />
+					<mec:commandButton id="bt_cancelar_nova_data"
+						value="#{messages.LABEL_CANCELAR}" ajax="true" process="@this"
+						action="#{registrarGestacaoController.cancelarNovaDataExame}"
+						profile="cancel" />
+				</aghu:acao>
+			</h:form>
+		</p:dialog>
+	</p:outputPanel>
+	<p:dialog id="modalExcluirData" height="150" width="400"
+		autosized="true" closable="true" overlapEmbedObjects="true"
+		domElementAttachment="parent" resizable="false" modal="true"
+		zindex="1000" widgetVar="modalExcluirDataWG">
+		<f:facet name="header">
+			<h:outputText value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+		</f:facet>
+		<h:outputText value="#{messages.CASCA_MENSAGEM_CONFIRMACAO_EXCLUSAO}" />
+		<br />
+		<br />
+		<br />
+		<aghu:acao>
+			<mec:commandButton id="bt_sim_excluir_data"
+				value="#{messages.CASCA_LABEL_SIM}" ajax="true" process="@this"
+				action="#{registrarGestacaoController.confirmarExcluirDataExame}"
+				render="tabelaExamesPerinato" profile="ok" />
+			<mec:commandButton id="bt_nao_excluir_data"
+				value="#{messages.CASCA_LABEL_NAO}" ajax="true" process="@this"
+				action="#{registrarGestacaoController.limparExcluirDataExame}"
+				render="modalExcluirData" profile="cancel" />
+		</aghu:acao>
+	</p:dialog>
+</ui:composition>
+</html>

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Elaborar Prescrição de Enfermagem:: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{elaboracaoPrescricaoEnfermagemController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{elaboracaoPrescricaoEnfermagemController}" print="true"/>
+      	<script type="text/javascript" xml:space="preserve">	
+			//<![CDATA[
+				
+				$('body').on('keydown', 'input, select, textarea', function(e) {
+				    var self = $(this)
+				      , form = self.parents('form:eq(0)')
+				      , focusable
+				      , next
+				      ;
+				    if (e.keyCode == 13) {
+				        focusable = form.find('input,a,select,button,textarea').filter(':visible');
+				        next = focusable.eq(focusable.index(this)+1);
+				        if (next.length) {
+				            next.focus();
+				        } else {
+				            form.submit();
+				        }
+				        return false;
+				    }
+				});	           
+			// ]]>
+		</script>
+      <p:outputPanel id="panelCorpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formPesquisa"> 
+          <aghu:panelGeral legend="Elaborar Prescrição de Enfermagem">
+           
+            <aghu:linha> 
+              <p:outputPanel id="pacienteDecorate" layout="inline"> 
+                <mec:pesquisaPaciente id="pesqPaciente"                          
+                         valueChangeListener="#{elaboracaoPrescricaoEnfermagemController.pesquisaPaciente}" 
+                		 value="#{elaboracaoPrescricaoEnfermagemController.paciente}"                		 
+                         render="panelPrescricao, prescricaoTable, pacienteDecorate, panelLabel, quarto, unidadeFuncional, botaoConsultar"
+                         onchange="#{elaboracaoPrescricaoEnfermagemController.limparCampos()}"
+                         />  
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton id="botaoPesquisaFonetica" value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" 
+                  	action="#{elaboracaoPrescricaoEnfermagemController.redirecionarPesquisaFonetica}"
+                  	styleClass=" bt_cinza icon-pesquisa-fonetica"> 
+                    <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" 
+		                	value="prescricaoenfermagem-elaboracaoPrescricaoEnfermagem" for="command"/>  
+	                <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" 
+	                	value="false" for="command"/>  
+	                <f:setPropertyActionListener target="#{pesquisaPacienteController.obrigarLista}" 
+	                	value="true" for="command"/>		                
+                 		<f:setPropertyActionListener target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" 
+                 			value="false" for="command"/> 
+                  </mec:commandButton> 
+                </aghu:acao> 
+              </p:outputPanel> 
+              
+            </aghu:linha>
+            
+            <aghu:linha> 
+              <p:outputPanel id="panelLabel" layout="inline"> 
+                <mec:suggestionBox id="suggestionLeito" label="#{messages.LABEL_LEITO}" width="500" descricaoInput="leitoID" 
+                	descricaoLabel="leitoID" posDeleteAction="limparCampos" posSelectionAction="carregarAtendimentoPorLeito" 
+                	suggestionAction="pesquisarLeito" title="#{messages.TITLE_PRESCRICAO_ENFERMAGEM_INFORME_LEITO}" 
+                	controller="#{elaboracaoPrescricaoEnfermagemController}" value="#{elaboracaoPrescricaoEnfermagemController.leito}" render="panelPrescricao, prescricaoTable, pacienteDecorate, panelLabel, quarto, unidadeFuncional, botaoConsultar"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.leitoID}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_LEITO}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.leito}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ANDAR}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.unidadeFuncional.andar}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{LABEL_ALA}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.unidadeFuncional.indAla}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.unidadeFuncional.descricao}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel>  
+              <mec:inputText label="#{LABEL_QUARTO}" id="quarto" size="15" value="#{elaboracaoPrescricaoEnfermagemController.quarto.descricao}" readonly="true" styleclass="suggestion_input" style="text-transform:uppercase"/>  
+              <mec:inputText id="unidadeFuncional" label="#{messages.LABEL_UNIDADE_FUNCIONAL}" size="65" value="#{elaboracaoPrescricaoEnfermagemController.unidadeFuncional.andar} #{elaboracaoPrescricaoEnfermagemController.unidadeFuncional.indAla} #{elaboracaoPrescricaoEnfermagemController.unidadeFuncional.andar != null ? '-' : ''} #{elaboracaoPrescricaoEnfermagemController.unidadeFuncional.descricao}" readonly="true" styleclass="suggestion_input" style="text-transform:uppercase"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <p:outputPanel id="panelPrescricao" layout="inline"> 
+            <p:outputPanel id="prescricaoTable" rendered="#{not empty elaboracaoPrescricaoEnfermagemController.atendimento}" layout="inline" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral legend="Prescrições"> 
+                <aghu:linha> 
+                  <h:outputText value="#{messages.NENHUMA_PRESCRICAO_ENCONTRADA}" rendered="#{empty elaboracaoPrescricaoEnfermagemController.listaPrescricaoEnfermagem}"/>  
+                  <mec:serverDataTable rendered="#{not empty elaboracaoPrescricaoEnfermagemController.listaPrescricaoEnfermagem}" list="#{elaboracaoPrescricaoEnfermagemController.listaPrescricaoEnfermagem}" scrollable="true"> 
+                    <c:set var="_prescricaoEnfermagem" value="#{item}"/>  
+                    <p:column styleClass="tdAcao"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                        
+						<mec:commandLink title="#{messages.LABEL_EDITAR}"
+							action="#{elaboracaoPrescricaoEnfermagemController.editarPrescricao(_prescricaoEnfermagem)}"
+							rendered="#{mf:hasPermission(securityController,'elaborarPrescricaoEnfermagem,editar')}"
+							oncomplete="PF('modalPrescricaoEmUsoWG').show();;"
+							profile="edit" ajax="true" render="panel1">
+							<!-- <f:setPropertyActionListener
+								target="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+								value="#{elaboracaoPrescricaoEnfermagemController.prescricaoEnfermagem.id.seq}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+								value="#{elaboracaoPrescricaoEnfermagemController.prescricaoEnfermagem.id.atdSeq}"
+								for="command" /> -->
+                      </mec:commandLink>
+                       
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DT_REFERENCIA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_prescricaoEnfermagem.dtReferencia}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_INICIO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_prescricaoEnfermagem.dthrInicio}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_FIM}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_prescricaoEnfermagem.dthrFim}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_prescricaoEnfermagem.situacao.descricao}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PENDENTE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_prescricaoEnfermagem.dthrInicioMvtoPendente}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </aghu:linha> 
+              </aghu:panelGeral>  
+              <aghu:panelGeral> 
+                <aghu:linha>
+                
+                  <mec:inputTextData 
+                  		title="#{messages.TITLE_DT_PRESCRICAO}"
+                  		label="#{messages.LABEL_DATA}" 
+                  		size="10" 
+                  		maxlength="10" 
+                  		value="#{elaboracaoPrescricaoEnfermagemController.dtPrescricao}" 
+                  		required="true" 
+                  		id="dtPrescricao"
+                  		 
+                  		tipo="data"/>
+                  		  
+					<aghu:acao newLine="false">
+					 
+                    <mec:commandButton title="#{elaboracaoPrescricaoEnfermagemController.mensagemBotaoCriarPrescricao}" 
+                    	value="#{messages.LABEL_NOVA_PRESCRICAO}" 
+                    	disabled="#{not elaboracaoPrescricaoEnfermagemController.habilitaBotaoCriarPrescricao}" 
+                    	rendered="#{mf:hasPermission(securityController,'elaborarPrescricaoEnfermagem,criar')}" 
+                    	action="#{elaboracaoPrescricaoEnfermagemController.criarPrescricao}" 
+                    	oncomplete="if(#{elaboracaoPrescricaoEnfermagemController.showModal}){PF('modalPrescricaoEmUsoWG').show();;}" profile="add" 
+                    	ajax="true" render="panel1,panelPrescricao"/>
+                    	 
+                  </aghu:acao>
+                   
+                </aghu:linha> 
+              </aghu:panelGeral> 
+            </p:outputPanel> 
+          </p:outputPanel>  
+          <aghu:linha> 
+            <mec:commandButton id="botaoConsultar" rendered="#{mf:hasPermission(securityController,'prescricaoMedica,pesquisar')}" 
+            	value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_CONSULTAR_PRESCRICAO_MEDICA}" 
+            	action="#{elaboracaoPrescricaoEnfermagemController.selecionarPrescricaoConsultar}"> 
+              <f:setPropertyActionListener target="#{selecionarPrescricaoConsultarController.prontuario}" value="#{elaboracaoPrescricaoEnfermagemController.prontuario}" for="command"/>  
+              <f:setPropertyActionListener target="#{selecionarPrescricaoConsultarController.voltarPara}" value="prescricaoenfermagem-elaboracaoPrescricaoEnfermagem" for="command"/>  
+              <f:setPropertyActionListener target="#{selecionarPrescricaoConsultarController.atdSeq}" value="#{elaboracaoPrescricaoEnfermagemController.atdSeq}" for="command"/>  
+              <f:setPropertyActionListener target="#{selecionarPrescricaoConsultarController.voltarPara2}" value="#{elaboracaoPrescricaoEnfermagemController.voltarPara}" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton id="botaoConsultarPrescEnf" value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_CONSULTAR_PRESCRICAO_ENFERMAGEM}" action="#{elaboracaoPrescricaoEnfermagemController.selecionarPrescricaoEnfermagem }"> 
+              <f:setPropertyActionListener target="#{selecionarPrescricaoEnfermagemController.prontuario}" value="#{elaboracaoPrescricaoEnfermagemController.prontuario}" for="command"/>  
+              <f:setPropertyActionListener target="#{selecionarPrescricaoEnfermagemController.cameFrom}" value="prescricaoenfermagem-elaboracaoPrescricaoEnfermagem" for="command"/>  
+              <f:setPropertyActionListener target="#{selecionarPrescricaoEnfermagemController.voltarPara}" value="#{elaboracaoPrescricaoEnfermagemController.voltarPara}" for="command"/>  
+              <f:setPropertyActionListener target="#{selecionarPrescricaoEnfermagemController.atdSeq}" value="#{elaboracaoPrescricaoEnfermagemController.atdSeq}" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton value="#{messages.LABEL_VOLTAR}" rendered="#{elaboracaoPrescricaoEnfermagemController.voltarPara eq 'listaPacientesEnfermagem' or elaboracaoPrescricaoEnfermagemController.voltarPara eq 'blococirurgico-listaCirurgias'}" action="#{elaboracaoPrescricaoEnfermagemController.cancelar}" styleClass="bt_voltar bt_cinza" profile="back"/> 
+          </aghu:linha> 
+        </h:form>  
+        <p:outputPanel id="panel1" layout="inline"> 
+          <p:outputPanel id="panel2" layout="inline"> 
+            <p:dialog rendered="#{elaboracaoPrescricaoEnfermagemController.showModal}" 
+            	id="modalPrescricaoEmUso" width="400" height="150" modal="true" resizable="false" widgetVar="modalPrescricaoEmUsoWG"> 
+              <f:facet name="header"> 
+                <h:panelGroup> 
+                  <h:outputText value="#{messages.LABEL_AVISO}"/> 
+                </h:panelGroup> 
+              </f:facet>  
+              <h:outputFormat value="#{elaboracaoPrescricaoEnfermagemController.mensagemModal}"/>  
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <h:panelGroup> 
+                <h:form prependId="false" id="formModalPrescricaoEmUso"> 
+                  <aghu:acao> 
+                    <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_ok" 
+                    	action="#{elaboracaoPrescricaoEnfermagemController.editarPrescricaoEmUso}" styleClass="bt_cinza"> 
+                      <!-- <f:setPropertyActionListener target="#{manutencaoPrescricaoEnfermagemController.penSeq}" value="#{elaboracaoPrescricaoEnfermagemController.prescricaoEnfermagem.id.seq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}" value="#{elaboracaoPrescricaoEnfermagemController.prescricaoEnfermagem.id.atdSeq}" for="command"/> --> 
+                    </mec:commandButton>
+                      
+                    <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalPrescricaoEmUsoWG').hide();;" styleClass="bt_vermelho  bt_cinza"/> 
+                  </aghu:acao> 
+                </h:form> 
+              </h:panelGroup> 
+            </p:dialog> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

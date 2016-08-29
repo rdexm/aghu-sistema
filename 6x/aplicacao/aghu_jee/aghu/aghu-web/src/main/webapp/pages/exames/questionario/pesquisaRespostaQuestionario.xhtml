@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_RESPOSTA_DO_QUESTIONARIO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{respostaQuestionarioController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{respostaQuestionarioController}" ignoreEnter="true"/>  
+      <h:form id="formListagem1" prependId="false"> 
+        <aghu:panelGeral legend="#{messages.LABEL_EXAME_EXAME_QUESTIONARIO}"> 
+          <aghu:linha> 
+            <mec:inputText id="item" label="#{messages.LABEL_ITEM_EXAME_ITEM}" value="#{respostaQuestionarioController.itemSolicitacaoExames.id.seqp}" size="3" readonly="true"/>  
+            <mec:inputText id="descricaoItem" label="#{messages.LABEL_ITEM_EXAME_DESCRICAO}" value="#{respostaQuestionarioController.itemSolicitacaoExames.exame.descricaoUsual}" size="100" readonly="true"/>  
+            <mec:inputText id="materialItem" label="#{messages.LABEL_ITEM_EXAME_MATERIAL}" value="#{respostaQuestionarioController.itemSolicitacaoExames.materialAnalise.descricao}" size="60" readonly="true"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_QUESTIONARIOS}"> 
+          <p:outputPanel id="panelQuestionarios" rendered="#{not empty respostaQuestionarioController.listaQuestionario}" layout="inline"> 
+            <aghu:linha> 
+              <pe:remoteCommand name="selecionarQuestionario" 
+              update=":formListagem1,:formListagem2,bt_reimprimir" 
+              actionListener="#{respostaQuestionarioController.pesquisarRespostasPorQuestionario}"> 
+                <pe:assignableParam name="qtn_seq" assignTo="#{respostaQuestionarioController.qtnSeq}"/> 
+              </pe:remoteCommand>  
+              <p:outputPanel layout="block" style="max-height:350px; overflow-y:scroll;"> 
+                <mec:serverDataTable id="tabelaListaQuestionarios" list="#{respostaQuestionarioController.listaQuestionario}" scrollable="true"> 
+                  <c:set var="_questionario" value="#{item}"/>  
+                  <p:column styleClass="tdAcao" style="width:60px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <p:outputPanel id="acoesPanel" layout="inline"> 
+                      <table border="0" cellpadding="0" cellspacing="0"> 
+                        <tr> 
+                          <td style="border-right: 0px;" rowspan="1" colspan="1"> 
+                            <p:outputPanel rendered="#{_questionario.seq eq respostaQuestionarioController.qtnSeq}" layout="inline"> 
+                              <input type="radio" id="#{_questionario.seq}" name="group1" 
+                              onchange="selecionarQuestionario(#{_questionario.seq})" 
+                              checked="checked"/> 
+                            </p:outputPanel>  
+                            <p:outputPanel rendered="#{_questionario.seq ne respostaQuestionarioController.qtnSeq}" 
+                            layout="inline"> 
+                              <input type="radio" id="#{_questionario.seq}" name="group1" 
+                              onchange="selecionarQuestionario(#{_questionario.seq})"/> 
+                            </p:outputPanel> 
+                          </td> 
+                        </tr> 
+                      </table> 
+                    </p:outputPanel> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_QUESTIONARIO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_questionario.descricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_reimprimir" value="#{messages.LABEL_REIMPRIMIR_RESPOSTA_QUESTIONARIO}" 
+          rendered="#{mf:hasPermission(securityController,'reimprimirInformacoesComplementares,reimprimir')}" 
+          disabled="#{respostaQuestionarioController.isHist or (empty respostaQuestionarioController.qtnSeq)}" 
+          action="#{imprimeInformacoesComplementaresController.directPrint}" profile="search" ajax="true" process="@this"> 
+            <f:setPropertyActionListener target="#{imprimeInformacoesComplementaresController.soeSeq}" value="#{respostaQuestionarioController.soeSeq}" for="command"/>  
+            <f:setPropertyActionListener target="#{imprimeInformacoesComplementaresController.seqp}" value="#{respostaQuestionarioController.seqp}" for="command"/>  
+            <f:setPropertyActionListener target="#{imprimeInformacoesComplementaresController.qtnSeq}" value="#{respostaQuestionarioController.qtnSeq}" for="command"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{respostaQuestionarioController.voltar}" styleClass=" alinha-direita bt_cinza" ajax="true" profile="back"/> 
+        </aghu:acao> 
+      </h:form>
+	  <h:form id="formListagem2" prependId="false"> 
+      <p:outputPanel id="panelRespostasQuestionariosExterno" layout="inline"> 
+        <p:outputPanel id="panelRespostasQuestionarios" rendered="#{not empty respostaQuestionarioController.listaRespostaQuestionario}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_EXAME_QUESTIONARIO_RESPOSTA_QUESTOES}"> 
+            <aghu:linha> 
+                <p:outputPanel layout="block" style="max-height:350px; overflow-y:scroll;"> 
+                  <mec:serverDataTable id="tabelaRespostaQuestionario" list="#{respostaQuestionarioController.listaRespostaQuestionario}" scrollable="true"> 
+                    <c:set var="_respostaQuestionario" value="#{item}"/>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_GRUPO_RESPOSTA_QUESTIONARIO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_respostaQuestionario.grupo}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PERGUNTA_RESPOSTA_QUESTIONARIO}"/> 
+                      </f:facet>  
+                      <p:outputPanel rendered="#{_respostaQuestionario.questao.length() gt 140}" layout="inline"> 
+                        <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                          <h:outputText value="#{_respostaQuestionario.questao}"/> 
+                        </p:tooltip>  
+                        <h:outputText value="#{fn:substring(_respostaQuestionario.questao,0,140)}"/>  
+                        <h:outputText value=" ..."/> 
+                      </p:outputPanel>  
+                      <p:outputPanel rendered="#{_respostaQuestionario.questao.length() le 140}" layout="inline"> 
+                        <h:outputText value="#{_respostaQuestionario.questao}"/> 
+                      </p:outputPanel> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_RESPOSTA_QUESTIONARIO}"/> 
+                      </f:facet>  
+                      <p:outputPanel rendered="#{_respostaQuestionario.resposta.length() gt 24}" layout="inline"> 
+                        <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                          <h:outputText value="#{_respostaQuestionario.resposta}"/> 
+                        </p:tooltip>  
+                        <h:outputText value="#{fn:substring(_respostaQuestionario.resposta,0,24)}"/>  
+                        <h:outputText value=" ..."/> 
+                      </p:outputPanel>  
+                      <p:outputPanel rendered="#{_respostaQuestionario.resposta.length() le 24}" layout="inline"> 
+                        <h:outputText value="#{_respostaQuestionario.resposta}"/> 
+                      </p:outputPanel> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+	</h:form> 	  
+    </ui:define> 
+  </ui:composition> 
+</html>

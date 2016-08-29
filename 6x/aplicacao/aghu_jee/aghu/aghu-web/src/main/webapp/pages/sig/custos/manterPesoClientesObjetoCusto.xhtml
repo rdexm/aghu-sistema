@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_DIRECIONADORES_CLIENTES}</title>  
+      <style xml:space="preserve"> .campoTextoSemFieldDentroLinhaTabela .infoField { display: none; } </style> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesosClientesObjetoCustoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesosClientesObjetoCustoController}"/>  
+      <h:form prependId="false" id="formulario"> 
+        <aghu:panelGeral legend="#{messages.TITLE_DIRECIONADORES_CLIENTES}"> 
+          <p:outputPanel id="panelCamposFormulario" layout="inline"> 
+            <aghu:linha> 
+              <mec:inputText value="#{pesosClientesObjetoCustoController.sigObjetoCustoVersoes.sigObjetoCustos.nome}" label="#{messages.LABEL_OBJETO_CUSTO}" size="100" maxlength="200" caixaAlta="false" removerCaratersEspeciais="false" readonly="true" id="objetoCusto"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText value="#{pesosClientesObjetoCustoController.sigDirecionadores.nome}" label="#{messages.LABEL_EQUIPAMENTO_DIRECIONADOR}" size="50" maxlength="200" caixaAlta="false" removerCaratersEspeciais="false" readonly="true" id="direcionador"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:selectBooleanCheckbox id="selecionaClientesSemValor" value="#{pesosClientesObjetoCustoController.clientesSemValor}" label="#{messages.LABEL_CLIENTES_SEM_VALOR}" posicaoLabel="direita"/> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <aghu:linha> 
+            <p:outputPanel id="panelTabela" layout="inline"> 
+              <mec:serverDataTable id="tabela" rendered="#{not empty pesosClientesObjetoCustoController.listaClientes}" rowKeyVar="numeroLinha" list="#{pesosClientesObjetoCustoController.listaClientes}" scrollable="true"> 
+                <c:set var="item" value="#{item}"/>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_TIPO_PESO_CLIENTES}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{messages.LABEL_CLIENTE_C_CUSTO}" rendered="#{item.centroCusto ne null}"/>  
+                  <h:outputText value="#{messages.LABEL_CLIENTES_C_PRODUCAO}" rendered="#{item.centroCusto eq null}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.centroCusto.codigo}" rendered="#{item.centroCusto ne null}"/>  
+                  <h:outputText value="#{item.centroProducao.seq}" rendered="#{item.centroCusto eq null}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.centroCusto.descricao}" rendered="#{item.centroCusto ne null}"/>  
+                  <h:outputText value="#{item.centroProducao.nome}" rendered="#{item.centroCusto eq null}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VALOR}"/> 
+                  </f:facet>  
+                  
+                   <pe:inputNumber 
+                       	 	id="valor" 
+                       	 	value="#{item.valor}"
+                       	 	size="12" readonly="#{not mf:hasPermission(securityController,'editarPesoObjetoCusto,editar')}"
+                       	 	decimalPlaces="4">
+                       	 	<p:ajax event="change" process="@this" partialSubmit="true" global="false"  />
+               	 	</pe:inputNumber> 
+                </p:column> 
+              </mec:serverDataTable>  
+              <p:outputPanel rendered="#{empty pesosClientesObjetoCustoController.listaClientes}" layout="inline"> 
+                <div class="div-alerta"> 
+                  <h:outputText value="#{messages.LABEL_OBJETO_CUSTO_SEM_CLIENTES}"/> 
+                </div> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" action="#{pesosClientesObjetoCustoController.validaPreenchimentoPesos}" process="@this, selecionaClientesSemValor" partialSubmit="true" rendered="#{mf:hasPermission(securityController,'editarPesoObjetoCusto,editar')}" styleClass="bt_cinza" ajax="true" render="formulario" profile="ok"/>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{pesosClientesObjetoCustoController.voltar}" ajax="true" process="@this" partialSubmit="true" styleClass="bt_vermelho bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelModalValidaPreenchimentoPesos" layout="inline"> 
+        <p:dialog id="modalValidaPreenchimentoPesos" width="400" height="170" modal="true" resizable="false" widgetVar="modalValidaPreenchimentoPesosWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CONFIRMA_PESOS_NAO_INFORMADOS}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <p:outputPanel layout="inline"> 
+            <h:outputText value="#{messages.MENSAGEM_GRAVACAO_CLIENTES_SEM_VALOR_INFORMADO}"/> 
+          </p:outputPanel>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalPesoSemPreenchimento"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_nova_versao_ativa" action="#{pesosClientesObjetoCustoController.gravar}" render="formulario" profile="ok"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_nova_versao_ativa" onclick="PF('modalValidaPreenchimentoPesosWG').hide(); return false;" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Cadastrar Internação :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cadastroInternacaoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig ignoreEnter="true" controller="#{cadastroInternacaoController}"/>  
+      <h:form prependId="false" id="cadastroInternacaoForm"> 
+        <aghu:panelGeral legend="#{messages.LABEL_INTERNACAO}"> 
+          <aghu:linha> 
+            <mec:field label="#{messages.LABEL_PRONTUARIO}" title="Campo desabilitado. O Sistema é quem preenche este campo" >
+                 <p:inputText readonly="true"  value="#{cadastroInternacaoController.paciente.prontuario}"  size="14" styleclass="suggestion_input" id="prontuario"/>
+            </mec:field>  
+            <mec:field label="#{messages.LABEL_NOME}" title="Nome do Paciente">
+                <p:inputText readonly="true" value="#{cadastroInternacaoController.paciente.nome}" size="80"  id="nome"/>
+            </mec:field>  
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_LEITO}"
+				title="#{messages.TITLE_LABEL_LEITO_BLOQUEIO}"
+				descricaoInput="leitoID" width="600"
+				descricaoLabel="unidadeFuncional.LPADAndarAlaDescricao"
+				readonly="#{cadastroInternacaoController.modoEdicao || !empty cadastroInternacaoController.descricaoUnidadeFuncional}"
+				suggestionAction="pesquisarLeitosDesocupados" breakTo="40" id="suggestionLeitos"
+				controller="#{cadastroInternacaoController}"
+				value="#{cadastroInternacaoController.leitos}">
+				<p:column>#{item.leitoID}   #{item.unidadeFuncional.andar}   #{item.unidadeFuncional.indAla} - #{item.unidadeFuncional.descricao}</p:column>
+			</mec:suggestionBox>   
+            <mec:inputText readonly="true" label="#{LABEL_QUARTO}" maxlength="10" value="#{cadastroInternacaoController.quartoDescricao}" title="#{LABEL_QUARTO}" size="12" id="quarto"/>  
+            <mec:inputText readonly="true" label="#{messages.LABEL_UNIDADE_FUNCIONAL}" value="#{cadastroInternacaoController.descricaoUnidadeFuncional}" title="Unidade Funcional" size="70" styleclass="suggestion_input" id="unidadeFuncional"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_ESPECIALIDADE}" title="#{messages.TITLE_LABEL_ESPECIALIDADE_INT}" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" suggestionAction="pesquisarEspecialidade" posSelectionAction="sugerirProfessorCRM" readonly="#{cadastroInternacaoController.modoEdicao}" required="true" width="800" id="especialidade" controller="#{cadastroInternacaoController}" value="#{cadastroInternacaoController.especialidadePesq}" render="panel_professor"> 
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_SIGLA}</f:facet> #{item.sigla}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_NOME_ESPECIALIDADE}</f:facet> #{item.nomeEspecialidade}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_CLINICA}</f:facet> #{item.clinica.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_PROJETO_PESQUISA}" title="#{messages.TITLE_LABEL_PROJETO_PESQUISA_INT}" width="600" descricaoInput="seq" descricaoLabel="nome" suggestionAction="pesquisarProjetoPesquisa" id="projetoPesquisa" controller="#{cadastroInternacaoController}" value="#{cadastroInternacaoController.projetoPesquisaPesq}"> 
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_SEQ}</f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_NOME}</f:facet> #{item.nome}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <p:outputPanel id="modalConvenioPanel" layout="inline"> 
+            <aghu:linha> 
+              <mec:inputNumero label="#{messages.CODIGO_CONVENIO}" size="3" title="#{messages.TITLE_CODIGO_CONVENIO_INT}" 
+              maxlength="3" readonly="#{not empty cadastroInternacaoController.convenioSaudePlano}" 
+              value="#{cadastroInternacaoController.convenioId}" id="codigoConvenio">              
+              <p:ajax event="change"  
+                update="@(#panelPlanoConvenio) @(#panel_professor)" 
+                process="@this" listener="#{cadastroInternacaoController.escolherPlanoConvenio}"/>                 
+               </mec:inputNumero>  
+              
+              <mec:inputNumero label="#{messages.CODIGO_PLANO}" id="codigoPlano" size="2" maxlength="2" 
+              styleClass="numerico" readonly="#{not empty cadastroInternacaoController.convenioSaudePlano}" 
+              title="#{messages.TITLE_LABEL_CODIGO_PLANO_INT}" value="#{cadastroInternacaoController.planoId}">              
+                <p:ajax event="change"
+                update="@(#panelPlanoConvenio) @(#panel_professor)" 
+                process="@this" listener="#{cadastroInternacaoController.escolherPlanoConvenio}"/>                
+              </mec:inputNumero>  
+              <p:outputPanel id="panelPlanoConvenio" layout="inline"> 
+                <mec:suggestionBox label="#{messages.LABEL_CONVENIO_PLANO}" title="#{messages.TITLE_LABEL_CONVENIO_PLANO_INT}" width="800" size="50" maxlength="50" descricaoInput="descricao" descricaoLabel="descricaoPlanoConvenio" suggestionAction="pesquisarConvenioSaudePlanos" posSelectionAction="processarSelectSuggestionConvenio" posDeleteAction="atribuirPlano" readonly="#{cadastroInternacaoController.modoEdicao}" required="true" id="planoConvenio" controller="#{cadastroInternacaoController}" value="#{cadastroInternacaoController.convenioSaudePlano}" render="codigoConvenio,codigoPlano,panel_professor"> 
+                  <p:column>#{item.convenioSaude.descricao} - #{item.descricao}</p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <aghu:linha> 
+            <p:outputPanel id="panel_professor" layout="inline"> 
+              <mec:suggestionBox width="900" label="#{messages.LABEL_CONSELHO_PROFISSIONAL}" title="#{messages.TITLE_LABEL_CRM_PROFESSOR_INT}" descricaoInput="nroRegConselho" descricaoLabel="nome" suggestionAction="pesquisarProfessor" readonly="#{cadastroInternacaoController.modoEdicao}" required="true" id="professor" controller="#{cadastroInternacaoController}" value="#{cadastroInternacaoController.professorPesq}"> 
+                <p:column> 
+                  <f:facet name="header">#{messages.LABEL_NOME}</f:facet> #{item.nome}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header">#{messages.LABEL_QTD_PAC_INTERNADOS}</f:facet> #{item.quantPacInternados}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header">#{messages.LABEL_CAPACIDADE}</f:facet> #{item.capacReferencial}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header">#{messages.LABEL_CTI}</f:facet> #{item.atuaCti}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CARATER_INTERNACAO}" title="#{messages.TITLE_LABEL_CARATER_INTERNACAO_INT}" width="700" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarCaraterInternacao" required="true" id="caraterInternacao" controller="#{cadastroInternacaoController}" value="#{cadastroInternacaoController.caraterInternacaoPesq}"> 
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_DESCRICAO}</f:facet> #{item.descricao}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_CODIGO_SUS}</f:facet> #{item.codigo}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha>           
+            <mec:suggestionBox label="#{messages.LABEL_ORIGEM_INTERNACAO}" title="#{messages.TITLE_LABEL_ORIGEM_INTERNACAO_INT}" descricaoInput="seq" descricaoLabel="descricao" width="400" suggestionAction="pesquisarOrigemInternacao" required="true" id="origemInternacao" controller="#{cadastroInternacaoController}" value="#{cadastroInternacaoController.origemInternacaoPesq}" reRender="panelMedExterno"> 
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_DESCRICAO}</f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>
+            <p:outputPanel id="panelMedExterno" rendered="#{cadastroInternacaoController.origemInternacaoPesq.seq == '4'}">
+	            <mec:suggestionBox 
+	            label="#{messages.LABEL_ATENDIMENTO_EXTERNO_MEDICO_EXTERNO_NOME}" 
+	            title="#{messages.LABEL_ATENDIMENTO_EXTERNO_MEDICO_EXTERNO_NOME}" 
+	            descricaoInput="seq" descricaoLabel="nome" 
+	            size="70" maxlength="45" width="800"
+	            suggestionAction="pesquisarMedicoExterno" 
+	            required="#{cadastroInternacaoController.origemInternacaoPesq.seq == '4' ? 'true' : 'false'}"  
+	            id="medicoExterno" 
+	            controller="#{cadastroInternacaoController}" 
+	            value="#{cadastroInternacaoController.medicoExternoPesq}"> 
+	                <p:column> 
+	                  <f:facet name="header"><b>#{messages.LABEL_NOME}</b></f:facet> #{item.nome}
+	                </p:column>  
+	                <p:column> 
+	                  <f:facet name="header"><b>#{messages.LABEL_CRM}</b></f:facet> #{item.crm}
+	                </p:column>  
+	                <p:column> 
+	                  <f:facet name="header"><b>#{messages.LABEL_MATRICULA_CONVENIO}</b></f:facet> #{item.matriculaConvenio}
+	                </p:column> 
+	            </mec:suggestionBox> 
+	            <aghu:acao style="padding-top: 21px !important;">  
+	                <mec:commandButton id="btAddMedicoExternoLink" 
+	                                   style="margin-left: 10px" 
+	                                   immediate="true" 
+	                                   value="#{messages.LABEL_MEDICO_EXTERNO}" 
+	                                   rendered="#{mf:hasPermission(securityController,'cadastrarMedicoAtendimentoExterno,executar')}" 
+	                                   action="#{cadastroInternacaoController.linkParaAddMedicoExterno}" profile="add"> 
+	                  <f:setPropertyActionListener target="#{medicoAtendimentoExternoController.voltarPara}" 
+	                                               value="internacao-cadastroInternacao" 
+	                                               for="command"/> 
+	                  <f:setPropertyActionListener target="#{medicoAtendimentoExternoController.medicoExterno}" 
+	                                               value="#{cadastroInternacaoController.medicoExternoPesq}" 
+	                                               for="command"/>
+                </mec:commandButton> 
+              </aghu:acao> 
+            </p:outputPanel>            
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_HOSPITAL_ORIGEM}" title="#{messages.TITLE_LABEL_HOSPITAL_ORIGEM_INT}" converter="#{aghInstituicoesHospitalaresInternacaoConverter}" descricaoInput="seq" descricaoLabel="nome" suggestionAction="pesquisarHospitalOrigem" width="400" id="hospitalOrigem" controller="#{cadastroInternacaoController}" value="#{cadastroInternacaoController.hospitalOrigemPesq}"> 
+              <p:column> 
+                <f:facet name="header">#{messages.LABEL_NOME}</f:facet> #{item.nome}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextData title="#{messages.TITLE_DATA_INTERNACAO}" label="Data da Internação" id="dtInternacao" value="#{cadastroInternacaoController.internacao.dthrInternacao}" direction="bottom-right" showApplyButton="true" enableManualInput="true" immediate="true" oninputkeypress="return mascaraCampoDados(this, event, '##/##/#### ##:##');" cellWidth="24px" cellHeight="22px" oninputblur="javascript:validarCampoDataHora(this);" style="width:200px" required="true" tipo="datahora"/>  
+            <mec:selectBooleanCheckbox size="10" label="#{messages.LABEL_DIFERENCA_DE_CLASSE}" value="#{cadastroInternacaoController.indDifClasse}" title="#{messages.TITLE_LABEL_DIFERENCA_DE_CLASSE_INT}" id="diferencaClasse"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_AVISO_SAMIS}" size="10" value="#{cadastroInternacaoController.indEnvProntUnidInt}" 
+            title="#{messages.TITLE_LABEL_AVISO_SAMIS_INT}" id="avisoSamis">
+            	<p:ajax event="change" process="@this" />
+            </mec:selectBooleanCheckbox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_JUSTIFICATIVA}" maxlength="240" value="#{cadastroInternacaoController.justificativaAltDel}" style="text-transform:uppercase" title="#{messages.TITLE_LABEL_JUSTIFICATIVA_INT}" size="50" id="justificativa"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_CIDS}"> 
+          <aghu:linha> 
+            <p:outputPanel id="outputCidSuggestion" layout="inline"> 
+              <mec:suggestionBox id="suggestionCID" width="900" styleClassField="frm_obrigatorio" 
+                      label="#{messages.LABEL_CID}" title="#{messages.LABEL_CID_DIAGNOSTICO}" 
+                      descricaoInput="codigo" size="10" maxlength="45" 
+                      descricaoLabel="descricao" breakTo="70 middle" suggestionAction="pesquisarCids" 
+                      controller="#{cadastroInternacaoController}" value="#{cadastroInternacaoController.itemCid}"> 
+                <p:column> 
+                  <h:outputText value="#{item.codigo}"/> 
+                </p:column>  
+                <p:column> 
+                  <h:outputText value="#{item.descricao}"/> 
+                </p:column> 
+              </mec:suggestionBox>  
+              <aghu:acao style="margin-right: 0" newLine="false"> 
+                <mec:commandButton includePageParams="true" immediate="true" name="botaoPesquisaCidCapitulo" id="botaoPesquisaCidCapitulo" value="#{messages.LABEL_CID_POR_CAPITULO}" focus="suggestionCIDDecorate:suggestionCID" disabled="false" action="#{cadastroInternacaoController.redirecionarPesquisaCID()}" reRender="panelLinksuggestionCID, suggestionCID, suggestion_suggestionCID,            suggestionCIDDecorate:suggestionCID" styleClass="bt_cinza"> 
+                  <f:setPropertyActionListener target="#{pesquisaCidController.fromPageCadastroInternacao}" value="true" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisaCidController.codigoPaciente}" value="#{cadastroInternacaoController.aipPacCodigo}" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisaCidController.limpar}" value="true" for="command"/> 
+                </mec:commandButton> 
+              </aghu:acao> 
+            </p:outputPanel>  
+            <aghu:acao newLine="false">
+				<mec:commandButton block="true" id="bt_adicionar"
+					value="#{messages.LABEL_ADICIONAR}"
+					action="#{cadastroInternacaoController.adicionarCidNaLista}"
+					render="cidDataTable, suggestionCID, cid_empty" profile="add"
+					styleClass="bt_verde " ajax="true" process="@this" 
+					disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/> 
+			</aghu:acao> 
+          </aghu:linha>  
+          <aghu:linha> 
+             <mec:serverDataTable id="cidDataTable" list="#{cadastroInternacaoController.cidsInternacao}" scrollHeight="#{fn:length(cadastroInternacaoController.cidsInternacao) > 6 ? '200' : 'auto'}" scrollable="true"> 
+              <c:set var="_cidInternacao" value="#{item}"/>
+					<p:column style="width:50px">
+					    <mec:commandLink action="#{cadastroInternacaoController.excluirCidInternacao(_cidInternacao)}" 
+	             			title="#{messages.LABEL_EXCLUIR}" 
+	                		profile="delete" 
+	                		ajax="true" 
+	                		render="cidDataTable, cid_empty" 
+	                		process="@this" 
+	                		rendered="#{not mf:hasPermission(securityController, 'internacao,somenteLeitura')}" >
+               			</mec:commandLink>	
+					</p:column>
+					<p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CIDS}"/> 
+                </f:facet>  
+                <h:outputText value="#{_cidInternacao.cid.codigo}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_cidInternacao.cid.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PRIORIDADE_CID}"/> 
+                </f:facet>  
+                <h:selectOneMenu id="prioridadeCid" value="#{_cidInternacao.prioridadeCid}"> 
+                  <f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true"/>  
+                  <f:converter converterId="dominioConverter"/>  
+                  <f:selectItems var="item" itemLabel="#{item.descricao}" itemValue="#{item}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio','DominioPrioridadeCid')}"/>  
+                  <p:ajax event="change" process="@this" listener="#{cadastroInternacaoController.alterarPrioridadeCid(_cidInternacao)}"/> 
+                </h:selectOneMenu> 
+              </p:column> 
+            </mec:serverDataTable>  
+            <h:outputText id="cid_empty" value="#{messages.LABEL_NENHUM_CID_ADICIONADO}" rendered="#{empty cadastroInternacaoController.cidsInternacao}"/> 
+          </aghu:linha>         
+          <aghu:linha> 
+            <mec:suggestionBox width="800" label="#{messages.LABEL_PROCEDIMENTO}" 
+            title="#{messages.TITLE_LABEL_PROCEDIMENTO_INT}" 
+            descricaoInput="codTabela" 
+            descricaoLabel="descricao" 
+            suggestionAction="pesquisarSsm" required="true" id="ssm" 
+            cache="false"
+            controller="#{cadastroInternacaoController}" 
+            value="#{cadastroInternacaoController.itemProcedHospitalar}"> 
+              <p:column>#{item.codTabela}</p:column>  
+              <p:column>#{item.descricao}</p:column>  
+              <p:column>#{item.sexo}</p:column> 
+            </mec:suggestionBox>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_CONSIDERAR_CID_PROCEDIMENTO}" size="10" 
+            value="#{cadastroInternacaoController.considerarCidFiltro}" 
+            title="#{messages.TITLE_LABEL_CONSIDERAR_CID_PROCEDIMENTO_INT}" id="considerarCid">
+            <p:ajax event="change" update="@this, @(#ssm)" for="inputId"/>
+            </mec:selectBooleanCheckbox> 
+          </aghu:linha> 
+         </aghu:panelGeral>  
+        <aghu:acao>
+				<mec:commandButton id="bt_gravar_internacao" block="true"
+					value="#{messages.LABEL_GRAVAR}"
+					action="#{cadastroInternacaoController.verificarCirurgia}"
+					profile="ok"
+					disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura') or mf:hasPermission(securityController, 'assistencial,somenteLeitura')}" />
+				<mec:commandButton id="bt_contrato" block="true"
+					rendered="#{cadastroInternacaoController.deveAparecerBotaoContrato()}"
+					value="#{messages.LABEL_CONTRATO}"
+					onclick="PF('modalResponsaveisContratoWG').show();;"
+					profile="print" ajax="true"/>
+				<mec:commandButton id="btBoletimInternacao"
+					rendered="#{cadastroInternacaoController.internacao.seq != null}"
+					value="#{messages.LABEL_BOLETIM_INTERNACAO}" immediate="true"
+					action="#{relatorioBoletimInternacaoController.print(cadastroInternacaoController.internacao.seq, cadastroInternacaoController.convenioId)}"
+					profile="print" 
+					disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/> 
+				<mec:commandButton id="btImprimirPulseira"
+					rendered="#{cadastroInternacaoController.internacao.seq != null}"
+					disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"
+					value="#{messages.LABEL_IMPRIMIR_PULSEIRA}"
+					action="#{impressaoPulseiraController.imprimePulseira}"
+					profile="print" ajax="true" process="@this">
+					<f:setPropertyActionListener
+						target="#{impressaoPulseiraController.aipPacCodigo}"
+						value="#{cadastroInternacaoController.aipPacCodigo}" for="command" />
+					<f:setPropertyActionListener
+						target="#{impressaoPulseiraController.internacaoCodigo}"
+						value="#{cadastroInternacaoController.internacao.seq}"
+						for="command" />
+				</mec:commandButton>
+				<mec:commandButton value="#{messages.LABEL_CANCELAR}" ajax="true" id="cancelar" immediate="true" action="#{cadastroInternacaoController.cancelar}" profile="cancel" process="@this"/> 
+        </aghu:acao>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_RESPONSAVEIS_PACIENTE}" 
+          action="#{cadastroInternacaoController.redirecionarResponsaveisPaciente}" 
+          rendered="#{cadastroInternacaoController.internacao.seq == null}" immediate="true" styleClass="bt_cinza"
+          disabled="#{mf:hasPermission(securityController, 'assistencial,somenteLeitura')}"/>  
+          <mec:commandButton id="btRespPaciente" value="#{messages.LABEL_RESPONSAVEIS_PACIENTE}" rendered="#{cadastroInternacaoController.internacao.seq != null}" styleClass="bt_cinza" action="#{cadastroInternacaoController.redirecionarResponsaveisPaciente}" disabled="#{mf:hasPermission(securityController, 'assistencial,somenteLeitura') or (mf:hasPermission(securityController, 'internacao,somenteLeitura'))}"/>  
+          <mec:commandButton id="btDiariasAutorizadas" immediate="true" value="#{messages.LABEL_DIARIAS_AUTORIZADAS}"  rendered="#{cadastroInternacaoController.internacao.seq != null}" styleClass="bt_cinza" action="#{cadastroInternacaoController.redirecionarDiariasAutorizadas}" disabled="#{mf:hasPermission(securityController, 'assistencial,somenteLeitura') or mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/>  
+          <mec:commandButton id="btAcompanhantes" value="#{messages.LABEL_ACOMPANHANTES}" rendered="#{cadastroInternacaoController.internacao.seq != null}" action="#{cadastroInternacaoController.redirecionarAcompanhantes}" ajax="true" process="@this" styleClass="bt_cinza" disabled="#{mf:hasPermission(securityController, 'assistencial,somenteLeitura') or mf:hasPermission(securityController, 'internacao,somenteLeitura')}"> 
+            <f:setPropertyActionListener target="#{atualizaAcompanhantesInternacaoController.intSeq}" value="#{cadastroInternacaoController.internacao.seq}" for="command"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="btAcomodacaoAut" immediate="true" value="#{messages.LABEL_ACOMODACAO_AUT}" rendered="#{cadastroInternacaoController.internacao.seq != null and (not mf:hasPermission(securityController, 'internacao,somenteLeitura'))}" action="#{cadastroInternacaoController.redirecionarAcomodacaoAutorizada()}" styleClass="bt_cinza" disabled="#{mf:hasPermission(securityController, 'assistencial,somenteLeitura')}"> 
+            <f:setPropertyActionListener target="#{atualizarAcomodacaoController.ainInternacaoSeq}" value="#{cadastroInternacaoController.internacao.seq}" for="command"/>  
+            <f:setPropertyActionListener target="#{atualizarAcomodacaoController.aipPacCodigo}" value="#{cadastroInternacaoController.aipPacCodigo}" for="command"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="btMatriculaConvenio" immediate="true" value="#{messages.LABEL_MATRICULA_CONVENIO}" rendered="#{cadastroInternacaoController.internacao.seq != null and (not mf:hasPermission(securityController, 'internacao,somenteLeitura'))}" action="#{cadastroInternacaoController.redirecionarMatriculaConvenio}" styleClass="bt_cinza" disabled="#{mf:hasPermission(securityController, 'assistencial,somenteLeitura')}"> 
+            <f:setPropertyActionListener target="#{conveniosPacienteController.aipPacientesCodigo}" value="#{cadastroInternacaoController.aipPacCodigo}" for="command"/>  
+            <f:setPropertyActionListener target="#{conveniosPacienteController.cnvCodigo}" value="#{cadastroInternacaoController.internacao.convenioSaudePlano.id.cnvCodigo}" for="command"/>  
+            <f:setPropertyActionListener target="#{conveniosPacienteController.cnvSeq}" value="#{cadastroInternacaoController.internacao.convenioSaudePlano.id.seq}" for="command"/>  
+            <f:setPropertyActionListener target="#{conveniosPacienteController.cameFrom}" value="internacaoPaciente" for="command"/> 
+          </mec:commandButton>
+				<!--mec:commandButton id="alterarConvenio" immediate="true"
+					value="#{messages.LABEL_ALTERAR_CONVENIO}"
+					rendered="#{cadastroInternacaoController.internacao.seq != null and (not mf:hasPermission(securityController, 'internacao,somenteLeitura'))}"
+					action="#{cadastroInternacaoController.redirecionarAlterarConvenio()}"
+					styleClass="bt_cinza">
+					<f:setPropertyActionListener
+						target="#{convenioInternacaoController.internacao}"
+						value="#{cadastroInternacaoController.internacao}" for="command" />
+					<f:setPropertyActionListener
+						target="#{convenioInternacaoController.paciente}"
+						value="#{cadastroInternacaoController.paciente}" for="command" />
+				</mec:commandButton-->
+			</aghu:acao>  
+        <p:dialog resizeable="false" id="modalResponsaveisContrato" width="400" height="200" modal="true" resizable="false" widgetVar="modalResponsaveisContratoWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_RESPONSAVEIS_PACIENTE}"/> 
+          </f:facet> #{cadastroInternacaoController.obterDescricaoResponsaveisPacienteSalvos()} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_print" value="#{messages.LABEL_SIM}" action="#{relatorioResponsaveisPacienteController.print(cadastroInternacaoController.internacao.seq)}" onclick="PF('modalResponsaveisContratoWG').hide();" profile="ok"/>  
+            <mec:commandButton id="bt_fecharModal" value="#{messages.LABEL_NAO}" onclick="PF('modalResponsaveisContratoWG').hide();" profile="cancel" ajax="true"/> 
+          </aghu:acao> 
+        </p:dialog> 
+      </h:form>  
+      <p:outputPanel id="panelModal" layout="inline"> 
+        <p:dialog id="modalConfirmacao"  width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_CONFIRMAR}"/> 
+          </f:facet>  
+          <p:outputPanel layout="inline">#{cadastroInternacaoController.getModalMessage()} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalConfirmacao"> 
+                <aghu:linha> 
+                  <mec:commandButton block="true" id="bt_verificar_cir" value="#{messages.LABEL_SIM}" onclick="PF('modalConfirmacaoWG').hide();" rendered="#{!cadastroInternacaoController.perguntouCirurgia}" action="#{cadastroInternacaoController.atribuirDataCirurgia}" render="dtInternacao" profile="ok" ajax="true"/>  
+                  <mec:commandButton block="true" id="bt_internar" value="#{cadastroInternacaoController.obterLabelBotaoConfirmacao()}" onclick="PF('modalConfirmacaoWG').hide();" rendered="#{cadastroInternacaoController.perguntouCirurgia}" action="#{cadastroInternacaoController.executarAcaoBotaoConfirmacao}" profile="ok"/>  
+                  <mec:commandButton block="true" id="bt_cancelarModal" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoWG').hide();" rendered="#{!cadastroInternacaoController.verificouCERIH and !cadastroInternacaoController.verificouCnrac}" action="#{cadastroInternacaoController.cancelarModal}" profile="cancel" ajax="true"/> 
+                </aghu:linha> 
+              </h:form> 
+            </h:panelGroup> 
+          </p:outputPanel> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>
+
+
+
+

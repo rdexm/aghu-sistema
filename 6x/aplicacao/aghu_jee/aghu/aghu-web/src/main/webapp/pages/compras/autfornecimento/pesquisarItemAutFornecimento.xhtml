@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_ITENS_AUT_FORN} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaItemAutFornecimentoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaItemAutFornecimentoController}" ignoreEnter="true"/>  
+        <h:form prependId="false" id="formAutItemFornec"> 
+          <aghu:panelGeral legend="#{messages.TITLE_MANTER_ITENS_AUT_FORN}"> 
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_CONS_NUMERO_AF}" id="numeroAFComplemento" size="10" readonly="true" value="#{pesquisaItemAutFornecimentoController.numeroAf} / #{pesquisaItemAutFornecimentoController.numeroComplemento}"/>  
+              <mec:inputText label="#{messages.LABEL_DESCRICAO_FORNECEDOR}" id="descricaoFornecedor" size="70" readonly="true" value="#{pesquisaItemAutFornecimentoController.fornecedor.razaoSocial}"/>  
+              <p:outputPanel id="panelSituacaoAF" layout="inline"> 
+                <mec:inputText label="#{messages.LABEL_SITUACAO_PESQUISA_AF}" id="descricaoSituacao" size="30" readonly="true" value="#{pesquisaItemAutFornecimentoController.situacaoAf.getDescricao()}"/> 
+              </p:outputPanel>  
+              <mec:inputText label="#{messages.LABEL_MODALIDADE_COMPRA}" id="descricaoModalidade" size="20" readonly="true" value="#{pesquisaItemAutFornecimentoController.modalidadeCompra.descricao}"/>  
+              <mec:inputTextData label="#{messages.LABEL_DATA_GERACAO}" id="dataGeracao" size="10" readonly="true" value="#{pesquisaItemAutFornecimentoController.dataGeracao}" tipo="data"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <br clear="none"/>  
+          <h:form prependId="false" id="formLista"> 
+              <mec:serverDataTable id="tabelaItensAF" name="tabelaItensAF" rowKeyVar="row" rendered="#{not empty pesquisaItemAutFornecimentoController.listaItensAutorizacaoVO}" onRowMouseOver="this.style.backgroundColor='#F1F1F1'" onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'" list="#{pesquisaItemAutFornecimentoController.listaItensAutorizacaoVO}"> 
+                <c:set var="itemAF" value="#{item}"/>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink id="editarLink1" title="#{messages.LABEL_EDITAR}" rendered="#{!itemAF.desabilitarEdicaoItem}" action="#{pesquisaItemAutFornecimentoController.editar}" profile="edit"> 
+                    <f:setPropertyActionListener target="#{mantemItemAutFornecimentoController.numeroAf}" value="#{pesquisaItemAutFornecimentoController.numeroAf}" for="command"/>  
+                    <f:setPropertyActionListener target="#{mantemItemAutFornecimentoController.numeroComplemento}" value="#{pesquisaItemAutFornecimentoController.numeroComplemento}" for="command"/>  
+                    <f:setPropertyActionListener target="#{mantemItemAutFornecimentoController.itemAutorizacaoFornVO}" value="#{itemAF}" for="command"/>
+                     <f:setPropertyActionListener target="#{mantemItemAutFornecimentoController.bloquear}" value="#{pesquisaItemAutFornecimentoController.bloquear}" for="command"/>    
+
+                  </mec:commandLink>  
+                  <mec:commandLink id="visualizarLink1" title="#{messages.LABEL_VISUALIZAR}" rendered="#{itemAF.desabilitarEdicaoItem}" action="#{pesquisaItemAutFornecimentoController.editar}" styleClass=" silk-zoom silk-icon"> 
+                    <f:setPropertyActionListener target="#{mantemItemAutFornecimentoController.numeroAf}" value="#{pesquisaItemAutFornecimentoController.numeroAf}" for="command"/>  
+                    <f:setPropertyActionListener target="#{mantemItemAutFornecimentoController.numeroComplemento}" value="#{pesquisaItemAutFornecimentoController.numeroComplemento}" for="command"/>  
+                    <f:setPropertyActionListener target="#{mantemItemAutFornecimentoController.itemAutorizacaoFornVO}" value="#{itemAF}" for="command"/>  
+                   
+                  </mec:commandLink>  
+                  <mec:commandLink rendered="#{mf:hasPermission(securityController,'gerarAF,gravar')}" title="#{pesquisaItemAutFornecimentoController.verificarEfetivado(itemAF) ? messages.LABEL_PESQ_GRID_ITENS_ATIVAR : messages.LABEL_PESQ_GRID_ITENS_EFETIVAR}" action="#{pesquisaItemAutFornecimentoController.verificarGerarSolicitacaoItem(itemAF)}" styleClass=" silk-accept silk-icon" ajax="true" process="@this" render="formLista,panelSituacaoAF,panelBtGravar"/>  
+                  <mec:commandLink id="lnkParcelasItenAf" title="#{messages.TITLE_PARCELAMENTO_ENTREGA_AF}" action="#{pesquisaItemAutFornecimentoController.redirecionaParcelamentoEntregaAF(itemAF)}" rendered="#{mf:hasPermission(securityController,'gerarAF,gravar') or mf:hasPermission(securityController,'consultarParcelasAF,visualizar')}" styleClass=" silk-grade-horario-pesquisa silk-icon" ajax="true"> 
+                    <f:setPropertyActionListener target="#{pesquisaProgrEntregaItensAFController.voltarParaUrl}" value="pesquisarItemAutFornecimento" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisaProgrEntregaItensAFController.numeroAf}" value="#{pesquisaItemAutFornecimentoController.scoAutorizacaoForn.numero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisaProgrEntregaItensAFController.numeroItem}" value="#{itemAF.numero}" for="command"/> 
+                  </mec:commandLink>  
+                  <p:outputPanel id="panelPendente" layout="inline"> 
+                    <mec:commandLink title="#{messages.TITLE_GRID_ITENS_AUT_PENDENTE}" action="#{pesquisaItemAutFornecimentoController.desfazerAlteracoes(itemAF)}" rendered="#{itemAF.pendente}" styleClass=" silk-exclamation silk-icon" ajax="true" render="formLista,panelSituacaoAF,panelBtGravar"/> 
+                  </p:outputPanel> 
+                </p:column>  
+                <p:column style="text-align:right;" styleClass="auto-adjust"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{itemAF.numeroLicitacao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_SITUACAO}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelIndSituacao" layout="inline"> 
+                    <h:outputText id="indSituacaoItemAF" value="#{itemAF.indSituacao}"/>  
+                    <p:tooltip for="indSituacaoItemAF" style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{itemAF.indSituacao.descricao}"/> 
+                    </p:tooltip> 
+                  </p:outputPanel> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_COD}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{itemAF.materialServicoVO.codigoMatServ}"/> 
+                </p:column>  
+                <p:column style="width:215px"> 
+                  <f:facet name="header"> 
+                    <h:outputText  value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_DESCR}"/> 
+                  </f:facet>  
+                  <h:outputText id="matServDescricao" value="#{(itemAF.materialServicoVO.nomeMatServ.length() &gt; 30) ? fn:substring(itemAF.materialServicoVO.nomeMatServ,0,30) : itemAF.materialServicoVO.nomeMatServ} #{(itemAF.materialServicoVO.nomeMatServ.length() &gt; 30) ? '...' : '' }"/>  
+                  <p:tooltip for="matServDescricao" style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{(pesquisaItemAutFornecimentoController.verificarMaterialFase(itemAF.scoFaseSolicitacao) ? messages.LABEL_PESQ_GRID_ITENS_AUT_NOME_MATERIAL : messages.LABEL_PESQ_GRID_ITENS_AUT_NOME_SERVICO)}: #{itemAF.materialServicoVO.nomeMatServ}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{(pesquisaItemAutFornecimentoController.verificarMaterialFase(itemAF.scoFaseSolicitacao) ? messages.LABEL_PESQ_GRID_ITENS_AUT_DESCRICAO_MATERIAL : messages.LABEL_PESQ_GRID_ITENS_AUT_DESCRICAO_SERVICO)}: #{itemAF.materialServicoVO.descricaoMatServ}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_DESCRICAO_SOLICITACAO}: #{pesquisaItemAutFornecimentoController.obterDescricaoSolicitacao(itemAF)}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_UNIDADE}: #{itemAF.unidadeMedida.codigo}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{pesquisaItemAutFornecimentoController.labelSolicitacaoOriginal}: #{itemAF.numSolicitacaoOriginal}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_ESTOCAVEL}: #{itemAF.materialServicoVO.estocavelMat ? messages.LABEL_SIM : messages.LABEL_NAO}" rendered="#{pesquisaItemAutFornecimentoController.verificarMaterialFase(itemAF.scoFaseSolicitacao)}"/>  
+                    <br clear="none"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_UNI}" title="#{messages.TITLE_PESQ_GRID_ITENS_AUT_UNI}"/> 
+                  </f:facet>  
+                  <h:outputText id="umdMedida" value="#{itemAF.unidadeMedida.codigo}"/>  
+                  <p:tooltip for="umdMedida" rendered="#{itemAF.fatorConversaoForn &gt; 1 and pesquisaItemAutFornecimentoController.verificarMaterialFase(itemAF.scoFaseSolicitacao)}" style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{messages.LABEL_TOOLTIP_QTDE_EMBALAGEM_FORN}: #{itemAF.hintEmbalagemFornecedor}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column style="width:65px" rendered="#{pesquisaItemAutFornecimentoController.isSc}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_QTDE_AF}"/> 
+                  </f:facet>  
+                  <h:inputText id="qtdeAF" styleClass="numerico" value="#{itemAF.qtdeSolicitada}" required="false" size="7" maxlength="8" autocomplete="off" readonly="#{itemAF.desabilitarEdicaoItem || itemAF.desabilitarItemEdicaoSS() || pesquisaItemAutFornecimentoController.bloquear}" style="text-align: right"> 
+                    <ui:insert/>  
+                    <f:converter converterId="javax.faces.Integer"/>  
+                    <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                    <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                    <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                    <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>  
+                    <p:ajax event="change" eventsQueue="storeQueue" update="@(#panelVlrSaldo) @(#panelPendente) @(#qtdeAF) @(#panelBtGravar) @(#formLista)" process="@this" listener="#{pesquisaItemAutFornecimentoController.validarQuantidadeAF(itemAF,true)}"/> 
+                  </h:inputText>  
+                  <p:tooltip for="qtdeAF" rendered="#{itemAF.hintQtdAF != null}" style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{itemAF.hintQtdAF}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column rendered="#{pesquisaItemAutFornecimentoController.isSc}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_QTDE_EF}"/> 
+                  </f:facet>  
+                  <h:outputText id="qtdeRecebida" value="#{itemAF.qtdeRecebida}"/>  
+                  <p:tooltip for="qtdeRecebida" rendered="#{itemAF.fatorConversaoForn &gt; 1 and pesquisaItemAutFornecimentoController.verificarMaterialFase(itemAF.scoFaseSolicitacao)}" style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{pesquisaItemAutFornecimentoController.obterToolTipQtdeFornecedorVlrUnitario(itemAF, itemAF.qtdeRecebida)}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column rendered="#{pesquisaItemAutFornecimentoController.isSc}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_QTDE_SALDO}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelVlrSaldo" layout="inline"> 
+                    <h:outputText value="#{pesquisaItemAutFornecimentoController.obterQtdeSaldoItemAF(itemAF)}"/> 
+                  </p:outputPanel>  
+                  <p:tooltip for="panelVlrSaldo" rendered="#{itemAF.fatorConversaoForn &gt; 1 and pesquisaItemAutFornecimentoController.verificarMaterialFase(itemAF.scoFaseSolicitacao)}" style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{pesquisaItemAutFornecimentoController.obterToolTipQtdeFornecedorVlrUnitario(itemAF, pesquisaItemAutFornecimentoController.obterQtdeSaldoItemAF(itemAF))}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column rendered="#{pesquisaItemAutFornecimentoController.isSc}" style="text-align:right;#{itemAF.qtdeRp.mostrarAlerta and itemAF.qtdeRp.quantidade &gt; 0 ? 'background:#'.concat(qtdeItemNotaRecebProvisorioController.corDestaque).concat(' !important') : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_QTDE_RP}"/> 
+                  </f:facet>  
+                  <h:outputText  id="qtdeRP" value="#{itemAF.qtdeRp.quantidade}"/>  
+                  <p:tooltip for="qtdeRP" rendered="#{not empty itemAF.qtdeRp.notasRecebimento}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{qtdeItemNotaRecebProvisorioController.getRps(itemAF.qtdeRp)}" escape="false"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column style="width:75px"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{pesquisaItemAutFornecimentoController.isSc ? messages.LABEL_MANTER_ITENS_AUT_FORN_DET_VLR_UNIT_FORN : messages.LABEL_MANTER_ITENS_AUT_FORN_DET_VLR_UNIT_FORN_SS}"/> 
+                  </f:facet>  
+                  
+                  <p:outputPanel id="panelVlrUnit">
+	            	  <pe:inputNumber id="vlrUnit#{itemAF.numero}"
+	        			value="#{itemAF.valorUnitario}"
+						required="false"			
+						maxlength="13" 
+						style="text-align: right" 
+						readonly="#{itemAF.desabilitarEdicaoItem || pesquisaItemAutFornecimentoController.bloquear}"
+						disabled="#{itemAF.desabilitarEdicaoItem || pesquisaItemAutFornecimentoController.bloquear}"
+						autocomplete="off"
+						converter="#{vlrUnitarioDoubleConverter}"			
+						size="14"
+						decimalSeparator=","
+						thousandSeparator="."					
+						decimalPlaces="4">
+						    <p:ajax event="change" update="@(#panelPendente) @(#vlrUnit) @(#panelBtGravar) @(#tabelaItensAF)" process="@this" listener="#{pesquisaItemAutFornecimentoController.validarValorUnitario(itemAF,true)}"/>
+               
+						</pe:inputNumber> 
+                  </p:outputPanel>
+                  <p:tooltip for="panelVlrUnit" rendered="#{itemAF.fatorConversaoForn &gt; 1 and pesquisaItemAutFornecimentoController.verificarMaterialFase(itemAF.scoFaseSolicitacao)}" style="width:350px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{messages.LABEL_TOOLTIP_VLR_UNITARIO_EMBALAGEM_FORN} (#{itemAF.hintEmbalagemFornecedor}): #{itemAF.hintValorUnitario}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column rendered="#{not pesquisaItemAutFornecimentoController.isSc}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_VLR_EFETIVADO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{itemAF.valorEfetivado}" converter="#{bigDecimalConverter}" style="float:right;"> 
+                    <f:convertNumber pattern="###,##0.00"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column rendered="#{not pesquisaItemAutFornecimentoController.isSc}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_VLR_SALDO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{itemAF.valorSaldo}" converter="#{bigDecimalConverter}" style="float:right;"> 
+                    <f:convertNumber pattern="###,##0.00"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_VLR_TOTAL}"/> 
+                  </f:facet>  
+                    <p:outputPanel id="panelVlrTotal">
+                  <h:outputText  value="#{itemAF.valorTotal}" converter="#{bigDecimalConverter}" style="float:right;"> 
+                    <f:convertNumber pattern="###,##0.00"/> 
+                  </h:outputText> 
+                  </p:outputPanel>
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <p:outputPanel layout="inline">
+                      <h:outputText id="headerEX" value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_EXCLUIDO}"/> 
+                       <p:tooltip for="headerEX" direction="top-right" showDelay="300" layout="block"> 
+                        <h:outputText value="#{messages.HINT_PESQ_GRID_ITENS_AUT_EXCLUIDO}"/> 
+                      </p:tooltip>  
+                    </p:outputPanel> 
+                  </f:facet>  
+                  <h:selectBooleanCheckbox id="chkexc_#{itemAF.numero}" value="#{itemAF.indExclusao}" disabled="#{pesquisaItemAutFornecimentoController.bloquear}"> 
+                    <p:ajax event="change" eventsQueue="storeQueue" update="@(#panelPendente) @(#chkexc_) @(#panelBtGravar)" process="@this" listener="#{pesquisaItemAutFornecimentoController.validarExclusaoItemAF(itemAF,true)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <p:outputPanel layout="inline"> 
+                      <h:outputText id="headerContr" value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_CONTRATO}"/> 
+                      <p:tooltip for="headerContr" direction="top-right" showDelay="300" layout="block"> 
+                        <h:outputText value="#{messages.HINT_PESQ_GRID_ITENS_AUT_CONTRATO}"/> 
+                      </p:tooltip> 
+                    </p:outputPanel> 
+                  </f:facet>  
+                  <h:selectBooleanCheckbox id="chkcontr_#{itemAF.numero}" value="#{itemAF.indContrato}" disabled="#{itemAF.desabilitarEdicaoItem or itemAF.desabilitarItemEdicaoSS() or pesquisaItemAutFornecimentoController.bloquear}"> 
+                    <p:ajax event="change" update="@(#panelPendente) @(#chkcontr_) @(#panelBtGravar) @(#tabelaItensAF)" process="@this" listener="#{pesquisaItemAutFornecimentoController.validarSCContrato(itemAF)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <p:outputPanel layout="inline"> 
+                      <h:outputText id="headerCM" value="#{messages.LABEL_PESQ_GRID_ITENS_AUT_CM}"/> 
+                      <p:tooltip for="headerCM" direction="top-right" showDelay="300" layout="block"> 
+                        <h:outputText value="#{messages.HINT_PESQ_GRID_ITENS_AUT_CM}"/> 
+                      </p:tooltip>                        
+                    </p:outputPanel> 
+                  </f:facet>  
+                  <h:selectBooleanCheckbox id="pcForn_#{itemAF.numero}" value="#{itemAF.indPreferencialCum}" disabled="#{itemAF.desabilitarEdicaoItem or itemAF.desabilitarItemEdicaoSS() or pesquisaItemAutFornecimentoController.bloquear}"> 
+                    <p:ajax event="change" update="@(#panelPendente) @(#panelBtGravar)" process="@this" listener="#{pesquisaItemAutFornecimentoController.setPendenteItem(itemAF,true)}"/> 
+                  </h:selectBooleanCheckbox> 
+                  
+                </p:column> 
+              </mec:serverDataTable> 
+	          <aghu:acao> 
+	              <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'gerarAF,gravar') and pesquisaItemAutFornecimentoController.validarSituacaoAF()}" action="#{pesquisaItemAutFornecimentoController.gravar}" render="formLista" profile="ok"/> 
+	              <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{pesquisaItemAutFornecimentoController.voltar}" styleClass="bt_voltar bt_cinza" ajax="true" process="@this" profile="back">
+	              	<f:setPropertyActionListener target="#{pesquisaAutorizacaoFornecimentoPaginatorController.retornoEdicao}" value="#{pesquisaItemAutFornecimentoController.gravou}" for="command"/>
+            </mec:commandButton>  
+	          </aghu:acao> 
+          </h:form> 
+        <h:form prependId="false" id="formModalGerarSolicitacao">
+             <p:dialog id="modalGerarSolicitacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalGerarSolicitacaoWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_GERAR_SOLICITACAO_ITEM}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_GERAR_SOLICITACAO_ITEM} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+                <mec:commandButton id="bt_simEfetivar" value="#{messages.LABEL_SIM}" action="#{pesquisaItemAutFornecimentoController.gerarSolicitacaoItem}" oncomplete="PF('modalGerarSolicitacaoWG').hide();" profile="search" ajax="true" render="formLista,panelSituacaoAF"/>  
+                <mec:commandButton id="bt_naoGerarSolicitacao" value="#{messages.LABEL_NAO}" action="#{pesquisaItemAutFornecimentoController.alterarSituacaoItem}" oncomplete="PF('modalGerarSolicitacaoWG').hide();" profile="cancel" ajax="true" render="formLista,panelSituacaoAF"/> 
+            </h:panelGroup> 
+          </p:dialog>  
+        </h:form>
+
+        <h:form prependId="false" id="formModalPendencias">  
+          <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACOES}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+                <mec:commandButton id="bt_simPendencias" value="#{messages.LABEL_SIM}" action="#{pesquisaItemAutFornecimentoController.cancelar}" profile="search" ajax="true"/>  
+                <mec:commandButton id="bt_naoPendencias" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" profile="cancel" ajax="true"/> 
+            </h:panelGroup> 
+          </p:dialog>  
+	    </h:form>
+	    
+	    <h:form prependId="false" id="formModalPendenciasParcelas">      
+          <p:dialog id="modalConfirmacaoPendenciaParcelas" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaParcelasWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACOES}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+                <mec:commandButton id="bt_simPendenciasParcelas" value="#{messages.LABEL_SIM}" action="#{pesquisaItemAutFornecimentoController.cancelarParcelas}" profile="search" ajax="true"> 
+                  <f:setPropertyActionListener target="#{pesquisaProgrEntregaItensAFController.voltarParaUrl}" value="pesquisarItemAutFornecimento" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisaProgrEntregaItensAFController.numeroAf}" value="#{pesquisaItemAutFornecimentoController.scoAutorizacaoForn.numero}" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisaProgrEntregaItensAFController.numeroItem}" value="#{pesquisaItemAutFornecimentoController.itemAutFornVoAtual.numero}" for="command"/> 
+                </mec:commandButton>  
+                <mec:commandButton id="bt_naoPendenciasParcelas" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaParcelasWG').hide();" profile="cancel" ajax="true"/> 
+            </h:panelGroup> 
+          </p:dialog>  
+	    </h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

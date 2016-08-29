@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISA_MATERIAL_CONTROLE_QUALIDADE} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadCtrlQualidadePaginatorController}"/>  
+      <h:form prependId="false" id="formDadosCadCtrlQualidade"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISA_MATERIAL_CONTROLE_QUALIDADE}"> 
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_AEL_CAD_CTRL_QA}" size="10" maxlength="9" value="#{cadCtrlQualidadePaginatorController.filtros.seq}" id="seq"/>  
+            <mec:inputText value="#{cadCtrlQualidadePaginatorController.filtros.material}" label="#{messages.LABEL_MATERIAL}" title="#{messages.TITLE_MATERIAL_CNT_QUALIDADE}" size="134" maxlength="120" style="text-transform:uppercase" id="material"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_COD_CONVENIO_FAT}" title="#{messages.TITLE_LABEL_CODIGO_CONVENIO_PESQ}" size="10" maxlength="3" readonly="#{cadCtrlQualidadePaginatorController.filtros != null and cadCtrlQualidadePaginatorController.filtros.convenioSaudePlano != null}" value="#{cadCtrlQualidadePaginatorController.convenioId}" id="codigoConvenio"> 
+              <p:ajax event="blur" bypassUpdates="false" process="@this"/> 
+            </mec:inputNumero>  
+            <mec:inputNumero 
+                id="codigoPlano"
+                title="#{messages.TITLE_LABEL_CODIGO_PLANO_PESQ_EXAME}"
+                label="#{messages.LABEL_COD_PLANO_FAT}"
+                name="codigoPlano" size="8" maxlength="2" 
+              	converter="#{javax.faces.Byte}" 
+              	readonly="#{cadCtrlQualidadePaginatorController.filtros != null and cadCtrlQualidadePaginatorController.filtros.convenioSaudePlano != null}"
+              	value="#{cadCtrlQualidadePaginatorController.planoId}"> 
+                <p:ajax event="change" bypassUpdates="false" update="@(#codigoConvenio) @(#codigoPlano) @(#suggestion_plano)" process="@this" listener="#{cadCtrlQualidadePaginatorController.escolherPlanoConvenio()}"/> 
+            </mec:inputNumero>
+					<mec:suggestionBox id="suggestion_plano"
+						label="#{messages.LABEL_CONVENIO_PLANO}"
+						title="#{messages.TITLE_DESCRICA_CONVENIO_PLANO_CADAVER}"
+						width="800" size="116" maxlength="40"
+						converter="#{fatConvenioSaudePlanoConverter}"
+						descricaoInput="descricaoPlanoConvenio"
+						suggestionAction="pesquisarConvenioSaudePlanos"
+						posSelectionAction="atribuirPlano" posDeleteAction="atribuirPlano"
+						controller="#{cadCtrlQualidadePaginatorController}"
+						value="#{cadCtrlQualidadePaginatorController.filtros.convenioSaudePlano}"
+						render="codigoConvenio,codigoPlano">
+						<p:column>#{item.convenioSaude.descricao} - #{item.descricao}</p:column>
+					</mec:suggestionBox>
+				</aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" rendered="#{mf:hasPermission(securityController,'cadastrarMateriaisControleQualidade,pesquisar')}" action="#{cadCtrlQualidadePaginatorController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+          <mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}" action="#{cadCtrlQualidadePaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" immediate="true" action="#{cadCtrlQualidadePaginatorController.inserir}" rendered="#{cadCtrlQualidadePaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'cadastrarMateriaisControleQualidade,executar')}" profile="add"/> 
+        </aghu:linha> 
+      </h:form>  
+      <h:form prependId="false" id="formListarCadCtrlQualidade"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaCadCtrlQualidade" controller="#{cadCtrlQualidadePaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaCadCtrlQualidade_link_editar" profile="edit" title="editar" action="#{cadCtrlQualidadePaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{cadCtrlQualidadeController.aelCadCtrlQualidade}" value="#{_item}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{cadCtrlQualidadePaginatorController.selecionado}" value="#{_item}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaCadCtrlQualidade_link_remover" profile="delete" title="excluir" action="#{cadCtrlQualidadePaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{cadCtrlQualidadePaginatorController.selecionado}" value="#{_item}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item.seq}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.seq}"/> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item.material}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_MATERIAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.material}"/> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item.convenioSaudePlano}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CONVENIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.convenioSaude.descricao}"/>  
+            <h:outputText value=" - " rendered="#{_item.convenioSaude.descricao != null and _item.convenioSaudePlano.descricao != null}"/>  
+            <h:outputText value="#{_item.convenioSaudePlano.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

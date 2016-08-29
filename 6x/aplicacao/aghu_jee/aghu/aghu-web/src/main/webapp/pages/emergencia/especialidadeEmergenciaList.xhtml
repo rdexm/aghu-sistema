@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_EMERG_ESPECIALIDADE_LIST}</title> 
+    </ui:define>  
+    <ui:define name="metadata">
+      <f:metadata>
+        <f:viewAction action="#{especialidadeEmergenciaPaginatorController.inicio}"/>
+      </f:metadata>
+    </ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{especialidadeEmergenciaPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_EMERG_ESPECIALIDADE_LIST}"> 
+          <aghu:linha>
+					<mec:suggestionBox label="#{messages.LABEL_EMERG_ESPECIALIDADE}"
+						title="#{messages.TITLE_EMERG_ESPECIALIDADE}" descricaoInput="seq"
+						descricaoLabel="nomeEspecialidade"
+						suggestionAction="pesquisarEspecialidade"
+						posSelectionAction="pesquisarBySuggestion" width="390"
+						id="especialidade"
+						controller="#{especialidadeEmergenciaPaginatorController}"
+						var="_itemEspecialidade" itemValue="#{_itemEspecialidade}"
+						value="#{especialidadeEmergenciaPaginatorController.especialidade}"
+						render="formEspecialidade,formPesquisa">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_EMERG_ESPECIALIDADE_SIGLA}</b>
+							</f:facet> #{_itemEspecialidade.sigla}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_EMERG_ESPECIALIDADE_DESCRICAO}</b>
+							</f:facet> #{_itemEspecialidade.nomeEspecialidade}
+              </p:column>
+					</mec:suggestionBox>
+					<mec:selectOneMenu id="situacao" label="#{messages.LABEL_EMERG_ESPECIALIDADE_SITUACAO}" title="#{messages.TITLE_EMERG_ESPECIALIDADE_SITUACAO}" value="#{especialidadeEmergenciaPaginatorController.indSituacao}" enum="DominioSituacao"></mec:selectOneMenu> 
+          </aghu:linha> 
+        </aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton value="#{messages.LABEL_PESQUISAR}"
+					id="bt_pesquisar"
+					action="#{especialidadeEmergenciaPaginatorController.pesquisar}"
+					profile="search"/>
+				
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar"
+					action="#{especialidadeEmergenciaPaginatorController.limparPesquisa}" profile="clear"/>
+				
+				<mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo"
+					rendered="#{especialidadeEmergenciaPaginatorController.pesquisaAtiva}"
+					action="#{especialidadeEmergenciaPaginatorController.novo}"
+					profile="add" />
+			</aghu:acao>
+		</h:form>  
+      <!-- LISTAGEM DE ESPECIALIDADE DA EMERGENCIA -->  
+      <h:form prependId="false" id="formEspecialidade"> 
+        <aghu:linha> 
+          <!-- LISTAGEM DE REGISTROS -->  
+          <p:outputPanel id="panelListaGrauGravidade" layout="inline"> 
+            <p:outputPanel id="panelListaGrauGravidadeInterno" styleClass="tabela-hachurada" rendered="#{especialidadeEmergenciaPaginatorController.pesquisaAtiva}" layout="inline"> 
+              <p:outputPanel layout="block" style="width: 100%; max-height:300px;">
+							<mec:serverDataTable id="tabelaEspecialidadeEmergencia"
+								list="#{especialidadeEmergenciaPaginatorController.dataModel}"
+								controller="#{especialidadeEmergenciaPaginatorController}"
+								scrollable="true" scrollHeight="300px;">
+								<c:set var="espItem" value="#{item}"/>
+								<p:column headerText="Ações"
+									styleClass="first-column auto-adjust" exportable="false">
+									<mec:commandLink id="tabelaEspecialidadeEmergencia_link_editar"
+										profile="edit" 
+										title="#{messages.LABEL_EDITAR}"
+										action="#{especialidadeEmergenciaPaginatorController.editar}">
+										<f:setPropertyActionListener
+											target="#{especialidadeEmergenciaController.especialidadeEmergencia}"
+											value="#{espItem}" 
+											for="command" />
+									   <f:setPropertyActionListener
+											target="#{especialidadeEmergenciaController.seq}"
+											value="#{espItem.especialidade.seq}" 
+											for="command" />
+									</mec:commandLink>
+									<mec:commandLink id="excluirEspecialidade"
+										title="#{messages.LABEL_EXCLUIR}"
+										profile="delete" process="@this"
+										action="#{especialidadeEmergenciaController.excluir()}"
+										render="tabelaEspecialidadeEmergencia">
+										<f:setPropertyActionListener
+											target="#{especialidadeEmergenciaController.especialidadeEmergencia}"
+											value="#{espItem}" 
+											for="command" />
+									   <f:setPropertyActionListener
+											target="#{especialidadeEmergenciaController.seq}"
+											value="#{espItem.especialidade.seq}" 
+											for="command" />
+									</mec:commandLink>	
+								</p:column>
+								<p:column style="width: 100px;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_EMERG_ESPECIALIDADE_SIGLA}" />
+									</f:facet>
+									<h:outputText value="#{espItem.especialidade.sigla}" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_EMERG_ESPECIALIDADE_DESCRICAO}" />
+									</f:facet>
+									<h:outputText
+										value="#{espItem.especialidade.nomeEspecialidade}" />
+								</p:column>
+								<p:column style="width: 100px;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_EMERG_ESPECIALIDADE_SITUACAO}" />
+									</f:facet>
+									<h:outputText
+										value="#{espItem.especialidadeEmergencia.indSituacao.descricao}" />
+								</p:column>
+							</mec:serverDataTable>							
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:linha> 
+      </h:form> 
+    </ui:define>
+  </ui:composition>
+</html>

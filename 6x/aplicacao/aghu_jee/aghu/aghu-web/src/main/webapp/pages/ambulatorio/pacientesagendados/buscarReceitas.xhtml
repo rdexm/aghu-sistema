@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PACIENTE_RECEITA_GERAL_ESPECIAL} ::
+			AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{buscarReceitasController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{buscarReceitasController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formBuscarReceitas">
+			<p:outputPanel id="panelBuscarReceitas" >
+				<aghu:panelGeral legend="#{messages.TITLE_PACIENTE_RECEITA_GERAL_ESPECIAL}" style="min-height: 100px !important;">
+					<aghu:linha> 
+						<h:outputText value="#{messages.LABEL_PACIENTE}:" style="padding-right:5px;"/>  
+						<h:outputText value="#{buscarReceitasController.consultaSelecionada.paciente.nome}" style="font-weight:bold;padding-right:10px;"/>
+						
+						<h:outputText value="#{messages.LABEL_IDADE}:" style="padding-right:5px;"/>  
+						<h:outputText value="#{buscarReceitasController.idadeFormatada}" style="font-weight:bold;padding-right:10px;"/>
+						
+						<h:outputText value="#{messages.LABEL_PRONTUARIO}:" style="padding-right:5px;"/>  
+						<h:outputText value="#{buscarReceitasController.consultaSelecionada.paciente.prontuario}" style="font-weight:bold;padding-right:10px;"/> 
+										  
+					</aghu:linha>
+					<aghu:linha>
+						<h:outputText value="#{messages.LABEL_ZONA}:" style="padding-right:5px;"/>  
+						<h:outputText value="#{buscarReceitasController.consultaSelecionada.gradeAgendamenConsulta.siglaUnfSala.sigla}" style="font-weight:bold;padding-right:10px;"/>
+						
+						<h:outputText value="#{messages.LABEL_AGENDA}:" style="padding-right:5px;"/>  
+						<h:outputText value="#{buscarReceitasController.consultaSelecionada.gradeAgendamenConsulta.especialidade.nomeEspecialidade}" style="font-weight:bold;padding-right:10px;"/>
+						  
+						<h:outputText value="#{messages.LABEL_EQUIPE}:" style="padding-right:5px;"/>  
+						<h:outputText value="#{buscarReceitasController.consultaSelecionada.gradeAgendamenConsulta.equipe.nome}" style="font-weight:bold;padding-right:10px;"/>
+						  
+						<h:outputText value="#{messages.LABEL_PROFISSIONAL}:" style="padding-right:5px;"/>  
+						<h:outputText value="#{buscarReceitasController.consultaSelecionada.gradeAgendamenConsulta.profEspecialidade.rapServidor.pessoaFisica.nome}" style="font-weight:bold;"/> 
+					</aghu:linha>
+				
+					<div class="ui-grid">
+						<div class="ui-grid-row">
+							<div class="ui-grid-col-6">
+								<p:tree value="#{buscarReceitasController.raiz}" var="node"	dynamic="true" style="min-width: 470px !important; width: 98% !important; min-height: 50px !important;"
+									selectionMode="single" selection="#{buscarReceitasController.tDataVOGeralSelecionado}" id="treeReceitas">
+									<p:ajax event="select" listener="#{buscarReceitasController.nodeGeralSelecionado}" update="@(#dt_especialidade), @(#outputPanelDtGeral)" process="treeReceitas"/>
+									<p:treeNode>
+										<h:outputText value="#{node.descricao}" />
+									</p:treeNode>
+								</p:tree>
+							</div>
+							<div class="ui-grid-col-6">
+								<h:outputText value="#{messages.LABEL_GERAL}" />
+								<p:outputPanel id="outputPanelDtGeral">
+								<mec:serverDataTable id="dt_geral" controller="#{buscarReceitasController}" 
+													 list="#{buscarReceitasController.listaVMamReceitasGeral}">
+									<c:set var="item" value="#{item}" />
+									<p:column style="width:20px !important; white-space: nowrap !important;">
+										<h:selectBooleanCheckbox id="marcador" value="{item.selecionado}">
+											<p:ajax event="change" process="@this" listener="#{buscarReceitasController.itemSelecionado(item)}"/>
+										</h:selectBooleanCheckbox>
+									</p:column>
+									<p:column style="width:15px !important;  white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_INT_TAB}" />
+										</f:facet>
+										<h:outputText value="#{buscarReceitasController.simNao(item.indInterno)}" />
+									</p:column>
+									<p:column style="width:40px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_MEDICAMENTO}" />
+										</f:facet>
+										<h:outputText id="descricao" value="#{buscarReceitasController.truncar(item.descricao, 20)}" />
+									
+										<p:tooltip id="descricaoToolTip" rendered="#{item.descricao.length() > 20}" for="descricao" value="#{item.descricao}" />
+									
+									</p:column>
+									<p:column style="width:40px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_QTD_TAB}" />
+										</f:facet>
+										<h:outputText value="#{item.quantidade}" />
+									</p:column>
+									<p:column style="width:50px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_FORMA_USO}" />
+										</f:facet>
+										<h:outputText id="formaUso" value="#{buscarReceitasController.truncar(item.formaUso,20)}" />
+										
+										<p:tooltip id="formaUsoToolTip" rendered="#{item.formaUso.length() > 20}" for="formaUso" value="#{item.formaUso}" />
+										
+									</p:column>
+									<p:column style="width:15px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_CONT_TAB}" />
+										</f:facet>
+										<h:outputText value="#{buscarReceitasController.simNao(item.indUsoContinuo)}" />
+									</p:column>
+								</mec:serverDataTable>
+								</p:outputPanel>
+								<br/>
+								<mec:commandButton id="btnMarcarGeral" value="#{messages.LABEL_BT_COPIAR}" immediate="true" process="@this"
+									action="#{buscarReceitasController.gravar(1)}"/>
+								<br/>
+								<br/>
+												   
+								<h:outputText value="#{messages.LABEL_ESPECIAL}" />								
+								
+								<mec:serverDataTable id="dt_especialidade" controller="#{buscarReceitasController}"
+													 list="#{buscarReceitasController.listaVMamReceitasEspecialidades}">
+									<c:set var="item" value="#{item}" />
+									<p:column style="width:15px !important; white-space: nowrap !important; text-align:left;">
+										<h:selectBooleanCheckbox id="marcador" value="{item.selecionado}">
+											<p:ajax event="change" process="@this" listener="#{buscarReceitasController.itemSelecionado(item)}"/>
+										</h:selectBooleanCheckbox>
+									</p:column>
+									<p:column style="width:15px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_INT_TAB}" />
+										</f:facet>
+										<h:outputText value="#{buscarReceitasController.simNao(item.indInterno)}" />
+									</p:column>
+									<p:column style="width:40px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_MEDICAMENTO}" />
+										</f:facet>
+										<h:outputText id="descricao" value="#{buscarReceitasController.truncar(item.descricao, 20)}" />
+										
+										<p:tooltip id="descricaoToolTip" rendered="#{item.descricao.length() > 20}" for="descricao" value="#{item.descricao}" />
+										
+									</p:column>
+									<p:column style="width:45px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_QTD_TAB}" />
+										</f:facet>
+										<h:outputText value="#{item.quantidade}" />
+									</p:column>
+									<p:column style="width:45px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_FORMA_USO}" />
+										</f:facet>
+										<h:outputText id="formaUso" value="#{buscarReceitasController.truncar(item.formaUso, 20)}" />
+										
+										<p:tooltip id="formaUsoToolTip" rendered="#{item.formaUso.length() > 20}" for="formaUso" value="#{item.formaUso}" />
+										
+									</p:column>
+									<p:column style="width:15px !important; white-space: nowrap !important; text-align:left;">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_CONT_TAB}" />
+										</f:facet>
+										<h:outputText value="#{buscarReceitasController.simNao(item.indUsoContinuo)}" />
+									</p:column>
+								</mec:serverDataTable>
+								<br/>
+								<mec:commandButton id="btnMarcarEspecial" value="Copiar itens selecionados" immediate="true" 
+									process="@form" action="#{buscarReceitasController.gravar(2)}"/>
+							</div>
+						</div>
+					</div> 
+				</aghu:panelGeral>
+				<aghu:acao id="panelButtons">
+					<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true"
+						profile="back" process="@this" action="#{buscarReceitasController.voltar()}"/>
+				</aghu:acao>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

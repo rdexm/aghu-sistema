@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_PROCEDIMENTO_HOSPITALAR_INTERNO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>
+    <ui:define name="metadata">
+       <f:metadata>
+           <f:viewAction action="#{manterProcedimentoHospitalarInternoPaginatorController.inicio}"/>
+       </f:metadata>
+    </ui:define>
+    <ui:define name="body"> 
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_PROCEDIMENTO_HOSPITALAR_INTERNO}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelPhi" layout="inline"> 
+              <mec:suggestionBox label="#{messages.LABEL_PROCEDIMENTO_INTERNO}" title="#{messages.TITLE_PROCEDIMENTO_INTERNO_SEQUENCIAL}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="listarProcedHospInternoPorSeqOuDescricao" width="500" id="procedimentoHospitalar" controller="#{manterProcedimentoHospitalarInternoPaginatorController}" value="#{manterProcedimentoHospitalarInternoPaginatorController.procedimentoHospitalar}"> 
+                <p:column>#{item.seq}</p:column>  
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_ATIVO}" title="#{messages.TITLE_MARQUE_PHI_ATIVO}" value="#{manterProcedimentoHospitalarInternoPaginatorController.somenteAtivo}" id="ativo"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_ORIGEM_PRESCRICAO}" title="#{messages.TITLE_ORIGEM_PRESCRICAO}" value="#{manterProcedimentoHospitalarInternoPaginatorController.origemPrescricao}" id="origemPrescricao"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_NUTRICAO_ENTERAL}" title="#{messages.TITLE_NUTRICAO_ENTERAL}" value="#{manterProcedimentoHospitalarInternoPaginatorController.tipoNutricao}" enum="DominioTipoNutricaoParenteral" id="tipoNutricao"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="panelProcedimentoCirurgico" layout="inline"> 
+              <mec:suggestionBox label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarProcedimentosCirurgicos" width="500" id="phi" controller="#{manterProcedimentoHospitalarInternoPaginatorController}" value="#{manterProcedimentoHospitalarInternoPaginatorController.procedimentoCirurgico}"> 
+                <p:column>#{item.seq}</p:column>  
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <p:outputPanel id="panelPhiAgrupada" layout="inline"> 
+              <mec:suggestionBox label="#{messages.LABEL_PHI_AGRUPADA}" title="#{messages.TITLE_PHI_AGRUPADA}" required="false" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarProcedimentosHospitalaresAgrupados" width="500" id="phiAgrupada" controller="#{manterProcedimentoHospitalarInternoPaginatorController}" value="#{manterProcedimentoHospitalarInternoPaginatorController.procedimentoAgrupado}"> 
+                <p:column>#{item.seq}</p:column>  
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{manterProcedimentoHospitalarInternoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{manterProcedimentoHospitalarInternoPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton id="bt_voltar"
+                             value="#{messages.LABEL_VOLTAR}"
+                             action="#{manterProcedimentoHospitalarInternoPaginatorController.voltar}"
+                             rendered="#{not empty manterProcedimentoHospitalarInternoPaginatorController.origem}"
+                             profile="back"/>
+          <mec:commandButton value="#{messages.LABEL_NOVO}"
+                             id="bt_iniciarInclusao"
+                             action="#{manterProcedimentoHospitalarInternoPaginatorController.iniciarInclusao}"
+                             immediate="true"
+                             rendered="#{manterProcedimentoHospitalarInternoPaginatorController.dataModel.pesquisaAtiva}"
+                             disabled="#{!mf:hasPermission(securityController,'procedimentoHospitalarInterno,alterar')}"
+                             profile="add"
+                             ajax="true"/>
+        </aghu:acao> 
+      </h:form>  
+      <h:panelGroup rendered="#{manterProcedimentoHospitalarInternoPaginatorController.dataModel.pesquisaAtiva}"> 
+        <h:form prependId="false" id="formProcedimentos"> 
+          <mec:serverDataTable dataModel="dataModel" rendered="#{manterProcedimentoHospitalarInternoPaginatorController.dataModel.pesquisaAtiva}" id="tabelaProcedimentos" controller="#{manterProcedimentoHospitalarInternoPaginatorController}"> 
+            <c:set var="_procedimentos" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+              <mec:commandLink id="tabelaProcedimentos_link_editar" profile="edit" title="editar" action="#{manterProcedimentoHospitalarInternoPaginatorController.editar}"> 
+                <f:setPropertyActionListener for="command" target="#{manterProcedimentoHospitalarInternoController.procedHospInterno}" value="#{_procedimentos}"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PHI}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.seq}"/> 
+            </p:column>  
+            <p:column width="25%"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.descricao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PROC_CIRUR}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.procedimentoCirurgico.seq}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty _procedimentos.procedimentoCirurgico.descricao}"> 
+                <h:outputText value="#{_procedimentos.procedimentoCirurgico.descricao}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ORI_PRESC}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.indOrigemPresc ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_NUT_ENT}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.tipoNutricaoEnteral}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_OPER_CONV}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.tipoOperConversao.descricao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_FAT_CONV}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.fatorConversao}"> 
+                <f:convertNumber minFractionDigits="3" maxFractionDigits="3" maxIntegerDigits="4"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ATIVO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.situacao == 'A' ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PHI_AGRUPADA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.procedimentoHospitalarInterno.seq}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty _procedimentos.procedimentoHospitalarInterno.descricao}"> 
+                <h:outputText value="#{_procedimentos.procedimentoHospitalarInterno.descricao}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ITEM_EXM}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.itemExame.seq}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty _procedimentos.itemExame.descricao}"> 
+                <h:outputText value="#{_procedimentos.itemExame.descricao}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ITEM_MED}"/> 
+              </f:facet>  
+              <h:outputText value="#{_procedimentos.itemMedicacao.seq}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty _procedimentos.itemMedicacao.descricao}"> 
+                <h:outputText value="#{_procedimentos.itemMedicacao.descricao}"/> 
+              </p:tooltip> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </h:form> 
+      </h:panelGroup> 
+    </ui:define> 
+  </ui:composition> 
+</html>

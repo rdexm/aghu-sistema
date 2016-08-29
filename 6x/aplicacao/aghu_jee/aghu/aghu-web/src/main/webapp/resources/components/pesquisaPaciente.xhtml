@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:mf="http://www.mec.gov.br/taglib"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+
+    <h:head>
+        <title>mec:pesquisarPaciente</title>
+    </h:head>	
+	
+	<ui:remove><!-- Comments -->	
+	COMPONENTE PESQUISAPACIENTE
+	============================
+	Autor: Cristiano Quadros (2014)
+	
+	Componente cria uma interfaces visual para pesquisa de paciente  
+	
+	Principais Propriedades:
+	
+	id                  : identificador do componente
+	value               : referência a classe AipPaciente na controller
+	valueChangeListener : método de pesquisa na controller
+	disabled/readonly   : Habilita/desabilita o botão
+	rendered: (true/false) Mostrar ou não o componente em tela
+	render: atualizar componentes
+
+	Inserir na Controller:
+	
+		public void pesquisaPaciente(ValueChangeEvent event){
+			try {
+				paciente = pacienteFacade.pesquisarPacienteComponente(Integer.valueOf((String) event.getNewValue()), event.getComponent().getId());
+				
+				//onUpdateAction
+				
+			}catch(BaseException e){
+				apresentarExcecaoNegocio(e);
+			}
+		}			
+	
+	
+	Migração:
+	
+	mbean              : remover 
+	codigoPaciente     : remover 
+	prontuarioPaciente : remover 
+	paciente           : utilizar value 
+	onUpdateAction     : remover, utilizar o método dentro do valueChangeListener 
+	reRender           : render	
+	valueChangeListener: add
+	
+	
+	</ui:remove>	
+		
+    <h:body>
+        <cc:interface name="commandButton" displayName="Cria um botão de ação">
+
+	        <cc:attribute name="readonly" default="false" />
+	        <cc:attribute name="required" default="false" />
+	        <cc:attribute name="requiredFake" default="false" />
+	        <cc:attribute name="value" />
+	        <cc:attribute name="valueChangeListener"
+                     method-signature="void valueChanged(javax.faces.event.ValueChangeEvent)" targets="#{cc.clientId}:#{cc.clientId}:codigo #{cc.clientId}:#{cc.clientId}:prontuario" />
+			<cc:attribute name="onkeypress" />
+			<cc:attribute name="onkeyup" />
+			<cc:attribute name="onkeydown" />
+			<cc:attribute name="onblur" />
+			<cc:attribute name="onchange" />
+			<cc:attribute name="render" />
+			<cc:attribute name="autocomplete" default="off" />	
+			<cc:attribute name="posDeleteAction" targetAttributeName="action" targets="#{cc.clientId}:#{cc.clientId}:sgClear"/>
+        
+		</cc:interface>
+		
+	    <cc:implementation>	   
+	    
+	    	<ui:param name="render" value="#{mf:customPrefixAjaxRender(cc.attrs.render)}" />
+	    
+        	<mec:field label="Prontuário" labelAux="Código" id="#{cc.clientId}"
+        		title="Pesquisa de Paciente: Utilize um dos campos 'Código' ou 'Prontuário' e tecle TAB para executar a pesquisa." 
+        		readonly="#{cc.attrs.readonly}" required="#{cc.attrs.required or cc.attrs.requiredFake}">	    
+	    
+	    		<p:outputPanel id="panelPesq" style="float:left">
+
+					<c:if test="#{empty cc.attrs.value}">
+			    		<p:inputText id="prontuario" styleClass="prontuario-input" size="8" 
+			    			maxlength="9" style="margin: 0 2px;float:left;" required="#{cc.attrs.required}" 
+			    			label="Prontuário do Paciente" 
+			    			converter="prontuarioConverter" 
+							readonly="#{cc.attrs.readonly}"
+							disabled="#{cc.attrs.readonly}"
+							onkeypress="#{cc.attrs.onkeypress}"
+							onkeyup="#{cc.attrs.onkeyup}"
+							onkeydown="#{cc.attrs.onkeydown}"	
+							autocomplete="#{cc.attrs.autocomplete}"
+							onchange="#{cc.attrs.onchange}">
+			    			<p:ajax event="change" update="panelPesq #{render}" />
+			    		</p:inputText>
+			    	</c:if>
+
+					<c:if test="#{empty cc.attrs.value}">
+			    		<p:inputMask id="codigo" size="6" maxlength="9" style="margin: 0 2px;float:left;" required="#{cc.attrs.required}" 
+			    			label="Pesquisa de Paciente" mask="?999999999" slotChar=" " 
+							readonly="#{cc.attrs.readonly}"
+							disabled="#{cc.attrs.readonly}"
+							converter="prontuarioConverter"
+							onkeypress="#{cc.attrs.onkeypress}"
+							onkeyup="#{cc.attrs.onkeyup}"
+							onkeydown="#{cc.attrs.onkeydown}" 
+							autocomplete="#{cc.attrs.autocomplete}"
+							onblur="#{cc.attrs.onblur}"				
+							onchange="#{cc.attrs.onchange}">
+			    			<p:ajax event="change" update="panelPesq #{render}"  />
+			    		</p:inputMask>
+			    	</c:if>
+
+					<c:if test="#{not empty cc.attrs.value}">
+			    		<p:inputText id="prontuario" value="#{cc.attrs.value['prontuario']}" styleClass="prontuario-input"
+			    			size="8" style="margin: 0 2px;float:left;" readonly="true" title="Prontuário">
+			    		</p:inputText>	
+			    	</c:if>	
+		    		
+					<c:if test="#{not empty cc.attrs.value}">
+			    		<p:inputText id="codigo" value="#{cc.attrs.value['codigo']}"  
+			    			size="6" style="margin: 0 2px;float:left;" readonly="true" title="Código"/>
+			    	</c:if>	
+		    		
+					<p:outputPanel id="textNome" style="float:left;font-weight:bold;" layout="block" styleClass="aghu-suggestion-text" >		    		
+						<h:outputText value="#{not empty cc.attrs.value['nomeSocial'] ? cc.attrs.value['nomeSocial'] : cc.attrs.value['nome']}" rendered="#{cc.attrs.value ne null}" style="margin:0px 3px"/>
+					</p:outputPanel>
+					
+		            <p:commandButton id="sgClear" 
+		            	icon="ui-icon-close" rendered="#{not cc.attrs.readonly}" ajax="true"
+		            	styleClass="ui-autocomplete-dropdown aghu-autocomplete-button-clear-left bt-close" process="@this" partialSubmit="true"  
+		            	update="panelPesq #{render}" resetValues="true" oncomplete="setFocus('input.prontuario-input');">
+	            		<f:setPropertyActionListener target="#{cc.attrs.value}" value="" />			                
+	            	</p:commandButton>
+		    		
+		    	</p:outputPanel>	
+	    	</mec:field>	
+
+		</cc:implementation>
+	</h:body>		
+</html>

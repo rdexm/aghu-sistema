@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition>
+	<style type="text/css">
+	    .temGrm {background: #01FFFF;}
+	    .temDiabetes {background: #6C8ABC;}
+	    .temHIV {background: #EC9584;}
+	    .temHepatiteB {background: #BF7A3F;}
+	    .temHepatiteC {background: #DED985;}
+    </style>
+	<aghu:panelGeral id="panelAba4" legend="#{messages.TITLE_PACIENTES_RETIRADOS_LISTA_ESPERA}" rendered="#{listarTransplantesOrgaoAba4PaginatorController.dataModel4.pesquisaAtiva}">
+			<p:outputPanel id="listaPanel4">
+				<mec:serverDataTable id="tabelaAba4" dataModel="dataModel4" controller="#{listarTransplantesOrgaoAba4PaginatorController}"
+					selection="itemSelecionado">
+					<c:set var="item_grid" value="#{item}" />	
+					<p:ajax event="rowSelect" process="@this" listener="#{listarTransplantesOrgaoController.carregarItemSelecionado()}" update="@(#botoesGridP)"/>      			
+					<p:ajax event="page" process="@this" listener="#{listarTransplantesOrgaoController.setNullItemSelecionado()}" update="@(#botoesGridP)"/>		
+					<p:column 
+						headerText="#{messages.LABEL_ACAO}"
+						styleClass="#{item_grid.temGrm ? 'temGrm' : ''}" style="width: 60px !important; white-space: nowrap !important; text-align:left !important;">
+						<f:facet name="header" >
+							<h:outputText value="#{messages.LABEL_ACAO}"/>
+						</f:facet>
+						<mec:commandLink title="#{messages.LABEL_EDITAR}"
+							action="#{listarTransplantesOrgaoAba4PaginatorController.editar}"
+							rendered="#{mf:hasPermission(securityController,'incluirPacienteListaTransplanteOrgaos,executar')}"
+							styleClass="silk-pencil silk-icon" immediate="true" >
+							<f:setPropertyActionListener for="command" target="#{listarTransplantesOrgaoAba4PaginatorController.itemSelecionado}" value="#{item_grid}"/> 
+						</mec:commandLink>
+						<mec:commandLink id="bt_alterar_registro_aba4"
+							title="#{messages.LABEL_ALTERAR_SITUACAO_TRANSPLANTE}"
+							action="#{listarTransplantesOrgaoController.alterarSituacao}"
+							rendered="#{mf:hasPermission(securityController,'alterarSituacaoTransplanteOrgaos,alterar')}"
+							styleClass="transplante-alterar-lista silk-icon" immediate="true">
+							<f:setPropertyActionListener for="command" target="#{mudarStatusPacienteRinsController.seqTransplante}" value="#{item_grid.seqTransplante}"/> 
+							<f:setPropertyActionListener for="command" target="#{mudarStatusPacienteRinsController.pacCodigo}" value="#{item_grid.codigoReceptor}"/> 
+							<f:setPropertyActionListener for="command" target="#{mudarStatusPacienteRinsController.telaAnterior}" value="transplante-listarTransplanteOrgao"/>
+						</mec:commandLink>
+						
+						<mec:commandLink
+							title="#{messages.TITLE_ULTIMO_RESULTADO_EXAME_LINK}" id="bt_visualizar_registro"
+							rendered="#{mf:hasPermission(securityController,'incluirPacienteListaTransplanteOrgaos,executar') and item_grid.existeResultadoExame}"
+							action="#{listarTransplantesOrgaoController.botaoUltimosResultadosExames}"
+							immediate="true" styleClass="silk-icon visualizar-resultado-de-exames">
+							  <f:setPropertyActionListener for="command" target="#{listarUltimosResultadosExamesController.seqTransplante}" value="#{item_grid.seqTransplante}"/>  
+						</mec:commandLink>
+						
+					</p:column>
+					<p:column sortBy="#{item_grid.pacNome}" sortable="true"
+						styleClass="#{item_grid.temDiabetes ? 'temDiabetes' : item_grid.temGrm ? 'temGrm' : ''}" style="text-align:left !important; ">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_NOME_PACIENTE_TMO}" />
+						</f:facet>
+						<h:outputText id="colunaNomePaciente" value="#{listarTransplantesOrgaoAba4PaginatorController.obterHint(item_grid.pacNome, 15)}" />
+						<p:tooltip rendered="#{item_grid.pacNome.length() > 15}" for="colunaNomePaciente" direction="bottom-right" styleClass="tooltip" layout="block">
+							<h:outputText value="#{item_grid.pacNome}"/> 
+                        </p:tooltip>
+					</p:column>
+					<p:column sortBy="#{item_grid.pacProntuario}" sortable="true"
+						styleClass="#{item_grid.temHIV ? 'temHIV' : item_grid.temGrm ? 'temGrm' : ''}" style="text-align:left !important; ">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+						</f:facet>
+						<h:outputText value="#{listarTransplantesOrgaoAba4PaginatorController.obterProntuarioFormatado(item_grid.pacProntuario)}" />
+					</p:column>
+					<p:column sortBy="#{item_grid.descricaoDoencaBase}" sortable="true" style="text-align:left !important; "
+						styleClass="#{item_grid.temHepatiteB? 'temHepatiteB' : item_grid.temGrm ? 'temGrm' : ''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_DOENCA_BASE_TRANSPLANTE}" />
+						</f:facet>
+						<h:outputText id="colunaStatus4" value="#{listarTransplantesOrgaoAba4PaginatorController.obterHint(item_grid.descricaoDoencaBase, 8)}" />
+						<p:tooltip rendered="#{item_grid.descricaoDoencaBase.length() > 8}" for="colunaStatus4" direction="bottom-right" styleClass="tooltip" layout="block">
+							<h:outputText value="#{item_grid.descricaoDoencaBase}"/> 
+                        </p:tooltip>
+					</p:column>
+					<p:column sortBy="#{item_grid.pacSexo}" sortable="true" style="text-align:left !important; "
+						styleClass="#{item_grid.temHepatiteC ? 'temHepatiteC' : item_grid.temGrm ? 'temGrm' : ''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_SEXO}" />
+						</f:facet>
+						<h:outputText value="#{item_grid.pacSexo.getDescricao()}" />
+					</p:column>
+					<p:column sortBy="#{item_grid.pacDtNascimento}" sortable="true" 
+						styleClass="#{item_grid.temGrm ? 'temGrm' : ''}" style="text-align:left !important; ">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_IDADE}" />
+						</f:facet>
+						<h:outputText value="#{listarTransplantesOrgaoAba4PaginatorController.obterIdadePaciente(item_grid.pacDtNascimento)}" />
+					</p:column>
+					<p:column sortBy="#{item_grid.tipoOrgao}" sortable="true" 
+						styleClass="#{item_grid.temGrm ? 'temGrm' : ''}" style="text-align:left !important; white-space: nowrap !important;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_ORGAO_TRANSPLANTE}" />
+						</f:facet>
+						<h:outputText value="#{item_grid.tipoOrgao.getDescricao()}" />
+					</p:column>
+					<p:column sortBy="#{item_grid.dataIngresso}" sortable="true"
+						styleClass="#{item_grid.temGrm ? 'temGrm' : ''}" style="text-align:left !important;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_DATA_CADASTRO_TMO}" />
+						</f:facet>
+						<h:outputText value="#{item_grid.dataIngresso}" >
+							<f:convertDateTime pattern="dd/MM/yyyy"/>							
+						</h:outputText>
+					</p:column>
+					<p:column sortBy="#{item_grid.dataRetirada}" sortable="true"
+						styleClass="#{item_grid.temGrm ? 'temGrm' : ''}" style="text-align:left !important;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_DATA_RETIRADA}" />
+						</f:facet>
+						<h:outputText value="#{item_grid.dataRetirada}" >
+							<f:convertDateTime pattern="dd/MM/yyyy"/>							
+						</h:outputText>
+					</p:column>
+					<p:column sortBy="#{item_grid.permanencia}" sortable="true" 
+						styleClass="#{item_grid.temGrm ? 'temGrm' : ''}" style="text-align:left !important; ">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_PERMANENCIA_TMO}" />
+						</f:facet>
+						<h:outputText value="#{item_grid.permanencia}" />
+						<h:outputText value="#{item_grid.permanencia != null ? ' dias' : ''}" />
+					</p:column>
+				</mec:serverDataTable>
+			</p:outputPanel>
+	</aghu:panelGeral>
+</ui:composition>
+</html>

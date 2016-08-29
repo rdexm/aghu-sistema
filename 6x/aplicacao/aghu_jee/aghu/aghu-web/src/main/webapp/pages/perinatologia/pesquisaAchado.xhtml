@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_ACHADOS}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaAchadoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesq"> 
+        <p:outputPanel id="panelCamposPesquisa" layout="inline"> 
+          <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_ACHADOS}"> 
+            <aghu:linha> 
+              <mec:suggestionBox label="#{messages.LABEL_REGIAO_ACH}" title="#{messages.TITLE_REGIAO_ACH}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarRegioesAnatomicas" width="390" id="regiao" controller="#{pesquisaAchadoPaginatorController}" value="#{pesquisaAchadoPaginatorController.regiaoAnatomicaVO}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column>
+              </mec:suggestionBox>  
+              <mec:inputText id="descricao" label="#{messages.LABEL_ACHADO_ACH}" title="#{messages.TITLE_ACHADO_ACH}" value="#{pesquisaAchadoPaginatorController.filtro.descricaoAcd}" maxlength="100" size="102" style="text-transform:uppercase"></mec:inputText>  
+              <mec:selectOneMenu id="indSituacao" label="#{messages.LABEL_SITUACAO_ACH}" title="#{messages.TITLE_SITUACAO_ACH}" value="#{pesquisaAchadoPaginatorController.filtro.situacao}" enum="DominioSituacao"></mec:selectOneMenu> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" rendered="#{pesquisaAchadoPaginatorController.hasPermissionConsulta or pesquisaAchadoPaginatorController.hasPermission}" action="#{pesquisaAchadoPaginatorController.pesquisar}" profile="search"></mec:commandButton>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{pesquisaAchadoPaginatorController.limpar}" profile="clear"></mec:commandButton>  
+            <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{pesquisaAchadoPaginatorController.redirecionarCadastro}" rendered="#{pesquisaAchadoPaginatorController.hasPermission and pesquisaAchadoPaginatorController.dataModel.pesquisaAtiva}" profile="add"></mec:commandButton> 
+          </aghu:acao> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelLista" layout="block" rendered="#{pesquisaAchadoPaginatorController.dataModel.pesquisaAtiva}"> 
+          <aghu:panelGeral legend="#{messages.LABEL_ACHADOS_ACH}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelTabela" layout="inline"> 
+                <mec:serverDataTable id="tabelaDiadnostico" dataModel="dataModel" height="300px;" controller="#{pesquisaAchadoPaginatorController}"> 
+                  <c:set var="item" value="#{item}"/>
+                  <p:column headerText="#{messages.LABEL_ACOES}" styleClass="first-column auto-adjust" exportable="false">
+                    <mec:commandLink id="ativarInativar" action="#{pesquisaAchadoPaginatorController.ativarInativar(item.seq)}" title="#{item.situacao.isAtivo() ? messages.BT_INATIVAR_CADASTRO_DIAGNOSTICO : messages.BT_ATIVAR_CADASTRO_DIAGNOSTICO}" rendered="#{pesquisaAchadoPaginatorController.hasPermission}" style="white-space:nowrap;" styleClass="#{item.situacao.isAtivo() ? 'silk-icon silk-activate' : 'silk-icon silk-desactive'}"></mec:commandLink>
+                    <mec:commandLink id="editar" title="#{messages.CASCA_LABEL_EDITAR}" action="#{pesquisaAchadoPaginatorController.redirecionarCadastro}" ajaxSingle="true" rendered="#{pesquisaAchadoPaginatorController.hasPermission}" style="white-space:nowrap;width: 13px;" profile="edit"> 
+                      <f:setPropertyActionListener target="#{cadastroAchadoController.achadoSelecionado}" value="#{item}" for="command"/> 
+                    </mec:commandLink>
+                  </p:column>
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.seq}"/> 
+                  </p:column>  
+                  <p:column sortBy="#{item.descricaoRan}" sortable="true" style="white-space:nowrap"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_REGIAO_ACH}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.descricaoRan}"/> 
+                  </p:column>  
+                  <p:column sortBy="#{item.descricaoAcd}" sortable="true" style="white-space:nowrap"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACHADO_ACH}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.descricaoAcd}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_OBS_ACH}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.indExigeObsSimNao}"/> 
+                  </p:column>  
+                  <p:column style="white-space:nowrap"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MSG_ALERTA_ACH}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.mensagemAlerta}"/> 
+                  </p:column>  
+                  <p:column style="width: 50px; text-align:center;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SITUACAO_ACH}"/> 
+                    </f:facet>  
+                    <h:outputText id="ativo" styleClass="#{item.situacao.isAtivo() ? 'silk-icon silk-checked' : ''}" readOnly="true"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition>
+</html>

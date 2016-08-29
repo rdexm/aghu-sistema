@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_SITUACAO_PRONTUARIO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>  
+      <style xml:space="preserve">
+			input[type=radio] {
+				vertical-align: sub !important;
+			}
+		</style> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{administraSituacaoProntuarioController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_MANTER_SITUACAO_PRONTUARIO}"> 
+          <aghu:linha> 
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" value="#{administraSituacaoProntuarioController.paciente.prontuario}" readonly="true" size="8" id="prontuario"/>  
+            <mec:inputText label="#{messages.LABEL_NOME}" size="80" value="#{administraSituacaoProntuarioController.paciente.nome}" readonly="true" id="nome"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_NOME_MAE}" size="80" value="#{administraSituacaoProntuarioController.paciente.nomeMae}" readonly="true" id="nomeMae"/>  
+            <mec:inputText label="#{messages.LABEL_DATA_NASCIMENTO}" datePattern="dd/MM/yyyy" value="#{administraSituacaoProntuarioController.paciente.dtNascimento}" readonly="true" id="dtNascimento"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_VIP}" value="#{administraSituacaoProntuarioController.paciente.vip}" title="#{messages.TITLE_IND_PACIENTE_VIP}" id="indPacienteVip"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_PROTEGIDO}" value="#{administraSituacaoProntuarioController.paciente.protegido}" title="#{messages.TITLE_IND_PAC_PROTEGIDO}" id="indPacProtegido"/>  
+            <mec:selectOneMenu enum="DominioTipoProntuario" itemsType="enum" required="true" label="#{messages.LABEL_PRNT_ATIVO}" value="#{administraSituacaoProntuarioController.paciente.prntAtivo}" title="#{messages.TITLE_PRNT_ATIVO}" id="prntAtivo"/>  
+            <mec:inputNumero id="qtdContraCapas" label="#{messages.LABEL_CONTRA_CAPAS}" size="3" maxlength="3" value="#{administraSituacaoProntuarioController.numeroVolume}" title="#{messages.TITLE_VOLUMES}"/> 
+         	<mec:selectBooleanCheckbox label="#{messages.LABEL_BLOQUEIO_PACIENTE_UBS}" value="#{administraSituacaoProntuarioController.indBloqueioPacienteUbs}" title="#{messages.TITLE_BLOQUEIO_PACIENTE_UBS}" id ="indBloqueioPacienteUbs" 
+				rendered="false">
+				 <p:ajax event="change" update="@(#formPesquisa)" process="@this" /> 
+			</mec:selectBooleanCheckbox>
+          	 <p:outputPanel id="motivoPanel" layout="inline" rendered="#{administraSituacaoProntuarioController.verificarComputadorUbs() and administraSituacaoProntuarioController.indBloqueioPacienteUbs}" title="#{messages.TITLE_MOTIVO_BLOQUEIO_PACIENTE_UBS}">
+          	 	<mec:inputText label="#{messages.LABEL_MOTIVO_BLOQUEIO_PACIENTE_UBS}" size="53" maxlength="50"
+          			value="#{administraSituacaoProntuarioController.motivoBloqueio}" id="motivo_bloqueio" required="true"/>
+          	 </p:outputPanel>
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.TITLE_IMPRESSAO_ETIQUETAS}"> 
+          <mec:inputNumero label="#{messages.LABEL_VOLUME}" title="#{messages.TITLE_VOLUME_IMPRESSO}" value="#{administraSituacaoProntuarioController.numeroVolumeImpressao}" maxlength="3" size="3" id="volumeImpresso"/>  
+          <mec:selectOneRadio enum="DominioTipoImpressao" value="#{administraSituacaoProntuarioController.selecao}" showLabel="false" title="#{messages.TITLE_FORMA_IMPRESSAO}" style="width:270px" id="selecaoImpressao"/>  
+          <aghu:linha style="margin-top: 16px; padding-left: 10px"> 
+            <mec:commandButton value="Imprimir" oncomplete="        if (#{administraSituacaoProntuarioController.salvarVolumePaciente}) {          PF('modalDivergenciaImpressaoVolumesWG').show();;         }" action="#{administraSituacaoProntuarioController.verificarSalvarVolume}" profile="print" ajax="true"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <p:outputPanel id="panelBotoesSalvarDecorate" layout="inline"> 
+            <mec:commandButton id="botaoSalvar" rendered="#{administraSituacaoProntuarioController.atualizarExibicaoMensagem()}" value="#{messages.LABEL_GRAVAR}" onclick="PF('modalConfirmacaoTransferenciaWG').show();;" disabled="#{not mf:hasPermission(securityController, 'paciente,atualizarSituacaoProntuario')}" profile="ok" ajax="true" render="mensagemProtocolosNeurologia"/>  
+            <mec:commandButton id="btSalvarSemModal" rendered="#{not administraSituacaoProntuarioController.atualizarExibicaoMensagem()}" value="#{messages.LABEL_GRAVAR}" disabled="#{not mf:hasPermission(securityController, 'paciente,atualizarSituacaoProntuario')}" action="#{administraSituacaoProntuarioController.salvar}" render="mensagemProtocolosNeurologia" profile="ok"/> 
+          </p:outputPanel>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" immediate="true" action="#{administraSituacaoProntuarioController.cancelar}" profile="cancel" ajax="true"/> 
+        </aghu:acao>  
+        <p:outputPanel id="panelOperacaoConluida" layout="inline"> 
+          <p:outputPanel rendered="#{administraSituacaoProntuarioController.operacaoConcluida}" layout="inline"> 
+            <script xml:space="preserve">
+						if (jQuery('modalConfirmacaoTransferencia') != null) {
+							PF('modalConfirmacaoTransferenciaWG').hide();
+						}
+					</script> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelOperacaoConluidaImpressao" layout="inline"> 
+          <p:outputPanel rendered="#{administraSituacaoProntuarioController.operacaoConcluida}" layout="inline"> 
+            <script xml:space="preserve">
+						if (jQuery('modalDivergenciaImpressaoVolumes') != null) {
+							PF('modalDivergenciaImpressaoVolumesWG').hide();
+						}
+					</script> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoTransferencia" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoTransferenciaWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_TRANSFERIR}"/> 
+        </f:facet>  
+        <h:outputFormat id="mensagemProtocolosNeurologia" rendered="#{administraSituacaoProntuarioController.pesquisarProtocolosNeurologiaPendentes() != ''}" value="#{messages.MENSAGEM_PROTOCOLOS_NEUROLOGIA}"> 
+          <f:param value="#{administraSituacaoProntuarioController.pesquisarProtocolosNeurologiaPendentes()}"/> 
+        </h:outputFormat> #{messages.MENSAGEM_CONFIRMACAO_TRANSFERIR} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalTransferir"> 
+            <mec:commandButton id="btTransferir" value="#{messages.LABEL_SIM}" disabled="#{not mf:hasPermission(securityController, 'paciente,atualizarSituacaoProntuario')}" action="#{administraSituacaoProntuarioController.salvar}" profile="ok"/>  
+            <mec:commandButton id="btCancelar" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoTransferenciaWG').hide();" action="#{administraSituacaoProntuarioController.cancelarModal}" profile="cancel"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalDivergenciaImpressaoVolumes" width="400" height="200" modal="true" resizable="false" widgetVar="modalDivergenciaImpressaoVolumesWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_DIVERGENCIA_VOLUME_IMPRESSAO_SALVAR}"/> 
+        </f:facet> #{messages.MENSAGEM_DIVERGENCIA_VOLUMES_IMPRESSAO_SALVAR} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalImprimirDivergencia"> 
+            <mec:commandButton id="btImprimirSalvar" value="#{messages.LABEL_SIM}" disabled="#{not mf:hasPermission(securityController, 'paciente,atualizarSituacaoProntuario')}" action="#{administraSituacaoProntuarioController.salvarImprimir}" profile="ok"/>  
+            <mec:commandButton id="btCancelarImprimir" value="#{messages.LABEL_NAO}" onclick="PF('modalDivergenciaImpressaoVolumesWG').hide();" action="#{administraSituacaoProntuarioController.cancelarModal}" profile="cancel"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

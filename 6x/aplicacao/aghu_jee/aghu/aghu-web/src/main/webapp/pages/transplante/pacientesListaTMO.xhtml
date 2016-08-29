@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"  xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_PACIENTES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+            
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pacientesListaTMOPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+	<aghu:panelGeral legend="#{messages.LABEL_PESQUISA_PACIENTES}">
+      <mec:pageConfig controller="#{pacientesListaTMOPaginatorController}"/> 
+	  <br/>
+      <aghu:panelGeral legend="#{messages.LABEL_DADOS_DO_PACIENTE}">
+	  <h:form prependId="false" id="formPesquisa"> 
+        
+          <aghu:linha> 
+				<p:outputPanel id="pacienteDecorate" layout="inline">
+								<mec:pesquisaPaciente id="pesqPaciente" valueChangeListener="#{pacientesListaTMOPaginatorController.pesquisaPaciente}"
+									value="#{pacientesListaTMOPaginatorController.paciente}" render="formPrincipal" readonly="false" />
+									
+								<br clear="none" />
+								
+								<mec:commandButton id="pesqPacienteBt" value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" readonly="false"
+												   action="#{pacientesListaTMOPaginatorController.redirecionarPesquisaFonetica()}" styleClass="bt_cinza icon-pesquisa-fonetica" profile="search">
+									<f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="transplante-pacientesListaTMO" for="command" />
+									<f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="false" for="command" />
+									<f:setPropertyActionListener target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" value="false" for="command" />
+									<f:setPropertyActionListener target="#{pesquisaPacienteController.exibirBotaoIncluirPacienteCirurgico}" value="false" for="command" />
+									<f:param name="cid" value="#{javax.enterprise.context.conversation.id}" />
+								</mec:commandButton>
+				</p:outputPanel> 			
+          </aghu:linha>  
+        
+      </h:form>  
+      </aghu:panelGeral > 
+      <h:form prependId="false" id="formPesqFonetica"> 
+        <aghu:linha> 
+         <aghu:acao newLine="false">
+				<mec:commandButton id="btnPesquisa" block="true" value="#{messages.LABEL_PESQUISAR}" 
+									action="#{pacientesListaTMOPaginatorController.pesquisar}" render="panelExibeModalConfirmacao" styleClass="bt_cinza" profile="search">  
+				</mec:commandButton>  	            
+	            <mec:commandButton value="Limpar" action="#{pacientesListaTMOPaginatorController.limparCampos}" profile="clear"/>
+	        </aghu:acao> 
+          </aghu:linha>
+		 </h:form>
+		 <br/>
+		  <br/>
+		  <br/>
+		  <br/>
+		  <h:form prependId="false" id="formResultPesq"> 
+		  <aghu:panelGeral legend="#{messages.LEGEND_CONFIG_LISTA_PACIENTE}" rendered="#{pacientesListaTMOPaginatorController.exibirBotaoIncluir}">
+					<mec:serverDataTable dataModel="dataModel" styleClass="tabelaPaciente" id="tabelaPacientes" rowKeyVar="rowIndex" selection="selecionado"
+									controller="#{pacientesListaTMOPaginatorController}" > 
+						<c:set var="p" value="#{item}"/>  
+                   
+						<p:column id="colunaAcao"  style="width:95px" exportable="false" rendered="#{!pesquisaPacienteController.incluirPacienteTMO}"> 
+							<f:facet name="header"> 
+								<h:outputText value="#{messages.LABEL_ACAO}"/> 
+							</f:facet> 
+							<div align="center" style="text-align: center">
+								<mec:commandLink id="bt_visualizar" title="#{messages.LABEL_VISUALIZAR}" action="#{pesquisaPacienteController.detalhar}" styleClass="silk-zoom silk-icon" style="width:15px;" block="true"> 
+									<f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="transplante-pacientesListaTMO" for="command" />
+									<f:setPropertyActionListener target="#{pesquisaPacienteController.pacienteSelecionado}" value="#{p}" for="command"/> 
+								</mec:commandLink>
+						
+								<mec:commandLink title="#{messages.LABEL_PACIENTE_LISTA_TMO}" action="#{pesquisaPacienteController.carregarPaciente(p)}" oncomplete="PF('modalConfirmacaoIncluirListTransplanteTMOWG').show();" ajax="true" rendered="#{pesquisaPacienteController.cameFrom != 'ambulatorio-pesquisarPacientesAgendados' and mf:hasPermission(securityController, 'incluirPacienteListaTransplanteTmo,executar')}" render="modalConfirmacaoIncluirListTransplanteTMO" styleClass="transplante-lista silk-icon"> 
+									<f:setPropertyActionListener target="#{incluirPacienteListaTransplanteTMOController.pacCodigo}" value="#{p.codigo}" for="command"/>
+									<f:setPropertyActionListener target="#{incluirPacienteListaTransplanteTMOController.telaAnterior}" value="transplante-pacientesListaTMO" for="command" />
+									<f:setPropertyActionListener target="#{incluirPacienteListaTransplanteTMOController.pacienteRetorno}" value="#{pesquisaPacienteController.aipPaciente}" for="command"/>
+									<f:setPropertyActionListener target="#{incluirPacienteListaTransplanteTMOController.respeitarOrdemRetorno}" value="#{pesquisaPacienteController.respeitarOrdem}" for="command"/>
+									<f:setPropertyActionListener target="#{incluirPacienteListaTransplanteTMOController.realizouPesquisaFoneticaRetorno}" value="#{pesquisaPacienteController.realizouPesquisaFonetica}" for="command"/>
+								</mec:commandLink>  
+							
+								<mec:commandLink title="#{messages.LABEL_CONSULTAR_POL}" onclick="parent.addPOLProntuario(#{p.prontuario})" styleClass="silk-icon silk-pol16 silk-icon" ajax="true"/>           				
+							 </div>
+						</p:column>
+						<p:column style="width:80px"> 
+							<f:facet name="header"> 
+								<h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+							</f:facet>  
+							<div align="center" style="text-align: center">
+								<h:outputText id="outputTextProntuario" value="#{p.prontuario}"/>  
+							</div>        
+						</p:column>  
+						<p:column style="width:60px"> 
+							<f:facet name="header"> 
+								<h:outputText value="#{messages.LABEL_CODIGO}"/> 
+							</f:facet>  
+							<div align="center" style="text-align: center">
+								<h:outputText id="outputTextCodigo" value="#{p.codigo}" />  
+							</div> 
+						</p:column>  
+						<p:column> 
+							<f:facet name="header"> 
+								<h:outputText value="#{messages.LABEL_NOME}"/> 
+							</f:facet>  
+							<h:outputText id="outputTextNome" value="#{p.nome}"/>  
+						</p:column>  
+						<p:column style="width:180px" > 
+							<f:facet name="header"> 
+								<h:outputText value="#{messages.LABEL_NOME_MAE}"/> 
+							</f:facet>  
+							<h:outputText id="resultado_descricao" value="#{pacientesListaTMOPaginatorController.obterHint(p.nomeMae,25)}" />
+							<p:overlayPanel id="hintDescricao" for="resultado_descricao" showEvent="mouseover" hideEvent="mouseout"
+								rendered="#{p.nomeMae.length() > 25}">
+								<h:outputText value="#{p.nomeMae}" />
+							</p:overlayPanel>
+						</p:column>  
+						
+						<p:column style="width:100px"> 
+							<f:facet name="header"> 
+								<h:outputText value="#{messages.LABEL_DATA_NASCIMENTO}"/> 
+							</f:facet>  
+							<div align="center" style="text-align: center">
+								<h:outputText id="outputTextDtNascimento" value="#{p.dtNascimento}"> 
+									<f:convertDateTime pattern="dd/MM/yyyy"/> 
+								</h:outputText>  
+							</div>
+						</p:column> 
+					</mec:serverDataTable>  	
+			</aghu:panelGeral>
+		<br/>
+		
+		<aghu:acao> 
+            <mec:commandButton value="#{messages.LABEL_INCLUIR_PACIENTE}" rendered="#{pacientesListaTMOPaginatorController.exibirBotaoIncluir}" action="#{pesquisaPacienteController.redirecionarIncluirPaciente}" profile="add" block="true">
+				<f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="transplante-pacientesListaTMO" for="command" />
+			</mec:commandButton>
+        
+		</aghu:acao> 
+		
+		<p:dialog id="modalConfirmacaoIncluirListTransplanteTMO" width="450" height="120" modal="true" resizable="false" widgetVar="modalConfirmacaoIncluirListTransplanteTMOWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LEGEND_INCLUIR_PACIENTE_LISTA_TRANSPLANTE_TMO}"/> 
+        </f:facet>
+		<h:outputText value="#{messages.MENSAGEM_CONFIRMACAO_INCLUIR_LISTA_TRANSPLANTE_TMO_PARTE1} #{pesquisaPacienteController.pacienteSelecionado.nome} #{messages.MENSAGEM_CONFIRMACAO_INCLUIR_LISTA_TRANSPLANTE_TMO_PARTE2}"/> 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalIncluirListTransplanteTMO"> 
+            <mec:commandButton id="bt_confirmarTMO" value="#{messages.LABEL_SIM}" action="#{pesquisaPacienteController.incluirPacienteListaTransplanteTMO}" oncomplete="PF('modalConfirmacaoIncluirListTransplanteTMOWG').hide();;" profile="ok" ajax="true" render="tabelaPacientes" process="@this"/>  
+            <mec:commandButton id="bt_cancelar_confirmacaoTMO" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoIncluirListTransplanteTMOWG').hide();;return false;" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>
+		
+		
+      </h:form>  
+	</aghu:panelGeral>
+    </ui:define> 
+  </ui:composition> 
+</html>

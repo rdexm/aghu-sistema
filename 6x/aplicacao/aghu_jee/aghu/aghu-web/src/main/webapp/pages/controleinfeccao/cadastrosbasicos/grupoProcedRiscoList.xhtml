@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.AGPR_TITLE_PESQUISAR} :: #{messages.NOME_ABREVIADO_PROJETO}</title>  
+      <style xml:space="preserve">
+            .checked {
+                background-image: url('../../../resources/img/icons/checked.png') !important;
+                background-repeat: no-repeat;
+                background-position: center;
+            }
+        </style> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{grupoProcedRiscoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.AGPR_TITLE_PESQUISAR}"> 
+          <aghu:linha> 
+            <mec:inputNumero maxlength="4" size="10" value="#{grupoProcedRiscoPaginatorController.codigo}" label="#{messages.AGPR_LABEL_CODIGO}" title="#{messages.AGPR_TITLE_CODIGO}" id="codigo"/>  
+            <mec:inputText maxlength="60" size="60" style="text-transform:uppercase" value="#{grupoProcedRiscoPaginatorController.descricao}" label="#{messages.AGPR_LABEL_DESC}" title="#{messages.AGPR_TITLE_DESC}" id="nome"/>  
+            <mec:selectOneMenu enum="DominioSituacao" label="#{messages.AGPR_LABEL_SITUACAO}" value="#{grupoProcedRiscoPaginatorController.situacao}" title="#{messages.AGPR_TITLE_SITUACAO}" id="ativoInativo"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" disabled="#{not mf:hasPermission(securityController, 'consultarProcedimentosRisco,pesquisar')}" action="#{grupoProcedRiscoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{grupoProcedRiscoPaginatorController.limpar}" profile="clear" ajax="true" render="formPesquisa" process="@this"/>  
+          <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" action="#{grupoProcedRiscoPaginatorController.criarTipoGrupo}" rendered="#{grupoProcedRiscoPaginatorController.dataModel.pesquisaAtiva}" disabled="#{not mf:hasPermission(securityController, 'manterProcedimentosRisco,executar')}" profile="add" ajax="true"/> 
+        </aghu:acao>  
+        <mec:serverDataTable dataModel="dataModel" rendered="#{grupoProcedRiscoPaginatorController.dataModel.pesquisaAtiva}" id="tabelaGrupos" controller="#{grupoProcedRiscoPaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaGrupos_link_editar" profile="edit" title="editar" action="#{grupoProcedRiscoPaginatorController.editar}" permission="manterProcedimentosRisco,executar"> 
+              <f:setPropertyActionListener target="#{manterGrupoProcedRiscoController.entidade}" value="#{_item}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{grupoProcedRiscoPaginatorController.itemSelecionado}" value="#{_item}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaGrupos_link_remover" profile="delete" title="excluir" action="#{grupoProcedRiscoPaginatorController.deletar}" permission="manterProcedimentosRisco,executar"> 
+              <f:setPropertyActionListener for="command" target="#{grupoProcedRiscoPaginatorController.itemSelecionado}" value="#{_item}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.seq}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.AGPR_LABEL_DESC}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.descricao}"/> 
+          </p:column>  
+          <p:column styleClass="#{_item.indSituacao eq 'A' ? 'checked' : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.AGPR_LABEL_ATIVO}"/> 
+            </f:facet> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

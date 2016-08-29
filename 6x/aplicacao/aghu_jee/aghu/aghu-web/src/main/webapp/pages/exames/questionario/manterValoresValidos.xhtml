@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_VALORES_VALIDOS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manutencaoValoresValidosController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manutencaoValoresValidosController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="cabecalho"> 
+        <aghu:panelGeral id="ffdl_consultas" legend="#{messages.TITLE_VALORES_VALIDOS_QUESTAO}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panel_questao" layout="inline"> 
+              <mec:inputNumero id="codigo" label="#{messages.LABEL_VALORES_VALIDOS_QUESTAO}" value="#{manutencaoValoresValidosController.seqQuestao}" size="6" maxlength="7" readonly="true"/>  
+              <mec:inputText id="descricao" label="#{messages.LABEL_VALORES_VALIDOS_DESCRICAO}" value="#{manutencaoValoresValidosController.descricaoQuestao}" removerCaratersEspeciais="false" size="180" maxlength="240" readonly="true" style="text-transform:uppercase"/> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <p:outputPanel id="detalhe" layout="block" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_VALORES_VALIDOS_CADASTRAR_VALORES_VALIDOS}"> 
+            <aghu:linha> 
+              <mec:inputText id="abreviado" label="#{messages.LABEL_VALORES_VALIDOS_VALOR_ABREVIADO}" title="#{messages.TITLE_VALORES_VALIDOS_VALOR_ABREVIADO}" value="#{manutencaoValoresValidosController.valorAbreviado}" removerCaratersEspeciais="true" size="45" maxlength="30" required="true" style="text-transform:uppercase" rendered="#{mf:hasPermission(securityController,'valorValido,gravar')}"/>  
+              <mec:inputText id="significado" label="#{messages.LABEL_VALORES_VALIDOS_VALOR_SIGNIFICADO}" title="#{messages.TITLE_VALORES_VALIDOS_VALOR_SIGNIFICADO}" value="#{manutencaoValoresValidosController.valorSignificado}" removerCaratersEspeciais="true" size="60" maxlength="30" required="true" style="text-transform:uppercase" rendered="#{mf:hasPermission(securityController,'valorValido,gravar')}"/>  
+              <mec:selectBooleanCheckbox id="situacao" label="#{messages.LABEL_VALORES_VALIDOS_ATIVO}" title="#{messages.TITLE_VALORES_VALIDOS_ATIVO}" value="#{manutencaoValoresValidosController.indSituacao}" rendered="#{mf:hasPermission(securityController,'valorValido,gravar')}"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panel_botoes_gravar" rendered="#{!manutencaoValoresValidosController.edicao}" layout="inline"> 
+                <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" action="#{manutencaoValoresValidosController.gravar}" rendered="#{mf:hasPermission(securityController,'valorValido,gravar')}" profile="ok" ajax="true" render="detalhe"/> 
+              </p:outputPanel>  
+              <p:outputPanel id="panel_botoes_cancelar" rendered="#{manutencaoValoresValidosController.edicao}" layout="inline"> 
+                <mec:commandButton id="bt_editar" value="#{messages.LABEL_ALTERAR}" action="#{manutencaoValoresValidosController.gravar}" disabled="#{!mf:hasPermission(securityController,'valorValido,alterar')}" profile="ok" ajax="true" render="detalhe"/>  
+                <mec:commandButton id="bt_cancelarEdic" value="#{messages.LABEL_CANCEL_EDI}" immedite="true" action="#{manutencaoValoresValidosController.cancelarEdicao}" ajax="true" render="detalhe, panelListagem" profile="cancel"/> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <br clear="none"/>  
+            <aghu:linha> 
+              <mec:serverDataTable id="gridValoresValidos" list="#{manutencaoValoresValidosController.listaValoresValidos}" scrollable="true"> 
+                <c:set var="_valorValido" value="#{item}"/>  
+                <p:column width="10%" style="#{_valorValido.id eq manutencaoValoresValidosController.valorValidoSelecionado.id and manutencaoValoresValidosController.edicao eq true ? 'background-color:yellow;' : ''}" rendered="#{mf:hasPermission(securityController,'valorValido,alterar') or mf:hasPermission(securityController,'valorValido,excluir')}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink id="btEditarValorValido" action="#{manutencaoValoresValidosController.editar(_valorValido)}" title="#{messages.LABEL_EDITAR}" rendered="#{mf:hasPermission(securityController,'valorValido,alterar') and not manutencaoValoresValidosController.edicao}" profile="edit" ajax="true" render="detalhe, panelListagem" process="@this"/>  
+                  <mec:commandLink id="btExcluirValorValido" action="#{manutencaoValoresValidosController.excluir}"  title="#{messages.LABEL_EXCLUIR}" rendered="#{mf:hasPermission(securityController,'valorValido,excluir') and not manutencaoValoresValidosController.edicao}" profile="delete" ajax="true" process="@this" render="detalhe, panelListagem"> 
+                    <f:setPropertyActionListener target="#{manutencaoValoresValidosController.qaoSeq}" value="#{_valorValido.id.qaoSeq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{manutencaoValoresValidosController.seqP}" value="#{_valorValido.id.seqp}" for="command"/> 
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column width="35%" style="#{_valorValido.id eq manutencaoValoresValidosController.valorValidoSelecionado.id and manutencaoValoresValidosController.edicao eq true ? 'background-color:yellow;' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VALORES_VALIDOS_VALOR_ABREVIADO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_valorValido.valorAbreviado}"/> 
+                </p:column>  
+                <p:column width="35%" style="#{_valorValido.id eq manutencaoValoresValidosController.valorValidoSelecionado.id and manutencaoValoresValidosController.edicao eq true ? 'background-color:yellow;' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VALORES_VALIDOS_VALOR_SIGNIFICADO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_valorValido.valorSignificado}"/> 
+                </p:column>  
+                <p:column width="20%" style="#{_valorValido.id eq manutencaoValoresValidosController.valorValidoSelecionado.id and manutencaoValoresValidosController.edicao eq true ? 'background-color:yellow;' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VALORES_VALIDOS_SITUACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_valorValido.indSituacao.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{manutencaoValoresValidosController.voltar}" profile="back" immediate="true"/> 
+      </h:form>  
+    </ui:define> 
+  </ui:composition> 
+</html>

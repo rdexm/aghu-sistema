@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_MANTER_PRESCRICAO_CUIDADOS}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{manterPrescricaoCuidadoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manterPrescricaoCuidadoController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formPrescricaoCabecalho">
+			<aghu:panelGeral>
+				<aghu:linha>
+					<mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}"
+						value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.prontuario}"
+						size="8" maxlength="9"
+						emptyStringToNullConverter="emptyStringToNullConverter"
+						readonly="true" id="prontuarioPaciente"
+						converter="#{prontuarioConverter}" />
+					<mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}"
+						value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.nome}"
+						size="56" maxlength="50" style="text-transform:uppercase"
+						readonly="true" id="nomePaciente" />
+					<mec:inputText label="#{messages.LABEL_LOCAL}"
+						value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.local}"
+						size="15" maxlength="15" style="text-transform:uppercase"
+						readonly="true" id="localPaciente" />
+					<mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}"
+						value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.dthrInicio}"
+						readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm"
+						id="dataValidadeInicial" />
+					<mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}"
+						value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.dthrFim}"
+						readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm"
+						id="dataValidadeFinal" />
+				</aghu:linha>
+			</aghu:panelGeral>
+		</h:form>
+		<h:form prependId="false" id="formPrincipal">
+			<aghu:panelGeral legend="#{messages.LABEL_PRESCRICAO_CUIDADOS}">
+				<p:outputPanel id="panelPrincipal" layout="inline">
+					<aghu:linha>
+						<p:outputPanel id="panelCuidados" layout="inline">
+							<mec:suggestionBox required="true"
+								label="#{messages.LABEL_CUIDADO}"
+								title="#{messages.TITLE_CUIDADO}" descricaoInput="seq"
+								descricaoLabel="descricao" suggestionAction="obterCuidados"
+								posSelectionAction="populaAprazamentoPadraoEPendencias"
+								posDeleteAction="limpar"
+								readonly="#{manterPrescricaoCuidadoController.altera}"
+								width="800" id="cuidado"
+								controller="#{manterPrescricaoCuidadoController}"
+								value="#{manterPrescricaoCuidadoController.prescricaoCuidado.mpmCuidadoUsuais}"
+								render="panelFrequencia,panelAprazamento,panelCuidados"
+								var="itemCuidado" itemValue="#{itemCuidado}">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet> #{itemCuidado.descricao}
+                    			</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_FREQUENCIA}</b>
+									</f:facet> #{itemCuidado.frequencia}
+                    			</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_TIPO}</b>
+									</f:facet> #{itemCuidado.mpmTipoFreqAprazamentos.sigla}
+                    			</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_APRAZAMENTO}</b>
+									</f:facet> #{itemCuidado.sintaxeTipoFreqAprazamentoFormatada}
+                    			</p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>
+					</aghu:linha>
+					<aghu:linha>
+						<p:outputPanel id="panelComplemento" layout="inline">
+							<mec:inputText removerCaratersEspeciais="false"
+								value="#{manterPrescricaoCuidadoController.prescricaoCuidado.descricao}"
+								size="140" maxlength="240"
+								label="#{messages.LABEL_COMPLEMENTO_CUIDADO}"
+								title="#{messages.TITLE_COMPLEMENTO_CUIDADO}" id="descricao">
+								<p:ajax id="descricaoOnChange" event="change"
+									update="@(#panelComplemento)" process="@this"
+									listener="#{manterPrescricaoCuidadoController.possuiPendencias}" />
+							</mec:inputText>
+						</p:outputPanel>
+					</aghu:linha>
+					<aghu:linha>
+						<p:outputPanel id="panelFrequencia" layout="inline">
+							<mec:inputNumero label="#{messages.LABEL_FREQUENCIA}"
+								required="#{manterPrescricaoCuidadoController.verificaRequiredFrequencia()}"
+								value="#{manterPrescricaoCuidadoController.frequencia}"
+								title="#{messages.TITLE_FREQUENCIA}" maxlength="5" size="5"
+								id="frequencia">
+								<p:ajax id="frequenciaSupOnChange" event="change"
+									immediate="true" bypassUpdates="false"
+									update="@(#tipoAprazamentoLabelPanel)" process="@(#frequencia)"
+									listener="#{manterPrescricaoCuidadoController.possuiPendencias}" />
+							</mec:inputNumero>
+						</p:outputPanel>
+						<p:outputPanel id="panelAprazamento" layout="inline">
+							<mec:suggestionBox label="#{messages.LABEL_TIPO_APRAZAMENTO}"
+								title="#{messages.TITLE_TIPO_APRAZAMENTO_PRESCRICAO_CUIDADO}"
+								required="true" descricaoInput="sigla"
+								externalDescricaoLabel="descricaoTipoFrequenciaAprazamento"
+								labelId="tipoAprazamentoLabelPanel"
+								suggestionAction="buscarTiposFrequenciaAprazamento"
+								posSelectionAction="populaAprazamentoPadraoEPendencias"
+								posDeleteAction="verificarFrequencia"
+								id="tipoAprazamento"
+								controller="#{manterPrescricaoCuidadoController}"
+								value="#{manterPrescricaoCuidadoController.tipoAprazamento}"
+								render="panelFrequencia, panelAprazamento" var="itemAprz"
+								itemValue="#{itemAprz}">
+								<p:column>#{manterPrescricaoCuidadoController.buscaDescricaoTipoFrequenciaAprazamento(itemAprz)}</p:column>
+								<p:column>#{itemAprz.sigla}</p:column>
+							</mec:suggestionBox>
+						</p:outputPanel>
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			<p:outputPanel id="panelGravarCuidado" layout="inline">
+				<aghu:acao>
+					<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}"
+						action="#{manterPrescricaoCuidadoController.gravar}" profile="ok"
+						ajax="true" process="@this"
+						render="panelPrincipal, panelListaCuidados" />
+					<mec:commandButton id="bt_limparPesquisa" ajax="true"
+						value="#{messages.LABEL_LIMPAR}" process="@this"
+						render="@form"
+						action="#{manterPrescricaoCuidadoController.limpar()}"
+						styleClass="bt_cinza" profile="clear" />
+					<mec:commandButton id="bt_voltar"
+						action="#{manterPrescricaoCuidadoController.verificaPendencias}"
+						oncomplete="PF('modalConfirmacaoPendenciaWG').show();;"
+						value="#{messages.LABEL_VOLTAR}"
+						styleClass=" alinha-direita bt_cinza" ajax="true"
+						render="panelModalVoltar" process="@this" profile="back">
+						<f:setPropertyActionListener
+							target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}"
+							value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}"
+							for="command" />
+						<f:setPropertyActionListener
+							target="#{manterPrescricaoMedicaController.pmeSeq}"
+							value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.prescricaoMedica.id.seq}"
+							for="command" />
+					</mec:commandButton>
+				</aghu:acao>
+			</p:outputPanel>
+		</h:form>
+		<br clear="none" />
+		<h:form prependId="false" id="formListaCuidados">
+			<p:outputPanel id="panelListaCuidados" layout="inline">
+				<p:outputPanel
+					rendered="#{not empty manterPrescricaoCuidadoController.listaCuidadosPrescritos}"
+					layout="inline" styleClass="aghu-panel-geral">
+					<aghu:panelGeral legend="#{messages.LABEL_CUIDADOS_PRESCRITOS}">
+						<aghu:linha>
+							<p:outputPanel layout="block" style="width:65%; "
+								rendered="#{not empty manterPrescricaoCuidadoController.listaCuidadosPrescritos}">
+								<mec:serverDataTable id="tabelaItemCuidado"
+									rendered="#{not empty manterPrescricaoCuidadoController.listaCuidadosPrescritos}"
+									list="#{manterPrescricaoCuidadoController.listaCuidadosPrescritos}"
+									scrollable="true" scrollHeight="125">
+									<c:set var="_item" value="#{item}" />
+									<p:column
+										style="width:60px; #{(_item.id.seq == manterPrescricaoCuidadoController.seq)?'background-color:#EEE8AA':''}">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACOES}" />
+										</f:facet>
+										<mec:commandLink
+											rendered="#{_item.id.seq == manterPrescricaoCuidadoController.seq}"
+											onclick="return false;" styleClass=" silk-blank silk-icon"
+											ajax="true" />
+										<mec:commandLink title="#{messages.LABEL_EDITAR}"
+											action="#{manterPrescricaoCuidadoController.preparaAlterar(false, _item.id.seq)}"
+											process="@this"
+											rendered="#{_item.id.seq != manterPrescricaoCuidadoController.seq}"											
+											profile="edit" ajax="true"
+											render="#{manterPrescricaoCuidadoController.confirmaEditar eq true ? 'panelModalEditar' : 'panelCuidados,panelComplemento,panelFrequencia,panelAprazamento,panelListaCuidados'}" />
+										<h:selectBooleanCheckbox name="marcador" id="marcador"
+											title="#{messages.LABEL_EXCLUIR}"
+											value="#{manterPrescricaoCuidadoController.prescricaoCuidadosSelecionados[_item]}">
+											<p:ajax event="click" bypassUpdates="false"
+												update="@(#panelListaCuidados)" process="@this" />
+										</h:selectBooleanCheckbox>
+									</p:column>
+									<p:column
+										style="#{((manterPrescricaoCuidadoController.prescricaoCuidadosSelecionados.get(_item))?'background-color:#FF6347':((_item.id.seq == manterPrescricaoCuidadoController.seq)?'background-color:#EEE8AA':''))}">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ITENS}" />
+										</f:facet>
+										<h:outputText escape="true"
+											value="#{_item.descricaoFormatada}" />
+									</p:column>
+								</mec:serverDataTable>
+							</p:outputPanel>
+						</aghu:linha>
+						<aghu:acao>
+							<mec:commandButton value="#{messages.LABEL_EXCLUIR}"
+								id="bt_excluir_selecionados" limitToList="true"
+								action="#{manterPrescricaoCuidadoController.excluirPrescricaoCuidadosSelecionados}"
+								ajax="true" render="panelPrincipal, panelListaCuidados"
+								styleClass="bt_cinza" />
+						</aghu:acao>
+					</aghu:panelGeral>
+				</p:outputPanel>
+			</p:outputPanel>
+		</h:form>
+		<p:outputPanel id="panelModalVoltar" layout="inline">
+			<p:dialog id="modalConfirmacaoPendencia" width="400" height="150"
+				rendered="#{manterPrescricaoCuidadoController.confirmaVoltar}"
+				modal="true" resizable="false"
+				widgetVar="modalConfirmacaoPendenciaWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}" />
+					</h:panelGroup>
+				</f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+            <br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalPendencias">
+						<mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}"
+							action="#{manterPrescricaoCuidadoController.voltar}"
+							profile="search">
+							<f:setPropertyActionListener
+								target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}"
+								value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{manterPrescricaoMedicaController.pmeSeq}"
+								value="#{manterPrescricaoCuidadoController.prescricaoMedicaVO.prescricaoMedica.id.seq}"
+								for="command" />
+						</mec:commandButton>
+						<mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}"
+							onclick="PF('modalConfirmacaoPendenciaWG').hide();return false;"
+							profile="cancel" ajax="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+		</p:outputPanel>
+		<p:outputPanel id="panelModalEditar" layout="inline">
+			<p:dialog id="modalEditConfirmacaoPendencia" width="400" height="150"
+				rendered="#{manterPrescricaoCuidadoController.confirmaEditar and manterPrescricaoCuidadoController.seq ne null}"
+				modal="true" resizable="false"
+				widgetVar="modalEditConfirmacaoPendenciaWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}" />
+					</h:panelGroup>
+				</f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+            <br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formEditModalPendencias">
+						<mec:commandButton value="#{messages.LABEL_SIM}" id="bt_edsim"
+							action="#{manterPrescricaoCuidadoController.preparaAlterarLastClickedSeq}"
+							onclick="PF('modalEditConfirmacaoPendenciaWG').hide();"
+							profile="search" ajax="true"
+							render="panelCuidados, panelComplemento, panelFrequencia, panelAprazamento, panelListaCuidados" />
+						<mec:commandButton id="bt_ednao" value="#{messages.LABEL_NAO}"
+							onclick="PF('modalEditConfirmacaoPendenciaWG').hide();;return false;"
+							profile="cancel" ajax="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

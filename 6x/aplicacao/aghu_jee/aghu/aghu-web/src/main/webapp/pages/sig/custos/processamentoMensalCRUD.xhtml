@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_PROCESSAMENTO_MENSAL}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{processamentoMensalController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{processamentoMensalController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formProcMensal"> 
+        <aghu:panelGeral legend="#{messages.TITLE_MANTER_PROCESSAMENTO_MENSAL}"> 
+          <p:outputPanel id="panelCompetencia" layout="inline"> 
+            <aghu:linha> 
+              <mec:inputMesAno value="#{processamentoMensalController.processamentoCusto.competencia}" label="#{messages.LABEL_COMPETENCIA_PROCESSAMENTO_MENSAL}" title="#{messages.TITLE_PROCESSAMENTO_MENSAL_COMPETENCIA}" required="true" readonly="#{!processamentoMensalController.novoProcessamento}" id="dataCompetencia"> 
+                <p:ajax event="blur" update="@(#dataInicial) @(#dataFinal)" process="@this" listener="#{processamentoMensalController.atualizarPeriodoCompetencia()}"/> 
+              </mec:inputMesAno>  
+              <mec:selectOneMenu label="#{messages.LABEL_SITUACAO_PROCESSAMENTO_MENSAL}" title="#{messages.TITLE_SITUACAO_PROCESSAMENTO_MENSAL}" enum="DominioSituacaoProcessamentoCusto" value="#{processamentoMensalController.processamentoCusto.indSituacao}" readonly="true" rendered="#{!processamentoMensalController.novoProcessamento and processamentoMensalController.processamentoCusto.indSituacao ne 'P'}" style="margin-right:20px !important;" id="situacao"/>  
+              <mec:selectOneMenu label="#{messages.LABEL_SITUACAO_PROCESSAMENTO_MENSAL}" title="#{messages.TITLE_SITUACAO_PROCESSAMENTO_MENSAL}" value="#{processamentoMensalController.processamentoCusto.indSituacao}" rendered="#{!processamentoMensalController.novoProcessamento and processamentoMensalController.processamentoCusto.indSituacao eq 'P'}" noSelectionOption="true" id="situacaoProcessado">
+              		<f:converter converterId="dominioConverter" for="inputId"/>
+					<f:selectItems var="item" itemLabel="#{item.descricao}" value="#{processamentoMensalController.listarDominioSituacaoProcessamentoProcessadoCusto()}" />
+              </mec:selectOneMenu>  
+              <mec:inputTextData value="#{processamentoMensalController.processamentoCusto.dataInicio}" label="#{messages.LABEL_DATA_INICIAL_PROCESSAMENTO_MENSAL}" title="#{messages.TITLE_DATA_INICIAL_PROCESSAMENTO_MENSAL}" size="15" readonly="true" required="true" id="dataInicial" tipo="datahora"/>  
+              <mec:inputTextData value="#{processamentoMensalController.processamentoCusto.dataFim}" label="#{messages.LABEL_DATA_FINAL_PROCESSAMENTO_MENSAL}" title="#{messages.TITLE_DATA_FINAL_PROCESSAMENTO_MENSAL}" size="15" readonly="true" required="true" id="dataFinal" tipo="datahora"/> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelPassos" layout="inline"> 
+            <aghu:linha> 
+              <mec:serverDataTable id="tablePassos" rendered="#{not empty processamentoMensalController.passosList and processamentoMensalController.novoProcessamento eq true}" list="#{processamentoMensalController.passosList}" scrollable="true" scrollHeight="450" > 
+                <c:set var="passo" value="#{item}"/>  
+                <p:column width="50"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{passo.ordemExecucao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PASSOS}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{passo.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <aghu:linha> 
+            <p:outputPanel id="panelProcessamentoPassos" layout="inline"> 
+              <mec:serverDataTable id="tableProcessamentoPassos" rendered="#{not empty processamentoMensalController.processamentoPassosList and processamentoMensalController.novoProcessamento eq false}" list="#{processamentoMensalController.processamentoPassosList}" scrollable="true" scrollHeight="450"> 
+                <c:set var="processamentoPasso" value="#{item}"/>  
+                <p:column width="50"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_CONSULTA_HISTORICO_PROCESSAMENTO_CUSTO_PASSO} #{processamentoPasso.sigPassos.descricao}" action="#{processamentoMensalController.visualizarHistoricoProcesamentoParaPasso}" immediate="true" styleClass=" silk-historico silk-icon" ajax="true"> 
+                    <f:setPropertyActionListener target="#{historicoProcessamentoCustoPaginatorController.processamentoCusto}" value="#{processamentoMensalController.processamentoCusto}" for="command"/>  
+                    <f:setPropertyActionListener target="#{historicoProcessamentoCustoPaginatorController.passo}" value="#{processamentoPasso.sigPassos}" for="command"/>
+                     <f:setPropertyActionListener target="#{historicoProcessamentoCustoPaginatorController.retornarTelaCadastro}" value="#{true}" for="command"/>
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column width="50"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{processamentoPasso.sigPassos.ordemExecucao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PASSOS}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{processamentoPasso.sigPassos.descricao}"/> 
+                </p:column>  
+                <p:column width="100"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SITUACAO_PROCESSAMENTO_MENSAL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{processamentoPasso.situacao.descricao}"/> 
+                </p:column> 
+                <p:column  width="100"> 
+		           <f:facet name="header"> 
+		             <h:outputText value="#{messages.LABEL_TEMPO_EXECUCAO}"/> 
+		           </f:facet>  
+		           <h:outputText value="#{processamentoMensalController.calcularTempoExecucao(processamentoPasso)}"/> 
+		        </p:column> 
+              </mec:serverDataTable> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao>
+			<mec:commandButton id="btn_executar"
+				value="#{messages.LABEL_EXECUTAR}"
+				action="#{processamentoMensalController.verificaExecucaoAgendamento}"
+				rendered="#{mf:hasPermission(securityController,'editarProcessamentoMensal,editar') and processamentoMensalController.novoProcessamento}"
+				profile="ok" ajax="true"
+				render="panelMensagemConfirmaAgendamento" />
+				
+			<mec:commandButton id="btn_salvar" value="#{messages.LABEL_GRAVAR}"
+				action="#{processamentoMensalController.verificaExecucaoSalvarFechamento}"
+				rendered="#{mf:hasPermission(securityController,'editarProcessamentoMensal,editar')  
+							and processamentoMensalController.novoProcessamento != true 
+							and processamentoMensalController.processamentoCusto.indSituacao eq 'P'}"
+				profile="ok" ajax="true" />
+				
+			<mec:commandButton id="btn_reprocessar"
+				value="#{messages.LABEL_REPROCESSAR}"
+				action="#{processamentoMensalController.verificaExecucaoReprocessamento}"
+				rendered="#{mf:hasPermission(securityController,'editarProcessamentoMensal,editar')              
+							and processamentoMensalController.novoProcessamento != true              
+							and ( processamentoMensalController.processamentoCusto.indSituacao eq 'P'              
+							or processamentoMensalController.processamentoCusto.indSituacao eq 'E'
+							or (processamentoMensalController.processamentoCusto.indSituacao eq 'ED'
+								and processamentoMensalController.exibirReprocessarED())) }"
+				profile="ok" ajax="true"
+				render="panelMensagemConfirmaReprocessamento"/>
+				
+			<mec:commandButton id="btn_atualizar"
+				value="#{messages.LABEL_ATUALIZAR}"
+				action="#{processamentoMensalController.iniciar}"
+				rendered="#{mf:hasPermission(securityController,'editarProcessamentoMensal,editar')             
+							and processamentoMensalController.novoProcessamento != true              
+							and (processamentoMensalController.processamentoCusto.indSituacao eq 'A'              
+								or processamentoMensalController.processamentoCusto.indSituacao eq 'AD')}"
+				icon="aghu-icon-refresh" ajax="true"
+				render="formProcMensal" />
+				
+			<mec:commandButton id="bt_cancelar"
+				value="#{messages.LABEL_CANCELAR}"
+				rendered="#{not processamentoMensalController.resolverPendencia}"
+				immediate="true" action="#{processamentoMensalController.cancelar}"
+				profile="cancel" />
+	  </aghu:acao> 
+      </h:form>  
+   
+      <p:dialog id="modalAgendExecProcessamento" width="450" height="150" modal="true" resizable="false" widgetVar="modalAgendExecProcessamentoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CONFIRMA_AGENDAMENTO}"/> 
+          </h:panelGroup> 
+        </f:facet> 
+        <p:outputPanel id="panelMensagemConfirmaAgendamento">
+        	<h:outputFormat value="#{messages.MENSAGEM_CONFIRMA_AGENDAMENTO}" >
+        		<f:param value="#{processamentoMensalController.processamentoCusto.competenciaMesAno}"/>
+        	</h:outputFormat>
+        </p:outputPanel>
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalAgendExecProcessamento"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_execucao_agendamento" action="#{processamentoMensalController.executar}" render="panelPassos, panelProcessamentoPassos" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_execucao_agendamento" onclick="PF('modalAgendExecProcessamentoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+      
+     
+      <p:dialog id="modalSalvarProcessamento" width="400" height="170" modal="true" resizable="false" widgetVar="modalSalvarProcessamentoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CONFIRMA_SALVAR_FECHAMENTO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_SALVAR_FECHAMENTO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalSalvarProcessamento"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_execucao_fechamento" action="#{processamentoMensalController.fecharProcessamento}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_execucao_fechamento" onclick="PF('modalSalvarProcessamentoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+      
+      <p:dialog id="modalReprocessamento" width="450" height="150" modal="true" resizable="false" widgetVar="modalReprocessamentoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CONFIRMA_EXECUCAO_REPROCESSAMENTO}"/> 
+            </h:panelGroup> 
+          </f:facet>
+          <p:outputPanel id="panelMensagemConfirmaReprocessamento">
+	          <h:outputFormat value="#{messages.MENSAGEM_CONFIRMA_EXECUCAO_REPROCESSAMENTO}" >
+	          	<f:param value="#{processamentoMensalController.processamentoCusto.competenciaMesAno}"/>
+	          </h:outputFormat>
+          </p:outputPanel> 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalReprocessamento"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_execucao_reprocessar" action="#{processamentoMensalController.executarReprocessamento}" profile="ok"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_execucao_reprocessar" onclick="PF('modalReprocessamentoWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+    </ui:define> 
+  </ui:composition> 
+</html>

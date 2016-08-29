@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition>
+  
+	<mec:inputText id="totalGeral" label="#{messages.LABEL_CUSTO_TOTAL}" value="#{visualizarCustoGeralPacienteArvoreController.totalGeralCentroCustoStr}" readonly="true" />
+	<mec:inputText id="totalReceita" label="#{messages.LABEL_RECEITA_TOTAL}" value="#{visualizarCustoGeralPacienteArvoreController.totalReceitaCentroCustoStr}" readonly="true" />
+	<br/>
+  	<br/>
+  	<br/>
+	<p:outputPanel id="panelTabelaCustosGeralCategoria" layout="inline" rendered="#{not empty visualizarCustoGeralPacienteArvoreController.seqCategorias and visualizarCustoGeralPacienteArvoreController.codigoCentroCusto == null}">
+	
+		<p:accordionPanel  dynamic="false" activeIndex="0" >
+  			<p:tab rendered="#{not empty visualizarCustoGeralPacienteArvoreController.listaCustoGeralCentroCusto}" title="#{visualizarCustoGeralPacienteArvoreController.listaCustoGeralCentroCusto.get(0).descricaoFormatada}">
+				<mec:serverDataTable id="tabelaCustosGeralCategoria"
+					list="#{visualizarCustoGeralPacienteArvoreController.custoGeralCentroCusto(null)}" scrollable="true">
+					<c:set var="categoria" value="#{item}" />
+					<p:column style="text-align: left;" width="40%">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_ITENS}" />
+						</f:facet>
+						
+						<h:outputText value="#{categoria.centroProducaoFormatado}" rendered="#{empty categoria.objNome}"/>
+						
+						<mec:commandLink 
+							value="#{categoria.centroProducaoFormatado}" 
+							title="#{categoria.centroProducaoFormatado}" 
+							action="#{visualizarCustoGeralPacienteArvoreController.visualizarDetalheConsumo}" 
+							oncomplete="PF('modalVisualizarDetalheConsumoWG').show();" 
+							rendered="#{not empty categoria.objNome}"  
+							ajax="true" render="panelTabelaVisualizarDetalheConsumo"> 
+	            					<f:setPropertyActionListener for="command" target="#{visualizarCustoGeralPacienteArvoreController.vo}" value="#{categoria}"/>
+	            					<f:setPropertyActionListener for="command" target="#{visualizarCustoGeralPacienteArvoreController.cctCodigo}" value="#{null}"/> 
+	          				</mec:commandLink>
+						
+						<f:facet name="footer">
+				    		<h:outputText value="#{messages.LABEL_TOTAL}:"/>
+						</f:facet>
+					</p:column>
+					<p:column style="text-align: center;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_QUANTIDADE}" />
+						</f:facet>
+						<h:outputText value="#{categoria.quantidade}" >
+							<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="4" minFractionDigits="0"/>
+						</h:outputText>
+						<f:facet name="footer"> 
+				    		<h:outputText /> 		     			
+						</f:facet>
+					</p:column>
+					<p:column style="text-align: center;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_CUSTO_MEDIO}" />
+						</f:facet>
+						<h:outputText id="custoUnitario" value="#{categoria.custoUnitario}">
+							<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+						</h:outputText> 
+						<f:facet name="footer"> 
+				    		<h:outputText /> 
+						</f:facet>
+					</p:column>
+					<p:column style="text-align: center;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_CUSTO_TOTAL}" />
+						</f:facet>
+						<h:outputText value="#{categoria.custoTotal}">
+							<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+						</h:outputText>
+						<f:facet name="footer">
+				    		<h:outputText value="#{visualizarCustoGeralPacienteArvoreController.totalCentroCusto}"> 
+								<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+				    		</h:outputText>
+						</f:facet>
+					</p:column>
+					<p:column style="text-align: center;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_RECEITA_TOTAL}" />
+						</f:facet>
+						<h:outputText value="#{categoria.receitaTotal==null?' - ':categoria.receitaTotal}">
+							<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+						</h:outputText>
+						<f:facet name="footer">
+				    		<h:outputText value="#{visualizarCustoGeralPacienteArvoreController.somatorioReceitaCentroCusto==0?' - ':visualizarCustoGeralPacienteArvoreController.somatorioReceitaCentroCusto}"> 
+								<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+				    		</h:outputText>
+						</f:facet>
+					</p:column>
+				</mec:serverDataTable>
+			</p:tab>
+		</p:accordionPanel>
+	</p:outputPanel>
+	<p:outputPanel id="panelTabelaCustosGeralCentroProducao" layout="inline" rendered="#{not empty visualizarCustoGeralPacienteArvoreController.listaCustoGeralCentroProducao}">
+		
+		<p:accordionPanel  dynamic="false" activeIndex="0" >
+  			<p:tab title="#{visualizarCustoGeralPacienteArvoreController.listaCustoGeralCentroProducao.get(0).descricaoFormatada}">
+  			
+				<mec:serverDataTable id="tabelaCustosGeralCategorial"
+					list="#{visualizarCustoGeralPacienteArvoreController.listaCustoGeralCentroProducao}" scrollable="true">
+					<c:set var="centro" value="#{item}" />
+					<p:column style="text-align: left;" width="40%">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_ITENS}" />
+						</f:facet>
+							
+							<h:outputText value="#{centro.centroProducaoFormatado}" rendered="#{empty centro.objNome}"/>
+								
+							<mec:commandLink 
+								value="#{centro.centroProducaoFormatado}" 
+								title="#{centro.centroProducaoFormatado}" 
+								action="#{visualizarCustoGeralPacienteArvoreController.visualizarDetalheConsumo}" 
+								oncomplete="PF('modalVisualizarDetalheConsumoWG').show();" 
+								rendered="#{not empty centro.objNome}"  
+								ajax="true" render="panelTabelaVisualizarDetalheConsumo"> 
+	             				<f:setPropertyActionListener for="inputId" target="#{visualizarCustoGeralPacienteArvoreController.vo}" value="#{centro}"/>
+	             				<f:setPropertyActionListener for="command" target="#{visualizarCustoGeralPacienteArvoreController.cctCodigo}" value="#{null}"/> 
+	           				</mec:commandLink>
+						<f:facet name="footer">
+				    		<h:outputText value="#{messages.LABEL_TOTAL}:"/>
+						</f:facet>
+					</p:column>
+					<p:column style="text-align: center;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_QUANTIDADE}" >
+								<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="4" minFractionDigits="0"/>
+							</h:outputText>
+						</f:facet>
+						<h:outputText value="#{centro.quantidade}" />
+						<f:facet name="footer"> 
+				    		<h:outputText /> 		     			
+						</f:facet>
+					</p:column>
+					<p:column style="text-align: center;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_CUSTO_MEDIO}" />
+						</f:facet>
+						<h:outputText id="custoUnitario2" value="#{centro.custoUnitario}" >
+								<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+						</h:outputText> 
+						<f:facet name="footer"> 
+				    		<h:outputText /> 
+						</f:facet>
+					</p:column>
+					<p:column style="text-align: center;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_CUSTO_TOTAL}" />
+						</f:facet>
+						<h:outputText value="#{centro.custoTotal}">
+								<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+						</h:outputText>
+						<f:facet name="footer">
+				    		<h:outputText value="#{visualizarCustoGeralPacienteArvoreController.totalCentroCusto}"> 
+				     			<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/> 
+				    		</h:outputText>
+						</f:facet>
+					</p:column>
+					<p:column style="text-align: center;">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_RECEITA_TOTAL}" />
+						</f:facet>
+						<h:outputText value="#{centro.receitaTotal==null?' - ':centro.receitaTotal}">
+							<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+						</h:outputText>
+						<f:facet name="footer">
+				    		<h:outputText value="#{visualizarCustoGeralPacienteArvoreController.somatorioReceitaCentroCusto==0?' - ':visualizarCustoGeralPacienteArvoreController.somatorioReceitaCentroCusto}"> 
+								<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+				    		</h:outputText>
+						</f:facet>
+					</p:column>
+				</mec:serverDataTable>
+			</p:tab>
+		</p:accordionPanel>
+	</p:outputPanel>
+	<p:outputPanel id="panelTabelaCustosGeral" layout="inline" rendered="#{empty visualizarCustoGeralPacienteArvoreController.seqCategorias and visualizarCustoGeralPacienteArvoreController.codigoCentroCusto == null}">
+		<mec:serverDataTable id="tabelaCustosGeral" 
+			list="#{visualizarCustoGeralPacienteArvoreController.listaCustoGeral}" scrollable="true">
+			<c:set var="geral" value="#{item}" />
+			<p:column style="text-align: left;" width="40%">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_ITENS}" />
+				</f:facet>
+				<h:outputText value="#{geral.descricaoFormatada}" />
+				<f:facet name="footer"> 
+		    		<h:outputText value="#{messages.LABEL_TOTAL}:"/>
+				</f:facet>
+			</p:column>
+			<p:column style="text-align: center;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_QUANTIDADE}" >
+						<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="4" minFractionDigits="0"/>
+					</h:outputText>
+				</f:facet>
+				<h:outputText value="#{geral.quantidade}" />
+				<f:facet name="footer"> 
+		    		<h:outputText/> 
+				</f:facet>
+			</p:column>
+			<p:column style="text-align: center;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_CUSTO_MEDIO}" />
+				</f:facet>
+				<h:outputText rendered="#{geral.custoUnitario!=null}" value="R$ "/>
+				<h:outputText value="#{geral.custoUnitario}">
+					<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+				</h:outputText>
+				<f:facet name="footer"> 
+		    		<h:outputText/> 
+				</f:facet>
+			</p:column>
+			<p:column style="text-align: center;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_CUSTO_TOTAL}" />
+				</f:facet>
+				<h:outputText rendered="#{geral.custoTotal!=null}" value="R$ "/>
+				<h:outputText value="#{geral.custoTotal}">
+					<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+				</h:outputText>
+				<f:facet name="footer">
+					<h:outputText rendered="#{visualizarCustoGeralPacienteArvoreController.total!=null}" value="R$ "/>
+		    		<h:outputText value="#{visualizarCustoGeralPacienteArvoreController.total}"> 
+		     			<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/> 
+		    		</h:outputText> 
+				</f:facet>
+			</p:column>			
+			<p:column style="text-align: center;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_RECEITA_TOTAL}" />
+				</f:facet>
+				<h:outputText rendered="#{geral.receitaTotal!=null}" value="R$ "/>
+				<h:outputText value="#{geral.receitaTotal==null?' - ':geral.receitaTotal}">
+					<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+				</h:outputText>
+				<f:facet name="footer">
+					<h:outputText rendered="#{visualizarCustoGeralPacienteArvoreController.somatorioReceita!=0}" value="R$ "/>
+		    		<h:outputText value="#{visualizarCustoGeralPacienteArvoreController.somatorioReceita==0?' - ':visualizarCustoGeralPacienteArvoreController.somatorioReceita}"> 
+						<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+		    		</h:outputText>
+				</f:facet>
+			</p:column>		
+		</mec:serverDataTable>
+	</p:outputPanel>
+</ui:composition> 
+</html>

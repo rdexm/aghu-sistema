@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib"  xmlns:ff="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">
+    <ui:define name="head">
+      <title>#{messages.TITLE_MANTER_CONTROLES}</title> 
+	  <style>
+		#anotacao{
+			width:98%;
+		}
+	  </style>
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterControlesPacienteController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterControlesPacienteController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="form_controle"> 
+        <aghu:panelGeral> 
+          <aghu:linha> 
+            <mec:suggestionBox var="prontuario" itemValue="#{prontuario}" maxlength="8" numeric="true" label="#{messages.LABEL_PRONTUARIO}" readonly="#{not empty manterControlesPacienteController.trgSeq or manterControlesPacienteController.fromAmbulatorio}" descricaoInput="prontuario" descricaoLabel="nome" posSelectionAction="selecionouPaciente" posDeleteAction="verificaPendenciasLimparAtendimento" suggestionAction="pesquisarPaciente" title="Digitar todo o prontuário para efetuar a pesquisa de um paciente." id="paciente" controller="#{manterControlesPacienteController}" value="#{manterControlesPacienteController.paciente}" render="leitoDecorate, panelPrincipal, panelControles, panelBotoesAcao"> 
+              <p:column> 
+                <h:outputText value="#{prontuario.prontuario}"/>
+              </p:column>  
+              <p:column> 
+                <h:outputText value="#{prontuario.nome}"/>
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox var="leito" itemValue="#{leito}" label="#{messages.LABEL_LEITO}" rendered="#{!manterControlesPacienteController.fromAmbulatorio}" readonly="#{not empty manterControlesPacienteController.trgSeq}" descricaoInput="leitoID" descricaoLabel="leitoID" posSelectionAction="selecionouPaciente" posDeleteAction="verificaPendenciasLimparAtendimento" suggestionAction="pesquisarLeito" title="Digitar todo o leito para efetuar a pesquisa de um paciente." id="leito" controller="#{manterControlesPacienteController}" value="#{manterControlesPacienteController.leito}" render="pacienteDecorate, panelPrincipal, panelControles, panelBotoesAcao"> 
+              <p:column>#{leito.leitoID}</p:column> 
+            </mec:suggestionBox> 
+            <mec:suggestionBox var="zona" itemValue="#{zona}" required="true" label="#{manterControlesPacienteController.labelZona}"  
+             width="400" descricaoInput="sigla" readonly="true" rendered="#{manterControlesPacienteController.fromAmbulatorio}"
+             descricaoLabel="descricao" id="zona" controller="#{manterControlesPacienteController}" value="#{manterControlesPacienteController.zona}"> 
+            </mec:suggestionBox>  
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <p:outputPanel id="panelPrincipal" layout="block"> 
+            <aghu:panelGeral id="panelControles" rendered="#{not empty manterControlesPacienteController.atendimento or not empty manterControlesPacienteController.trgSeq}" legend="#{messages.TITLE_MANTER_CONTROLES}"> 
+              <aghu:linha> 
+                <p:outputPanel id="panelExcluirHorario" layout="inline"> 
+                  <p:outputPanel id="excluirHorario" layout="block" style="float:left;padding-top:24px;padding-right:10px" rendered="#{manterControlesPacienteController.horario.seq!=null}"> 
+                    <mec:commandLink title="#{messages.LABEL_EXCLUIR_HORARIO}" action="#{manterControlesPacienteController.excluirHorario}" onclick="excluirHorarioJs(#{manterControlesPacienteController.horario.seq});" profile="delete" ajax="true" process="@this" render="panelGrupo,panelPrincipal,tabelaItens,panelGeraldoGrupo" /> 
+                  </p:outputPanel> 
+                </p:outputPanel>
+						<mec:field id="horario" required="true"
+							label="#{messages.LABEL_HORA_CONTROLE}"
+							title="#{messages.TITLE_HORA_CONTROLE}">
+							<h:inputText id="horaControle" name="horaControle" size="5"
+								maxlength="5" required="true"
+								requiredMessage="Um valor é obrigatório para o campo #{messages.LABEL_HORA_CONTROLE}"
+								onfocus="jq('#horario:horaControle').mask('99:99')"
+								value="#{manterControlesPacienteController.horaControle}">
+								<f:convertDateTime pattern="HH:mm" type="date" />
+								<p:ajax id="horaControleSupOnChange" event="change"
+									update="@(#panelPrincipal) @(#panelTabelaItens) @(#anotacoes) @(#panelGeraldoGrupo) @(#panelGrupo) @(#panelExcluirHorario)"
+									process="@this"
+									listener="#{manterControlesPacienteController.verificaPendenciasAtualizarListaHora}" />
+							</h:inputText>
+						</mec:field>
+						<p:outputPanel id="fRelogio" layout="block"
+							style="float:left;padding-top:24px;padding-right:10px">
+							<mec:commandLink id="relogio"
+								title="#{messages.LABEL_HORA_ATUAL}"
+								action="#{manterControlesPacienteController.verificaPendenciasHoraAtual}"
+								ajax="true" process="@this, horaControle"
+								render="panelPrincipal" styleClass="silk-clock silk-icon" />
+						</p:outputPanel>
+						<mec:inputTextData label="#{messages.LABEL_DATA_CONTROLE}" id="dataControle" size="13" maxlength="10" required="true" requiredMessage="Um valor é obrigatório para o campo #{messages.LABEL_DATA_CONTROLE}" k="formatar( this , '99/99/9999' , event )" value="#{manterControlesPacienteController.dataControle}" tipo="data">
+                  <f:convertDateTime pattern="dd/MM/yyyy" type="date" for="dataControle"/>  
+                  <p:ajax id="dataControleSupOnChange" event="dateSelect" update="@(#panelPrincipal) @(#panelTabelaItens) @(#anotacoes) @(#panelGeraldoGrupo) @(#panelGrupo) @(#panelExcluirHorario)" process="@this" listener="#{manterControlesPacienteController.verificaPendenciasAtualizarListaData}"/>
+                </mec:inputTextData>  
+                <p:outputPanel id="panelGrupo" rendered="#{manterControlesPacienteController.exibeGrupo}" layout="inline">
+                  <mec:field name="fieldGrupo" required="true" label="#{messages.LABEL_GRUPO_CONTROLE}" title="#{messages.TITLE_GRUPO_CONTROLE}"> 
+                     <p:selectOneMenu id="grupo" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" rendered="#{manterControlesPacienteController.exibeGrupo}" requiredMessage="Um valor é obrigatório para o campo Grupo" required="true" value="#{manterControlesPacienteController.seqGrupo}" valueChangeListener="#{manterControlesPacienteController.changeComboGrupo}">
+                      <f:selectItems id="grupos" var="item" value="#{manterControlesPacienteController.listaGrupos}" itemLabel="#{item['descricao']}" itemValue="#{item['seq']}"/>
+                      <p:ajax id="grupoControleSupOnChange"  event="change"  update="@(#panelTabelaItens) @(#anotacoes) @(#tabelaItens)" process="@this, grupo" listener="#{manterControlesPacienteController.verificaPendenciasAtualizarListaDoGrupo}"/>
+                    </p:selectOneMenu>
+                  </mec:field> 
+				
+				</p:outputPanel> 
+              </aghu:linha>  
+              <aghu:linha>
+                <p:outputPanel id="panelGeraldoGrupo" layout="inline">
+                  <aghu:panelGeral id="panelMostrarGeraldoGrupo" rendered="#{manterControlesPacienteController.exibeGrupo}"> 
+                    <aghu:linha id="panelTabelaItens">
+                        <p:outputPanel id="panelTabelaItensRend" rendered="#{not empty manterControlesPacienteController.controlesPaciente}" layout="inline">
+                          <p:outputPanel layout="block" style="margin: 3px 6px; overflow-y:hidden; width:90%;"> 
+                            <mec:serverDataTable id="tabelaItens" rowKeyVar="_key" list="#{manterControlesPacienteController.controlesPaciente}" scrollable="true" scrollHeight="auto" draggableColumns="false" >
+                              <c:set var="_item" value="#{item}"/>  
+                              <p:column style="width:60px;"> 
+                                <f:facet name="header"> 
+                                  <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                                </f:facet>
+                                <mec:commandLink rendered="#{_item.seq!=null and !_item.item.calculado}" title="#{messages.LABEL_EXCLUIR_ITEM}" 
+                                	action="#{manterControlesPacienteController.excluirControle(_item.seq)}"
+                                	profile="delete" ajax="true" process="@this" render="tabelaItens"/> 
+                              </p:column>
+                              <p:column width="30%" style="padding: 0px;" >
+                                <f:facet name="header" >
+                                  <h:outputText value="#{messages.LABEL_ITENS}"/>
+                                </f:facet>
+                                <p:outputPanel id="panelDescricao" style="padding: 4px 10px;" layout="block">
+                                	<h:outputText title="#{_item.item.descricao}" value="#{_item.item.descricaoEditada}"/>
+                                </p:outputPanel>
+                              </p:column>
+                              <p:column width="60%" style=" padding:0px; background-color: #{(_item.foraLimiteNormal) ? '#B22222':'#FFFFFF'};">
+                                <f:facet name="header"> 
+                                  <h:outputText value="#{messages.LABEL_MEDICAO_CONTROLE}"/> 
+                                </f:facet>
+                                
+                                <p:outputPanel id="panelMedicao" style="padding: 4px 10px;" layout="block">
+                                  
+                                  <h:inputText id="calculado" styleClass="mask_dose_medicamento decimal_2" value="#{_item.medicao}" size="12" rendered="#{_item.item.calculado}" maxlength="9" readonly="true"/>
+                                  
+                                  <pe:inputNumber
+			                       	 	id="valorAjustado" 
+			                       	 	value="#{_item.medicao}" 
+			                       	 	rendered="#{_item.item.numerico||_item.item.misto||_item.item.mistoTexto}"
+			                       	 	size="8"
+			                       	 	maxValue="999999"
+			                       	 	minValue="-999999"
+			                       	 	decimalSeparator=","
+			                       	 	thousandSeparator="."
+			                       	 	decimalPlaces="2">
+			                       	 	<p:ajax id="medicaoSupOnChange" event="change" listener="#{manterControlesPacienteController.definirModificaoTela}"/>
+		                       	  </pe:inputNumber>
+                                                                  
+                                  <p:inputText id="texto" value="#{_item.texto}" size="80" maxlength="120" rendered="#{_item.item.texto || _item.item.mistoTexto}">
+                                    <f:ajax id="textoSupOnChange" event="change" listener="#{manterControlesPacienteController.definirModificaoTela}"/>
+                                  </p:inputText>
+                                                  
+                                   <h:selectOneMenu id="_simNao" 
+                                  	rendered="#{_item.item.simNao || _item.item.misto}"
+				        			value="#{_item.simNao}"
+									styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-al" converter="dominioConverter"  >
+										<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+									    <f:converter converterId="dominioConverter" />
+										<f:selectItems itemValue="#{item}"  var="item" itemLabel="#{item.descricao}" value="#{ff:getEnumItens('br.gov.mec.aghu.dominio', 'DominioSimNao')}" />
+								  </h:selectOneMenu>
+                                                                             
+                                  <h:selectOneMenu id="_inicioFim" 
+                                  	rendered="#{_item.item.inicioFim}"
+				        			value="#{_item.inicioFim}"
+									styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all">
+										<f:selectItem itemValue="" itemLabel="Selecione" noSelectionOption="true" />
+										<f:converter converterId="dominioConverter" />
+										<f:selectItems var="item" itemLabel="#{item.descricao}"  value="#{ff:getEnumItens('br.gov.mec.aghu.dominio', 'DominioInicioFim')}" />
+								  </h:selectOneMenu>
+								  
+                                </p:outputPanel>
+                                <p:tooltip rendered="#{_item.foraLimiteNormal}" styleClass="tooltip" trackMouse="true" for="panelMedicao">
+                                  <h:outputText value="#{_item.textoItemForaNormalidade}"/>
+                                </p:tooltip> 
+                              </p:column> 
+                            </mec:serverDataTable> 
+                          </p:outputPanel> 
+                        </p:outputPanel>
+                    </aghu:linha> 
+                  </aghu:panelGeral> 
+              </p:outputPanel>
+             </aghu:linha>
+              <aghu:linha>
+				<p:outputPanel id="anotacoes" layout="inline"
+					label="#{messages.LABEL_ANOTACAO_CONTROLE}"
+					title="#{messages.TITLE_ANOTACAO_CONTROLE}">
+					<mec:inputTextArea label="#{messages.LABEL_ANOTACAO_CONTROLE}"
+						title="#{messages.TITLE_ANOTACAO_CONTROLE}" autocomplete="on"
+						caixaAlta="false" id="anotacao" required="false"
+						value="#{manterControlesPacienteController.horario.anotacoes}"
+						maxlength="400" style="width:99%;"
+						emptyStringToNullConverter="emptyStringToNullConverter"
+						removerCaratersEspeciais="false" removerEspacosBrancos="true">
+						<ui:insert />
+						<f:ajax id="anotSupOnChange" event="change"
+							listener="#{manterControlesPacienteController.definirModificaoTela()}" />
+					</mec:inputTextArea>
+				</p:outputPanel>
+			</aghu:linha> 
+            </aghu:panelGeral> 
+        </p:outputPanel>  
+        
+        <aghu:acao id="panelBotoesAcao">
+          <mec:commandButton id="gravarAtendimento" render="panelTabelaItens" value="#{messages.LABEL_GRAVAR}" 
+          		rendered="#{(manterControlesPacienteController.atendimento != null or manterControlesPacienteController.trgSeq != null) 
+          			and manterControlesPacienteController.voltarPara ne 'listarPacientesEmergencia' and 
+          			manterControlesPacienteController.voltarPara ne 'realizarAcolhimentoCRUD' and 
+          			manterControlesPacienteController.voltarPara ne 'listarPacientesEmergenciaAbaAcolhimento' and manterControlesPacienteController.voltarPara ne 'listarPacientesEmergenciaAbaAguardando'}"  
+          		action="#{manterControlesPacienteController.gravar}" profile="ok" ajax="true"  />
+		 <mec:commandButton id="gravarEmergencia"
+			value="#{messages.LABEL_GRAVAR}"
+			rendered="#{(manterControlesPacienteController.atendimento != null or manterControlesPacienteController.trgSeq != null) 
+			and (manterControlesPacienteController.voltarPara eq 'listarPacientesEmergencia' or manterControlesPacienteController.voltarPara eq 'realizarAcolhimentoCRUD' or manterControlesPacienteController.voltarPara eq 'listarPacientesEmergenciaAbaAcolhimento' or manterControlesPacienteController.voltarPara eq 'listarPacientesEmergenciaAbaAguardando')}"
+			action="#{manterControlesPacienteController.gravarEmergencia}"
+			profile="ok" ajax="true" />
+		<mec:commandButton id="bt_limpar"  value="#{messages.LABEL_DESFAZER}" rendered="#{manterControlesPacienteController.atendimento != null or manterControlesPacienteController.trgSeq != null}"  immediate="true" action="#{manterControlesPacienteController.desfazerAlteracoes}"   profile="clear"/>
+		  <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{manterControlesPacienteController.verificaPendenciasVoltar}" rendered="#{manterControlesPacienteController.voltarPara ne 'listarPacientesEmergencia' and manterControlesPacienteController.voltarPara ne 'realizarAcolhimentoCRUD'
+		  and manterControlesPacienteController.voltarPara ne 'listarPacientesEmergenciaAbaAcolhimento' and manterControlesPacienteController.voltarPara ne 'listarPacientesEmergenciaAbaAguardando'}" profile="back"/>
+		  <mec:commandButton id="voltarEmergencia"
+			value="#{messages.LABEL_VOLTAR}" 
+			rendered="#{manterControlesPacienteController.voltarPara eq 'listarPacientesEmergencia' or manterControlesPacienteController.voltarPara eq 'realizarAcolhimentoCRUD' or 
+				manterControlesPacienteController.voltarPara eq 'listarPacientesEmergenciaAbaAcolhimento' or manterControlesPacienteController.voltarPara eq 'listarPacientesEmergenciaAbaAguardando'}"
+			action="#{manterControlesPacienteController.cancelarEdicaoEmergencia}"
+			immediate="true"
+			profile="back">
+		   </mec:commandButton>
+		</aghu:acao>
+        <pe:remoteCommand name="excluirHorarioJs"> 
+          <pe:assignableParam name="param1" assignTo="#{manterControlesPacienteController.horarioExcluirSeq}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      
+      
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_EXCLUSAO_CONTROLE}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUIR_CONTROLE} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <mec:commandButton id="bt_excluir" value="#{messages.LABEL_SIM}" action="#{manterControlesPacienteController.excluirControle}" profile="ok"/>  
+            <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+         
+      <p:dialog id="modalConfirmacaoPendencia"  width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG">
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACOES}"/> 
+        </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES_CONTROLES_VOLTAR} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalPendencias"> 
+            <mec:commandButton id="bt_simPendencias" value="#{messages.LABEL_SIM}" action="#{manterControlesPacienteController.executarAcaoConfirmada}" profile="ok" ajax="true"/>  
+            <mec:commandButton id="bt_naoPendencias" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" action="#{manterControlesPacienteController.cancelarAcaoPendente}" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+     
+    </ui:define> 
+  </ui:composition> 
+</html>

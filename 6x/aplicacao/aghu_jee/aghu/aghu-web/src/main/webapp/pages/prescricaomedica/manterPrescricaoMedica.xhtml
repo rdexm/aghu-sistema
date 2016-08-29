@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Manter Prescrição Médica :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterPrescricaoMedicaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body">
+      <mec:pageConfig controller="#{manterPrescricaoMedicaController}" print="true"/>
+      <script type="text/javascript">
+			//<![CDATA[
+	            function open_modal_aghweb(url, atdSeq, token, banco, formFmx) {
+	                var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+p_atd_seq=' + atdSeq;
+	                if (atdSeq != null) {
+	                    abrirJanelaModal(url,{
+	                    parameters: {
+	                    config: 'aghweb',
+	                    form: formFmx,
+	                    otherparams: otherParams
+	                    },
+	                    onClose: function() {
+	
+	                             }
+	                    });
+	                }
+	            }
+			// ]]>
+		</script>
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formPrescricaoCabecalho"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" 
+              	value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.prontuario}" 
+              	size="8" 
+              	maxlength="9" 
+              	emptyStringToNullConverter="emptyStringToNullConverter" 
+              	readonly="true" 
+              	id="prontuarioPaciente" 
+              	converter="#{prontuarioConverter}"/>
+              <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" 
+              	value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.nome}" 
+              	size="56" 
+              	maxlength="50" 
+              	style="text-transform:uppercase" 
+              	readonly="true" 
+              	id="nomePaciente"/>  
+              <mec:inputText label="#{messages.LABEL_LOCAL}" 
+              	value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.local}" 
+              	size="15"
+              	maxlength="15" 
+              	style="text-transform:uppercase" 
+              	readonly="true" 
+              	id="localPaciente"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}" 
+              	value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.dthrInicio}" 
+              	readonly="true" 
+              	size="18" 
+              	datePattern="dd/MM/yyyy HH:mm" 
+              	id="dataValidadeInicial"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}" 
+              	value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.dthrFim}" 
+              	readonly="true" 
+              	size="18" 
+              	datePattern="dd/MM/yyyy HH:mm" 
+              	id="dataValidadeFinal"/> 
+			  <mec:selectOneMenu label="#{messages.LABEL_ESTADO_PACIENTE_MP}" noSelectionOption="false" id="comboEstadoPrincipal" value="#{manterPrescricaoMedicaController.valorEstadoPaciente}"
+			  		rendered="#{manterPrescricaoMedicaController.estadoPaciente != null and manterPrescricaoMedicaController.exibirEstadoPaciente and (manterPrescricaoMedicaController.retornoValidacao != null and manterPrescricaoMedicaController.retornoValidacao.vMostraEstPac == 'S')}">
+				 <p:ajax event="change" listener="#{manterPrescricaoMedicaController.onChangeManterEstadoPaciente}" update=":formPrescricaoCabecalho" process="@this" />
+					<f:selectItems var="item" itemLabel="#{item.descricao}"
+						value="#{manterPrescricaoMedicaController.comboTipoEstadoPaciente}" />
+			  </mec:selectOneMenu>
+              <mec:selectOneMenu label="#{messages.LABEL_ESTADO_PACIENTE_MP}" noSelectionOption="false" id="comboEstadoPrincipal2" value="#{manterPrescricaoMedicaController.valorEstadoPaciente}"
+			  		rendered="#{manterPrescricaoMedicaController.estadoPaciente == null and manterPrescricaoMedicaController.exibirEstadoPaciente and (manterPrescricaoMedicaController.retornoValidacao != null and manterPrescricaoMedicaController.retornoValidacao.vMostraEstPac == 'S')}">
+				 <f:selectItem itemLabel="#{manterPrescricaoMedicaController.comboSelecioneEstadoPaciente}" itemValue=""/>
+				 <p:ajax event="change" listener="#{manterPrescricaoMedicaController.onChangeManterEstadoPaciente}" process="@this" update=":formPrescricaoCabecalho" />
+					<f:selectItems var="item" itemLabel="#{item.descricao}"
+						value="#{manterPrescricaoMedicaController.comboTipoEstadoPaciente}" />
+			  </mec:selectOneMenu>
+              	
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form> 
+        <br/> 
+        <h:form prependId="false" id="formDadosCabecalho"> 
+          <aghu:panelGeral style="padding: 0px 5px 5px 0px;" legend="Manter Prescrição Médica"> 
+            <p:fieldset>
+             
+              <aghu:linha> 
+                <mec:inputTextData id="dataPrevAlta" tipo="data" 
+                	label="#{messages.LABEL_PREVISAO_ALTA}" 
+                	title="#{messages.TITLE_PREVISAO_ALTA}" 
+                	value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.dtPrevAlta}" 
+                	required="false" 
+                	styleClassField="frm_obrigatorio" 
+                	readonly="#{manterPrescricaoMedicaController.prescricaoMedicaVO.hasInternacao == false or manterPrescricaoMedicaController.bloquearData == true}" 
+                	disabled="#{manterPrescricaoMedicaController.prescricaoAmbulatorial}" />  
+                <mec:selectBooleanCheckbox id="pacientePediatrico" 
+                	label="#{messages.LABEL_PACIENTE_PEDIATRICO}" 
+                	title="#{messages.TITLE_PACIENTE_PEDIATRICO}" 
+                	value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.indPacPediatrico}" />  
+                <aghu:acao newLine="false"> 
+                    <mec:commandButton id="btAtualizar"
+                    	value="#{messages.LABEL_ATUALIZAR}"
+                        action="#{manterPrescricaoMedicaController.atualizarPrevAltaPacPed}"
+                        disabled="#{manterPrescricaoMedicaController.prescricaoAmbulatorial}"
+                        ajax="true"/>
+                </aghu:acao>
+              </aghu:linha> 
+            
+            </p:fieldset>  
+            <br clear="none"/>  
+            <table width="100%"> 
+              <tr valign="top"> 
+                <td width="70%" rowspan="1" colspan="1"> 
+                  
+                  <p:outputPanel layout="block" style="width: 100%; height:390px; overflow:auto;"> 
+                    <mec:serverDataTable id="tabelaPrescricoes" scrollHeight="300px"
+                    	list="#{manterPrescricaoMedicaController.prescricaoMedicaVO.itens}" rowKeyVar="rowIndex"> 
+                      <c:set var="itemPrescricaoMedicaVO" value="#{item}"/>
+                      <p:column style="width:50px;#{itemPrescricaoMedicaVO.excluir ? 'background-color: #FF6347 !important;' : ';'}#{itemPrescricaoMedicaVO.represcrito ? 'background-color: #74C7FF !important' : ''}">
+	                    <f:facet name="header"> 
+				           <h:outputText value="#{messages.LABEL_ACAO}"/> 
+				        </f:facet>  
+                      	<mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'CONSULTORIA'}" action="#{manterPrescricaoMedicaController.redirecionarSolicitarConsultoria}" profile="edit"> 
+                          <f:setPropertyActionListener target="#{solicitarConsultoriaController.idAtendimento}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.id.atdSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{solicitarConsultoriaController.idPrescricaoMedica}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.id.seq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{solicitarConsultoriaController.idSolicitacaoConsultoria}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{solicitarConsultoriaController.escMdbSubstituirConsultoria}" value="#{null}" for="command"/>  
+                          <f:setPropertyActionListener target="#{solicitarConsultoriaController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                          <f:setPropertyActionListener target="#{solicitarConsultoriaController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>  
+                          <f:setPropertyActionListener target="#{solicitarConsultoriaController.limparPagina}" value="#{true}" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'CUIDADOS_MEDICOS'}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoCuidado}" profile="edit"> 
+                          <f:setPropertyActionListener target="#{manterPrescricaoCuidadoController.atdSeq}" value="#{itemPrescricaoMedicaVO.atendimentoSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoCuidadoController.seq}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoCuidadoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoCuidadoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'DIETA'}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoDieta}" profile="edit"> 
+                          <f:setPropertyActionListener target="#{manterPrescricaoDietaController.atdSeq}" value="#{itemPrescricaoMedicaVO.atendimentoSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoDietaController.seq}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoDietaController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoDietaController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'HEMOTERAPIA'}" action="#{manterPrescricaoMedicaController.redirecionarManterSolicitacaoHemoterapia}" profile="edit"> 
+                          <f:setPropertyActionListener target="#{manterSolicitacaoHemoterapiaController.seq}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterSolicitacaoHemoterapiaController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'MEDICAMENTO'}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoMedicamento}" profile="edit"> 
+                          <f:setPropertyActionListener target="#{manterPrescricaoMedicamentoController.seq}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoMedicamentoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoMedicamentoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'SOLUCAO'}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoSolucao}" profile="edit"> 
+                          <f:setPropertyActionListener target="#{manterPrescricaoSolucaoController.seq}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoSolucaoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterPrescricaoSolucaoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                        </mec:commandLink>  
+                        
+                        <mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'NUTRICAO_PARENTAL'}" disabled="true" profile="edit"/>  
+                        <!-- Incidente #51488 --> 
+                        <!--  <mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'NUTRICAO_PARENTAL'}" action="#{manterPrescricaoMedicaController.redirecionaCadastroPrescricaoNpt()}" profile="edit">
+                            <f:setPropertyActionListener target="#{cadastroPrescricaoNptController.seq}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+	                        <f:setPropertyActionListener target="#{cadastroPrescricaoNptController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>
+	                        <f:setPropertyActionListener target="#{cadastroPrescricaoNptController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>
+                        </mec:commandLink>  -->
+                                               
+                        <mec:commandLink block="true" title="#{messages.LABEL_EDITAR}" rendered="#{itemPrescricaoMedicaVO.tipo eq 'PROCEDIMENTO'}" action="#{manterPrescricaoMedicaController.redirecionarManterProcedimentoEspecial}" profile="edit"> 
+                          <f:setPropertyActionListener target="#{manterProcedimentoEspecialController.procSeqAtendimento}" value="#{itemPrescricaoMedicaVO.atendimentoSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterProcedimentoEspecialController.procSeq}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterProcedimentoEspecialController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterProcedimentoEspecialController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                        </mec:commandLink>  
+                        <h:selectBooleanCheckbox name="marcador" id="marcador" value="#{itemPrescricaoMedicaVO.excluir}" title="Excluir"> 
+                          <p:ajax event="click" partialSubmit="true" async="true" update="@(#tabelaPrescricoes)" process="@this"/> 
+                        </h:selectBooleanCheckbox> 
+                      </p:column>
+                      <p:column style="#{itemPrescricaoMedicaVO.excluir ? 'background-color: #FF6347 !important;' : ';'}#{itemPrescricaoMedicaVO.represcrito ? 'background-color: #74C7FF !important' : ''}"> 
+			            <f:facet name="header"> 
+			              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+			            </f:facet>             
+			            
+			            <p:column>#{rowIndex+1} - </p:column>
+			              
+                      	<p:column width="18px" title="#{itemPrescricaoMedicaVO.tipo.titulo}" 
+                      		rendered="#{not itemPrescricaoMedicaVO.excluir}"
+                      		style="max-width: 300px; word-wrap: break-word;">
+
+												<p:outputPanel class="silk-icon icon-nutricaoparenteraltotal"
+													rendered="#{itemPrescricaoMedicaVO.tipo == 'NUTRICAO_PARENTAL'}"
+														style="cursor:default !important;" title="#{itemPrescricaoMedicaVO.tipo.titulo}" />
+
+												<p:outputPanel
+													class="silk-icon icon-#{itemPrescricaoMedicaVO.tipo.toString().toLowerCase()}"
+													rendered="#{itemPrescricaoMedicaVO.tipo != 'NUTRICAO_PARENTAL'}"
+														style="cursor:default !important;"
+														title="#{itemPrescricaoMedicaVO.tipo.titulo}" />
+
+
+						</p:column>  
+                      	<p:column width="18px" title="#{itemPrescricaoMedicaVO.tipo.titulo}" 
+                      		rendered="#{itemPrescricaoMedicaVO.excluir}"
+                      		style="background-color:#FF6347;">
+												<p:outputPanel class="silk-icon icon-nutricaoparenteraltotal"
+													rendered="#{itemPrescricaoMedicaVO.tipo == 'NUTRICAO_PARENTAL'}"
+														style="cursor:default !important;"
+														title="#{itemPrescricaoMedicaVO.tipo.titulo}" />
+
+												<p:outputPanel
+													class="silk-icon icon-#{itemPrescricaoMedicaVO.tipo.toString().toLowerCase()}"
+													rendered="#{itemPrescricaoMedicaVO.tipo != 'NUTRICAO_PARENTAL'}"
+														style="cursor:default !important;"
+														title="#{itemPrescricaoMedicaVO.tipo.titulo}" />
+						</p:column>  
+                      	<p:column title="#{itemPrescricaoMedicaVO.tipo.titulo}" 
+	                      	rendered="#{not itemPrescricaoMedicaVO.excluir}"
+                      		style="max-width: 300px; word-wrap: break-word;"> 
+                        	<h:outputText value="#{' '}#{itemPrescricaoMedicaVO.descricao}" escape="false"/> 
+                      	</p:column> 
+                      	<p:column title="#{itemPrescricaoMedicaVO.tipo.titulo}" 
+                      		rendered="#{itemPrescricaoMedicaVO.excluir}"
+                      		style="background-color:#FF6347;"> 
+                        	<h:outputText value="#{' '}#{itemPrescricaoMedicaVO.descricao}" escape="false"/> 
+                      	</p:column>
+                      </p:column> 
+                    </mec:serverDataTable>
+                    <br/>
+                    <p:outputPanel layout="block" rendered="#{manterPrescricaoMedicaController.prescEnfVO ne null}"> 
+						<mec:serverDataTable id="tabelaPrescricaoEnfermagem"
+							list="#{manterPrescricaoMedicaController.prescEnfVO.listaCuidadoVO}">
+							<c:set var="cuidadoVO" value="#{item}" />
+                            <p:columnGroup type="header">
+                                <p:row>
+                                    <p:column headerText="#{manterPrescricaoMedicaController.cabecalhoPrescricaoEnfermagem}"
+                                              colspan="2"/>
+                                </p:row>
+                            </p:columnGroup>
+
+							<p:column style="width:50px;"/>
+							<p:column>
+								<p:column title="#{cuidadoVO.tipoPrescricaoCuidado.titulo}">
+									<div
+										class="silk-icon #{cuidadoVO.tipoPrescricaoCuidado.sufixoIcone}"
+										style="cursor: default !important;"
+										title="#{cuidadoVO.tipoPrescricaoCuidado.titulo}" />
+								</p:column>
+								<p:column>
+									<h:outputText
+										value="#{' '}#{cuidadoVO.descricaoPrescricaoCuidadoFormatada}"
+										escape="false" />
+								</p:column>
+							</p:column>
+						</mec:serverDataTable>
+                    </p:outputPanel> 
+                  </p:outputPanel>  
+                </td>  
+                <td width="1%" rowspan="1" colspan="1"/>  
+                <td width="20%" rowspan="1" colspan="1"> 
+                  <div class="menu-direita" style="width:92% !important"> 
+                    <div> 
+                      <mec:commandButton style="width: 98%" id="bt_dieta" value="#{messages.LABEL_DIETA}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoDieta}" styleClass="bt_cinza" rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}"> 
+                        <f:setPropertyActionListener target="#{manterPrescricaoDietaController.atdSeq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoDietaController.seq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoDietaController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoDietaController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div> 
+                      <mec:commandButton style="width: 98%" block="true" id="bt_cuidados" value="#{messages.LABEL_CUIDADOS}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoCuidado}" styleClass="bt_cinza"> 
+                        <f:setPropertyActionListener target="#{manterPrescricaoCuidadoController.atdSeq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoCuidadoController.seq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoCuidadoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoCuidadoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div> 
+                      <mec:commandButton style="width: 98%" block="true" id="bt_medicamentos" value="#{messages.LABEL_MEDICAMENTOS}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoMedicamento}" styleClass="bt_cinza"> 
+                        <f:setPropertyActionListener target="#{manterPrescricaoMedicamentoController.seq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoMedicamentoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoMedicamentoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div> 
+                      <mec:commandButton style="width: 98%" block="true" id="bt_solucoes" value="#{messages.LABEL_SOLUCOES}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoSolucao}" styleClass="bt_cinza"> 
+                        <f:setPropertyActionListener target="#{manterPrescricaoSolucaoController.seq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoSolucaoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoSolucaoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div> 
+                      <mec:commandButton style="width: 98%" value="#{messages.LABEL_CONSULTORIA}" action="#{manterPrescricaoMedicaController.redirecionarSolicitarConsultoria}" rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" disabled="#{manterPrescricaoMedicaController.prescricaoAmbulatorial}" styleClass="bt_cinza"> 
+                        <f:setPropertyActionListener target="#{solicitarConsultoriaController.idAtendimento}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.id.atdSeq}" for="command"/>  
+                        <f:setPropertyActionListener target="#{solicitarConsultoriaController.idPrescricaoMedica}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO.id.seq}" for="command"/>  
+                        <f:setPropertyActionListener target="#{solicitarConsultoriaController.idSolicitacaoConsultoria}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{solicitarConsultoriaController.escMdbSubstituirConsultoria}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{solicitarConsultoriaController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{solicitarConsultoriaController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>  
+                        <f:setPropertyActionListener target="#{solicitarConsultoriaController.limparPagina}" value="#{true}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div> 
+                      <mec:commandButton style="width: 98%" value="#{messages.LABEL_HEMOTERAPIA}" 
+                      action="#{manterPrescricaoMedicaController.redirecionarManterSolicitacaoHemoterapia}" 
+                      styleClass="bt_cinza" rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}"
+                      disabled="#{verificarPrescricaoMedicaController.aghuBotoesExameHemoterapia}"> 
+                        <f:setPropertyActionListener target="#{manterSolicitacaoHemoterapiaController.seq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterSolicitacaoHemoterapiaController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div>
+                     <mec:commandButton style="width: 98%" value="#{messages.LABEL_NUTRICAO_PARENTERAL}" action="#{manterPrescricaoMedicaController.redirecionaCadastroPrescricaoNpt}" rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" disabled="true" styleClass="bt_cinza">
+                        <f:setPropertyActionListener target="#{cadastroPrescricaoNptController.seq}" value="#{itemPrescricaoMedicaVO.itemSeq}" for="command"/>  
+                        <f:setPropertyActionListener target="#{cadastroPrescricaoNptController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{cadastroPrescricaoNptController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>
+                      </mec:commandButton>                       
+               
+                    </div>  
+                    <div> 
+                      <mec:commandButton style="width: 98%" value="#{messages.LABEL_PROCEDIMENTOS}" action="#{manterPrescricaoMedicaController.redirecionarManterProcedimentoEspecial}" styleClass="bt_cinza" rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" >  
+                        <f:setPropertyActionListener target="#{manterProcedimentoEspecialController.procSeqAtendimento}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterProcedimentoEspecialController.procSeq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterProcedimentoEspecialController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterProcedimentoEspecialController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div> 
+                      <mec:commandButton style="width: 98%" block="true" id="bt_diagnostico" value="#{messages.LABEL_DIAGNOSTICO}" action="#{manterPrescricaoMedicaController.redirecionarManterDiagnosticosAtendimento}" styleClass="bt_cinza"> 
+                        <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.cidSeq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div>                       
+                       <mec:commandButton style="width: 98%" value="#{messages.LABEL_ALERGIAS}" action="#{manterPrescricaoMedicaController.redirecionarManterPrescricaoAlergia}" styleClass="bt_cinza" rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" > 
+                        <f:setPropertyActionListener target="#{manterPrescricaoAlergiaController.pacCodigo}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoAlergiaController.seq}" value="#{null}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoAlergiaController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+                        <f:setPropertyActionListener target="#{manterPrescricaoAlergiaController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div> 
+                       <mec:commandButton style="width: 98%" value="#{messages.LABEL_MODELO_BASICO}" action="#{manterPrescricaoMedicaController.redirecionarEscolherModeloBasico}" styleClass="bt_cinza" rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" > 
+                        <f:setPropertyActionListener target="#{escolherModeloBasicoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/> 
+                      </mec:commandButton> 
+                    </div>  
+                    <div> 
+		   				<mec:commandButton style="width: 98%" value="#{messages.LABEL_CONSULTAR}" disabled="true" ajax="true" styleClass="bt_cinza" rendered="#{!(mf:hasPermission(securityController, 'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" />                    
+                    </div> 
+                  </div> 
+                </td> 
+              </tr> 
+            </table> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+       		<p:remoteCommand name="btComImpressao" action="#{manterPrescricaoMedicaController.confirmarPrescricaoMedicaComImpressao}"/>	
+			<p:remoteCommand name="btComReImpressao" action="#{manterPrescricaoMedicaController.confirmarPrescricaoMedicaComReimpressao}"/>	
+            <p:remoteCommand name="btSemImpressao" action="#{manterPrescricaoMedicaController.confirmarPrescricaoMedicaSemImpressao}"/>	
+	
+          	<mec:commandButton id="bt_confirmarcomimpressao"
+				style="margin:0 5px !important;"					
+				value="#{messages.LABEL_CONFIRMAR_COM_IMPRESSAO}"
+				action="#{manterPrescricaoMedicaController.prescreverJustificativaUsoMedicamento}"
+				profile="ok"
+				process="@this @(#dataPrevAlta) @(#estadoPacienteMP)"
+				block="true"				
+				disabled="#{not mf:hasPermission(securityController, 'prescricaoMedica,confirmar')}">
+	              <f:setPropertyActionListener target="#{prescreverItemController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>				
+				  <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.tipoConfirmacaoModalPrevPlanoAlta}" value="comImpressao" for="command"/>
+				  <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.confirmacaoPelaModalPrevPlanoAlta}" value="#{false}" for="command"/>
+				  <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.cidSeq}" value="#{null}" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.exibirMensagemCIDObrigatorioConfirmacao}" value="S" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>
+		    </mec:commandButton>
+            <mec:commandButton id="bt_confirmarcomreimpressao" value="#{messages.LABEL_CONFIRMAR_COM_REIMPRESSAO}" 
+            	style="margin:0 -2px !important;"
+            	rendered="#{manterPrescricaoMedicaController.habilitaReimpressao}"
+            	disabled="#{not mf:hasPermission(securityController, 'prescricaoMedica,confirmar')}" 
+            	action="#{manterPrescricaoMedicaController.confirmarPrescricaoMedicaComReimpressao}"
+            	process="@this @(#dataPrevAlta) @(#estadoPacienteMP)"
+				block="true" 
+            	profile="ok"> 
+              <f:setPropertyActionListener target="#{prescreverItemController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>
+	              <f:setPropertyActionListener target="#{verificarPrescricaoMedicaController.atendimentoSeq}" value="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.tipoConfirmacaoModalPrevPlanoAlta}" value="comImpressao" for="command"/>
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.cidSeq}" value="#{null}" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.exibirMensagemCIDObrigatorioConfirmacao}" value="S" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>
+	              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.confirmacaoPelaModalPrevPlanoAlta}" value="#{false}" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton id="bt_confirmarsemimpressao" 
+            	value="#{messages.LABEL_CONFIRMAR_SEM_IMPRESSAO}" 
+            	disabled="#{not mf:hasPermission(securityController, 'prescricaoMedica,confirmar')}"
+            	style="margin:0 5px !important;"
+            	action="#{manterPrescricaoMedicaController.prescreverJustificativaUsoMedicamento}"
+            	process="@this @(#dataPrevAlta) @(#estadoPacienteMP)"
+				ajax="true"
+				block="true"
+            	profile="ok"> 
+	              <f:setPropertyActionListener target="#{prescreverItemController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>
+	              <f:setPropertyActionListener target="#{verificarPrescricaoMedicaController.atendimentoSeq}" value="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.cidSeq}" value="#{null}" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.idConversacaoAnterior}" value="#{manterPrescricaoMedicaController.cid}" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.exibirMensagemCIDObrigatorioConfirmacao}" value="S" for="command"/>  
+	              <f:setPropertyActionListener target="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>
+	              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.tipoConfirmacaoModalPrevPlanoAlta}" value="semImpressao" for="command"/>
+	              <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.confirmacaoPelaModalPrevPlanoAlta}" value="#{false}" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton id="bt_prescricao_pendente" 
+            	style="margin:0px 3px 0px -3px !important" value="#{messages.LABEL_DEIXAR_PENDENTE}" 
+            	hint="Deixar a prescrição atual pendente" 
+            	disabled="#{not mf:hasPermission(securityController, 'prescricaoMedica,deixarPendente')}" 
+            	action="#{manterPrescricaoMedicaController.prescreverJustificativaUsoMedicamento}"
+            	block="true" 
+            	styleClass="bt_cinza"> 
+              	<f:setPropertyActionListener target="#{prescreverItemController.prescricaoMedicaVO}" value="#{manterPrescricaoMedicaController.prescricaoMedicaVO}" for="command"/>
+              	<f:setPropertyActionListener target="#{verificarPrescricaoMedicaController.atendimentoSeq}" value="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" for="command"/>
+              	
+              	<f:setPropertyActionListener target="#{manterPrescricaoMedicaController.tipoConfirmacaoModalPrevPlanoAlta}" value="deixarPendente" for="command"/>
+              	<f:setPropertyActionListener target="#{manterPrescricaoMedicaController.confirmacaoPelaModalPrevPlanoAlta}" value="#{false}" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton id="bt_excluir_selecionados" style="margin:0px !important;" 
+            	value="#{messages.LABEL_EXCLUIR}" 
+            	disabled="#{not mf:hasPermission(securityController, 'itemPrescricaoMedica,excluir')}" 
+            	action="#{manterPrescricaoMedicaController.excluirSelecionados}" 
+            	block="true"
+            	styleClass="bt_cinza"/>  
+            <mec:commandButton id="bt_cancelar_prescricao" style="margin:0px !important;" 
+            	value="#{messages.LABEL_CANCELAR}" 
+            	disabled="#{not mf:hasPermission(securityController, 'prescricaoMedica,cancelar')}" 
+            	action="#{manterPrescricaoMedicaController.solicitarConfirmacao}" 
+            	onclick="PF('modalConfirmacaoWG').show(); return false;"
+                ajax="true"
+            	profile="cancel"/> 
+          </aghu:acao> 
+        </h:form>  
+        <p:outputPanel id="panelConfirmar" layout="inline"> 
+          <p:dialog id="modalConfirmacao" 
+          	width="400" 
+          	height="150"
+          	modal="true" 
+          	resizable="false" 
+          	widgetVar="modalConfirmacaoWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.LABEL_CONFIRMAR_CANCELAR_PRESCRICAO}"/> 
+              </h:panelGroup> 
+            </f:facet>  
+            <p:outputPanel layout="inline">#{messages.MENSAGEM_CONFIRMACAO_CANCELAR_PRESCRICAO} 
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <h:panelGroup> 
+                <h:form prependId="false" id="formModalConfirmacao"> 
+                  <mec:commandButton block="true" id="bt_confirmar" value="#{messages.LABEL_SIM}" 
+                  onclick="PF('modalConfirmacaoWG').hide();" 
+                  action="#{manterPrescricaoMedicaController.cancelarPrescricao}" profile="ok"> 
+                    <f:setPropertyActionListener target="#{verificarPrescricaoMedicaController.atendimentoSeq}" value="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" for="command"/> 
+                  </mec:commandButton>  
+                  <mec:commandButton block="true" id="bt_cancelarModal" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoWG').hide(); return false;" profile="cancel" ajax="true"/> 
+                </h:form> 
+              </h:panelGroup> 
+            </p:outputPanel> 
+          </p:dialog> 
+        </p:outputPanel>  
+        
+        <p:outputPanel id="panelModalPlanoPrevAlta" layout="inline">
+      	  <p:dialog id="modalPlanoPrevAlta" 
+      			width="400" 
+      			height="150" 
+      			modal="true" 
+      			resizable="false" 
+      			widgetVar="modalPlanoPrevAltaWG">
+            <f:facet name="header">
+              <h:panelGroup>
+                <h:outputText value="#{messages.TITLE_PREVISAO_ALTA_PROXIMAS_HORAS}"/>
+              </h:panelGroup>
+            </f:facet>
+            <p:outputPanel layout="inline">
+              <h:outputFormat value="#{messages.MENSAGEM_HORAS_CONTROLE_PREV_ALTA}">
+                <f:param value="#{manterPrescricaoMedicaController.msgPlanoPrevAlta}" />
+			  </h:outputFormat> 
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <h:panelGroup> 
+                <h:form prependId="false" id="formModalPlanoPrevAlta"> 
+                  <mec:commandButton id="btConfirmarModalPlanoPrevAlta" 
+                  		block="true" 
+                  		value="#{messages.LABEL_SIM}" 
+                  		onclick="PF('modalPlanoPrevAltaWG').hide();" 
+                  		action="#{manterPrescricaoMedicaController.confirmarPrescricaoMedicaModalPrevPlanoAlta(true)}"
+                  		process="@this"
+                  		profile="ok">
+                    <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.confirmacaoPelaModalPrevPlanoAlta}" value="#{true}" for="command"/>  
+                  </mec:commandButton>  
+                  <mec:commandButton id="btCancelarModalPlanoPrevAlta"
+                  		block="true" 
+                  		value="#{messages.LABEL_NAO}" 
+                  		onclick="PF('modalPlanoPrevAltaWG').hide();" 
+                  		action="#{manterPrescricaoMedicaController.confirmarPrescricaoMedicaModalPrevPlanoAlta(false)}"
+                  		process="@this"
+                  		profile="cancel">
+                    <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.confirmacaoPelaModalPrevPlanoAlta}" value="#{true}" for="command"/>
+                  </mec:commandButton>                   
+                </h:form> 
+              </h:panelGroup> 
+            </p:outputPanel>
+          </p:dialog>
+        </p:outputPanel>
+      </p:outputPanel>      
+      <ui:decorate template="/pages/prescricaomedica/formularioDispensacaoAntimicrobianos/modalFormularioDispAntimicrobianos.xhtml"/>
+      <ui:decorate template="/pages/prescricaomedica/modalCentralMensagens.xhtml" />
+      <ui:decorate template="/pages/prescricaomedica/modalEstadoPaciente.xhtml" />
+    </ui:define> 
+  </ui:composition> 
+</html>

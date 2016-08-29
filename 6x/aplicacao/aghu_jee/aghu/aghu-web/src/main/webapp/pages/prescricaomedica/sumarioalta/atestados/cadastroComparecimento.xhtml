@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+<ui:define name="head"> 
+      <title>Manter Sumário de Alta :: AGHU - MEC</title>  
+</ui:define>	  
+
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{cadastroComparecimentoController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	
+	<ui:define name="body"> 
+	<p:outputPanel id="panelTelaComparecimento" layout="inline">
+
+		<ui:include src="cabecalhoAtestado.xhtml" />
+		<br clear="none" />
+
+		<p:outputPanel id="panelAtestado" layout="block">
+
+			<p:accordionPanel id="toggleComparecimento" style="margin-top: 2px !important;" prependId="false" activeIndex="#{cadastroComparecimentoController.indexSelecionado}">
+				<p:tab id="tabComparecimento" title="#{messages.LABEL_CAD_COMPARECIMENTO_TAB_COMPARECIMENTO}">
+					<p:outputPanel id="panelComparecimento" layout="block">
+					
+						<h:form prependId="false" id="formCadastroComparecimento">
+						
+						
+							<aghu:panelGeral id="panelGeralComparecimento">
+
+								<aghu:linha>
+									<mec:inputText id="pacienteComparecimento" size="90" maxlength="120" readonly="true"
+										value="#{cadastroComparecimentoController.declaracaoParte1}" />
+								</aghu:linha>
+
+								<aghu:linha>
+									<span style="float: left; line-height: 60px; margin-right: 5px">#{messages.MSG_CAD_COMPARECIMENTO_DECLARACAO_P3}</span>
+									<mec:field name="fDataCons" required="true" title="#{messages.TITLE_CAD_COMPARECIMENTO_DATA_CONSULTA}">
+										<p:calendar id="dataConsComparecimenento" label="#{messages.LABEL_CAD_COMPARECIMENTO_DATA_CONSULTA}" locale="pt" firstWeekDay="0" inputSize="8" accesskey="d" maxlength="10" size="11" required="true"
+											requiredMessage="Um valor é obrigatório para data." value="#{cadastroComparecimentoController.mamAtestado.dthrCons}"
+											buttonIconDisabled="/resources/img/blank.gif" enableManualInput="true" showFooter="true" showApplyButton="false" showWeeksBar="false"
+											ajaxSingle="true" direction="bottom-right" mask="true" mode="popup" showButtonPanel="true" pattern="dd/MM/yyyy" showOn="button" />
+										<h:outputScript name="locale-primefaces.js" library="js" />
+									</mec:field>
+								</aghu:linha>
+
+								<aghu:linha>
+									<mec:inputTextArea id="observacaoComparecimento" rows="5" cols="110" maxlength="2000" label="#{messages.LABEL_ATESTADO_ACOMP_OBSERVACAO}"
+										title="#{messages.TITLE_ATESTADO_ACOMP_OBSERVACAO}" value="#{cadastroComparecimentoController.mamAtestado.observacao}" />
+								</aghu:linha>
+								<aghu:linha>
+									<mec:inputNumero id="nroViasComparecimento" value="#{cadastroComparecimentoController.mamAtestado.nroVias}"
+										label="#{messages.LABEL_ATESTADO_ACOMP_NRO_VIAS}" maxlength="2" size="2" required="true"/>
+
+									<mec:commandButton id="bt_print_comp"
+										style="margin-top: 15px !important"
+										action="#{cadastroComparecimentoController.imprimirAtestado}"
+										disabled="#{cadastroComparecimentoController.listaOrigem == 'ALTA'}"
+										profile="print" ajax="true" process="@this" />
+								</aghu:linha>
+
+								<aghu:acao newLine="false">
+									<mec:commandButton id="bt_adicionarComparecimento" action="#{cadastroComparecimentoController.gravar}"
+										rendered="#{!cadastroComparecimentoController.modoEdicao}" profile="add" value="#{messages.LABEL_ADICIONAR}" ajax="true"
+										process="@this @(#panelComparecimento)" render="panelGeralComparecimento, panelListaComparecimento" />
+
+									<mec:commandButton id="bt_alterarComparecimento" value="#{messages.LABEL_ALTERAR}" ajax="true"
+										rendered="#{cadastroComparecimentoController.modoEdicao}" action="#{cadastroComparecimentoController.gravar}"
+										process="@this @(#panelComparecimento)" render="panelGeralComparecimento, panelListaComparecimento" profile="ok" />
+
+									<mec:commandButton id="bt_cancelarComparecimento" value="#{messages.LABEL_NOTIF_TOPO_CANCELAR_EDICAO}"
+										rendered="#{cadastroComparecimentoController.modoEdicao}" block="true" ajax="true" process="@this"
+										action="#{cadastroComparecimentoController.cancelarEdicao}" render="panelGeralComparecimento, panelListaComparecimento" profile="cancel" />
+
+									<mec:commandButton id="bt_limparComparecimento" value="#{messages.LABEL_LIMPAR}" render="panelGeralComparecimento" process="@this"
+										styleClass="bt_cinza" profile="clear" action="#{cadastroComparecimentoController.limpar}" ajax="true"
+										rendered="#{!cadastroComparecimentoController.modoEdicao}" />
+								</aghu:acao>
+							</aghu:panelGeral>
+
+							<aghu:panelGeral id="panelListaComparecimento">
+								<aghu:linha>
+									<mec:serverDataTable id="listaMaterialComparecimento" controller="#{cadastroComparecimentoController}" selection="itemSelecionado"
+										list="#{cadastroComparecimentoController.mamAtestados}" scrollable="true">
+										<c:set var="_atestado" value="#{item}" />
+
+										<p:ajax event="rowSelect"
+											listener="#{cadastroComparecimentoController.setItemAux(_atestado)}" />
+												
+											<p:column style="width:50px;" styleClass="first-column auto-adjust" rendered="true">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ACAO}" />
+											</f:facet>
+											<mec:commandLink id="link_editarComparecimento" title="#{messages.LABEL_EDITAR}" ajax="true" profile="edit"
+												rendered="#{!cadastroComparecimentoController.modoEdicao}" render="panelGeralComparecimento, panelListaComparecimento" process="@this"
+												action="#{cadastroComparecimentoController.editar}">
+												<f:setPropertyActionListener for="command" target="#{cadastroComparecimentoController.itemSelecionado}" value="#{_atestado}" />
+											</mec:commandLink>
+											<mec:commandLink id="link_excluirComparecimento" ajax="true" process="@this" title="#{messages.LABEL_EXCLUIR}" profile="delete"
+												rendered="#{!cadastroComparecimentoController.modoEdicao}" action="#{cadastroComparecimentoController.excluir}"
+												render="panelGeralComparecimento, panelListaComparecimento">
+												<f:setPropertyActionListener for="command" target="#{cadastroComparecimentoController.itemSelecionado}" value="#{_atestado}" />
+											</mec:commandLink>
+										</p:column>
+										<p:column style="width:200px; white-space:nowrap; !important;">
+											<f:facet name="header" style="white-space:nowrap;">
+												<h:outputText value="#{messages.LABEL_CAD_COMPARECIMENTO_DECLARACAO}" />
+											</f:facet>
+											<h:outputText id="declaracaoComparecimento"
+												value="#{cadastroComparecimentoController.montarDeclaracaoTruncada(_atestado.aipPacientes.nome, _atestado.aipPacientes.prontuario, _atestado.dthrCons).concat('...')}" />
+											<p:tooltip for="declaracaoComparecimento" direction="bottom-left" styleClass="tooltip" layout="block"
+												style="width:600px; word-wrap: break-word;" trackMouse="true">
+												<h:outputText
+													value="#{cadastroComparecimentoController.montarDeclaracaoCompleta(_atestado.aipPacientes.nome, _atestado.aipPacientes.prontuario, _atestado.dthrCons)}" />
+											</p:tooltip>
+										</p:column>
+										<p:column style="width:60px; white-space:nowrap; !important;">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CAD_COMPARECIMENTO_DATA}" />
+											</f:facet>
+											<h:outputText value="#{_atestado.dthrCons}">
+												<f:convertDateTime pattern="dd/MM/yyyy" />
+											</h:outputText>
+										</p:column>
+										<!-- <p:column style="width:60px; white-space:nowrap; !important;">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ATESTADO_ACOMP_DATA_INICIO}" />
+											</f:facet>
+											<h:outputText value="#{_atestado.dataInicial}">
+												<f:convertDateTime pattern="dd/MM/yyyy" />
+											</h:outputText>
+										</p:column>
+										<p:column style="width:60px; white-space:nowrap; !important;">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ATESTADO_ACOMP_DATA_FINAL}" />
+											</f:facet>
+											<h:outputText value="#{_atestado.dataFinal}">
+												<f:convertDateTime pattern="dd/MM/yyyy" />
+											</h:outputText>
+										</p:column> -->
+										<p:column>
+											<f:facet name="header" style="white-space:nowrap;">
+												<h:outputText value="#{messages.LABEL_CAD_COMPARECIMENTO_OBSERVACAO}" />
+											</f:facet>
+											<h:outputText id="observacaoComparecimento"
+												value="#{(_atestado.observacao.length() &gt; 130) ? fn:substring(_atestado.observacao,0,130).concat('...') : _atestado.observacao}" />
+											<p:tooltip for="observacaoComparecimento" direction="bottom-left" styleClass="tooltip" layout="block"
+												rendered="#{_atestado.observacao.length() &gt; 130}" style="width:600px; word-wrap: break-word;" trackMouse="true">
+												<h:outputText value="#{_atestado.observacao}" />
+											</p:tooltip>
+										</p:column>
+									</mec:serverDataTable>
+								</aghu:linha>
+							</aghu:panelGeral>
+						</h:form>
+					</p:outputPanel>
+				</p:tab>
+				<p:tab id="tabAcompanhamento" title="#{messages.LABEL_CAD_COMPARECIMENTO_TAB_ACOMPANHAMENTO}">
+					<aghu:linha>
+						<ui:include src="cadastroAtestadoAcompanhamento.xhtml" />
+					</aghu:linha>
+				</p:tab>
+		        <p:tab id="tabFgts" title="#{messages.LABEL_CAD_COMPARECIMENTO_TAB_FGTS_E_PISPASEP}">
+					<aghu:linha>
+						<ui:include src="cadastroAtestadoFgtsPisPasep.xhtml" />
+					</aghu:linha>		        
+				</p:tab>
+				<p:tab id="tabOutros" title="#{messages.LABEL_CAD_COMPARECIMENTO_TAB_OUTROS}">
+					<aghu:linha>
+						<ui:include src="cadastroOutrosAtestados.xhtml" />
+					</aghu:linha>
+				</p:tab>
+			</p:accordionPanel>
+		</p:outputPanel>
+	</p:outputPanel>
+	
+	<aghu:linha></aghu:linha>
+		<h:form id="formCancel">
+			<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" onclick="window.parent.tab.removeTab('Atestados');" profile="back"/>
+		</h:form>
+	</ui:define> 
+</ui:composition>
+</html>

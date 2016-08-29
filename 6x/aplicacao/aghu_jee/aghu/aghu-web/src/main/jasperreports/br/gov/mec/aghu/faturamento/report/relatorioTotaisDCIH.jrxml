@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="relatorioAIHFaturadaPorPaciente" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="840" leftMargin="1" rightMargin="1" topMargin="1" bottomMargin="20">
+	<property name="ireport.zoom" value="1.1289478601075547"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="nomeHospital" class="java.lang.String"/>
+	<parameter name="NM_MES" class="java.lang.String"/>
+	<parameter name="ANO" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT 'CONTAS APRESENTADAS'  situacao
+       ,DCI.CODIGO_DCIH 	dcih
+       ,TCS.DESCRICAO 		descricao
+       ,COUNT(CTH.SEQ) 		qtd
+
+       ,SUM( CTH.VALOR_SH         + VCT.VALOR_SH_UTI    + VCT.VALOR_SH_UTIE   +
+             VCT.VALOR_SH_ACOMP   + VCT.VALOR_SH_TRANSP + VCT.VALOR_SH_RN  )      HOSP
+
+       ,SUM( CTH.VALOR_SP         + VCT.VALOR_SP_UTI    + VCT.VALOR_SP_UTIE   +
+             VCT.VALOR_SP_ACOMP   + VCT.VALOR_SP_RN     + VCT.VALOR_SP_TRANSP )   PROF
+
+       ,SUM( CTH.VALOR_SADT       + VCT.VALOR_SADT_UTI  + VCT.VALOR_SADT_UTIE +
+             VCT.VALOR_SADT_ACOMP + VCT.VALOR_SADT_RN   + VCT.VALOR_SADT_TRANSP ) SADT
+
+       ,SUM(CTH.VALOR_HEMAT) HEMAT
+
+       ,SUM(CTH.VALOR_OPM)   PROTE
+
+       ,SUM( CTH.VALOR_SH         +  VCT.VALOR_SH_UTI      +  VCT.VALOR_SH_UTIE   + VCT.VALOR_SH_ACOMP   +
+             VCT.VALOR_SH_TRANSP  +  VCT.VALOR_SH_RN       +  CTH.VALOR_SP        + VCT.VALOR_SP_UTI     +
+             VCT.VALOR_SP_UTIE    +  VCT.VALOR_SP_ACOMP    +  VCT.VALOR_SP_RN     + VCT.VALOR_SP_TRANSP  +
+             CTH.VALOR_SADT       +  VCT.VALOR_SADT_UTI    +  VCT.VALOR_SADT_UTIE + VCT.VALOR_SADT_ACOMP +
+             VCT.VALOR_SADT_RN    +  VCT.VALOR_SADT_TRANSP +  CTH.VALOR_HEMAT     + CTH.VALOR_OPM ) TOTAL
+
+    FROM  agh.FAT_TIPOS_CLASSIF_SEC_SAUDE TCS
+        , agh.FAT_CONTAS_HOSPITALARES             CTH
+         ,agh.FAT_VALORES_CONTA_HOSPITALAR  VCT
+         ,agh.FAT_DOCUMENTO_COBRANCA_AIHS  DCI
+
+WHERE
+	TCS.SEQ = DCI.TCS_SEQ
+	AND DCI.CODIGO_DCIH = CTH.DCI_CODIGO_DCIH
+	AND CTH.SEQ = VCT.CTH_SEQ
+	AND CTH.CTH_SEQ_REAPRESENTADA IS NULL
+	AND CTH.IND_AUTORIZADO_SMS = 'S'
+	--AND    DCI.CPE_DT_HR_INICIO = :P_DT_HR_INICIO -- my coment
+	AND DCI.CPE_MODULO          = 'INT'
+	AND DCI.CPE_MES             = 04
+	AND DCI.CPE_ANO             = 2011
+
+GROUP BY  DCI.CODIGO_DCIH, TCS.DESCRICAO
+
+UNION
+
+SELECT  'CONTAS REAPRESENTADAS' situacao
+        ,DCI.CODIGO_DCIH                             DCIH
+        ,TCS.DESCRICAO descricao
+        ,COUNT(CTH.SEQ) QTD
+
+        ,SUM( CTH.VALOR_SH        + VCT.VALOR_SH_UTI     + VCT.VALOR_SH_UTIE   +
+              VCT.VALOR_SH_ACOMP  + VCT.VALOR_SH_TRANSP  + VCT.VALOR_SH_RN )       HOSP
+
+        ,SUM( CTH.VALOR_SP        + VCT.VALOR_SP_UTI     + VCT.VALOR_SP_UTIE   +
+	      VCT.VALOR_SP_ACOMP  + VCT.VALOR_SP_RN      + VCT.VALOR_SP_TRANSP )   PROF
+
+        ,SUM( CTH.VALOR_SADT       + VCT.VALOR_SADT_UTI  + VCT.VALOR_SADT_UTIE +
+              VCT.VALOR_SADT_ACOMP + VCT.VALOR_SADT_RN   + VCT.VALOR_SADT_TRANSP ) SADT
+
+        ,SUM(CTH.VALOR_HEMAT)  HEMAT
+        ,SUM(CTH.VALOR_OPM)    PROTE
+
+        ,SUM( CTH.VALOR_SH         + VCT.VALOR_SH_UTI      + VCT.VALOR_SH_UTIE   + VCT.VALOR_SH_ACOMP   +
+              VCT.VALOR_SH_TRANSP  + VCT.VALOR_SH_RN       + CTH.VALOR_SP        + VCT.VALOR_SP_UTI     +
+              VCT.VALOR_SP_UTIE    + VCT.VALOR_SP_ACOMP    + VCT.VALOR_SP_RN     + VCT.VALOR_SP_TRANSP  +
+              CTH.VALOR_SADT       + VCT.VALOR_SADT_UTI    + VCT.VALOR_SADT_UTIE + VCT.VALOR_SADT_ACOMP +
+              VCT.VALOR_SADT_RN    + VCT.VALOR_SADT_TRANSP + CTH.VALOR_HEMAT     + CTH.VALOR_OPM       ) TOTAL
+
+    FROM  agh.FAT_TIPOS_CLASSIF_SEC_SAUDE  TCS
+        , agh.FAT_CONTAS_HOSPITALARES      CTH
+         ,agh.FAT_VALORES_CONTA_HOSPITALAR VCT
+         ,agh.FAT_DOCUMENTO_COBRANCA_AIHS  DCI
+
+ WHERE
+      TCS.SEQ = DCI.TCS_SEQ
+      AND   DCI.CODIGO_DCIH = CTH.DCI_CODIGO_DCIH
+      AND CTH.SEQ = VCT.CTH_SEQ
+      AND CTH.CTH_SEQ_REAPRESENTADA IS NOT NULL
+      AND CTH.IND_AUTORIZADO_SMS = 'S'
+      -- AND DCI.CPE_DT_HR_INICIO = :P_DT_HR_INICIO -- my coment
+      AND DCI.CPE_MODULO          = 'INT'
+      AND DCI.CPE_MES             = 04
+      AND DCI.CPE_ANO             = 2011
+
+GROUP BY  DCI.CODIGO_DCIH,TCS.DESCRICAO
+
+order by situacao]]>
+	</queryString>
+	<field name="dcih" class="java.lang.String">
+		<fieldDescription><![CDATA[dcih]]></fieldDescription>
+	</field>
+	<field name="descricao" class="java.lang.String">
+		<fieldDescription><![CDATA[descricao]]></fieldDescription>
+	</field>
+	<field name="hemat" class="java.lang.Double">
+		<fieldDescription><![CDATA[hemat]]></fieldDescription>
+	</field>
+	<field name="hosp" class="java.lang.Double">
+		<fieldDescription><![CDATA[hosp]]></fieldDescription>
+	</field>
+	<field name="prof" class="java.lang.Double">
+		<fieldDescription><![CDATA[prof]]></fieldDescription>
+	</field>
+	<field name="prote" class="java.lang.Double">
+		<fieldDescription><![CDATA[prote]]></fieldDescription>
+	</field>
+	<field name="qtd" class="java.lang.Long">
+		<fieldDescription><![CDATA[qtd]]></fieldDescription>
+	</field>
+	<field name="sadt" class="java.lang.Double">
+		<fieldDescription><![CDATA[sadt]]></fieldDescription>
+	</field>
+	<field name="situacao" class="java.lang.String">
+		<fieldDescription><![CDATA[situacao]]></fieldDescription>
+	</field>
+	<field name="total" class="java.lang.Double">
+		<fieldDescription><![CDATA[total]]></fieldDescription>
+	</field>
+	<variable name="sumQtdPage" class="java.lang.Long" resetType="Group" resetGroup="group_situacao" calculation="Sum">
+		<variableExpression><![CDATA[$F{qtd}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumQtdRel" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{qtd}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sum" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{qtd}]]></variableExpression>
+	</variable>
+	<variable name="sumHospPage" class="java.lang.Double" resetType="Group" resetGroup="group_situacao" calculation="Sum">
+		<variableExpression><![CDATA[$F{hosp}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumHospRel" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{hosp}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumProfPage" class="java.lang.Double" resetType="Group" resetGroup="group_situacao" calculation="Sum">
+		<variableExpression><![CDATA[$F{prof}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumProfRel" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{prof}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumHematPage" class="java.lang.Double" resetType="Group" resetGroup="group_situacao" calculation="Sum">
+		<variableExpression><![CDATA[$F{hemat}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumHematRel" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{hemat}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumProteseRel" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{prote}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumProtesePage" class="java.lang.Double" resetType="Group" resetGroup="group_situacao" calculation="Sum">
+		<variableExpression><![CDATA[$F{prote}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumTotalPage" class="java.lang.Double" resetType="Group" resetGroup="group_situacao" calculation="Sum">
+		<variableExpression><![CDATA[$F{total}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="sumTotalRel" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{total}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<group name="cabecalho" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupHeader>
+			<band height="22">
+				<line>
+					<reportElement x="457" y="17" width="69" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="682" y="0" width="70" height="15" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" pdfFontName="Courier"/>
+					</textElement>
+					<text><![CDATA[PRÓTESE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="757" y="0" width="70" height="15" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" pdfFontName="Courier"/>
+					</textElement>
+					<text><![CDATA[TOTAL]]></text>
+				</staticText>
+				<line>
+					<reportElement x="15" y="17" width="36" height="1"/>
+				</line>
+				<line>
+					<reportElement x="57" y="17" width="320" height="1"/>
+				</line>
+				<line>
+					<reportElement x="607" y="17" width="69" height="1"/>
+				</line>
+				<line>
+					<reportElement x="757" y="17" width="69" height="1"/>
+				</line>
+				<line>
+					<reportElement x="682" y="17" width="69" height="1"/>
+				</line>
+				<line>
+					<reportElement x="382" y="17" width="69" height="1"/>
+				</line>
+				<line>
+					<reportElement x="532" y="17" width="69" height="1"/>
+				</line>
+				<staticText>
+					<reportElement x="532" y="0" width="70" height="15" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" pdfFontName="Courier"/>
+					</textElement>
+					<text><![CDATA[SERV.PROF.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="382" y="0" width="70" height="15" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" pdfFontName="Courier"/>
+					</textElement>
+					<text><![CDATA[QUANTIDADE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="607" y="0" width="70" height="15" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" pdfFontName="Courier"/>
+					</textElement>
+					<text><![CDATA[HEMOTERAPIA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="457" y="0" width="70" height="15" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+					<textElement textAlignment="Center" verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" pdfFontName="Courier"/>
+					</textElement>
+					<text><![CDATA[SERV.HOSP.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="57" y="0" width="320" height="15" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" pdfFontName="Courier"/>
+					</textElement>
+					<text><![CDATA[DESCRIÇÃO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="15" y="0" width="37" height="15" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="Courier New" size="9" pdfFontName="Courier"/>
+					</textElement>
+					<text><![CDATA[DCIH]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="14">
+				<line>
+					<reportElement x="382" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="457" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="532" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="607" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="682" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="757" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<textField>
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="382" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{sumQtdRel}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="457" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumHospRel}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="532" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumProfRel}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="607" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumHematRel}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="757" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumTotalRel}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="682" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumProteseRel}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="group_situacao">
+		<groupExpression><![CDATA[$F{situacao}]]></groupExpression>
+		<groupFooter>
+			<band height="22">
+				<line>
+					<reportElement x="382" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="457" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="532" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="607" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="682" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<line>
+					<reportElement x="757" y="0" width="69" height="1" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true"/>
+				</line>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="682" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumProtesePage}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="457" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumHospPage}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="607" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumHematPage}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="382" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Long"><![CDATA[$V{sumQtdPage}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="532" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumProfPage}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" isPrintRepeatedValues="false" x="757" y="2" width="70" height="11" isRemoveLineWhenBlank="true"/>
+					<textElement textAlignment="Right">
+						<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold" isPdfEmbedded="false"/>
+					</textElement>
+					<textFieldExpression class="java.lang.Double"><![CDATA[$V{sumTotalPage}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<pageHeader>
+		<band height="41" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="15" y="5" width="309" height="15"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="9" isBold="true" isItalic="false" isStrikeThrough="false" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{nomeHospital}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH:mm">
+				<reportElement x="700" y="5" width="127" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="37" width="840" height="1"/>
+			</line>
+			<staticText>
+				<reportElement x="324" y="21" width="200" height="15"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[RESUMO DO PROCESSAMENTO POR DCIH DE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="565" y="21" width="10" height="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[/]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="525" y="21" width="40" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{NM_MES}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement x="575" y="21" width="30" height="15"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$P{ANO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="324" y="5" width="212" height="15" isPrintWhenDetailOverflows="true"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="9" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[FATURAMENTO INTERNAÇÃO SUS]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="14">
+			<textField isBlankWhenNull="true">
+				<reportElement x="15" y="0" width="37" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{dcih}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="457" y="0" width="70" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{hosp}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="757" y="0" width="70" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="607" y="0" width="70" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{hemat}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="682" y="0" width="70" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{prote}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="382" y="0" width="70" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Long"><![CDATA[$F{qtd}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="57" y="0" width="320" height="11"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{descricao}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="532" y="0" width="70" height="11"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{prof}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="16" splitType="Stretch">
+			<staticText>
+				<reportElement x="15" y="3" width="110" height="11"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<text><![CDATA[FATR_INT_FAT_DCIH]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="0" width="840" height="1"/>
+			</line>
+			<textField>
+				<reportElement x="706" y="3" width="80" height="11"/>
+				<textElement textAlignment="Right">
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Página: "+$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="786" y="3" width="40" height="11"/>
+				<textElement>
+					<font fontName="Courier New" size="8" isBold="true" pdfFontName="Courier-Bold"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[" / " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

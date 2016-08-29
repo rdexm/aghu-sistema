@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">  
+	 
+  	<ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+  	
+    <ui:define name="head"> 
+       <title> :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    
+    <ui:define name="body"> 
+       <mec:pageConfig controller="#{associarUsuariosTecnicosAsOficinasPaginatorController}"/>  
+       <h:form prependId="false" id="formUsuarioAreaTecAvaliacao">
+        
+   			<aghu:panelGeral legend="#{messages.ASSOCIAR_USUARIOS_PANEL_LABEL}">
+   				<aghu:linha>
+					<mec:inputText id="nomeArea" label="#{messages.NOME_AREA_TECNICA_LABEL}" readonly="true"
+	    			size="50"  value="#{associarUsuariosTecnicosAsOficinasPaginatorController.areaTecnicaSelecionada.nomeAreaTecAvaliacao}"/>
+    			
+	    			<mec:inputText id="centroCusto" label="#{messages.CENTRO_CUSTO_LABEL}" readonly="true"  
+	    			size="70" value="#{associarUsuariosTecnicosAsOficinasPaginatorController.areaTecnicaSelecionada.fccCentroCustos.getCodigoDescricao()}"/>   				
+	   			</aghu:linha>
+	   			
+	   			<fieldset class="ui-fieldset ui-widget ui-widget-content ui-corner-all ui-hidden-container aghu-ui-panel-geral" style="width: 95%; float: left !important; margin-left: 0px !important;">
+    				<legend class="ui-fieldset-legend ui-corner-all ui-state-default">#{messages.USUARIOS_TECNICOS_PANEL_LABEL}</legend>
+	   				<aghu:linha>
+		   				<mec:suggestionBox
+	    			  	label="#{messages.USUARIO_TECNICO_LABEL}"
+						suggestionAction="obterUsuariosTecnicos"
+	    			 	id="usuarioTecnico" size="12"
+	    			 	controller="#{associarUsuariosTecnicosAsOficinasPaginatorController}" 
+	    			 	value="#{associarUsuariosTecnicosAsOficinasPaginatorController.tecnicoSB1}"
+	    			 	descricaoInput="vinculoMatricula" descricaoLabel="pessoaFisica.nome"
+	    			 	
+	    			 	var="tecnico" itemValue="#{tecnico}">
+	    			 	<c:set var="tecnico" value="#{tecnico}" />
+	    			 	<p:column>
+	    			 		<f:facet name="header">
+								<b>#{messages.LABEL_CONSULTAR_ESPECIALIDADE_MATRICULA}</b>
+							</f:facet>
+	    			 		#{tecnico.id.matricula}
+	    			 	</p:column>
+	    			 	<p:column>
+	    			 		<f:facet name="header">
+								<b>#{messages.LABEL_CONSULTAR_ESPECIALIDADE_VINCULO}</b>
+							</f:facet>
+	    			 		#{tecnico.id.vinCodigo}
+	    			 	</p:column>
+	    			 	<p:column >
+	    			 		<f:facet name="header">
+								<b>#{messages.LABEL_ATUALIZAR_VINCULO_NOME}</b>
+							</f:facet>
+	    			 		#{tecnico.pessoaFisica.nome}
+	    			 	</p:column>
+	    			 	
+	    				</mec:suggestionBox>
+	    				<p:outputPanel id="panelUsuariosTecnicos" layout="inline"> 
+	    				<mec:commandButton id="btAdicionar" value="#{messages.LABEL_ADICIONAR_MED}" style="margin: 15px !important;"
+	    				action="#{associarUsuariosTecnicosAsOficinasPaginatorController.adicionar}" profile="add" 
+	    				disabled="#{!mf:hasPermission(securityController,'manterTecnicoPadrao,executar') and !mf:hasPermission(securityController,'manterUsuariosTecnicos,executar') }"/>
+	    				
+	    				<mec:serverDataTable name="tabelaTecnicos" id="tabelaTecnicos" list="#{associarUsuariosTecnicosAsOficinasPaginatorController.tecnicosList}"
+	    				scrollable="true" selection="tecnicoOnMouseOver" onRowClick="tecnicoOnMouseOver" controller="#{associarUsuariosTecnicosAsOficinasPaginatorController}">
+						
+						<c:set var="item_" value="#{item}" />
+						
+						<p:column headerText="#{messages.LABEL_ACAO}" style="width:6%" exportable="false"
+						disabled="#{!mf:hasPermission(securityController,'manterTecnicoPadrao,executar') and !mf:hasPermission(securityController,'manterUsuariosTecnicos,executar') }">
+					
+							<mec:commandLink action="#{associarUsuariosTecnicosAsOficinasPaginatorController.excluir}" title="Excluir" id="btExcluir" profile="delete"> 
+				              <f:setPropertyActionListener target="#{associarUsuariosTecnicosAsOficinasPaginatorController.acaoSelection}" value="#{item_}" for="command"/> 
+				            </mec:commandLink> 
+				            
+						</p:column>  
+						
+						<p:column style="width:6% !important">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTAR_ESPECIALIDADE_VINCULO}" />
+							</f:facet>
+							<h:outputText value="#{item_.serVinCodigoTecnico}"/>
+						</p:column>
+						
+						<p:column style="width:8% !important">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTAR_ESPECIALIDADE_MATRICULA}" />
+							</f:facet>
+							<h:outputText value="#{item_.matRapTecnico}"/>
+						</p:column>
+						
+						<p:column sortBy="#{item_.nome}" sortable="true" style="width:74% !important">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CONSULTAR_ESPECIALIDADE_NOME}" />
+							</f:facet>
+							<h:outputText value="#{item_.nome}"/>
+						</p:column>
+						
+						<p:column id="tecnicoPadraoColumn" style="width:12% !important">
+							<f:facet name="header">
+								<h:outputText value="#{messages.TECNICO_PADRAO_LABEL}" />
+							</f:facet>
+							
+							<mec:commandLink id="linkTecnicoPadraoAtivo" profile="add" action="#{associarUsuariosTecnicosAsOficinasPaginatorController.adcionarTecnicoPadrao}" 
+								render=" linkTecnicoPadraoInativo, linkTecnicoPadraoAtivo" rendered="#{item_.tecnicoPadrao}"
+								
+								disabled="#{!mf:hasPermission(securityController,'manterTecnicoPadrao,executar') and !mf:hasPermission(securityController,'manterUsuariosTecnicos,executar') }" >
+								
+								<h:graphicImage id="tecnicoAtivo" value="/resources/img/icons/icone-ativo.png"  title="Inativar"/>
+								
+								<f:setPropertyActionListener target="#{associarUsuariosTecnicosAsOficinasPaginatorController.acaoTecnicoPadrao}" value="#{item_}" for="command"/>
+							</mec:commandLink>
+							
+							<mec:commandLink  id="linkTecnicoPadraoInativo" profile="add" action="#{associarUsuariosTecnicosAsOficinasPaginatorController.adcionarTecnicoPadrao}"
+							 	render="linkTecnicoPadraoInativo, linkTecnicoPadraoAtivo" rendered="#{!item_.tecnicoPadrao}" 
+							 	
+								disabled="#{!mf:hasPermission(securityController,'manterTecnicoPadrao,executar') and !mf:hasPermission(securityController,'manterUsuariosTecnicos,executar') }" >
+				
+								<h:graphicImage id="tecnicoInativo" value="/resources/img/icons/icone-inativo.png" title="Ativar"/>
+								
+								<f:setPropertyActionListener target="#{associarUsuariosTecnicosAsOficinasPaginatorController.acaoTecnicoPadrao}" value="#{item_}" for="command"/>
+							</mec:commandLink>
+							
+						</p:column>
+						
+						</mec:serverDataTable>
+						</p:outputPanel>
+	    				
+	   				</aghu:linha>
+	   			</fieldset>
+	   			
+   			</aghu:panelGeral>
+   			
+   		<aghu:linha>
+	   		<mec:commandButton id="btGravar" value="#{messages.LABEL_GRAVAR_PLANO_POS_ALTA}" action="#{associarUsuariosTecnicosAsOficinasPaginatorController.gravar}" profile="add" 
+	   		disabled="#{!mf:hasPermission(securityController,'manterTecnicoPadrao,executar') and !mf:hasPermission(securityController,'manterUsuariosTecnicos,executar') }"/>  
+	       	<mec:backButton id="btVoltar" immediate="true" value="#{messages.LABEL_VOLTAR}" forceDialog="#{not empty associarUsuariosTecnicosAsOficinasPaginatorController.tecnicosExcluidos or not empty associarUsuariosTecnicosAsOficinasPaginatorController.tecnicosAdicionados}"
+	       			action="#{associarUsuariosTecnicosAsOficinasPaginatorController.voltar}" profile="back" />
+    	</aghu:linha>
+   			
+	   </h:form>
+	</ui:define> 
+  </ui:composition> 
+</html>

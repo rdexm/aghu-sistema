@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Atualizar Diárias de Internação :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{diariaAutorizadaAtualizarController}"/>  
+      <h:form prependId="false" id="atualizarDiariasInternacaoForm"> 
+        <aghu:panelGeral id="ffdl_diarias" legend="Atualizar Diárias de Internação"> 
+          <aghu:linha> 
+            <mec:inputNumero label="Prontuário" size="9" maxlength="9" readonly="true" title="Nº de Prontuário" value="#{diariaAutorizadaAtualizarController.internacao.paciente.prontuario}" id="prontuario"/>  
+            <mec:inputText title="Nome" value="#{diariaAutorizadaAtualizarController.internacao.paciente.nome}" label="#{messages.LABEL_NOME}" readonly="true" size="100" id="nome"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_CONVENIO}" size="3" maxlength="3" title="Código do Convênio" value="#{diariaAutorizadaAtualizarController.internacao.convenioSaudePlano.id.cnvCodigo}" readonly="true" id="convenioCodigo"/>  
+            <mec:inputNumero label="#{messages.LABEL_PLANO}" size="3" maxlength="3" title="Código do Plano" value="#{diariaAutorizadaAtualizarController.internacao.convenioSaudePlano.id.seq}" readonly="true" id="convenioCodigoPlano"/>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO}" size="88" maxlength="88" title="Descrição do convênio" value="#{diariaAutorizadaAtualizarController.internacao.convenioSaudePlano.convenioSaude.descricao} - #{diariaAutorizadaAtualizarController.internacao.convenioSaudePlano.descricao}" readonly="true" style="text-transform:uppercase" id="convenioDescricao"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_LEITO}" size="14" maxlength="14" style="text-transform:uppercase" value="#{diariaAutorizadaAtualizarController.internacao.leito.leitoID}" title="Leito" readonly="true" id="leito"/>  
+            <mec:inputText label="#{LABEL_QUARTO}" size="5" maxlength="5" title="Descricao do #{LABEL_QUARTO}" value="#{diariaAutorizadaAtualizarController.internacao.quarto.descricao}" readonly="true" id="quarto"/>  
+            <mec:inputNumero label="#{messages.LABEL_UNIDADE}" size="5" maxlength="5" title="Unidade Funcional" value="#{diariaAutorizadaAtualizarController.internacao.unidadesFuncionais.seq}" readonly="true" id="unidadeFuncional"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_DIARIA}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <aghu:panelGeral id="ffdadosDiarias" legend="Atualizar Diárias de Internação"> 
+          <aghu:linha> 
+            <p:outputPanel id="campos" layout="inline">
+				<mec:inputNumero id="NumDiasTxt"
+					label="#{messages.LABEL_NUMERO_DIAS}" required="false"
+					requiredFake="true" size="3" maxlength="3" alt="Nº de Dias"
+					value="#{diariaAutorizadaAtualizarController.quantDiarias}"
+					title="#{messages.TITLE_NUMERO_DIAS}" />
+				<mec:inputText id="SenhasTxt" label="#{messages.LABEL_SENHA}"
+					required="#{diariaAutorizadaAtualizarController.senhaObrigatoria}"
+					size="20" maxlength="20" style="text-transform:uppercase"
+					alt="Senha" value="#{diariaAutorizadaAtualizarController.senha}"
+					title="#{messages.TITLE_SENHA}" />
+				<mec:inputText id="CNRACTxt" label="#{messages.LABEL_CNRAC}"
+					size="8" style="text-transform:uppercase" maxlength="8"
+					required="false" alt="CNRAC"
+					value="#{diariaAutorizadaAtualizarController.cnrac}"
+					title="#{messages.TITLE_CNRAC}" />
+			</p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha>
+			<mec:commandButton value="#{messages.LABEL_ADICIONAR}"
+				action="#{diariaAutorizadaAtualizarController.associarDiarias}"
+				profile="add" ajax="true"
+				render="tabelaDiarias,txtSenha,txtNumDias,txtCNRACT, ffdadosDiarias" 
+				disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/> 
+		</aghu:linha>  
+          <br clear="none"/>  
+          <p:outputPanel id="tabelaDiarias" layout="inline"> 
+            <aghu:linha> 
+              <h:outputText value="#{messages.LABEL_NENHUMA_DIARIA_ENCONTRADA}" rendered="#{empty diariaAutorizadaAtualizarController.internacao.diariasAutorizadas}"/>  
+              <div id="body_list_aux" style="overflow-y: scroll; height: 180px;"> 
+                <mec:serverDataTable rendered="#{not empty diariaAutorizadaAtualizarController.internacao.diariasAutorizadas}" list="#{diariaAutorizadaAtualizarController.internacao.diariasAutorizadas}" scrollable="true"> 
+                  <c:set var="_diaria" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink title="#{messages.LABEL_EXCLUIR}" immediate="true" action="#{diariaAutorizadaAtualizarController.remover(_diaria)}" profile="delete" ajax="true" render="tabelaDiarias"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NUMERO_DIARIAS}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_diaria.quantDiarias}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SENHA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_diaria.senha}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CNRAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_diaria.cnrac}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_LANCAMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_diaria.criadoEm}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_INFORMADO_POR}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_diaria.serMatricula.pessoaFisica.nome}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </div> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_GRAVAR}" immediate="true" id="bt_confirmar" action="#{diariaAutorizadaAtualizarController.confirmar}" profile="ok" ajax="true"/>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" id="bt_cancelar" immediate="true" action="#{diariaAutorizadaAtualizarController.cancelar}" render="tabelaDiarias, panelOperacaoConluida" profile="cancel"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

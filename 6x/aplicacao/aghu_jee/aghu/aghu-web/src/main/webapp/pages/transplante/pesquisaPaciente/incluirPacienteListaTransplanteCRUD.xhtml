@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+		<ui:define name="head">
+			<title>#{messages.TITLE_INCLUIR_LISTA_TRANSPLANTES_ORGAOS} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+			<script>
+			function mascaraTelefone(o, f) {
+				v_obj = o;
+				v_fun = f;
+				setTimeout('execmascara()', 1);
+			}
+
+			function execmascara() {
+				v_obj.value = v_fun(v_obj.value);
+			}
+
+			function telefoneDinamico(v) {
+
+				v = v.replace(/\D/g, "");
+
+				if (v.length &lt; 13) { 
+					// Abre parentese antes do primeiro dígito
+					v = v.replace(/(\d{0})(\d)/, "$1($2");
+					// Fecha parentese depois do segundo dígito
+					v = v.replace(/(\d{2})(\d)/, "$1)$2");
+					// Coloca um hífen entre o quarto e o quinto dígito
+					v = v.replace(/(\d{4})(\d{1,4})$/, "$1-$2");
+
+				} else { 
+					// Abre parentese antes do primeiro dígito
+					v = v.replace(/(\d{0})(\d)/, "$1($2");
+					// Fecha parentese depois do segundo dígito
+					v = v.replace(/(\d{2})(\d)/, "$1)$2");
+					// Coloca um hífen entre o quinto e o sexto dígito
+					v = v.replace(/(\d{5})(\d{1,4})$/, "$1-$2");
+				}
+
+				return v;
+			}
+			</script>
+		</ui:define>
+		<ui:define name="metadata">
+			<f:metadata>
+				<f:viewAction action="#{incluirPacienteListaTransplanteController.iniciar}" />
+			</f:metadata>
+		</ui:define>
+		<ui:define name="body">
+			<mec:pageConfig controller="#{incluirPacienteListaTransplanteController}" ignoreEnter="true" />
+			<h:form prependId="false" id="formulario">
+				<aghu:panelGeral legend="#{messages.LABEL_INCLUIR_PACIENTE_LISTA_TRANSPLANTES_ORGAOS}">
+					<p:outputPanel id="pnl_formulario" layout="inline">
+						<aghu:linha>
+							<mec:inputText id="prontuario"
+								value="#{incluirPacienteListaTransplanteController.prontuario}"
+								label="#{messages.LABEL_PRONTUARIO_TRANSPLANTE}" readonly="true"
+								size="15" />
+							<mec:inputText id="nome"
+								value="#{incluirPacienteListaTransplanteController.paciente.nome}"
+								label="#{messages.LABEL_NOME_TRANSPLANTE}" readonly="true"
+								size="50" />
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputText id="sexo"
+								value="#{incluirPacienteListaTransplanteController.paciente.sexo.descricao}"
+								label="#{messages.LABEL_SEXO_TRANSPLANTE}" readonly="true"
+								size="15" />
+							<mec:selectOneMenu id="grupo_sanguineo"
+								value="#{incluirPacienteListaTransplanteController.grupoSanguineo}"
+								label="#{messages.LABEL_GRUPO_SANGUINEO_TRANSPLANTE}"
+								title="#{messages.TITLE_GRUPO_SANGUINEO_TRANSPLANTE}"
+								enum="DominioGrupoSanguineo" required="true"
+								style="min-width:100px; max-width:100px" disabled="#{!incluirPacienteListaTransplanteController.habilitaGrupoSanguinio}"/>	
+							<mec:selectOneMenu id="fator_rh"
+								value="#{incluirPacienteListaTransplanteController.fatorRh}"
+								label="#{messages.LABEL_FATOR_RH_TRANSPLANTE}"
+								title="#{messages.TITLE_FATOR_RH_TRANSPLANTE}"
+								enum="DominioFatorRh" required="true" 
+								style="min-width:100px; max-width:100px" disabled="#{!incluirPacienteListaTransplanteController.habilitaFator}" />
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputTextData id="data_nascimento"
+								value="#{incluirPacienteListaTransplanteController.paciente.dtNascimento}"
+								label="#{messages.LABEL_DATA_NASCIMENTO_TRANSPLANTE}" readonly="true"
+								size="15" showButtonPanel="false"/>
+							<mec:inputText id="idade_atual"
+								value="#{incluirPacienteListaTransplanteController.idadeAtual}"
+								label="#{messages.LABEL_IDADE_ATUAL_TRANSPLANTE}" readonly="true"
+								size="15" />
+							<mec:inputTextData id="data_ingresso"
+								value="#{incluirPacienteListaTransplanteController.transplante.dataIngresso}"
+								label="#{messages.LABEL_DATA_INGRESSO_TRANSPLANTE}"
+								title="#{messages.TITLE_DATA_INGRESSO_TRANSPLANTE}"
+								size="10" required="#{param['validarRequired']}" requiredFake="true">
+								<p:ajax event="change" update="@(#idade_ingresso)" process="@this"
+									listener="#{incluirPacienteListaTransplanteController.calcularIdadeIngresso}" />
+								<p:ajax event="blur" update="@(#idade_ingresso)" process="@this"
+									listener="#{incluirPacienteListaTransplanteController.calcularIdadeIngresso}" />
+								<p:ajax event="dateSelect" update="@(#idade_ingresso)" process="@this"
+									listener="#{incluirPacienteListaTransplanteController.calcularIdadeIngresso}" />
+							</mec:inputTextData>
+							<mec:inputText id="idade_ingresso"
+								value="#{incluirPacienteListaTransplanteController.idadeIngresso}"
+								label="#{messages.LABEL_IDADE_INGRESSO_TRANSPLANTE}" readonly="true"
+								size="15" />
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputNumero id="rgct" required="true"
+								value="#{incluirPacienteListaTransplanteController.transplante.rgct}"
+								label="#{messages.LABEL_RGCT_TRANSPLANTE}" 
+								title="#{messages.TITLE_RGCT_TRANSPLANTE}" 
+								maxlength="10" size="15" />
+							<mec:selectOneMenu id="orgao"
+								value="#{incluirPacienteListaTransplanteController.transplante.tipoOrgao}"
+								label="#{messages.LABEL_ORGAO_TRANSPLANTE}"
+								title="#{messages.TITLE_ORGAO_TRANSPLANTE}"
+								enum="DominioTipoOrgao"
+								required="#{param['validarRequired']}" requiredFake="true"
+								style="min-width:115px">
+								<p:ajax event="change" update="@(#doenca_base) @(#inicio_dialise) @(#data_fistula)" 
+									process="@this" listener="#{incluirPacienteListaTransplanteController.habilitarCampoDoencaBase}" />
+							</mec:selectOneMenu>	
+							<mec:selectOneMenu id="doenca_base"
+								value="#{incluirPacienteListaTransplanteController.transplante.doencaBase}"
+								label="#{messages.LABEL_DOENCA_BASE_TRANSPLANTE}"
+								items="#{incluirPacienteListaTransplanteController.listaDoencaBases}"
+								itemLabel="descricao" 
+								readonly="#{!incluirPacienteListaTransplanteController.orgaoSelecionado}"
+								style="min-width:115px" />
+						</aghu:linha>
+						<aghu:linha>
+							<mec:suggestionBox id="sbCid" label="#{messages.LABEL_CID}" title="#{messages.TITLE_INCLUIR_TMO_CID}"
+									descricaoLimite="30" size="31" suggestionAction="pesquisarCid"
+									descricaoInput="codigo" descricaoLabel="descricao" maxlength="50" width="400"
+									controller="#{incluirPacienteListaTransplanteController}"
+									required="false"
+									value="#{incluirPacienteListaTransplanteController.transplante.cid}">
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_CODIGO}</b>
+										</f:facet> #{item.codigo}
+		                			</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_DESCRICAO}</b>
+										</f:facet> #{item.descricao}
+		                			</p:column>
+							</mec:suggestionBox>
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputTextData id="inicio_dialise"
+								value="#{incluirPacienteListaTransplanteController.transplante.dataDialise}"
+								required="#{incluirPacienteListaTransplanteController.orgaoSelecionado and incluirPacienteListaTransplanteController.transplante.tipoOrgao eq 'R'}"
+								label="#{messages.LABEL_INICIO_DIALISE_TRANSPLANTE}"
+								title="#{messages.TITLE_INICIO_DIALISE_TRANSPLANTE}" 
+								size="10" />
+							<mec:inputTextData id="data_fistula"
+								value="#{incluirPacienteListaTransplanteController.transplante.dataFistula}"
+								label="#{messages.LABEL_DATA_FISTULA_TRANSPLANTE}"
+								title="#{messages.TITLE_DATA_FISTULA_TRANSPLANTE}"
+								size="10" />
+							<mec:inputNumero id="nro_transfusoes"
+								value="#{incluirPacienteListaTransplanteController.transplante.nroTransfusoes}"
+								label="#{messages.LABEL_NRO_TRANSFUSOES_TRANSPLANTE}"
+								title="#{messages.TITLE_NRO_TRANSFUSOES_TRANSPLANTE}" 
+								maxlength="2" size="10" />
+							<mec:inputTextData id="ultima_transfusao"
+								value="#{incluirPacienteListaTransplanteController.transplante.dataUltimaTransfusao}"
+								label="#{messages.LABEL_ULTIMA_TRANSFUSAO_TRANSPLANTE}"
+								title="#{messages.TITLE_ULTIMA_TRANSFUSAO_TRANSPLANTE}" 
+								size="10" />
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputNumero id="nro_gestacoes"
+								value="#{incluirPacienteListaTransplanteController.transplante.nroGestacoes}"
+								label="#{messages.LABEL_NRO_GESTACOES_TRANSPLANTE}"
+								title="#{messages.TITLE_NRO_GESTACOES_TRANSPLANTE}" 
+								maxlength="2" size="10" />
+							<mec:inputTextData id="ultima_gestacao"
+								value="#{incluirPacienteListaTransplanteController.transplante.dataUltimaGestacao}"
+								label="#{messages.LABEL_ULTIMA_GESTACAO_TRANSPLANTE}"
+								title="#{messages.TITLE_ULTIMA_GESTACAO_TRANSPLANTE}" 
+								size="10" />
+							<mec:inputNumero id="nro_transplantes"
+								value="#{incluirPacienteListaTransplanteController.transplante.nroTransplantes}"
+								label="#{messages.LABEL_NRO_TRANSPLANTES_TRANSPLANTE}"
+								title="#{messages.TITLE_NRO_TRANSPLANTES_TRANSPLANTE}" 
+								maxlength="2" size="10" />
+							<mec:inputTextData id="ultimo_transplante"
+								value="#{incluirPacienteListaTransplanteController.transplante.dataUltimoTransplante}"
+								label="#{messages.LABEL_ULTIMO_TRANSPLANTE_TRANSPLANTE}"
+								title="#{messages.TITLE_ULTIMO_TRANSPLANTE_TRANSPLANTE}" 
+								size="10" />
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputTextArea id="observacoes" 
+								value="#{incluirPacienteListaTransplanteController.transplante.observacoes}" 
+								label="#{messages.LABEL_OBSERVACOES_TRANSPLANTE}" 
+								cols="80" rows="4"
+								maxlength="600" size="250" />
+						</aghu:linha>
+					</p:outputPanel>
+				</aghu:panelGeral>
+				<aghu:panelGeral legend="#{messages.LABEL_CONTATOS_PACIENTE_TRANSPLANTE}">
+					<p:outputPanel id="pnl_edicao_contatos" layout="inline">
+						<aghu:linha>
+							<mec:inputText id="nome_contato"
+								value="#{incluirPacienteListaTransplanteController.contatoNome}"
+								label="#{messages.LABEL_NOME_TRANSPLANTE}" 
+								title="#{messages.TITLE_NOME_CONTATO_TRANSPLANTE}" 
+								maxlength="200" size="50"
+								style="text-transform:uppercase"
+								required="#{param['validarContatoPaciente']}" requiredFake="true" />
+							<mec:inputText id="telefone_contato"
+								value="#{incluirPacienteListaTransplanteController.contatoTelefone}"
+								label="#{messages.LABEL_TELEFONE_CONTATO_TRANSPLANTE}" 
+								title="#{messages.TITLE_TELEFONE_CONTATO_TRANSPLANTE}" 
+								maxlength="14" size="15"
+								onkeypress="mascaraTelefone(this, telefoneDinamico);"
+								onblur="mascaraTelefone(this, telefoneDinamico);"
+								style="text-transform:uppercase"
+								required="#{param['validarContatoPaciente']}" requiredFake="true" />
+							<aghu:acao newLine="false">	
+								<mec:commandButton id="bt_adicionar" 
+									value="#{messages.LABEL_ADICIONAR}"
+									action="#{incluirPacienteListaTransplanteController.adicionarContatoPaciente}"
+									render="pnl_edicao_contatos, pnl_lista_contatos"
+									rendered="#{!incluirPacienteListaTransplanteController.editandoContatoPaciente}"
+									ajax="true" process="@this, pnl_edicao_contatos"
+									profile="add" styleClass="bt_verde">
+									<f:param name="validarContatoPaciente" value="true"/>
+								</mec:commandButton>
+								<mec:commandButton id="bt_alterar" 
+									value="#{messages.LABEL_ALTERAR}"
+									action="#{incluirPacienteListaTransplanteController.alterarContatoPaciente}"
+									render="pnl_edicao_contatos, pnl_lista_contatos"
+									rendered="#{incluirPacienteListaTransplanteController.editandoContatoPaciente}"
+									ajax="true" process="@this, pnl_edicao_contatos" 
+									profile="ok">
+									<f:param name="validarContatoPaciente" value="true"/>
+								</mec:commandButton>
+								<mec:commandButton id="bt_cancelar" 
+									value="#{messages.LABEL_CANCELAR_EDICAO}"
+									ajax="true" process="pnl_edicao_contatos"
+									action="#{incluirPacienteListaTransplanteController.cancelarEdicaoContatoPaciente}"
+									render="pnl_edicao_contatos, pnl_lista_contatos"
+									rendered="#{incluirPacienteListaTransplanteController.editandoContatoPaciente}"
+									profile="cancel"/>	
+							</aghu:acao>
+				        </aghu:linha>		
+					</p:outputPanel>
+					<p:outputPanel id="pnl_lista_contatos" layout="block">
+						<aghu:linha>
+							<mec:serverDataTable id="table_contatos_paciente" scrollHeight="100"
+								scrollable="true" list="#{incluirPacienteListaTransplanteController.listaContatoPaciente}">
+								<c:set var="_contato" value="#{item}" />
+								<p:column style="width:50px;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.CASCA_LABEL_ACAO}" />
+									</f:facet>
+									<mec:commandLink id="lnk_editar" profile="edit"
+										action="#{incluirPacienteListaTransplanteController.editarContatoPaciente}"
+										title="#{messages.CASCA_LABEL_EDITAR}"
+										render="pnl_edicao_contatos, pnl_lista_contatos"
+										rendered="#{!incluirPacienteListaTransplanteController.editandoContatoPaciente}"
+										ajax="true" process="@this">
+										<f:setPropertyActionListener
+											target="#{incluirPacienteListaTransplanteController.contatoSelecionado}"
+											value="#{_contato}" for="command" />
+										<f:setPropertyActionListener
+											target="#{incluirPacienteListaTransplanteController.editandoContatoPaciente}"
+											value="true" for="command" />
+									</mec:commandLink>
+									<mec:commandLink id="lnk_excluir" styleClass="silk-icon silk-delete" 
+										title="#{messages.CASCA_LABEL_EXCLUIR}"
+										onclick="PF('modal_excluir').show();;"
+										rendered="#{!incluirPacienteListaTransplanteController.editandoContatoPaciente}"
+										ajax="true" process="@this">
+										<f:setPropertyActionListener
+											target="#{incluirPacienteListaTransplanteController.contatoSelecionado}"
+											value="#{_contato}" for="command" />
+									</mec:commandLink>
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText id="lbl_nome_contato" 
+											value="#{messages.LABEL_NOME_TRANSPLANTE}" />
+									</f:facet>
+									<h:outputText id="txt_nome_contato" 
+										value="#{incluirPacienteListaTransplanteController.obterHintNomeContatoPaciente(_contato.nome, 75)}" />
+									<p:tooltip for="txt_nome_contato" direction="bottom-right" 
+										styleClass="tooltip" layout="block" rendered="#{_contato.nome.length() > 75}">
+										<h:outputText id="hint_nome_contato" value="#{_contato.nome}"/>
+									</p:tooltip>
+								</p:column>
+								<p:column style="width:80px;">
+									<f:facet name="header">
+										<h:outputText id="lbl_telefone_contato" 
+											value="#{messages.LABEL_TELEFONE_CONTATO_TRANSPLANTE}" />
+									</f:facet>
+									<h:outputText id="txt_telefone_contato" 
+										value="#{incluirPacienteListaTransplanteController.formatarTelefoneContatoPaciente(_contato.telefone)}" />
+								</p:column>
+							</mec:serverDataTable>
+							<p:dialog id="modal_excluir" width="400" height="160"
+								autosized="false" resizeable="false"
+								modal="true" resizable="false" 
+								widgetVar="modal_excluir">
+								<f:facet name="header">
+									<h:outputText value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+								</f:facet>
+								<br clear="none" />
+								<h:outputText value="#{messages.CASCA_MENSAGEM_CONFIRMACAO_EXCLUSAO}" />
+								<br clear="none" />
+								<br clear="none" />
+								<br clear="none" />
+								<aghu:acao>
+									<mec:commandButton value="#{messages.CASCA_LABEL_SIM}"
+										action="#{incluirPacienteListaTransplanteController.excluirContatoPaciente}"
+										oncomplete="PF('modal_excluir').hide();" profile="ok"
+										ajax="true" render="table_contatos_paciente" process="@this" />
+									<mec:commandButton value="#{messages.CASCA_LABEL_NAO}"
+										onclick="PF('modal_excluir').hide();;return false;"
+										profile="cancel" ajax="true" />
+								</aghu:acao>
+							</p:dialog>
+						</aghu:linha>
+					</p:outputPanel>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<p:outputPanel id="pnl_buttons" layout="inline">
+						<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}"
+							action="#{incluirPacienteListaTransplanteController.gravar}"
+							disabled="#{!mf:hasPermission(securityController,'incluirPacienteListaTransplanteOrgaos,executar')}"
+							profile="ok">
+							<f:param name="validarRequired" value="true"/>
+						</mec:commandButton>
+						<mec:commandButton id="bt_voltar" value="#{messages.CASCA_LABEL_VOLTAR}"
+							action="#{incluirPacienteListaTransplanteController.voltar}"
+							immediate="true" block="true" ajax="true" process="@this" 
+							profile="back" />
+					</p:outputPanel>
+				</aghu:acao>
+			</h:form>
+		</ui:define>
+	</ui:composition>
+</html>

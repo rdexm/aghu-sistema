@@ -1,0 +1,714 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.LABEL_MANTER_SOLUCAO_PROTOCOLO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+		<script type="text/javascript">
+                    function fechar() {
+                           document.getElementById('btRenderPagina:button').click();
+                    }
+	             </script>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{cadastroSolucaoProtocoloController.iniciar}"/>
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{cadastraTiposSessaoController}" />
+			<h:form prependId="false" id="formGeral">
+				<aghu:panelGeral legend="#{messages.LABEL_MANTER_SOLUCAO_PROTOCOLO}">
+						<mec:inputText id="descricaoSolucao" label="#{messages.LABEL_DESCRICAO_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							required="#{param['validarRequiredGravar']}" requiredFake="#{!param['validarRequiredGravar']}" size="120" maxlength="60" style="text-transform:uppercase"
+							title="#{messages.TITLE_DESCRICAO_SOLUCAO}" value="#{cadastroSolucaoProtocoloController.solucao.descricao}">
+							<p:ajax event="change" process="@this" />
+						</mec:inputText>
+					<br/>	
+					<br/>	
+					<br/>	
+					<br/>	
+					
+					<aghu:panelGeral legend="#{messages.LABEL_FIELDSET_MEDICAMENTOS}">
+						<p:outputPanel id="panelListaMedicamentos">
+						<aghu:linha>
+							<p:outputPanel id="sbMedicamentoPanel">
+								<mec:suggestionBox var="row" itemValue="#{row}" id="sbMedicamento" 
+									render="panelListaUnidade, panelListaUnidade2,complementoMedicamento,sbMedicamentoPanel"
+									label="#{messages.LABEL_MEDICAMENTO_SOLUCAO}"
+									title="#{messages.TITLE_MEDICAMENTO_SOLUCAO}"
+									readonly="#{cadastroSolucaoProtocoloController.diaMarcado or cadastroSolucaoProtocoloController.isDiaModificado or cadastroSolucaoProtocoloController.readOnly}" 
+									required="#{param['validarRequired']}" requiredFake="#{!param['validarRequired']}"
+									process="panelListaUnidade"
+									suggestionAction="listarSuggestionboxMedicamentos"
+									posSelectionAction="preencherComboUnidade"
+									posDelectionAction="limparUnidadeParamDose"
+									descricaoInput="descricaoEditada"
+									descricaoLimite="25"
+									maxlength="50" width="90"
+									controller="#{cadastroSolucaoProtocoloController}"
+									
+									value="#{cadastroSolucaoProtocoloController.medicamento.medicamentoSb}">
+									<p:column>			
+										<f:facet name="header">
+											<b>#{messages.LABEL_DESCRICAO_MEDICAMENTO_SOLUCAO}</b>
+										</f:facet> #{row.descricaoEditada}
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_CONCENTRACAO_MEDICAMENTO_SOLUCAO}</b>
+										</f:facet> #{row.concentracao}
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_UNIDADE_MEDICAMENTO_SOLUCAO}</b>
+										</f:facet> #{row.unidadeMedidaMedicamento}
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_APRES_MEDICAMENTO_SOLUCAO}</b>
+										</f:facet> #{row.trpSigla}
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_PADRONIZACAO_MEDICAMENTO_SOLUCAO}</b>
+										</f:facet> #{row.indPadronizacao ?  'S' : 'N'}
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_JUSTIFICATIVA_MEDICAMENTO_SOLUCAO}</b>
+										</f:facet> #{row.indExigeJustificativa ? 'S' : 'N'}
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_DURACAO_MEDICAMENTO_SOLUCAO}</b>
+										</f:facet> #{row.indExigeDuracaoSolicitada ? 'S' : 'N'}
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_ANTIMICROBIANO_MEDICAMENTO_SOLUCAO}</b>
+										</f:facet> #{row.indAntimicrobiano ? 'S' : 'N'}
+									</p:column>
+								</mec:suggestionBox>
+							</p:outputPanel>
+							<mec:field 	label="#{messages.LABEL_LISTA_MEDICAMENTOS_COMBO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}" 
+								id="fieldMedicamentoCombo" rendered="#{!cadastroSolucaoProtocoloController.readOnly}" title="#{messages.TITLE_LISTA_MEDICAMENTOS_COMBO}">
+								<p:selectOneMenu id="listaMedicamentoCombo" rendered="#{!cadastroSolucaoProtocoloController.readOnly}"
+									value="#{cadastroSolucaoProtocoloController.medicamento.indMedicamentoPadronizado}"
+									styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all">
+									<f:selectItem itemValue="true" itemLabel="Padronizados" />
+									<f:selectItem itemValue="false" itemLabel="Não Padronizados" />
+									<p:ajax event="change" update=":formGeral" />
+								</p:selectOneMenu>
+							</mec:field>
+								
+							<mec:selectOneMenu id="fieldMedicamentoComboVisualizacao" noSelectionOption="false"
+									label="#{messages.LABEL_LISTA_MEDICAMENTOS_COMBO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"									
+									title="#{messages.TITLE_LISTA_MEDICAMENTOS_COMBO}" rendered="#{cadastroSolucaoProtocoloController.readOnly}"
+									value="#{cadastroSolucaoProtocoloController.medicamento.indMedicamentoPadronizado}" required="#{param['medicamento.medicamentoSb.indExigeObservacao']}">
+									<f:selectItem itemValue="true" itemLabel="Padronizados" />
+							</mec:selectOneMenu>
+						</aghu:linha>
+						
+							<aghu:linha>
+								 <mec:inputText id="complementoMedicamento" size="80" title="#{messages.TITLE_COMPLEMENTO_SOLUCAO}" style="text-transform:uppercase" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+								 	label="#{messages.LABEL_COMPLEMENTO_SOLUCAO}" required="#{cadastroSolucaoProtocoloController.medicamento.medicamentoSb.indExigeObservacao}"
+								 	value="#{cadastroSolucaoProtocoloController.medicamento.complementoMedicamento}" maxlength="120">
+	 								<p:ajax event="change" process="@this" />
+	 							</mec:inputText>
+							</aghu:linha>
+						
+							<aghu:linha>
+								<mec:field id="doseMedicamento"
+									label="#{messages.LABEL_DOSE_SOLUCAO}"
+					        		title="#{messages.TITLE_DOSE_SOLUCAO}" 
+					        		showLabel="true" posicaoLabel="acima" 
+					        		readonly="#{cadastroSolucaoProtocoloController.readOnly}" escape="true" required="true">			           
+									<p:inputText id="inputDoseMedicamento" 
+										size="18" label="#{messages.LABEL_DOSE_SOLUCAO}"
+										onfocus="jQuery(this).autoNumeric({mDec:'4',mNum:'10',vMax:'#{mf:gerarMaxValue(10,4)}',aSep: '',aDec: ',',lZero:'deny'}); trimDecimalPlace(this);"
+										onblur="trimDecimalPlace(this);" converter="#{bigDecimalPrecisao4Converter}"									
+										value="#{cadastroSolucaoProtocoloController.medicamento.doseMedicamento}"
+										immediate="false" autocomplete="false" required="false"
+										readonly="#{cadastroSolucaoProtocoloController.readOnly}" 
+										disabled="#{cadastroSolucaoProtocoloController.readOnly}"	>
+									    <f:convertNumber minFractionDigits="0" maxFractionDigits="4" maxIntegerDigits="10"/>
+										<p:ajax event="change" process="@this"/>
+									</p:inputText>							
+								</mec:field>
+								
+								<p:outputPanel id="panelListaUnidade">
+									<mec:selectOneMenu id="listaUnidadeMedicamentoCombo" 
+										label="#{messages.LABEL_UNIDADE_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+										required="#{param['validarRequired']}" requiredFake="true"
+										title="#{messages.TITLE_UNIDADE_SOLUCAO}" 
+										value="#{cadastroSolucaoProtocoloController.medicamento.comboUnidade}"
+										items="#{cadastroSolucaoProtocoloController.listaComboUnidade}"
+										itemLabel="descricaoUnidade" size="60">
+										<p:ajax event="change" process="@this" />
+									</mec:selectOneMenu>
+								</p:outputPanel>
+								
+								<aghu:acao newLine="false">
+									<mec:commandButton 
+										id="bt_adicionar"  
+										readonly="#{cadastroSolucaoProtocoloController.diaMarcado or cadastroSolucaoProtocoloController.isDiaModificado or cadastroSolucaoProtocoloController.readOnly}" 
+										rendered="#{!cadastroSolucaoProtocoloController.isEdicaoMedicamento}"
+										value="#{messages.LABEL_ADICIONAR}" 
+										action="#{cadastroSolucaoProtocoloController.adicionarMedicamento}" 
+										profile="add">
+										<f:param name="validarRequired" value="true"/>
+									</mec:commandButton>
+									<mec:commandButton 
+										
+										id="bt_alterar_mdto" 
+										readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+										rendered="#{cadastroSolucaoProtocoloController.isEdicaoMedicamento}"
+										value="#{messages.LABEL_ALTERAR}" 
+										action="#{cadastroSolucaoProtocoloController.alterarMedicamento}" 
+										profile="add">
+										<f:param name="validarRequired" value="true"/>
+									</mec:commandButton>
+									<mec:commandButton 
+										id="bt_cancelar_edicao" rendered="#{cadastroSolucaoProtocoloController.isEdicaoMedicamento}"
+										value="#{messages.LABEL_CANCELAR_ALTERACAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+										action="#{cadastroSolucaoProtocoloController.cancelarEdicao}" 
+										profile="cancel"/>
+								</aghu:acao>
+							</aghu:linha>
+						</p:outputPanel>
+						
+	                	<mec:serverDataTable id="listaMedicamentos" 
+	                		list="#{cadastroSolucaoProtocoloController.listaMedicamentos}" 
+	                   		selection="medicamentoSelecionado" controller="#{cadastroSolucaoProtocoloController}"
+	                		scrollable="true" scrollHeight="75" style="width:200px;" > 
+                    		<c:set var="_item" value="#{item}"/> 
+                    		
+                    		<p:ajax event="rowSelect" update="@(#panelAccordionParamDose) @(#panelListaUnidade2)" 
+                    			listener="#{cadastroSolucaoProtocoloController.selecionarMedicamento()}"/> 
+		
+							<p:column style="width:10px;" > 
+								<f:facet name="header"> 
+                		      		<h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      			</f:facet>  
+								<mec:commandLink action="#{cadastroSolucaoProtocoloController.editarMedicamento(_item)}" 
+									process="@this" render="formGeral, listaMedicamentos" profile="edit"  
+									title="#{messages.LABEL_EDITAR}" rendered="#{!cadastroSolucaoProtocoloController.readOnly and !_item.edita}">
+									<f:setPropertyActionListener for="command" target="#{cadastroSolucaoProtocoloController.isEdicaoMedicamento}" value="true" />
+								</mec:commandLink>
+
+								<mec:commandLink
+									action="#{cadastroSolucaoProtocoloController.excluirMedicamento(_item)}"
+									process="@this"  rendered="#{!cadastroSolucaoProtocoloController.readOnly and !_item.edita}"
+									title="#{messages.LABEL_EXCLUIR}" profile="delete" render="listaMedicamentos, panelAccordionParamDose, panelListaUnidade2" ajax="true" />
+							</p:column>
+							
+							<p:column style="width:130px;"> 
+								<f:facet name="header"> 
+                		      		<h:outputText value="#{messages.LABEL_DESCRICAO_MEDICAMENTO_SOLUCAO_GRID}"/> 
+                      			</f:facet>  
+								<h:outputText value="#{_item.vdmDescricao}"/>
+							</p:column>  
+							
+							<p:column style="width:30px;"> 
+								<f:facet name="header"> 
+                		      		<h:outputText value="#{messages.LABEL_DOSE_SOLUCAO}"/> 
+                      			</f:facet>  
+                      			<div align="right">
+									<h:outputText value="#{_item.pimDose}">
+										<f:convertNumber minFractionDigits="0" maxFractionDigits="4" maxIntegerDigits="11" type="currency" currencySymbol="" />
+									</h:outputText> 
+								</div>
+							</p:column>  
+							
+							<p:column style="width:30px;"> 
+								<f:facet name="header"> 
+                		      		<h:outputText value="#{messages.LABEL_UNIDADE_SOLUCAO}"/> 
+                      			</f:facet>  
+								<h:outputText value="#{_item.dosagem.seqUnidade}" />
+							</p:column>  
+                    	</mec:serverDataTable>
+						<br/>	
+						<br/>	
+						<p:outputPanel id="panelAccordionParamDose"> 
+							<p:accordionPanel id="accordionParamDose" prependId="false" style="width:930px;">
+								<p:tab title="#{messages.TITLE_PARAMETROS_PARA_CALCULO}" id="tabParamDose" >
+									<aghu:linha>
+										<mec:selectOneMenu id="listaTipoCalculo" enum="DominioCalculoDose"
+											label="#{messages.LABEL_CALCULO}" requiredFake="true" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+											title="#{messages.TITLE_CALCULO}" noSelectionOption="false"
+											value="#{cadastroSolucaoProtocoloController.paramDoseVO.tipoCalculo}" size="60">
+											<p:ajax event="change" process="@this" update="@(#panelUnidadeCalculo) @(#doseMedicamentoUnitario) @(#panelListaUnidade2)" listener="#{cadastroSolucaoProtocoloController.renderizarUnidadeBase()}"/>
+										</mec:selectOneMenu>
+										
+										<mec:field id="doseMedicamentoUnitario"
+											label="#{cadastroSolucaoProtocoloController.labelDoseUnitaria}"
+							        		title="#{messages.TITLE_DOSE_UNITARIA}" 
+							        		showLabel="true" posicaoLabel="acima" 
+							        		readonly="#{cadastroSolucaoProtocoloController.readOnly}" escape="true" required="true">			           
+											<p:inputText id="inputDoseMedicamentoUnitario" 
+												size="18" label="#{cadastroSolucaoProtocoloController.labelDoseUnitaria}"
+												onfocus="jQuery(this).autoNumeric({mDec:'4',mNum:'10',vMax:'#{mf:gerarMaxValue(10,4)}',aSep: '',aDec: ',',lZero:'deny'}); trimDecimalPlace(this);"
+												onblur="trimDecimalPlace(this);" converter="#{bigDecimalPrecisao4Converter}"									
+												value="#{cadastroSolucaoProtocoloController.paramDoseVO.dose}"
+												immediate="false" autocomplete="false" required="false"
+												readonly="#{cadastroSolucaoProtocoloController.readOnly}" 
+												disabled="#{cadastroSolucaoProtocoloController.readOnly}"  >
+											    <f:convertNumber minFractionDigits="0" maxFractionDigits="4" maxIntegerDigits="10"/>
+												<p:ajax event="change" process="@this"/>
+											</p:inputText>							
+										</mec:field>
+										
+										<p:outputPanel id="panelListaUnidade2">
+											<mec:selectOneMenu id="listaUnidadeMedicamentoCombo2" 
+												label="#{messages.LABEL_UNIDADE_SOLUCAO}" 
+												readonly="#{cadastroSolucaoProtocoloController.readOnly or cadastroSolucaoProtocoloController.desabilitarCampoUnidade}"
+												requiredFake="true"
+												title="#{messages.TITLE_UNIDADE_DESEJADA}" 
+												value="#{cadastroSolucaoProtocoloController.paramDoseVO.comboUnidade}"
+												items="#{cadastroSolucaoProtocoloController.listaComboUnidadeParamDose}"
+												itemLabel="descricaoUnidade" size="60">
+												<p:ajax event="change" process="@this" />
+											</mec:selectOneMenu>
+										</p:outputPanel>
+										
+										<div style="float:left; margin-left: 5px !important;">			
+											<p:outputPanel id="panelUnidadeCalculo">
+												<h:outputText id="outputm2" value="#{cadastroSolucaoProtocoloController.unidadeBase}" style="float:left; margin-top: 22px !important; margin-right: 20px !important;" /> 
+											</p:outputPanel>
+										</div>
+										
+										<mec:inputDecimal id="doseMaxUnitario"
+			                                label="#{messages.LABEL_DOSE_MAX_UNITARIA}"
+			                                title="#{messages.TITLE_DOSE_MAXIMA}"
+			                                size="18" inteiros="10" decimais="4"
+			                                value="#{cadastroSolucaoProtocoloController.paramDoseVO.doseMaximaUnitaria}"
+			                                converter="#{bigDecimalPrecisao4Converter}"
+											readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+			                                disabled="#{cadastroSolucaoProtocoloController.readOnly}">
+											<p:ajax event="change" process="@this"/> 
+			                            </mec:inputDecimal>	
+										
+										<aghu:acao newLine="false">
+											<mec:commandButton 
+												id="bt_adicionar_calculo" 
+												value="#{messages.LABEL_ADICIONAR}" 
+												readonly="#{cadastroSolucaoProtocoloController.habilitarAdicionarParamDose or cadastroSolucaoProtocoloController.readOnly}"
+												rendered="#{!cadastroSolucaoProtocoloController.isEdicaoCalculoDose}" 
+												action="#{cadastroSolucaoProtocoloController.adicionarMedicamentoCalculo}" 
+												profile="add" />
+											<mec:commandButton 
+												id="bt_alterar_mdto_calculo" rendered="#{cadastroSolucaoProtocoloController.isEdicaoCalculoDose}"
+												value="#{messages.LABEL_ALTERAR}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+												action="#{cadastroSolucaoProtocoloController.adicionarMedicamentoCalculo}" 
+												profile="add"  />
+											<mec:commandButton 
+												id="bt_cancelar_edicao_param" rendered="#{cadastroSolucaoProtocoloController.isEdicaoCalculoDose}"
+												value="#{messages.LABEL_CANCELAR_ALTERACAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+												action="#{cadastroSolucaoProtocoloController.cancelarEdicaoParametro}" 
+												profile="cancel"/>
+										</aghu:acao>
+									</aghu:linha>
+									
+									<aghu:linha>
+										<mec:inputNumero size="3" id="idadeMinCampo"
+											readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+											label="#{messages.LABEL_IDADE_MIN}"	maxlength="3" 
+											value="#{cadastroSolucaoProtocoloController.paramDoseVO.idadeMinima}">
+											<p:ajax event="change" process="@this" update="@(#listaTipoIdade)" /> 
+										</mec:inputNumero>
+									
+										<mec:inputNumero size="3" id="idadeMaxCampo"
+											readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+											label="#{messages.LABEL_IDADE_MAX}" maxlength="3" 
+											value="#{cadastroSolucaoProtocoloController.paramDoseVO.idadeMaxima}">
+											<p:ajax event="change" process="@this" update="@(#listaTipoIdade)" /> 
+										</mec:inputNumero>
+
+										<mec:selectOneMenu id="listaTipoIdade" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+											label="#{messages.LABEL_UNIDADE_IDADE}" requiredFake="#{cadastroSolucaoProtocoloController.paramDoseVO.idadeMinima != null or cadastroSolucaoProtocoloController.paramDoseVO.idadeMaxima != null}"
+											noSelectionOption="true" value="#{cadastroSolucaoProtocoloController.paramDoseVO.unidIdade}" 
+											size="60" enum="DominioUnidadeIdade" >
+											<p:ajax event="change" process="@this" />
+										</mec:selectOneMenu>
+
+										<mec:inputDecimal id="pesoMinCampo"
+			                                label="#{messages.LABEL_PESO_MIN}"
+			                                size="10" inteiros="3" decimais="3"
+			                                value="#{cadastroSolucaoProtocoloController.paramDoseVO.pesoMinimo}"
+			                                converter="#{bigDecimalPrecisao4Converter}"
+			                                disabled="#{cadastroSolucaoProtocoloController.readOnly}">
+											<p:ajax event="change" process="@this"/> 
+			                            </mec:inputDecimal>	
+			                            
+										<mec:inputDecimal id="pesoMaxCampo"
+			                                label="#{messages.LABEL_PESO_MAX}"
+			                                size="10" inteiros="3" decimais="3"
+			                                value="#{cadastroSolucaoProtocoloController.paramDoseVO.pesoMaximo}"
+			                                converter="#{bigDecimalPrecisao4Converter}"
+			                                disabled="#{cadastroSolucaoProtocoloController.readOnly}">
+											<p:ajax event="change" process="@this"/> 
+			                            </mec:inputDecimal>	
+						
+									</aghu:linha>
+									<br/>
+									<br/>
+									<br/>
+									<br/>
+									<br/>
+									<br/>
+									<p:outputPanel id="panelGridDose" style="width:900px; height:135px; overflow-y:scroll;" >
+										<mec:serverDataTable id="listaParamDose" 
+											controller="#{cadastroSolucaoProtocoloController}"
+											selection="parametroDoseSelecionado"
+											list="#{cadastroSolucaoProtocoloController.medicamentoSelecionado.listaParametroCalculo}" 
+											style="width:300px;" > 
+											<c:set var="itemCalculo" value="#{item}"/>  
+											<p:column style="width:10px; text-align:center;" > 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_ACAO}"/> 
+												</f:facet>  
+												<mec:commandLink action="#{cadastroSolucaoProtocoloController.editarCalculoDose(itemCalculo)}" 
+													process="@this" title="#{messages.TITLE_EDITAR_CALCULO_PARAM}" profile="edit" 
+													rendered="#{itemCalculo.seq != cadastroSolucaoProtocoloController.paramDoseVO.seq and !cadastroSolucaoProtocoloController.readOnly}">
+													<f:setPropertyActionListener for="command" target="#{cadastroSolucaoProtocoloController.isEdicaoCalculoDose}" value="true" />
+													<f:setPropertyActionListener for="command" target="#{cadastroSolucaoProtocoloController.paramDoseEditado}" value="#{itemCalculo}" />
+													<f:setPropertyActionListener for="command" target="#{cadastroSolucaoProtocoloController.parametroDoseSelecionado}" value="#{itemCalculo}" />
+												</mec:commandLink>
+												<mec:commandLink 
+													action="#{cadastroSolucaoProtocoloController.excluirCalculoDose(itemCalculo)}"
+													rendered="#{itemCalculo.seq != cadastroSolucaoProtocoloController.paramDoseVO.seq and !cadastroSolucaoProtocoloController.readOnly}"
+													process="@this" title="#{messages.TITLE_EXCLUIR_CALCULO_PARAM}" render="panelAccordionParamDose" profile="delete" ajax="true" />
+											</p:column>
+											<p:column style="width:50px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_DOSE_UNITARIA}"/> 
+												</f:facet> 
+												<div align="right"> 
+													<h:outputText value="#{itemCalculo.dose}">
+														<f:convertNumber minFractionDigits="0" maxFractionDigits="4" maxIntegerDigits="11" type="currency" currencySymbol="" />
+													</h:outputText>
+												</div>
+											</p:column>  
+											<p:column style="width:30px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+												</f:facet>  
+												<h:outputText value="#{itemCalculo.comboUnidade.seqUnidade} "/>
+												<h:outputText value=" / " rendered="#{itemCalculo.comboUnidade.seqUnidade != null and itemCalculo.unidBaseCalculo.toString() != 'D'}"/> 
+												<h:outputText value="#{itemCalculo.unidBaseCalculo.toString() eq 'D' ? '' : itemCalculo.unidBaseCalculo.descricao}"/> 
+											</p:column>  
+											<p:column style="width:30px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_CALCULO}"/> 
+												</f:facet>  
+												<h:outputText value="#{itemCalculo.tipoCalculo.descricao}" /> 
+											</p:column> 
+											<p:column style="width:30px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_IDADE_MIN}"/> 
+												</f:facet>  
+												<h:outputText value="#{itemCalculo.idadeMinima}" /> 
+											</p:column>  
+											<p:column style="width:30px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_IDADE_MAX}"/> 
+												</f:facet>  
+												<h:outputText value="#{itemCalculo.idadeMaxima}" /> 
+											</p:column>  
+											<p:column style="width:30px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_UNIDADE_IDADE}"/> 
+												</f:facet>  
+												<h:outputText value="#{itemCalculo.unidIdade != null ? itemCalculo.unidIdade.descricao : ''}" /> 
+											</p:column>  
+											<p:column style="width:30px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_PESO_MIN}"/> 
+												</f:facet>  
+												<h:outputText value="#{itemCalculo.pesoMinimo}" /> 
+											</p:column>  
+											<p:column style="width:30px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_PESO_MAX}"/> 
+												</f:facet>  
+												<h:outputText value="#{itemCalculo.pesoMaximo}" /> 
+											</p:column>  
+											<p:column style="width:30px;"> 
+												<f:facet name="header"> 
+													<h:outputText value="#{messages.LABEL_DOSE_MAX}"/> 
+												</f:facet>  
+												<div align="right">
+													<h:outputText value="#{itemCalculo.doseMaximaUnitaria}" >
+														<f:convertNumber minFractionDigits="0" maxFractionDigits="4" maxIntegerDigits="11" type="currency" currencySymbol="" />
+													</h:outputText>
+												</div> 
+											</p:column>  
+										</mec:serverDataTable>
+									</p:outputPanel>
+								</p:tab>
+							</p:accordionPanel>
+						</p:outputPanel>
+					</aghu:panelGeral>
+					<br/>
+					<br/>
+					<br/>
+					<aghu:linha>
+						<mec:suggestionBox var="row" itemValue="#{row}"
+							id="sbVia" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							label="#{messages.LABEL_VIA_SOLUCAO}"
+							title="#{messages.TITLE_VIA_SOLUCAO}"
+							required="#{param['validarRequiredGravar']}" requiredFake="#{!param['validarRequiredGravar']}"
+							suggestionAction="listarSuggestionboxVias"
+							descricaoInput="sigla" descricaoLabel="descricao"
+							descricaoLimite="25"
+							maxlength="50" width="90"
+							controller="#{cadastroSolucaoProtocoloController}"
+							value="#{cadastroSolucaoProtocoloController.solucao.vadSigla}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_SIGLA_SOLUCAO}</b>
+								</f:facet> #{row.sigla}
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO_MEDICAMENTO_SOLUCAO}</b>
+								</f:facet> #{row.descricao}
+							</p:column>
+						</mec:suggestionBox>
+						
+						<mec:selectBooleanCheckbox id="checkTodasVias" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+						  	label="#{messages.LABEL_TODAS_AS_VIAS_SOLUCAO}" 
+						  	title="#{messages.TITLE_TODAS_AS_VIAS_SOLUCAO}" 
+						  	value="#{cadastroSolucaoProtocoloController.todasVias}">
+						  	<p:ajax event="change" process="@this" />
+					  	</mec:selectBooleanCheckbox>						
+					</aghu:linha>
+					
+					<aghu:linha>
+						<mec:inputNumero styleClass="numerico" 
+							label="#{messages.LABEL_FREQUENCIA_SOLUCAO}" title="#{messages.TITLE_FREQUENCIA_SOLUCAO}"
+							id="frequencia"	readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							value="#{cadastroSolucaoProtocoloController.solucao.frequencia}" 
+							size="5" maxlength="3" 
+							requiredFake="#{cadastroSolucaoProtocoloController.solucao.tfqSeq.indDigitaFrequencia}"
+							decimalPlaces="0" >
+							<p:ajax event="change" process="@this" />
+						</mec:inputNumero>
+						
+						<mec:suggestionBox var="row" itemValue="#{row}"
+							id="sbFrequenciaAprazamento"
+							label="#{messages.LABEL_TIPO_DE_APRAZAMENTO_SOLUCAO}"
+							title="#{messages.TITLE_TIPO_DE_APRAZAMENTO_SOLUCAO}"
+							required="#{param['validarRequiredGravar']}" requiredFake="#{!param['validarRequiredGravar']}"
+							suggestionAction="listarSuggestionTipoFrequenciaAprazamento"
+							descricaoInput="sigla" externalDescricaoLabel="descricaoAprazamento"
+							descricaoLimite="25" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							maxlength="50" width="90"
+							render="frequencia"
+							controller="#{cadastroSolucaoProtocoloController}"
+							value="#{cadastroSolucaoProtocoloController.solucao.tfqSeq}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_SIGLA_SOLUCAO}</b>
+								</f:facet> #{row.sigla}
+							</p:column>
+							<p:column>					
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO_MEDICAMENTO_SOLUCAO}</b>
+								</f:facet> #{row.indDigitaFrequencia ? 
+									row.sintaxe.replaceAll('#', cadastroSolucaoProtocoloController.solucao.frequencia != null ? cadastroSolucaoProtocoloController.solucao.frequencia.toString() : '') : 
+									row.descricao}
+							</p:column>
+						</mec:suggestionBox>					
+					</aghu:linha>
+					
+					<aghu:linha>
+						<mec:inputNumero id="volumeFinal"
+							decimais="3" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							maxlength="5"
+							label="#{messages.LABEL_VOLUME_FINAL_ML_SOLUCAO}"
+							title="#{messages.TITLE_VOLUME_FINAL_ML_SOLUCAO}"
+							value="#{cadastroSolucaoProtocoloController.valorVolumeMl}"
+							size="15" >
+							<p:ajax event="change" process="@this"/> 
+						</mec:inputNumero>
+					</aghu:linha>
+					
+					<aghu:linha>
+						<mec:inputNumero id="correrEm"
+							styleClass="numerico" size="5" maxlength="2"
+							label="#{messages.LABEL_CORRER_EM_SOLUCAO}" 
+							title="#{messages.TITLE_CORRER_EM_SOLUCAO}"
+							readonly="#{cadastroSolucaoProtocoloController.readOnly}"	
+							value="#{cadastroSolucaoProtocoloController.solucao.qtdeHorasCorrer}">
+							<p:ajax event="change" process="@this" listener="#{cadastroSolucaoProtocoloController.calcularTempo()}" update="@(#formGeral), @(#tempo)" />
+						</mec:inputNumero>
+						
+						<mec:selectOneMenu id="listaUnidTempoCombo" enum="DominioUnidadeHorasMinutos"
+							label="#{messages.LABEL_UNID_TEMPO_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							title="#{messages.TITLE_UNID_TEMPO_SOLUCAO}" noSelectionOption="true"
+							value="#{cadastroSolucaoProtocoloController.solucao.unidHorasCorrer}" size="60">
+							<p:ajax event="change" process="@this" listener="#{cadastroSolucaoProtocoloController.calcularTempo()}" update="@(#formGeral), @(#tempo)" />
+						</mec:selectOneMenu>							
+					</aghu:linha>
+					
+					<aghu:linha>
+						<mec:inputNumero id="velInfusao"
+							decimais="2" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							maxlength="3"
+							label="#{messages.LABEL_VELOCIDADE_INFUSAO_SOLUCAO}"
+							title="#{messages.TITLE_VOLOCIDADE_INFUSAO_SOLUCAO}"
+							value="#{cadastroSolucaoProtocoloController.solucao.gotejo}"
+							size="10" >
+							<p:ajax event="change" process="@this"/> 
+						</mec:inputNumero>
+						
+						<mec:selectOneMenu id="listaUnidInfusaoCombo" 
+							label="#{messages.LABEL_UNIDADE_INFUSAO_SOLUCAO}" 
+							title="#{messages.TITLE_UNIDADE_INFUSAO_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							value="#{cadastroSolucaoProtocoloController.comboUnidadeInfusao}"
+							items="#{cadastroSolucaoProtocoloController.listaComboUnidadeInfusao}"
+							itemLabel="descricao" size="60">
+							<p:ajax event="change" process="@this" />
+						</mec:selectOneMenu>
+						
+						<mec:selectBooleanCheckbox id="checkBombaInfusao"
+						  	label="#{messages.LABEL_BOMBA_INFUSAO_SOLUCAO}" 
+						  	title="#{messages.TITLE_BOMBA_INFUSAO_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+						  	value="#{cadastroSolucaoProtocoloController.solucao.indBombaInfusao}">
+						  	<p:ajax event="change" process="@this" />
+					  	</mec:selectBooleanCheckbox>	
+
+						<mec:selectBooleanCheckbox id="checkInfusorPortatil"
+						  	label="#{messages.LABEL_INFUSOR_PORTATIL_SOLUCAO}" 
+						  	title="#{messages.TITLE_INFUSOR_PORTATIL_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+						  	value="#{cadastroSolucaoProtocoloController.solucao.indInfusorPortatil}">
+						  	<p:ajax event="change" process="@this" />
+					  	</mec:selectBooleanCheckbox>
+					</aghu:linha>
+					
+					<aghu:linha>
+						<mec:selectBooleanCheckbox id="checkDomiciliar"
+						  	label="#{messages.LABEL_DOMICILIAR_SOLUCAO}" 
+						  	title="#{messages.TITLE_DOMICILIAR_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+						  	value="#{cadastroSolucaoProtocoloController.solucao.indDomiciliar}">
+						  	<p:ajax event="change" process="@this" />
+					  	</mec:selectBooleanCheckbox>
+						  	
+						<mec:inputNumero id="dias" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							value="#{cadastroSolucaoProtocoloController.solucao.diasDeUsoDomiciliar}"  
+							label="#{messages.LABEL_DIAS_SOLUCAO}" title="#{messages.TITLE_DIAS_SOLUCAO}" 
+							size="3" maxlength="2">
+							<p:ajax event="change" process="@this" />
+						</mec:inputNumero>
+						
+						<mec:selectBooleanCheckbox id="checkSeNecessario"
+						  	label="#{messages.LABEL_SE_NECESSARIO_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}" 
+						  	title="#{messages.TITLE_SE_NECESSARIO_SOLUCAO}" 
+						  	value="#{cadastroSolucaoProtocoloController.solucao.indSeNecessario}">
+						  	<p:ajax event="change" process="@this" />
+					  	</mec:selectBooleanCheckbox>
+						  	
+ 	                   <mec:inputTextData id="tempo" tipo="hora" size="5" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+ 	                   		label="#{messages.LABEL_TEMPO_SOLUCAO}" title="#{messages.TITLE_TEMPO_SOLUCAO}" 
+                   			value="#{cadastroSolucaoProtocoloController.solucao.tempo}">
+                   			<p:ajax event="change" process="@this" />
+               			</mec:inputTextData>
+					</aghu:linha>
+					
+					<aghu:linha>
+						<mec:inputTextArea id="observacao" cols="100" rows="1"
+							maxlength="240" style="width: 800px; height: 40px;"
+							label="#{messages.LABEL_OBSERVACAO_SOLUCAO}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+							title="#{messages.TITLE_OBSERVACAO_SOLUCAO}" disabled="#{cadastroSolucaoProtocoloController.readOnly}"
+							value="#{cadastroSolucaoProtocoloController.observacao}">
+							<p:ajax event="change" process="@this" />
+						</mec:inputTextArea>
+					</aghu:linha>
+			</aghu:panelGeral>
+			
+			<mec:commandButton id="bt_gravar" 
+				value="#{messages.LABEL_GRAVAR}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+				rendered="#{!cadastroSolucaoProtocoloController.isDiaModificado}" 
+				action="#{cadastroSolucaoProtocoloController.gravar}" profile="ok">
+				<f:param name="validarRequiredGravar" value="true"/>
+			</mec:commandButton>
+				
+			<mec:commandButton id="bt_gravar_dia" 
+				value="#{messages.LABEL_GRAVAR}" readonly="#{cadastroSolucaoProtocoloController.readOnly}"
+				rendered="#{cadastroSolucaoProtocoloController.isDiaModificado}" 
+				action="#{cadastroSolucaoProtocoloController.gravarDia}" profile="ok">
+			</mec:commandButton>
+	 
+			<mec:backButton id="bt_voltar_edicao" value="#{messages.LABEL_VOLTAR}" 
+				action="#{cadastroSolucaoProtocoloController.voltar}" 
+				rendered="#{cadastroSolucaoProtocoloController.isEdicao and !cadastroSolucaoProtocoloController.readOnly}"
+				formId="formGeral"
+			    />
+			
+			<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" rendered="#{!cadastroSolucaoProtocoloController.isEdicao or cadastroSolucaoProtocoloController.readOnly}"
+				action="#{cadastroSolucaoProtocoloController.voltar}" 
+				styleClass="bt_voltar bt_cinza" profile="back"/>
+				
+			<mec:commandButton id="btRenderPagina" value="#{messages.CASCA_LABEL_SIM}" style="visibility: hidden;" render="panelAccordionParamDose, panelListaMedicamentos" 
+				action="#{cadastroSolucaoProtocoloController.exibirMesssage}"		/> 
+						 
+						 
+			<p:dialog id="modalExcluirDoseId" width="400" height="160"
+            	autosized="false" resizeable="false" modal="true"
+                widgetVar="modalExcluirDose">
+                <f:facet name="header">
+                	<h:outputText id="headerModalExcluirDoseId" value="#{messages.CONFIRMACAO_LABEL}" />
+                </f:facet>
+                <br clear="none" />
+                <h:outputText id="msgModalExcluirDose" value="#{messages.MSG04_TROCA_MEDICAMENTO}" />
+                <br clear="none" />
+                <br clear="none" />
+                <br clear="none" />
+                <p:ajax event="close" update="@(#formCadastrar)" listener="#{cadastroSolucaoProtocoloController.cancelarAlteracaoMedicamento}" />
+                <aghu:acao>
+               		<mec:commandButton id="btSimModalExcluirDose" value="#{messages.CASCA_LABEL_SIM}" action="#{cadastroSolucaoProtocoloController.confirmarAlteracao}"
+                    	 profile="ok"  process="@this" oncomplete="PF('modalExcluirDose').hide(); fechar();" ajax="true" render="panelAccordionParamDose, panelListaMedicamentos"  />
+                   	<mec:commandButton id="btNaoModalExcluirDose" value="#{messages.CASCA_LABEL_NAO}" action="#{cadastroSolucaoProtocoloController.cancelarAlteracaoMedicamento}" 
+                   		render="formCadastrar, sbMedicamentoPanel" onclick="PF('modalExcluirDose').hide();" profile="cancel" ajax="true"/>
+                </aghu:acao>
+            </p:dialog>
+		</h:form>
+		
+		<h:form prependId="false" id="formModalDiasModificados">
+			<p:dialog id="modal_dias_modificados" width="400" height="160"
+				autosized="false" resizeable="false"
+				modal="true" resizable="false" 
+				widgetVar="modal_dias_modificados">
+				<f:facet name="header">
+					<h:outputText id="headerModalDiasModificados" value="#{messages.CONFIRMACAO_LABEL}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText id="msgConfirmDiasModificados" value="#{messages.LABEL_CONFIRMACAO_ALTERACAO}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="btSimConfirmDiasModificados" value="#{messages.CASCA_LABEL_SIM}" action="#{cadastroSolucaoProtocoloController.alterarTodosDiasModificados}"
+						oncomplete="PF('modal_dias_modificados').hide();" profile="ok" ajax="true" render="formGeral" process="@this" />
+					<mec:commandButton id="btNaoConfirmDiasModificados" value="#{messages.CASCA_LABEL_NAO}" action="#{cadastroSolucaoProtocoloController.alterarDiasModificados}"
+						oncomplete="PF('modal_dias_modificados').hide();" profile="cancel" ajax="true" render="formGeral" process="@this"/>
+				</aghu:acao>
+			</p:dialog>
+		</h:form>
+		
+	</ui:define>
+</ui:composition>
+</html>

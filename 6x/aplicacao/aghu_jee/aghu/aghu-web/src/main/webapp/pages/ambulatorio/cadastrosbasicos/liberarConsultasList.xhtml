@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.PESQUISA_CONSULTAS_PARA_LIBERAR} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{liberarConsultasPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{liberarConsultasPaginatorController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <pe:remoteCommand name="liberarConsulta"> 
+          <pe:assignableParam name="param1" assignTo="#{liberarConsultasPaginatorController.numeroConsulta}"/> 
+        </pe:remoteCommand>  
+        <aghu:panelGeral legend="#{messages.LABEL_ESTORNAR_CONSULTA}"> 
+          <aghu:linha> 
+            <p:outputPanel id="selecionaPaciente" layout="inline"> 
+              <mec:field name="prontuarioPacienteField" label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO_FAT}"> 
+                <h:inputText id="prontuarioPaciente" styleClass="numerico" readonly="false" size="15" maxlength="8" value="#{liberarConsultasPaginatorController.prontuarioPaciente}"> 
+                  <p:ajax event="change" eventsQueue="eventsQueuePesquisaLiberarConsultas" update="@(#selecionaPaciente)" process="@this" listener="#{liberarConsultasPaginatorController.selecionarPacienteConsultaEdicao}"/> 
+                </h:inputText> 
+              </mec:field>  
+              <mec:field name="codigoPacienteField" label="#{messages.LABEL_CODIGO_PACIENTE_FAT}" title="#{messages.TITLE_CODIGO_PACIENTE_FAT}"> 
+                <h:inputText id="codigoPaciente" styleClass="numerico" size="15" maxlength="8" value="#{liberarConsultasPaginatorController.codigoPaciente}"> 
+                  <p:ajax event="change" eventsQueue="eventsQueuePesquisaLiberarConsultas" update="@(#selecionaPaciente)" process="@this" listener="#{liberarConsultasPaginatorController.selecionarPacienteConsultaEdicao}"/> 
+                </h:inputText> 
+              </mec:field>  
+              <mec:inputText size="50" maxlength="50" readonly="true" label="#{messages.LABEL_NOME_PACIENTE_FAT}" style="text-transform: uppercase" value="#{liberarConsultasPaginatorController.nomePaciente}" id="nomePaciente"/>  
+              <br clear="none"/>  
+              <mec:commandLink id="linkLimparPac" rendered="#{liberarConsultasPaginatorController.nomePaciente!=null}" actionListener="#{liberarConsultasPaginatorController.limparPaciente()}" ajax="true" render="selecionaPaciente" process="@this"> 
+                <h:graphicImage value="/resources/img/icons/tool_eraser.png" style="margin-top:11px;"/> 
+              </mec:commandLink> 
+            </p:outputPanel> 
+            <mec:commandButton id="bt_pesquisa_fonetica" value="#{messages.LABEL_PESQUISA_FONETICA}" action="#{liberarConsultasPaginatorController.pesquisaFonetica}" styleClass=" icon-pesquisa-fonetica bt_cinza"> 
+              <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="ambulatorio-liberarConsulta" for="command"/>  
+              <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="false" for="command"/> 
+            </mec:commandButton> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero size="5" maxlength="5" label="#{messages.LABEL_GRADE}" title="#{messages.TITLE_GRADE}" value="#{liberarConsultasPaginatorController.grade}" id="grade"/>  
+            <mec:suggestionBox label="#{messages.LABEL_ESPECIALIDADE_AGENDA}" title="#{messages.TITLE_ESPECIALIDADE_AGENDA_LIBERAR_CONSULTA}" width="400" descricaoInput="seq" descricaoLabel="nomeEspecialidade" suggestionAction="pesquisarEspecialidadesAgendas" id="especialidade" controller="#{liberarConsultasPaginatorController}" value="#{liberarConsultasPaginatorController.especialidade}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_SIGLA}</b> 
+                </f:facet> #{item.sigla}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.nomeEspecialidade}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_DATA_CONSULTA}" title="#{messages.TITLE_DATA_CONSULTA}" size="10" maxlength="10" value="#{liberarConsultasPaginatorController.dataConsulta}" id="data_consulta" tipo="data"/>  
+            <p:outputPanel id="nroConsul_panel" layout="inline"> 
+              <mec:inputNumero value="#{liberarConsultasPaginatorController.nroConsulta}" label="#{messages.LABEL_CONSULTA}" title="#{messages.TITLE_CONSULTA_ATUALIZAR}" maxlength="8" size="10" ajaxValidation="false" onkeypress="return EnterTab(event);" id="consulta_pesq"/> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" eventsQueue="eventsQueuePesquisaLiberarConsultas" action="#{liberarConsultasPaginatorController.pesquisar}" render="formPesquisa" profile="search" ajax="true"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{liberarConsultasPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:linha>  
+        <mec:serverDataTable dataModel="dataModel" value="#{liberarConsultasPaginatorController}" id="tabelaConsultas" controller="#{liberarConsultasPaginatorController}"> 
+          <c:set var="_consulta" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false" width="50">
+					<mec:commandLink id="id_estornar_consulta"
+						title="#{messages.LABEL_ESTORNAR_CONSULTA}"
+						onclick="liberarConsulta('#{_consulta.numero}');"
+						action="#{liberarConsultasPaginatorController.verificarReconsultas}"	
+						styleClass="silk-icon silk-delete" ajax="true" />
+				</p:column>  
+          <p:column sortBy="#{_consulta.paciente.prontuario}" sortable="true" width="80"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_consulta.paciente.prontuario}"/> 
+          </p:column>  
+          <p:column sortBy="#{_consulta.paciente.nome}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME}"/> 
+            </f:facet>  
+            <h:outputText value="#{_consulta.paciente.nome}"/> 
+          </p:column>  
+          <p:column sortBy="#{_consulta.gradeAgendamenConsulta.seq}" sortable="true" width="40"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_GRADE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_consulta.gradeAgendamenConsulta.seq}"/> 
+          </p:column>  
+          <p:column sortBy="#{_consulta.unidadeFuncional.sigla}" sortable="true" width="135"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{liberarConsultasPaginatorController.labelZonaSala}"/> 
+            </f:facet>  
+            <h:outputText value="#{_consulta.gradeAgendamenConsulta.aacUnidFuncionalSala.unidadeFuncional.sigla}/#{_consulta.gradeAgendamenConsulta.aacUnidFuncionalSala.id.sala}"/> 
+          </p:column>  
+          <p:column sortBy="#{_consulta.equipe.nome}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_EQUIPE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_consulta.gradeAgendamenConsulta.equipe.nome}"/> 
+          </p:column>  
+          <p:column sortBy="#{_consulta.pessoaFisica.nome}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PROFISSIONAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{_consulta.gradeAgendamenConsulta.profEspecialidade.rapServidor.pessoaFisica.nome}"/> 
+          </p:column>  
+          <p:column sortBy="#{_consulta.especialidade.nomeEspecialidade}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ESPECIALIDADE_AGENDA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_consulta.gradeAgendamenConsulta.especialidade.nomeEspecialidade}"/> 
+          </p:column>  
+          <p:column sortBy="#{_consulta.dtConsulta}" sortable="true" width="80"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_HORA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_consulta.dtConsulta}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column sortBy="#{_consulta.numero}" sortable="true" width="60"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CONSULTA}"/> 
+            </f:facet>  
+            
+            <p:outputPanel id="panelNumeroConsulta" layout="block">
+            	<h:outputText value="#{_consulta.numero}"/> 
+            </p:outputPanel>
+            <p:tooltip trackMouse="true" for="panelNumeroConsulta"> 
+              <h:outputText value="#{messages.LABEL_PAGADOR}: #{_consulta.pagador.descricao}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_AUTORIZACAO}: #{_consulta.tipoAgendamento.descricao}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_COND_ATEND}: #{_consulta.condicaoAtendimento.descricao}"/> 
+            </p:tooltip>  
+            
+          </p:column>  
+          <p:column width="30"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_EXCED}"/> 
+            </f:facet>  
+            <mec:commandLink title="#{messages.LABEL_EXCED}" rendered="#{_consulta.excedeProgramacao eq true}" styleClass=" silk-consulta-excedente silk-icon" ajax="true"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoLiberacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoLiberacaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_MODAL_ESTORNAR_CONSULTA}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_QUESTAO_ESTORNAR_CONSULTA} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalLiberacao"> 
+            <mec:commandButton id="bt_liberar" value="#{messages.LABEL_ESTORNAR}" action="#{liberarConsultasPaginatorController.liberarConsulta(false)}" disabled="#{mf:hasPermission(securityController, 'ambulatorio,somenteLeitura')}" profile="ok"/>  
+            <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoLiberacaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+      <p:dialog id="modalPossuiReconsultasWG" width="400" height="150" modal="true" resizable="false" widgetVar="modalPossuiReconsultasWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_MODAL_ESTORNAR_CONSULTA}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_QUESTAO_ESTORNAR_CONSULTA_COM_RECONSULTAS} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalLiberacaoReconsulta"> 
+            <mec:commandButton id="bt_liberar_reconsulta" value="#{messages.LABEL_ESTORNAR}" action="#{liberarConsultasPaginatorController.liberarConsulta(true)}" profile="ok"/>  
+            <mec:commandButton id="bt_cancelar_reconsulta" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalPossuiReconsultasWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

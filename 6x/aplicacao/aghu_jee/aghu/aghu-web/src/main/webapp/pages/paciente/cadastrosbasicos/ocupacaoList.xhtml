@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_OCUPACAO} ::#{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{ocupacaoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR}"> 
+          <aghu:linha> 
+            <mec:inputNumero value="#{ocupacaoPaginatorController.codigoPesquisaOcupacao}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_OCUPACAO}" maxlength="6" size="6" id="codigo"/>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO}" size="60" maxlength="60" title="#{messages.TITLE_DESCRICAO_OCUPACAO}" value="#{ocupacaoPaginatorController.descricaoPesquisaOcupacao}" style="text-transform:uppercase" id="descricao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{ocupacaoPaginatorController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{ocupacaoPaginatorController.limparPesquisa}" profile="clear"/>  
+          <p:outputPanel rendered="#{ocupacaoPaginatorController.exibirBotaoIncluirOcupacao}" layout="inline"> 
+            <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" disabled="#{not mf:hasPermission(securityController, 'ocupacao,alterar')}" action="#{ocupacaoPaginatorController.iniciarInclusao()}" profile="add" ajax="true"> 
+              <f:setPropertyActionListener target="#{ocupacaoController.codigoOcupacao}" value="#{null}" for="command"/> 
+            </mec:commandButton> 
+          </p:outputPanel> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="resultados"> 
+        <mec:serverDataTable id="tabelaResult" dataModel="dataModel" controller="#{ocupacaoPaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaResult_link_editar" profile="edit" title="editar" action="#{ocupacaoPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{ocupacaoController.codigoOcupacao}" value="#{_item.codigo}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{ocupacaoPaginatorController.ocupacao}" value="#{_item}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaResult_link_remover" profile="delete" title="excluir" action="#{ocupacaoPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{ocupacaoPaginatorController.ocupacao}" value="#{_item}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.codigo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SINONIMOS}"/> 
+            </f:facet>  
+            <h:outputText value="0" rendered="#{_item.qtSinonimos eq 0}"/>  
+            <mec:commandLink action="#{ocupacaoPaginatorController.exibeSinonimos(_item)}" oncomplete="PF('sinonimosOcupacaoWG').show();" rendered="#{_item.qtSinonimos gt 0}" ajax="true" render="sinonimosOcupacao"> 
+              <h:outputText value="#{_item.qtSinonimos}"/> 
+            </mec:commandLink> 
+          </p:column> 
+        </mec:serverDataTable>  
+        <br clear="none"/>  
+        <br clear="none"/> 
+      </h:form>  
+      <p:dialog id="sinonimosOcupacao" width="600" height="300" modal="true" resizable="false" widgetVar="sinonimosOcupacaoWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_SINONIMOS_OCUPACAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <aghu:panelGeral id="ffdl_informacoes"> 
+          <aghu:linha> 
+            <mec:serverDataTable list="#{ocupacaoPaginatorController.sinonimosOcupacao}" scrollable="true" draggableColumns="false"> 
+              <c:set var="_sinonimo" value="#{item}"/>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_sinonimo.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

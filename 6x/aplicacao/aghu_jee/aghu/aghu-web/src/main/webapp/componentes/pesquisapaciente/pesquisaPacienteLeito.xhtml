@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:component xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:c="http://java.sun.com/jstl/core"
+	xmlns:a4j="http://richfaces.org/a4j" 
+    	
+	xmlns:mec="http://www.mec.gov.br/components"
+	rendered="#{mec:getDefaultValue(rendered,true)}">	
+	
+	<ui:param name="baseId" value="input_#{mec:getDefaultValue(name,id)}" />	
+	<ui:param name="concatDescr" value="#{property}.#{descricaoLabel}" />
+	<ui:param name="prontId" value="#{property}.#{prontuarioField}" />
+	<ui:param name="leitoId" value="#{property}.#{leitoField}" />
+	
+	<mec:field name="#{name}" id="#{id}" 
+		required="#{required}" inputId="#{baseId}"
+		fieldStyle="#{fieldStyle}" 
+		label="#{messages.LABEL_PACIENTE}"
+		title="Selecione o atributo do paciente que deseja pesquisar e preencha o valor da pesquisa no campo ao lado."
+		escape="#{escape}"
+		posicaoLabel="#{mec:getDefaultValue(posicaoLabel,'acima')}" >	
+	
+		<h:selectOneMenu id="#{baseId}"  onchange="pac.render('#{baseId}', true)"
+			onkeydown="enterInSelectField(event, '#{stopEnter}');"  
+			disabled="#{readonly or not empty mbean.getProperty(property)}"  >
+			<f:selectItem itemLabel="Prontuário" itemValue="Prontuario"/>	
+			<f:selectItem itemLabel="Leito" itemValue="Leito"/>		
+		</h:selectOneMenu>
+
+		<h:inputText id="#{baseId}_prontuario"
+			required="#{required}" title="#{messages.LABEL_PRONTUARIO}" 
+			disabled="#{readonly}" readonly="#{readonly or not empty mbean.getProperty(property)}"
+			size="9" maxlength="9" styleClass="mask_prontuario">
+			
+			<f:converter converterId="prontuarioConverter" />
+			<f:validator  validatorId="pacienteValidator" />
+
+			<f:attribute name="mbean" value="#{mbean}" />
+			<f:attribute name="method1" value="#{method1}" />
+			<f:attribute name="method2" value="#{method2}" />			
+			<f:attribute name="method3" value="#{method3}" />
+			<f:attribute name="singleMethod" value="#{singleMethod}" />
+			<f:attribute name="property" value="#{property}" />			
+			<f:attribute name="type" value="Prontuario"  />			
+						
+			<a4j:support event="onchange" reRender="#{baseId}_prontuario,#{baseId}_descr,#{reRender}" ajaxSingle="true" 
+				status="pac_status#{baseId}" />
+		</h:inputText>
+		
+		<h:inputText id="#{baseId}_leito" 								
+			title="#{messages.LABEL_LEITO}"  
+			size="4" maxlength="10" required="#{required}"
+			disabled="#{readonly}" readonly="#{readonly or not empty mbean.getProperty(property)}">
+
+			<f:validator  validatorId="pacienteValidator" />
+			
+			<f:attribute name="mbean" value="#{mbean}" />
+			<f:attribute name="method1" value="#{method1}" />
+			<f:attribute name="method2" value="#{method2}" />			
+			<f:attribute name="method3" value="#{method3}" />
+			<f:attribute name="singleMethod" value="#{singleMethod}" />
+			<f:attribute name="property" value="#{property}" />			
+			<f:attribute name="type" value="Leito"  />			
+			
+			<a4j:support event="onchange" reRender="#{baseId}_leito,#{baseId}_descr,#{reRender}" ajaxSingle="true" 
+				status="pac_status#{baseId}" />
+		</h:inputText>
+		
+		<a4j:outputPanel id="#{baseId}_descr" >
+			<h:outputText value="#{mbean.getProperty(concatDescr)}" 
+				 style="font-weight:bold;font-size:11px;padding-left:5px" title="#{mbean.getProperty(concatDescr)}"
+				 converter="truncateConverter">
+				 <f:attribute name="limitDescr" value="#{descricaoLimite}" />
+			</h:outputText>		
+			
+			<a4j:commandLink rendered="#{not empty mbean.getProperty(property) and not readonly}"
+				reRender="#{baseId}_descr, reRender}"
+				action="#{mbean.setProperty(property, null)}"  
+				oncomplete="pac.clear('#{baseId}')"
+				ajaxSingle="true">
+				<h:graphicImage value="/img/tool_eraser.png" style="padding-left:5px;" />						
+			</a4j:commandLink>
+		</a4j:outputPanel>		
+		
+		<a4j:status id="pac_status#{baseId}" forceId="true"
+			onstart="pac.statusSupport('#{baseId}', true)" 
+			onstop="pac.statusSupport('#{baseId}', false);content.reload();">
+			<f:facet name="start">
+				<h:graphicImage  value="/images/loading.gif"/>
+			</f:facet>
+		</a4j:status>
+		
+			
+		<script>
+			pac.render('#{baseId}', false);
+			pac.init('#{baseId}', '#{mbean.getProperty(prontId)}', '#{mbean.getProperty(leitoId)}');								
+		</script>			
+	</mec:field>
+	<a4j:loadScript src="/resources/js/pacienteComponent.js" />					
+					
+	
+</ui:component>

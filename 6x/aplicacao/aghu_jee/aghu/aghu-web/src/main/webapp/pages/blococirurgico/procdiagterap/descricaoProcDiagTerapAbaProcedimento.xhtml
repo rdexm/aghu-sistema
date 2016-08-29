@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <h:form prependId="false" id="formProcedimento"> 
+      <aghu:panelGeral legend="#{messages.LABEL_PROCED_DIAG_TERAPEUTICO}"> 
+        <p:outputPanel id="panelProcedimento" layout="inline"> 
+          <p:outputPanel id="panelProcDiagTerap" layout="inline"> 
+            <aghu:linha> 
+              <mec:suggestionBox width="900" size="10" id="suggestionProcDiagTerap" label="#{messages.LABEL_PROCEDIMENTO}" title="#{messages.TITLE_PROCEDIMENTO_TERAPEUTICO}" 
+              suggestionAction="pesquisarProcedimentoDiagnosticoTerapeutico" descricaoLimite="30" descricaoInput="seq" descricaoLabel="descricao" posSelectionAction="salvarProcDiagTerap" 
+              readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}" controller="#{descricaoProcDiagTerapProcedController}" 
+              value="#{descricaoProcDiagTerapProcedController.procDiagTerap}" render="panelProcDiagTerap, panelProcedimento"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_EQUIPAMENTO_CRUD_TEMPO_MINIMO}</b> 
+                  </f:facet> #{item.tempoMinimo} min.
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+            </aghu:linha> 
+          </p:outputPanel>  
+          <p:outputPanel rendered="#{not empty descricaoProcDiagTerapProcedController.procs}" layout="inline"> 
+            <aghu:linha> 
+              <mec:serverDataTable id="procs" list="#{descricaoProcDiagTerapProcedController.procs}" scrollable="true" scrollHeight="100"> 
+                <c:set var="_item" value="#{item}"/>  
+                <p:column> 
+                  <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+                  <mec:commandLink id="deleteProcDesc" title="#{messages.LABEL_EXCLUIR}" requestDelay="1000" ignoreDupResponses="true" eventsQueue="filaDelete" 
+                  action="#{descricaoProcDiagTerapController.excluirProc}" render="panelProcedimento"
+                  rendered="#{not descricaoProcDiagTerapController.isShowNotaAdicional()}" 
+                  profile="delete" ajax="true" process="@this"> 
+                    <f:setPropertyActionListener target="#{descricaoProcDiagTerapProcedController.ddtSeqExc}" value="#{_item.id.ddtSeq}" for="command"/>  
+                    <f:setPropertyActionListener target="#{descricaoProcDiagTerapProcedController.seqpExc}" value="#{_item.id.seqp}" for="command"/> 
+                  </mec:commandLink> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PROCEDIMENTO_REALIZADO}" id="outputTextLabelDescricao"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.pdtProcDiagTerap.descricao}" id="outputTextDescricao"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_CONTAMINACAO}" id="outputTextLabelContaminacao"/> 
+                  </f:facet>  
+                      <p:selectOneMenu id="contaminacao"  
+						               value="#{_item.indContaminacao}"  
+						               styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all">
+						       <f:converter converterId="dominioConverter" />
+					           <f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioIndContaminacao')}" />
+					           <p:ajax event="change" process="@this" listener="#{descricaoProcDiagTerapProcedController.atualizarProcedimento(_item)}"/>
+		               </p:selectOneMenu>  
+                </p:column>  
+                <p:column> 
+	            	<f:facet name="header"> 
+						<h:outputText value="#{messages.LABEL_COMPLEMENTO}" id="outputTextLabelComplemento"/> 
+	                </f:facet>  
+	                <p:inputText size="20" maxlength="500" label="#{messages.LABEL_COMPLEMENTO}" title="#{messages.TITLE_COMPLEMENTO_ATO_CIRURGICO}" value="#{_item.complemento}" id="complemento">
+	                	<p:ajax event="change" process="@this" listener="#{descricaoProcDiagTerapProcedController.atualizarProcedimento(_item)}"/>
+	                </p:inputText>
+                	<p:commandLink update="@(#textAreaPanel)" oncomplete="PF('modalComplementoWG').show()" actionListener="#{descricaoProcDiagTerapProcedController.atualizarComplemento(_item)}">
+                		<p:graphicImage id="viewField" styleClass="aghu-iconeinput aghu-lupa"  title="Abrir campo em panel para edição" />
+                	</p:commandLink>
+                </p:column> 
+              </mec:serverDataTable>
+            </aghu:linha> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </aghu:panelGeral>  
+      <aghu:panelGeral legend="#{messages.LABEL_EQUIPAMENTOS_E_TECNICA}"> 
+        <p:outputPanel id="panelEquipamentoETecnica" layout="inline"> 
+          <p:outputPanel id="panelEquipamentoETecnicaFields" layout="inline"> 
+            <aghu:linha> 
+              <mec:selectOneMenu id="equipamento" label="#{messages.LABEL_EQUIPAMENTO}" title="#{descricaoProcDiagTerapController.isShowNotaAdicional() ? '' : messages.TITLE_EQUIPAMENTO_PROC_DIAG_TERAP}" 
+              style="width:240px !important;" value="#{descricaoProcDiagTerapController.equipamento}" items="#{descricaoProcDiagTerapController.equipamentos}" itemLabel="descricao" 
+              readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional() or descricaoProcDiagTerapController.disableEquipamentos}" >
+              	<p:ajax event="change" update="@(#equipamento)" process="@this" listener="#{descricaoProcDiagTerapController.atualizarPdtEquipamento()}"/>
+              </mec:selectOneMenu>  
+
+              <mec:inputNumero id="nroFilme" maxlength="7" size="8" label="#{messages.LABEL_NUMERO}" title="#{messages.TITLE_NUMERO_PROCEDIMENTO_TERAPEUTICO}" value="#{descricaoProcDiagTerapProcedController.dadoDesc.nroFilme}" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional() or descricaoProcDiagTerapController.disableEquipamentos}"> 
+                <p:ajax event="change" process="@this" listener="#{descricaoProcDiagTerapProcedController.atualizarPdtDadoDesc()}"/> 
+              </mec:inputNumero>  
+
+              <mec:selectOneMenu id="tecnica" label="#{messages.LABEL_TECNICA}" title="#{descricaoProcDiagTerapController.isShowNotaAdicional() ? '' : messages.TITLE_TECNICA_PROC_DIAG_TERAP}" 
+              style="width:160px !important;" value="#{descricaoProcDiagTerapController.tecnica}" items="#{descricaoProcDiagTerapController.tecnicas}" itemLabel="descricao" 
+              readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional() or descricaoProcDiagTerapController.disableTecnicas}">
+                  <p:ajax event="change" update="@(#tecnica)" process="@this" listener="#{descricaoProcDiagTerapController.atualizarPdtTecnica()}"/> 
+              </mec:selectOneMenu>  
+            </aghu:linha> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelEquipamentoETecnicaInstrumentos" layout="inline"> 
+            <aghu:linha> 
+              <mec:suggestionBox width="300" size="40" id="suggestionInstrumentos" label="#{messages.LABEL_INSTRUMENTAL}" title="#{messages.TITLE_INSTRUMENTAL}" suggestionAction="pesquisarInstrumentos" 
+              descricaoInput="descricao" posSelectionAction="salvarInstrumento" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}" controller="#{descricaoProcDiagTerapProcedController}" 
+              value="#{descricaoProcDiagTerapProcedController.instrumental}" render="panelEquipamentoETecnicaInstrumentos"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_EQUIPAMENTO_CRUD_CODIGO}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_EQUIPAMENTO_CRUD_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <p:outputPanel rendered="#{not empty descricaoProcDiagTerapProcedController.instrumentos}" layout="inline"> 
+              <aghu:linha> 
+                <mec:serverDataTable id="instrumentos" list="#{descricaoProcDiagTerapProcedController.instrumentos}" scrollable="true" scrollHeight="100"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column style="width:40px;"> 
+                    <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+                    <mec:commandLink id="deleteInstrumento" title="#{messages.LABEL_EXCLUIR}" requestDelay="1000" ignoreDupResponses="true" eventsQueue="filaDelete" 
+                    action="#{descricaoProcDiagTerapProcedController.excluirInstrumento}" render="panelEquipamentoETecnicaInstrumentos" 
+                    rendered="#{not descricaoProcDiagTerapController.isShowNotaAdicional()}" 
+                    profile="delete" ajax="true" process="@this"> 
+                      <f:setPropertyActionListener target="#{descricaoProcDiagTerapProcedController.ddtSeqExc}" value="#{_item.id.ddtSeq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{descricaoProcDiagTerapProcedController.pinSeqExc}" value="#{_item.id.pinSeq}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_INSTRUMENTAL}" id="outputTextLabelDescInst"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.pdtInstrumental.descricao}" id="outputTextDescInst"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </aghu:panelGeral>  
+      <aghu:panelGeral legend="#{messages.LABEL_TECNICA_ANESTESICA}"> 
+        <p:outputPanel id="panelTecnicaAnestesica" layout="inline"> 
+          <p:outputPanel id="panelTecnicaAnestesicaFields" layout="inline"> 
+            <aghu:linha> 
+              <mec:selectOneMenu id="tipoAnestesia" label="#{messages.LABEL_TIPO_DE_ANESTESIA}" title="#{messages.TITLE_TIPO_ANESTESIA_PROC_DIAG_TERAP}" 
+              style="width:220px !important;" value="#{descricaoProcDiagTerapController.tipoAnestesia}" items="#{descricaoProcDiagTerapController.tipoAnestesias}" itemLabel="descricao" 
+              readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}">
+                <p:ajax event="change" update="@(#panelAbas)" process="@this" listener="#{descricaoProcDiagTerapController.posSelectionTipoAnestesia()}"/> 
+              </mec:selectOneMenu>  
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox width="900" size="34" id="medicamentoUsual" label="#{messages.LABEL_MEDICAMENTOS_USUAIS}" title="#{messages.TITLE_MEDICAMENTOS_USUAIS_PROC_DIAG_TERAP}" 
+              suggestionAction="pesquisarMedicamentosUsuais" descricaoInput="descricao" posSelectionAction="posSelectionMedicamentoUsual" posDeleteAction="posSelectionMedicamentoUsual" 
+              readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}" controller="#{descricaoProcDiagTerapProcedController}" 
+              value="#{descricaoProcDiagTerapProcedController.medicamentoUsual}" render="panelFiledsMedicamentos"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_MEDICACAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CONCENTRACAO}</b> 
+                  </f:facet> #{item.concentracao}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_UN_CAD}</b> 
+                  </f:facet> #{item.mpmUnidadeMedidaMedicas.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <p:outputPanel id="panelFiledsMedicamentos" layout="inline"> 
+              <aghu:linha> 
+                <mec:suggestionBox width="900" size="34" id="medicamento" label="#{messages.LABEL_MEDICACAO}" title="#{messages.TITLE_MEDICACAO_PROC_DIAG_TERAP}" suggestionAction="pesquisarMedicamentos" 
+                descricaoInput="descricao" posSelectionAction="posSelectionMedicamentos" posDeleteAction="posSelectionMedicamentos" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}" 
+                controller="#{descricaoProcDiagTerapProcedController}" value="#{descricaoProcDiagTerapProcedController.medicamento}" render="panelFiledsMedicamentos"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MEDICACAO}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CONCENTRACAO}</b> 
+                    </f:facet> #{item.concentracao}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_UN_CAD}</b> 
+                    </f:facet> #{item.mpmUnidadeMedidaMedicas.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:inputText id="unidCad" size="15" label="#{messages.LABEL_UN_CAD}" value="#{descricaoProcDiagTerapProcedController.descricaoMedicacao.afaMedicamento.mpmUnidadeMedidaMedicas!=null?descricaoProcDiagTerapProcedController.descricaoMedicacao.afaMedicamento.mpmUnidadeMedidaMedicas.descricao:''}" readonly="true"/>  
+                <mec:inputNumero id="dose" maxlength="5" size="5" label="#{messages.LABEL_DOSE}" title="#{messages.TITLE_DOSE_PROCEDIMENTO_TERAPEUTICO}" value="#{descricaoProcDiagTerapProcedController.descricaoMedicacao.dose}" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional() or empty descricaoProcDiagTerapProcedController.descricaoMedicacao}"/>  
+                <mec:inputText id="unidade" size="6" maxlength="5" title="#{messages.TITLE_UNIDADE_PROCEDIMENTO_TERAPEUTICO}" label="#{messages.LABEL_UNIDADE}" style="text-transform:uppercase" value="#{descricaoProcDiagTerapProcedController.descricaoMedicacao.unidade}" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional() or empty descricaoProcDiagTerapProcedController.descricaoMedicacao}"/>  
+                <mec:selectOneRadio id="procedimentoPreTransOperatorio" label="#{messages.LABEL_PROCEDIMENTO}" title="#{messages.TITLE_PRE_TRANS_PROCEDIMENTO}" 
+                enum="DominioProcedimentoTerapeuticoOperatorio" itemsType="enum" value="#{descricaoProcDiagTerapProcedController.descricaoMedicacao.preTrans}" 
+                readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional() or empty descricaoProcDiagTerapProcedController.descricaoMedicacao}"/>  
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton id="bt_salvarDescricaoMedicamento" action="#{descricaoProcDiagTerapProcedController.salvarDescricaoMedicamento}" 
+                  disabled="#{descricaoProcDiagTerapController.isShowNotaAdicional() or empty descricaoProcDiagTerapProcedController.descricaoMedicacao}" 
+                  process="@this, unidCad, dose, unidade, procedimentoPreTransOperatorio" value="#{messages.LABEL_ADICIONAR}" profile="add" ajax="true" render="panelTecnicaAnestesica"/> 
+                </aghu:acao> 
+              </aghu:linha> 
+            </p:outputPanel>  
+            <p:outputPanel id="panelListMedicamentos" rendered="#{not empty descricaoProcDiagTerapProcedController.descricoesMedicamentos}" layout="inline"> 
+              <aghu:linha> 
+                <mec:serverDataTable id="descricoesMedicamentos" list="#{descricaoProcDiagTerapProcedController.descricoesMedicamentos}" scrollable="true" scrollHeight="100"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column style="width: 40px"> 
+                    <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>  
+                    <mec:commandLink id="deleteDescricaoMedicamento" title="#{messages.LABEL_EXCLUIR}" requestDelay="1000" ignoreDupResponses="true" eventsQueue="filaDelete" 
+                    action="#{descricaoProcDiagTerapProcedController.excluirDescricaoMedicamento}" render="panelTecnicaAnestesica" 
+                    rendered="#{not descricaoProcDiagTerapController.isShowNotaAdicional()}" 
+                    profile="delete" ajax="true" process="@this"> 
+                      <f:setPropertyActionListener target="#{descricaoProcDiagTerapProcedController.ddtSeqExc}" value="#{_item.id.ddtSeq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{descricaoProcDiagTerapProcedController.pinSeqExc}" value="#{_item.id.seqp}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MEDICACAO}" id="outputTextLabelMedicacao"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.afaMedicamento.descricao}" id="outputTextUndCad"/> 
+                  </p:column>  
+                  <p:column style="width: 60px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_UN_CAD}" id="outputTextLabelUndCad"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.afaMedicamento.mpmUnidadeMedidaMedicas.descricao}" id="outputTextMedicacao"/> 
+                  </p:column>  
+                  <p:column style="width: 80px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DOSE}" id="outputTextLabelDose"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.dose}" id="outputTextDose"/> 
+                  </p:column>  
+                  <p:column style="width: 80px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_UNIDADE}" id="outputTextLabelUnidade"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.unidade}" id="outputTextUnidade"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PROCEDIMENTO}" id="outputTextLabelProcedimento"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.preTrans.descricao}" id="outputTextProcedimento"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </aghu:panelGeral>  
+      <aghu:panelGeral style="margin-bottom: 0 !important;" legend="#{messages.LABEL_OUTRAS_INFORMACOES}"> 
+        <p:outputPanel id="panelOutrasInformacoes" layout="inline"> 
+          <aghu:linha> 
+            <mec:selectOneRadio id="carater" label="#{messages.LABEL_CARATER}" title="#{messages.TITLE_CARATER_PROCEDIMENTO_TERAPEUTICO}" enum="DominioCaraterCirurgia" itemsType="enum" value="#{descricaoProcDiagTerapProcedController.dadoDesc.carater}" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}"> 
+              <p:ajax event="change" process="@this" listener="#{descricaoProcDiagTerapProcedController.atualizarPdtDadoDesc()}"/> 
+            </mec:selectOneRadio>  
+            <p:outputPanel id="panelEncaminhaMatExame" layout="inline"> 
+              <mec:selectBooleanCheckbox id="encaminhaMatExame" label="#{messages.LABEL_ENCAMINHAMENTO_MATERIAL_EXAME}" title="#{messages.TITLE_ENCAMINHAMENTO_MATERIAL_EXAME}" value="#{descricaoProcDiagTerapProcedController.encaminhaMatExame}" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional() or not descricaoProcDiagTerapProcedController.encaminhamentoSolicitacao}"> 
+                <p:ajax event="change" update="@(#panelEncaminhaMatExame)" process="@this" listener="#{descricaoProcDiagTerapProcedController.atualizarEncaminhamentoExame}"/> 
+              </mec:selectBooleanCheckbox> 
+            </p:outputPanel>  
+            <mec:inputTextArea id="material" label="#{messages.LABEL_MATERIAL}" title="#{messages.TITLE_MATERIAL_CIR_REAL}" value="#{descricaoProcDiagTerapProcedController.material}" readonly="true" cols="63" rows="3"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectBooleanCheckbox id="intercorrencia" label="#{messages.LABEL_INTERCORRENCIA}" title="#{messages.TITLE_INTERCORRENCIA_PROCEDIMENTO_TERAPEUTICO}" value="#{descricaoProcDiagTerapProcedController.dadoDesc.intercorrencia}" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}"> 
+              <p:ajax event="change" process="@this" listener="#{descricaoProcDiagTerapProcedController.atualizarPdtDadoDesc()}"/> 
+            </mec:selectBooleanCheckbox>  
+            <mec:selectBooleanCheckbox id="indUsoO2" label="#{messages.LABEL_IND_USO_O2}" title="#{messages.TITLE_IND_USO_O2}" value="#{descricaoProcDiagTerapProcedController.dadoDesc.indUsoO2}" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}"> 
+              <p:ajax event="change" process="@this" listener="#{descricaoProcDiagTerapProcedController.atualizarPdtDadoDesc()}"/> 
+            </mec:selectBooleanCheckbox>  
+            <mec:inputText id="observacoesProc" size="130" maxlength="500" label="#{messages.LABEL_OBS_E_INTERCORRENCIA}" title="#{messages.TITLE_OBS_E_INTERCORRENCIA_PROCEDIMENTO_TERAPEUTICO}" value="#{descricaoProcDiagTerapProcedController.dadoDesc.observacoesProc}" style="text-transform:uppercase" readonly="#{descricaoProcDiagTerapController.isShowNotaAdicional()}"> 
+              <p:ajax event="change" process="@this" listener="#{descricaoProcDiagTerapProcedController.atualizarPdtDadoDesc()}"/> 
+            </mec:inputText> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </aghu:panelGeral> 
+    </h:form>  
+    <h:form id="formAtualizaLista" prependId="false"> 
+      <pe:remoteCommand name="posAtualizarLista" update="@(#panelEquipamentoETecnica)" actionListener="#{descricaoProcDiagTerapController.posSalvarProcDiagTerap()}"/> 
+    </h:form> 
+     <p:dialog id="modalComplemento" width="360" height="200"
+				modal="true" closable="true" resizable="false" widgetVar="modalComplementoWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.LABEL_COMPLEMENTO}" />
+					</h:panelGroup>
+				</f:facet>
+	        	<h:panelGroup>
+					<h:form prependId="false" id="formModalComplemento">
+							<p:inputTextarea id="textAreaPanel" rows="10" cols="60" value="#{descricaoProcDiagTerapProcedController.procedimentoSelecionado.complemento}"
+									autoResize="true"/>
+							<aghu:linha>
+							<br/>
+								<mec:commandButton value="#{messages.LABEL_CONFIRMAR}" id="bt_confirmar"
+									action="#{descricaoProcDiagTerapProcedController.atualizarComplementoPelaModal()}"
+								    oncomplete="PF('modalComplementoWG').hide();"
+									profile="ok" />
+								<mec:commandButton value="#{messages.LABEL_CANCELAR}"
+									onclick="PF('modalComplementoWG').hide();"
+									profile="cancel" ajax="true" />
+							</aghu:linha>
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>	
+  </ui:composition> 
+</html>

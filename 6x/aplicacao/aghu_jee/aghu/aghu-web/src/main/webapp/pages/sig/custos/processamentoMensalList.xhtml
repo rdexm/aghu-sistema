@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_PROCESSAMENTO_MENSAL}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{processamentoMensalPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{processamentoMensalPaginatorController}"/>  
+      <h:form prependId="false" id="formFiltro"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_PROCESSAMENTO_MENSAL}"> 
+          <aghu:linha> 
+            <mec:selectOneMenu id="competencia" label="#{messages.LABEL_COMPETENCIA_PROCESSAMENTO_MENSAL}" title="#{messages.TITLE_COMPETENCIA_PROCESSAMENTO_MENSAL}" itemLabel="competenciaMesAno" value="#{processamentoMensalPaginatorController.competencia}" items="#{processamentoMensalPaginatorController.listarCompetencias()}"/>  
+            <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO_PROCESSAMENTO_MENSAL}" title="#{messages.TITLE_SITUACAO_PROCESSAMENTO_MENSAL}" enum="DominioSituacaoProcessamentoCusto" value="#{processamentoMensalPaginatorController.situacao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{processamentoMensalPaginatorController.pesquisar}" profile="search" styleClass="bt_verde "/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{processamentoMensalPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" rendered="#{mf:hasPermission(securityController,'editarProcessamentoMensal,editar') and processamentoMensalPaginatorController.ativo}" action="#{processamentoMensalPaginatorController.iniciarInclusao}" profile="add" styleClass="bt_verde "> 
+            <f:setPropertyActionListener target="#{processamentoMensalController.seqProcessamentoCusto}" value="#{null}" for="command"/> 
+          </mec:commandButton> 
+        </aghu:acao>  
+        <mec:serverDataTable dataModel="dataModel" id="tabela" value="#{processamentoMensalPaginatorController}" rendered="#{processamentoMensalPaginatorController.ativo}" controller="#{processamentoMensalPaginatorController}"> 
+          <c:set var="item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{processamentoMensalPaginatorController.editar}" rendered="#{mf:hasPermission(securityController,'editarProcessamentoMensal,editar') and item.indSituacao ne 'F'}" profile="edit" ajax="true" process="@this"> 
+              <f:setPropertyActionListener target="#{processamentoMensalController.seqProcessamentoCusto}" value="#{item.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink onclick="return false;" rendered="#{item.indSituacao eq 'F'}" ajax="true"/>  
+            <mec:commandLink title="#{messages.LABEL_VISUALIZAR}" action="#{processamentoMensalPaginatorController.visualizar}" immediate="true" rendered="#{not mf:hasPermission(securityController,'editarProcessamentoMensal,editar') and item.indSituacao ne 'F'}" styleClass=" silk-zoom silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{processamentoMensalController.seqProcessamentoCusto}" value="#{item.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_CONSULTA_HISTORICO_PROCESSAMENTO_CUSTO}" action="#{processamentoMensalPaginatorController.visualizarHistorico}" immediate="true" rendered="#{item.indSituacao ne 'F'}" styleClass=" silk-historico silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{historicoProcessamentoCustoPaginatorController.processamentoCusto}" value="#{item}" for="command"/>  
+              <f:setPropertyActionListener target="#{historicoProcessamentoCustoPaginatorController.passo}" value="#{null}" for="command"/>
+              <f:setPropertyActionListener target="#{historicoProcessamentoCustoPaginatorController.retornarTelaCadastro}" value="#{false}" for="command"/>
+            </mec:commandLink> 
+          </p:column>  
+          <p:column width="100"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_COMPETENCIA_PROCESSAMENTO_MENSAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.competencia}"> 
+              <f:convertDateTime pattern="MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column width="100"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_INICIAL_PROCESSAMENTO_MENSAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.dataInicio}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column width="100"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_FINAL_PROCESSAMENTO_MENSAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.dataFim}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column width="100"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO_PROCESSAMENTO_MENSAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{item.indSituacao.descricao}"/> 
+          </p:column> 
+          <p:column width="100"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TEMPO_EXECUCAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{processamentoMensalPaginatorController.calcularTempoExecucao(item)}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

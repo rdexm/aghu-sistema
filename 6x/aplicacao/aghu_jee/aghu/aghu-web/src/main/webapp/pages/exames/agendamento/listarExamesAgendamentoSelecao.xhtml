@@ -1,0 +1,698 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_LISTAR_EXAMES_AGENDAMENTO_SELECAO} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{listarExamesAgendamentoSelecaoController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{listarExamesAgendamentoSelecaoController}" />
+		<h:form prependId="false" id="listarExamesAgendamentoSelecao">
+			<pe:remoteCommand name="selecionarSolicitacao"
+				update="panelExames,panelAcoesExame"
+				actionListener="#{listarExamesAgendamentoSelecaoController.obterExamesDaSolicitacao}">
+				<pe:assignableParam name="solicitacaoSelecionada"
+					assignTo="#{listarExamesAgendamentoSelecaoController.solicitacaoSelecionada}" />
+			</pe:remoteCommand>
+			<aghu:panelGeral
+				legend="#{messages.LABEL_PESQUISAR_SOLICITACAO_EXAMES}">
+				<aghu:linha>
+					<mec:suggestionBox id="unidadeExecutora" var="unidadeExecutora"
+						itemValue="#{unidadeExecutora}"
+						label="#{messages.LABEL_UNIDADE_EXECUTORA}"
+						title="#{messages.TITLE_UNIDADE_EXECUTORA}" width="500"
+						suggestionAction="pesquisarUnidadeExecutora"
+						posSelectionAction="persistirIdentificacaoUnidadeExecutora"
+						required="true" descricaoInput="seq" descricaoLabel="descricao"
+						controller="#{listarExamesAgendamentoSelecaoController}"
+						value="#{listarExamesAgendamentoSelecaoController.unidadeExecutora}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{unidadeExecutora.seq}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_SIGLA}</b>
+							</f:facet> #{unidadeExecutora.sigla}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_ANDAR}</b>
+							</f:facet> #{unidadeExecutora.andar}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{unidadeExecutora.descricao}
+              </p:column>
+					</mec:suggestionBox>
+
+					<mec:inputNumero id="solicitacaoEdicao"
+						label="#{messages.LABEL_SOLICITACAO_SEQ}"
+						title="#{messages.TITLE_SOLICITACAO_SEQ}" size="10" maxlength="8"
+						converter="#{javax.faces.Integer}"
+						value="#{listarExamesAgendamentoSelecaoController.soeSeq}"
+						readonly="#{listarExamesAgendamentoSelecaoController.origemSolicitacaoExames}">
+						<p:ajax event="change"
+							update="@(#dtSolicitacao) @(#unidadeEdicao) @(#consultaOrigem) @(#selecionaPaciente) @(#panelSolicitacoes) @(#panelAcoesExame) @(#acoesBotoesPesquisa)"
+							process="@this"
+							listener="#{listarExamesAgendamentoSelecaoController.obterSolicitacaoExame}" />
+					</mec:inputNumero>
+
+					<p:outputPanel id="dataUnidade" layout="inline">
+						<mec:inputTextData id="dtSolicitacao"
+							label="#{messages.LABEL_DATA_SOLICITACAO}"
+							title="#{messages.TITLE_DATA_SOLICITACAO}" size="10"
+							maxlength="10"
+							readonly="#{listarExamesAgendamentoSelecaoController.exameVO.numero != null}"
+							value="#{listarExamesAgendamentoSelecaoController.exameVO.dataSolicitacao}"
+							tipo="data" />
+						<mec:inputText label="#{messages.LABEL_UNIDADE}"
+							id="unidadeEdicao" maxlength="45" size="60"
+							value="#{listarExamesAgendamentoSelecaoController.exameVO.unfDescricao}"
+							style="text-transform:uppercase" readonly="true" />
+					</p:outputPanel>
+				</aghu:linha>
+				<aghu:linha>
+					<p:outputPanel id="selecionaPaciente" layout="inline">
+
+						<mec:inputNumero id="input_prontuarioEdicao"
+							label="#{messages.LABEL_PRONTUARIO}"
+							title="#{messages.TITLE_PRONTUARIO_EXAME}"
+							converter="#{javax.faces.Integer}" size="10" maxlength="10"
+							readonly="#{listarExamesAgendamentoSelecaoController.exameVO.numero != null}"
+							value="#{listarExamesAgendamentoSelecaoController.exameVO.prontuario}">
+							<p:ajax event="change"
+								update="@(#selecionaPaciente) @(#acoesBotoesPesquisa)"
+								process="@this"
+								listener="#{listarExamesAgendamentoSelecaoController.selecionarPacienteConsulta}" />
+						</mec:inputNumero>
+
+						<mec:inputNumero id="input_pacCodigoEdicao"
+							label="#{messages.LABEL_CODIGO}"
+							title="#{messages.TITLE_CODIGO_PACIENTE}"
+							converter="#{javax.faces.Integer}" size="14" maxlength="9"
+							readonly="#{listarExamesAgendamentoSelecaoController.exameVO.numero != null}"
+							value="#{listarExamesAgendamentoSelecaoController.exameVO.codPaciente}">
+							<p:ajax event="change"
+								update="@(#selecionaPaciente) @(#acoesBotoesPesquisa)"
+								process="@this"
+								listener="#{listarExamesAgendamentoSelecaoController.selecionarPacienteConsulta}" />
+						</mec:inputNumero>
+
+						<mec:inputText label="#{messages.LABEL_NOME}" id="pacNomeEdicao"
+							maxlength="85" size="75"
+							value="#{listarExamesAgendamentoSelecaoController.pacNome}"
+							style="text-transform:uppercase" readonly="true" />
+
+						<mec:commandButton style="vertical-align:-20px !important;"
+							disabled="#{listarExamesAgendamentoSelecaoController.exameVO.numero != null}"
+							value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true"
+							action="#{listarExamesAgendamentoSelecaoController.redirecionarPesquisaFonetica}"
+							styleClass=" bt_cinza icon-pesquisa-fonetica" ajax="true">
+							<f:setPropertyActionListener
+								target="#{pesquisaPacienteController.cameFrom}"
+								value="exames-listarAgendamento" for="command" />
+						</mec:commandButton>
+					</p:outputPanel>
+				</aghu:linha>
+
+				<aghu:linha>
+					<p:outputPanel id="consultaOrigem" layout="inline">
+						<mec:inputNumero id="input_nroConsulta"
+							label="#{messages.LABEL_CONSULTA}"
+							title="#{messages.TITLE_CONSULTA_NUMERO}" size="10" maxlength="8"
+							converter="#{javax.faces.Integer}"
+							readonly="#{listarExamesAgendamentoSelecaoController.exameVO.numero != null}"
+							value="#{listarExamesAgendamentoSelecaoController.exameVO.numConsulta}">
+							<p:ajax event="change" update="@(#acoesBotoesPesquisa)"
+								process="@this"
+								listener="#{listarExamesAgendamentoSelecaoController.habilitarBotaoPesquisar}" />
+						</mec:inputNumero>
+
+						<mec:selectOneMenu id="origem"
+							label="#{messages.LABEL_ORIGEM_SOLICITACAO_EXAME}"
+							title="#{messages.TITLE_ORIGEM_SOLICITACAO_EXAME}"
+							readonly="#{listarExamesAgendamentoSelecaoController.exameVO.numero != null}"
+							enum="DominioOrigemAtendimento"
+							value="#{listarExamesAgendamentoSelecaoController.exameVO.origem}" />
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+
+			<aghu:acao>
+				<p:outputPanel id="acoesBotoesPesquisa" layout="inline">
+					<mec:commandButton value="#{messages.LABEL_PESQUISAR}"
+						id="bt_pesquisar" defaultCommand="true"
+						action="#{listarExamesAgendamentoSelecaoController.pesquisar}"
+						disabled="#{not listarExamesAgendamentoSelecaoController.usuarioTemPermissaoTela}"
+						profile="search"  ajax="true"
+						render="tableItensSolicExame,dtSolicitacao, unidadeEdicao, consultaOrigem, selecionaPaciente, panelAcoesExame,acoesBotoesPesquisa, panelSolicitacoes, panelExames, panelAcoesExame" />
+					<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar"
+						reRender="tabelaExamesAgendamentoSelecao,panelSolicitacoes,panelExames,panelAcoesExames, tableItensSolicExame"
+						action="#{listarExamesAgendamentoSelecaoController.limpar}"
+						 styleClass="bt_cinza" profile="clear" />
+					<mec:commandButton value="#{messages.LABEL_VOLTAR}"
+						id="voltarConfirmaAgendamento"
+						action="#{listarExamesAgendamentoSelecaoController.voltar}"
+						rendered="#{listarExamesAgendamentoSelecaoController.voltarPara != null}"
+						styleClass="bt_voltar bt_cinza" immediate="true" process="@this"
+						ajax="true"
+						render="scriptModalConfirmaSaida, panelModalAdverteExameNaoAgendado, panelRenderModalConfirmaSaida, scriptModalAdverteImpressaoTicket, panelModalAdverteImpressaoTicket, panelRenderModalAdverteImpressaoTicket"
+						profile="back" />
+				</p:outputPanel>
+			</aghu:acao>
+
+			<p:outputPanel id="panelSolicitacoes" layout="inline">
+				<p:outputPanel id="panelSolicitacoesInterno"
+					rendered="#{listarExamesAgendamentoSelecaoController.solicitacoesExames!=null}"
+					layout="inline" styleClass="aghu-panel-geral">
+					<aghu:panelGeral
+						legend="#{messages.LABEL_SOLICITACAO_EXAMES_AGENDAMENTO}">
+
+						<mec:serverDataTable id="tableSolicExames"
+							list="#{listarExamesAgendamentoSelecaoController.solicitacoesExames}"
+							scrollHeight="90" scrollable="true">
+							<c:set var="_solicitacao" value="#{item}" />
+							<p:column width="5%">
+								<p:outputPanel id="panelRadioSolicitacao"
+									rendered="#{_solicitacao.numero.equals(listarExamesAgendamentoSelecaoController.solicitacaoSelecionada)}"
+									layout="inline">
+									<input type="radio" id="#{_solicitacao.numero}" name="group"
+										class="serverDataTable"
+										onchange="selecionarSolicitacao(#{_solicitacao.numero})"
+										checked="checked" />
+								</p:outputPanel>
+								<p:outputPanel id="panelRadioSolicitacaoAux"
+									rendered="#{not _solicitacao.numero.equals(listarExamesAgendamentoSelecaoController.solicitacaoSelecionada)}"
+									layout="inline">
+									<input type="radio" id="#{_solicitacao.numero}"
+										class="serverDataTable"
+										onchange="selecionarSolicitacao(#{_solicitacao.numero})"
+										name="group" />
+								</p:outputPanel>
+							</p:column>
+							<p:column width="10%">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_NUMERO_SOLICITACAO_AGENDAMENTO}" />
+								</f:facet>
+								<h:outputText value="#{_solicitacao.numero}" />
+							</p:column>
+							<p:column width="15%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_DATA}" />
+								</f:facet>
+								<h:outputText value="#{_solicitacao.dataSolicitacao}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+								</h:outputText>
+							</p:column>
+							<p:column width="10%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+								</f:facet>
+								<h:outputText value="#{_solicitacao.prontuario}" />
+							</p:column>
+							<p:column width="10%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_CODIGO}" />
+								</f:facet>
+								<h:outputText value="#{_solicitacao.codPaciente}" />
+							</p:column>
+							<p:column width="35%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_NOME_PACIENTE}" />
+								</f:facet>
+								<h:outputText
+									value="#{listarExamesAgendamentoSelecaoController.obterNomePacientePorPacCodigo(_solicitacao.codPaciente)}" />
+							</p:column>
+							<p:column width="5%">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_ORIGEM_SOLICITACAO_EXAME}" />
+								</f:facet>
+								<h:outputText value="#{_solicitacao.origem}" />
+								<p:tooltip value="#{_solicitacao.origem.descricao}"
+									styleClass="tooltip" direction="bottom-right"
+									rendered="#{_solicitacao.origem != null}" />
+							</p:column>
+							<p:column width="10%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_CONSULTA}" />
+								</f:facet>
+								<h:outputText value="#{_solicitacao.numConsulta}" />
+							</p:column>
+						</mec:serverDataTable>
+
+					</aghu:panelGeral>
+				</p:outputPanel>
+			</p:outputPanel>
+
+			<p:outputPanel id="panelExames" layout="inline" >
+				<p:outputPanel id="panelExamesInterno"
+					rendered="#{listarExamesAgendamentoSelecaoController.examesAgendamentoSelecao!=null}"
+					styleClass="tabela-hachurada aghu-panel-geral" layout="inline">
+					<aghu:panelGeral
+						legend="#{messages.LABEL_EXAMES_SOLICITADOS_AGENDAMENTO}">
+
+						<mec:serverDataTableMultipleSelection id="tableItensSolicExame" scrollHeight="320"
+							list="#{listarExamesAgendamentoSelecaoController.examesAgendamentoSelecao}" 
+							controller="#{listarExamesAgendamentoSelecaoController}" draggableColumns="false" 
+							scrollable="true" selection="solicitacoesExamesChecked" render= "panelAcoesExame"
+							rowCheckListener="marcarLinha" rowSelectListener="selecionarLinha"
+							rowUncheckListener="desmarcarLinha" toggleSelectListener="marcarTodos" >
+							<c:set var="_agendamentoVO" value="#{item}" />
+							<p:column exportable="false" selectionMode="multiple" width="1%" style="">
+								<p:tooltip direction="bottom-right" styleClass="tooltip"
+									layout="block"
+									rendered="#{_agendamentoVO.itemExame.aelUnfExecutaExames.indDesativaTemp}">
+									<h:outputText
+										value="#{messages.LABEL_EXAME_TEMPORARIAMENTE_DESATIVADO}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_MOTIVO_EXAME_DESATIVADO} #{_agendamentoVO.itemExame.aelUnfExecutaExames.motivoDesativacao}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_DATA_REATIVACAO} #{listarExamesAgendamentoSelecaoController.obterDataFormatadaReativacao(_agendamentoVO.itemExame.aelUnfExecutaExames.dthrReativaTemp)}" />
+								</p:tooltip>
+							</p:column>
+							<p:column
+								style="#{listarExamesAgendamentoSelecaoController.destacaAelUnfExecutaExamesDesativada(_agendamentoVO) ? 'background-color:#CAE1FF' : ''}"
+								width="5%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ITEM}" />
+								</f:facet>
+								<h:outputText value="#{_agendamentoVO.itemExame.id.seqp}" />
+								<p:tooltip direction="bottom-right" styleClass="tooltip"
+									layout="block"
+									rendered="#{_agendamentoVO.itemExame.aelUnfExecutaExames.indDesativaTemp}">
+									<h:outputText
+										value="#{messages.LABEL_EXAME_TEMPORARIAMENTE_DESATIVADO}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_MOTIVO_EXAME_DESATIVADO} #{_agendamentoVO.itemExame.aelUnfExecutaExames.motivoDesativacao}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_DATA_REATIVACAO} #{listarExamesAgendamentoSelecaoController.obterDataFormatadaReativacao(_agendamentoVO.itemExame.aelUnfExecutaExames.dthrReativaTemp)}" />
+								</p:tooltip>
+							</p:column>
+							<p:column
+								style="#{listarExamesAgendamentoSelecaoController.destacaAelUnfExecutaExamesDesativada(_agendamentoVO) ? 'background-color:#CAE1FF' : ''}"
+								width="5%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_SIGLA}" />
+								</f:facet>
+								<h:outputText value="#{_agendamentoVO.itemExame.exame.sigla}" />
+								<p:tooltip direction="bottom-right" styleClass="tooltip"
+									layout="block"
+									rendered="#{_agendamentoVO.itemExame.aelUnfExecutaExames.indDesativaTemp}">
+									<h:outputText
+										value="#{messages.LABEL_EXAME_TEMPORARIAMENTE_DESATIVADO}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_MOTIVO_EXAME_DESATIVADO} #{_agendamentoVO.itemExame.aelUnfExecutaExames.motivoDesativacao}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_DATA_REATIVACAO} #{listarExamesAgendamentoSelecaoController.obterDataFormatadaReativacao(_agendamentoVO.itemExame.aelUnfExecutaExames.dthrReativaTemp)}" />
+								</p:tooltip>
+							</p:column>
+							<p:column
+								style="#{listarExamesAgendamentoSelecaoController.destacaAelUnfExecutaExamesDesativada(_agendamentoVO) ? 'background-color:#CAE1FF' : ''}"
+								width="20%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_NOME_EXAME}" />
+								</f:facet>
+								<h:outputText
+									value="#{_agendamentoVO.itemExame.exame.descricaoUsual}" />
+								<p:tooltip direction="bottom-right" styleClass="tooltip"
+									layout="block"
+									rendered="#{_agendamentoVO.itemExame.aelUnfExecutaExames.indDesativaTemp}">
+									<h:outputText
+										value="#{messages.LABEL_EXAME_TEMPORARIAMENTE_DESATIVADO}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_MOTIVO_EXAME_DESATIVADO} #{_agendamentoVO.itemExame.aelUnfExecutaExames.motivoDesativacao}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_DATA_REATIVACAO} #{listarExamesAgendamentoSelecaoController.obterDataFormatadaReativacao(_agendamentoVO.itemExame.aelUnfExecutaExames.dthrReativaTemp)}" />
+								</p:tooltip>
+							</p:column>
+							<p:column
+								style="#{listarExamesAgendamentoSelecaoController.destacaAelUnfExecutaExamesDesativada(_agendamentoVO) ? 'background-color:#CAE1FF' : ''}"
+								width="20%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_MATERIAL}" />
+								</f:facet>
+								<h:outputText
+									value="#{_agendamentoVO.itemExame.materialAnalise.descricao}" />
+								<p:tooltip direction="bottom-right" styleClass="tooltip"
+									layout="block"
+									rendered="#{_agendamentoVO.itemExame.aelUnfExecutaExames.indDesativaTemp}">
+									<h:outputText
+										value="#{messages.LABEL_EXAME_TEMPORARIAMENTE_DESATIVADO}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_MOTIVO_EXAME_DESATIVADO} #{_agendamentoVO.itemExame.aelUnfExecutaExames.motivoDesativacao}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_DATA_REATIVACAO} #{listarExamesAgendamentoSelecaoController.obterDataFormatadaReativacao(_agendamentoVO.itemExame.aelUnfExecutaExames.dthrReativaTemp)}" />
+								</p:tooltip>
+							</p:column>
+							<p:column
+								style="#{listarExamesAgendamentoSelecaoController.destacaAelUnfExecutaExamesDesativada(_agendamentoVO) ? 'background-color:#CAE1FF' : ''}"
+								width="19%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_UNIDADE}" />
+								</f:facet>
+								<h:outputText
+									value="#{_agendamentoVO.itemExame.unidadeFuncional.descricao}" />
+								<p:tooltip direction="bottom-right" styleClass="tooltip"
+									layout="block"
+									rendered="#{_agendamentoVO.itemExame.aelUnfExecutaExames.indDesativaTemp}">
+									<h:outputText
+										value="#{messages.LABEL_EXAME_TEMPORARIAMENTE_DESATIVADO}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_MOTIVO_EXAME_DESATIVADO} #{_agendamentoVO.itemExame.aelUnfExecutaExames.motivoDesativacao}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_DATA_REATIVACAO} #{listarExamesAgendamentoSelecaoController.obterDataFormatadaReativacao(_agendamentoVO.itemExame.aelUnfExecutaExames.dthrReativaTemp)}" />
+								</p:tooltip>
+							</p:column>
+							<p:column
+								style="#{listarExamesAgendamentoSelecaoController.destacaAelUnfExecutaExamesDesativada(_agendamentoVO) ? 'background-color:#CAE1FF' : ''}"
+								width="10%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_SITUACAO}" />
+								</f:facet>
+								<h:outputText
+									value="#{_agendamentoVO.itemExame.situacaoItemSolicitacao.descricao}" />
+								<p:tooltip direction="bottom-right" styleClass="tooltip"
+									layout="block"
+									rendered="#{_agendamentoVO.itemExame.aelUnfExecutaExames.indDesativaTemp}">
+									<h:outputText
+										value="#{messages.LABEL_EXAME_TEMPORARIAMENTE_DESATIVADO}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_MOTIVO_EXAME_DESATIVADO} #{_agendamentoVO.itemExame.aelUnfExecutaExames.motivoDesativacao}" />
+									<br clear="none" />
+									<h:outputText
+										value="#{messages.LABEL_DATA_REATIVACAO} #{listarExamesAgendamentoSelecaoController.obterDataFormatadaReativacao(_agendamentoVO.itemExame.aelUnfExecutaExames.dthrReativaTemp)}" />
+								</p:tooltip>
+							</p:column>
+							<p:column
+								style="#{listarExamesAgendamentoSelecaoController.destacaAelUnfExecutaExamesDesativada(_agendamentoVO) ? 'background-color:#CAE1FF' : ''}"
+								width="10%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_DATA_HORA_AGENDA}" />
+								</f:facet>
+								<h:outputText value="#{_agendamentoVO.dthrAgendaString}" />
+								<p:tooltip value="#{_agendamentoVO.diaSemanaData}"
+									styleClass="tooltip" direction="bottom-right"
+									rendered="#{_agendamentoVO.dthrAgenda != null}" />
+							</p:column>
+						</mec:serverDataTableMultipleSelection>
+
+					</aghu:panelGeral>
+				</p:outputPanel>
+			</p:outputPanel>
+
+			<p:outputPanel id="panelAcoesExame" layout="inline">
+				<p:outputPanel
+					rendered="#{listarExamesAgendamentoSelecaoController.examesAgendamentoSelecao!=null}"
+					layout="inline">
+					<aghu:acao>
+						<mec:commandButton value="#{messages.LABEL_AGENDAR_EXAMES}"
+							id="bt_agendar"
+							action="#{listarExamesAgendamentoSelecaoController.agendarExames}"
+                                   disabled="#{not listarExamesAgendamentoSelecaoController.usuarioTemPermissaoTela}"
+							process="@this" ajax="true"
+							render="scriptModalConfirmaSelecaoAgendamento, panelModalConfirmaSelecaoExamesAmostraComum, panelRenderModalConfirmaSelecaoExamesAmostraComum"
+							styleClass="bt_cinza">
+							<f:setPropertyActionListener
+								target="#{consultaHorarioLivreController.unfExecutora}"
+								value="#{listarExamesAgendamentoSelecaoController.seqUnidadeExecutora}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{consultaHorarioLivreController.cameFrom}"
+								value="listarExamesAgendamentoSelecao" for="command" />
+							<f:setPropertyActionListener
+								target="#{consultaHorarioLivreController.permitirHorarioExtra}"
+								value="#{listarExamesAgendamentoSelecaoController.permitirHorarioExtra}"
+								for="command" />
+						</mec:commandButton>
+
+						<mec:commandButton value="#{messages.LABEL_CANCELA_AGENDAMENTO}"
+							id="bt_cancela_agend"
+							action="#{listarExamesAgendamentoSelecaoController.cancelarAgendamento}"
+                                   disabled="#{not mf:hasPermission(securityController,'agendarExame,cancelar') || listarExamesAgendamentoSelecaoController.origemSolicitacaoExames}"
+							ajax="true"
+							render="panelExames, scriptModalConfirmaSelecaoCancelamento, panelRenderModalConfirmaSelecaoExamesAmostraComumCanc, panelModalConfirmaSelecaoCancExamesAmostraComum"
+							process="@this" styleClass="bt_cinza" />
+
+						<mec:commandButton value="#{messages.LABEL_IMPRIMIR_TICKET}"
+							id="bt_imprime_ticket"
+                                   disabled="#{not mf:hasPermission(securityController,'emitirTicketExamesPaciente,print') || listarExamesAgendamentoSelecaoController.voltarPara eq 'ambulatorio-atenderPacientesAgendados'}"
+							action="#{listarExamesAgendamentoSelecaoController.imprimirTicketExames}"
+							profile="print" onclick="PF('loadDialogWG').show()"
+							styleClass="bt_cinza" />
+					</aghu:acao>
+				</p:outputPanel>
+			</p:outputPanel>
+
+			<p:outputPanel id="panelModalConfirmaSelecaoExamesAmostraComum"
+				layout="inline">
+				<p:dialog id="modalConfirmaSelecAgendamento"
+					rendered="#{listarExamesAgendamentoSelecaoController.exibeConfirmacaoSelecao}"
+					width="420" height="150" showWhenRendered="true" modal="true"
+					resizable="false"
+					widgetVar="modalConfirmaSelecaoExamesAmostraComumWG">
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="#{messages.MENSAGEM_EXAMES_AMOSTRAS_COMUM}" />
+						</h:panelGroup>
+					</f:facet>
+
+					<h:panelGroup>
+						<h:panelGroup>
+							<mec:serverDataTable id="tableItensDevemSerAgendados"
+								scrollHeight="70"
+								list="#{listarExamesAgendamentoSelecaoController.examesDevemSerAgendados}"
+								scrollable="true">
+								<c:set var="exameVO" value="#{item}" />
+								<p:column headerText="#{messages.LABEL_ITEM}"
+									style="max-width:5px; white-space:nowrap;">
+									<h:outputText value="#{exameVO.itemExame.id.seqp}" />
+								</p:column>
+								<p:column headerText="#{messages.LABEL_SIGLA}"
+									style="max-width:10px; white-space:nowrap;">
+									<h:outputText value="#{exameVO.itemExame.exame.sigla}" />
+								</p:column>
+								<p:column headerText="#{messages.LABEL_NOME_EXAME}"
+									style="max-width:15px; white-space:nowrap;">
+									<h:outputText value="#{exameVO.itemExame.exame.descricaoUsual}" />
+								</p:column>
+							</mec:serverDataTable>
+						</h:panelGroup>
+						<br clear="none" />
+
+
+						<mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}"
+							action="#{listarExamesAgendamentoSelecaoController.selecionarExamesAmostrasComum(listarExamesAgendamentoSelecaoController.getExamesDevemSerAgendados())}"
+							onclick="PF('modalConfirmaSelecaoExamesAmostraComumWG').hide();"
+							styleClass="bt_cinza" ajax="true"
+							render="panelModalConfirmaSelecaoExamesAmostraComum, panelExames" />
+						<mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}"
+							action="#{listarExamesAgendamentoSelecaoController.setExibeConfirmacaoSelecao(false)}"
+							styleClass="bt_vermelho  bt_cinza" ajax="true"
+							onclick="PF('modalConfirmaSelecaoExamesAmostraComumWG').hide();"
+							render="panelModalConfirmaSelecaoExamesAmostraComum" />
+					</h:panelGroup>
+				</p:dialog>
+			</p:outputPanel>
+
+
+			<p:outputPanel id="panelModalConfirmaSelecaoCancExamesAmostraComum"
+				layout="inline">
+				<p:dialog id="modalConfirmaSelecCancelamento"
+					rendered="#{listarExamesAgendamentoSelecaoController.exibeConfirmacaoSelecaoCancelamento}"
+					width="420" height="150" showWhenRendered="true" modal="true"
+					resizable="false"
+					widgetVar="modalConfirmaSelecaoExamesAmostraComumCancWG">
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText
+								value="#{messages.MENSAGEM_EXAMES_AMOSTRAS_COMUM_CANC}" />
+						</h:panelGroup>
+					</f:facet>
+
+					<h:panelGroup>
+						<h:panelGroup>
+							<mec:serverDataTable id="tableItensDevemSerCancelados"
+								scrollHeight="70"
+								list="#{listarExamesAgendamentoSelecaoController.examesDevemSerCanceladosJuntos}"
+								scrollable="true">
+								<c:set var="exameVO" value="#{item}" />
+								<p:column headerText="#{messages.LABEL_ITEM}"
+									style="max-width:5px; white-space:nowrap;">
+									<h:outputText value="#{exameVO.itemExame.id.seqp}" />
+								</p:column>
+								<p:column headerText="#{messages.LABEL_SIGLA}"
+									style="max-width:10px; white-space:nowrap;">
+									<h:outputText value="#{exameVO.itemExame.exame.sigla}" />
+								</p:column>
+								<p:column headerText="#{messages.LABEL_NOME_EXAME}"
+									style="max-width:15px; white-space:nowrap;">
+									<h:outputText value="#{exameVO.itemExame.exame.descricaoUsual}" />
+								</p:column>
+							</mec:serverDataTable>
+						</h:panelGroup>
+						<br clear="none" />
+
+
+						<mec:commandButton id="bt_sim_selec" value="#{messages.LABEL_SIM}"
+							action="#{listarExamesAgendamentoSelecaoController.selecionarExamesAmostrasComum(listarExamesAgendamentoSelecaoController.getExamesDevemSerCanceladosJuntos())}"
+							onclick="PF('modalConfirmaSelecaoExamesAmostraComumWG').hide();"
+							styleClass="bt_cinza" ajax="true"
+							render="panelModalConfirmaSelecaoExamesAmostraComum, panelExames" />
+						<mec:commandButton id="bt_nao_selec" value="#{messages.LABEL_NAO}"
+							action="#{listarExamesAgendamentoSelecaoController.setExibeConfirmacaoSelecao(false)}"
+							styleClass="bt_vermelho  bt_cinza" ajax="true"
+							onclick="PF('modalConfirmaSelecaoExamesAmostraComumWG').hide();"
+							render="panelModalConfirmaSelecaoExamesAmostraComum" />
+					</h:panelGroup>
+				</p:dialog>
+			</p:outputPanel>
+
+
+
+			<p:outputPanel id="panelModalAdverteExameNaoAgendado" layout="inline">
+				<p:dialog id="modalAdverteExameNaoAgendado"
+					rendered="#{listarExamesAgendamentoSelecaoController.exibeAdvExameNaoAgendado}"
+					width="300" height="100" showWhenRendered="true" modal="true"
+					resizable="false" widgetVar="modalAdverteExameNaoAgendadoWG">
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="#{messages.MENSAGEM_EXAME_NAO_AGENDADO}" />
+						</h:panelGroup>
+					</f:facet>
+
+					<h:panelGroup>
+						<h:outputText
+							value="#{messages.QUESTIONAMENTO_EXAME_NAO_AGENDADO}" />
+
+						<br clear="none" />
+						<br clear="none" />
+						<br clear="none" />
+
+						<mec:commandButton id="bt_sim_sair" value="#{messages.LABEL_SIM}"
+							action="#{listarExamesAgendamentoSelecaoController.verificarImpressaoTicketVoltar}"
+							onclick="PF('modalAdverteExameNaoAgendadoWG').hide();"
+							styleClass="bt_cinza" ajax="true" />
+						<mec:commandButton id="bt_nao_permanecer"
+							value="#{messages.LABEL_NAO}"
+							action="#{listarExamesAgendamentoSelecaoController.setExibeAdvExameNaoAgendado(false)}"
+							styleClass="bt_vermelho  bt_cinza" ajax="true"
+							onclick="PF('modalAdverteExameNaoAgendadoWG').hide();"
+							render="panelModalAdverteExameNaoAgendado" />
+					</h:panelGroup>
+				</p:dialog>
+			</p:outputPanel>
+
+			<p:outputPanel id="panelModalAdverteImpressaoTicket" layout="inline">
+				<p:dialog id="modalAdverteImpressaoTicket"
+					rendered="#{listarExamesAgendamentoSelecaoController.exibeAdvImpressaoTicket}"
+					width="300" height="100" showWhenRendered="true" modal="true"
+					resizable="false" widgetVar="modalAdverteImpressaoTicketWG">
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText value="#{messages.MENSAGEM_TICKET_NAO_IMPRESSO}" />
+						</h:panelGroup>
+					</f:facet>
+
+					<h:panelGroup>
+						<h:outputText
+							value="#{messages.QUESTIONAMENTO_TICKET_NAO_IMPRESSO}" />
+
+						<br clear="none" />
+						<br clear="none" />
+						<br clear="none" />
+
+						<mec:commandButton id="bt_sim_Impressao"
+							value="#{messages.LABEL_SIM}"
+							action="#{listarExamesAgendamentoSelecaoController.retornarTelaAnterior}"
+							onclick="PF('modalAdverteImpressaoTicketWG').hide();"
+							styleClass="bt_cinza" ajax="true" />
+						<mec:commandButton id="bt_nao_Impressao"
+							value="#{messages.LABEL_NAO}" styleClass="bt_vermelho  bt_cinza"
+							ajax="true" onclick="PF('modalAdverteImpressaoTicketWG').hide();"
+							render="panelModalAdverteImpressaoTicket" />
+					</h:panelGroup>
+				</p:dialog>
+			</p:outputPanel>
+
+			<p:outputPanel id="scriptModalAdverteImpressaoTicket">
+				<p:outputPanel id="panelRenderModalAdverteImpressaoTicket"
+					rendered="#{listarExamesAgendamentoSelecaoController.exibeAdvImpressaoTicket}">
+					<script type="text/javascript">
+                    PF('modalAdverteImpressaoTicketWG').show();
+                  </script>
+				</p:outputPanel>
+			</p:outputPanel>
+
+
+			<p:outputPanel id="scriptModalConfirmaSelecaoAgendamento">
+				<p:outputPanel
+					id="panelRenderModalConfirmaSelecaoExamesAmostraComum"
+					rendered="#{listarExamesAgendamentoSelecaoController.exibeConfirmacaoSelecao}">
+					<script type="text/javascript">
+                    PF('modalConfirmaSelecaoExamesAmostraComumWG').show();
+                  </script>
+				</p:outputPanel>
+			</p:outputPanel>
+
+			<p:outputPanel id="scriptModalConfirmaSelecaoCancelamento">
+				<p:outputPanel
+					id="panelRenderModalConfirmaSelecaoExamesAmostraComumCanc"
+					rendered="#{listarExamesAgendamentoSelecaoController.exibeConfirmacaoSelecaoCancelamento}">
+					<script type="text/javascript">
+                    PF('modalConfirmaSelecaoExamesAmostraComumCancWG').show();
+                  </script>
+				</p:outputPanel>
+			</p:outputPanel>
+
+
+			<p:outputPanel id="scriptModalConfirmaSaida">
+				<p:outputPanel id="panelRenderModalConfirmaSaida"
+					rendered="#{listarExamesAgendamentoSelecaoController.exibeAdvExameNaoAgendado}">
+					<script type="text/javascript">
+                    PF('modalAdverteExameNaoAgendadoWG').show();
+                  </script>
+				</p:outputPanel>
+			</p:outputPanel>
+
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

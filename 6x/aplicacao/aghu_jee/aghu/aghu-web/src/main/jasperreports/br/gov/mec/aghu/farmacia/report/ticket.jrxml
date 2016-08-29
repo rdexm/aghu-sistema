@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="AFAR_TICKET_DISP" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="589b3186-0f9d-447e-a835-376d6cf5e667">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="P_DT_INICIO" class="java.lang.String"/>
+	<parameter name="P_OCORRENCIA" class="java.lang.Integer"/>
+	<parameter name="P_UNIDADE" class="java.lang.Integer"/>
+	<parameter name="P_DT_FIM" class="java.lang.String"/>
+	<parameter name="hospitalLocal" class="java.lang.String"/>
+	<parameter name="prontuario" class="java.lang.Integer"/>
+	<parameter name="localizacao" class="java.lang.String"/>
+	<parameter name="paciente" class="java.lang.String"/>
+	<parameter name="prescricao" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+      'OCORRÊNCIA: ' ||TOD.DESCRICAO || ' - DATA DA TRIAGEM: ' || DSM.DTHR_TRIADO  DESCRICAO2 ,
+       MED.DESCRICAO||' '||decode(MED.CONCENTRACAO,null,null,
+       MED.CONCENTRACAO||' '||umm.descricao) DESCRICAO3
+       ,decode(unf.andar,0, unf.sigla||' '||unf.descricao,1,unf.sigla||' '||unf.descricao,
+       to_char(unf.andar)||' '||ind_ala||' '||unf.descricao) DESCRICAO4
+       ,PAC.NOME NOME
+       ,PAC.PRONTUARIO PRONTUARIO
+       ,(SUM(DSM.QTDE_DISPENSADA - NVL(DSM.QTDE_ESTORNADA,0)))||' '||med.tpr_sigla QTDE_DISPENSADA
+       ,SUM(DSM.QTDE_DISPENSADA - NVL(DSM.QTDE_ESTORNADA,0))  QTDE_DISPENSADA1
+       ,SUM(DSM.QTDE_ESTORNADA)
+       , substr(mpmc_local_pac (ATD.LTO_LTO_ID, ATD.QRT_NUMERO, ATD.UNF_SEQ),1,7) LTO_LTO_ID
+FROM
+       MPM_PRESCRICAO_MDTOS PMD
+       ,AIP_PACIENTES PAC
+       ,AGH_ATENDIMENTOS ATD
+       ,AFA_TIPO_USO_MDTOS TUM
+       ,AFA_MEDICAMENTOS MED
+       ,MPM_UNIDADE_MEDIDA_MEDICAS UMM
+       ,AGH_UNIDADES_FUNCIONAIS UNF
+       ,AFA_DISPENSACAO_MDTOS DSM
+       ,MPM_PRESCRICAO_MEDICAS PME
+       ,AFA_TIPO_OCOR_DISPENSACOES TOD
+WHERE
+     DSM.TOD_SEQ = nvl($P{P_OCORRENCIA},DSM.TOD_SEQ)
+     AND TOD.SEQ = DSM.TOD_SEQ
+     AND DSM.DTHR_TRIADO between to_date($P{P_DT_INICIO},'DD/MM/YYYY') AND to_date($P{P_DT_FIM},'DD/MM/YYYY')
+     AND DSM.QTDE_DISPENSADA > 0
+     AND DSM.IND_SITUACAO || '' = 'T'
+     AND PME.ATD_SEQ = DSM.ATD_SEQ
+     AND PME.SEQ = DSM.PME_SEQ
+     AND DSM.unf_seq_solicitante  =  nvl($P{P_UNIDADE},dsm.unf_seq_solicitante)
+     AND dsm.ind_situacao <>  'S'
+     and dsm.ind_sit_item_prescrito <> 'EG'
+     AND UNF.seq = DSM.unf_seq_solicitante+0
+     AND MED.MAT_CODIGO = DSM.MED_MAT_CODIGO
+     AND TUM.SIGLA = MED.TUM_SIGLA
+     AND UMM.SEQ (+) = MED.UMM_SEQ
+     AND ATD.SEQ = DSM.ATD_SEQ
+     AND PAC.CODIGO = ATD.PAC_CODIGO
+     AND PMD.ATD_SEQ = DSM.ATD_SEQ
+     AND PMD.SEQ = DSM.IME_PMD_SEQ
+GROUP BY
+    'OCORRÊNCIA: ' ||TOD.DESCRICAO || ' - DATA DA TRIAGEM: ' || DSM.DTHR_TRIADO,
+    MED.DESCRICAO||' '||decode(MED.CONCENTRACAO,null,null,
+    MED.CONCENTRACAO||' '||umm.descricao)
+   ,decode(unf.andar,0, unf.sigla||' '||unf.descricao,1,unf.sigla||' '||unf.descricao,
+    to_char(unf.andar)||' '||ind_ala||' '||unf.descricao)
+    ,PAC.NOME
+    ,PAC.PRONTUARIO
+    ,med.tpr_sigla
+    , substr(mpmc_local_pac (ATD.LTO_LTO_ID, ATD.QRT_NUMERO, ATD.UNF_SEQ),1,7)
+ORDER BY MED.DESCRICAO||' '||decode(MED.CONCENTRACAO,null,null,
+         MED.CONCENTRACAO||' '||umm.descricao)]]>
+	</queryString>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="250" splitType="Stretch">
+			<textField>
+				<reportElement uuid="50418bf9-4b61-40e1-9232-7a6cb9da4ad5" x="2" y="3" width="315" height="15"/>
+				<textElement>
+					<font fontName="Courier New" isBold="false" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{hospitalLocal}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="7f0e9d97-2f08-4245-8ba8-3a7f3dd2175d" key="line" x="2" y="1" width="360" height="1"/>
+				<graphicElement>
+					<pen lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="8b1713f8-db80-42dc-9153-8e34fb30f43f" key="line" x="2" y="18" width="360" height="1" isRemoveLineWhenBlank="true"/>
+				<graphicElement>
+					<pen lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement uuid="abb53242-be2b-4509-b091-2043f5379cd9" x="2" y="20" width="75" height="15"/>
+				<textElement>
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<text><![CDATA[Prontuario: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="989192ec-7b69-410f-a85f-0b741f2b7c13" x="2" y="35" width="75" height="15"/>
+				<textElement>
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<text><![CDATA[Localizacao: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="7697deb3-3afb-4da6-9549-f7ad96c47e03" x="2" y="65" width="75" height="15"/>
+				<textElement>
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<text><![CDATA[Prescricao: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="fdff29c1-a83d-4e30-861b-a00624632bdd" x="2" y="50" width="75" height="15"/>
+				<textElement>
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<text><![CDATA[Paciente: ]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="a12a7be0-1901-473c-aa2c-56536253e883" key="line" x="2" y="245" width="360" height="1"/>
+				<graphicElement>
+					<pen lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement uuid="81e90772-3703-44c6-a62a-009a53a56385" x="77" y="20" width="285" height="15"/>
+				<textElement>
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{prontuario}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="ae54b8ad-87af-4c51-9a4f-2b02155bd54e" x="77" y="35" width="285" height="15"/>
+				<textElement>
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{localizacao}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="3e88189d-62a0-48eb-bdc4-a8bd66b10019" x="77" y="50" width="285" height="15"/>
+				<textElement>
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{paciente}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="65e081f1-cce4-4f96-9b0a-b2a50e3dbb29" x="77" y="65" width="285" height="15"/>
+				<textElement>
+					<font fontName="Courier New" pdfFontName="Courier"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{prescricao}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

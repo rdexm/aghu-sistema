@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.TITLE_ACOMODACOES} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+    <style xml:space="preserve">
+        .checked {
+            background-image: url('../../../resources/img/icons/checked.png') !important;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    </style> 
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{pesquisaAcomodacoesPaginatorController}" />
+		<h:form prependId="false" id="formPesquisar">
+			<aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_ACOMODACOES}">
+				<aghu:linha>
+					<mec:inputText id="descricao"
+						label="#{messages.LABEL_DESCRICAO_ACOMODACOES}"
+						value="#{pesquisaAcomodacoesPaginatorController.descricao}"
+						maxlength="60" size="50" style="text-transform:uppercase" />
+
+					<mec:suggestionBox var="row" itemValue="#{row}"
+						id="sbEspecialidade"
+						label="#{messages.LABEL_ESPECIALIDADE_ACOMODACOES}"
+						suggestionAction="pesquisarEspAtivaPorSeqOuOuSiglaOuNomeRedOuNomeEsp"
+						descricaoInput="sigla" descricaoLabel="nomeEspecialidade"
+						maxlength="50" width="500" 
+						controller="#{pesquisaAcomodacoesPaginatorController}"
+						value="#{pesquisaAcomodacoesPaginatorController.especialidade}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{row.seq}
+             </p:column>						
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_SIGLA}</b>
+							</f:facet> #{row.sigla}
+             </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{row.nomeEspecialidade}
+              </p:column>
+					</mec:suggestionBox>
+					
+					<mec:suggestionBox var="row" itemValue="#{row}"
+						id="sbTipoSessao"
+						label="#{messages.LABEL_TIPO_SESSAO_ACOMODACOES}"
+						suggestionAction="listarTiposSessao"
+						descricaoInput="seq" descricaoLabel="descricao"
+						maxlength="60" width="200"
+						controller="#{pesquisaAcomodacoesPaginatorController}"
+						value="#{pesquisaAcomodacoesPaginatorController.tipoSessao}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{row.seq}
+		        </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{row.descricao}
+		        </p:column>
+					</mec:suggestionBox>					
+
+				</aghu:linha>
+			</aghu:panelGeral>
+
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					disabled="#{not mf:hasPermission(securityController, 'pesquisarSessoesTerapeuticas,pesquisar')}"
+					action="#{pesquisaAcomodacoesPaginatorController.pesquisar}"
+					profile="search" />
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}"
+					action="#{pesquisaAcomodacoesPaginatorController.limparCampos}"
+					ajax="true"
+					process="@this"
+					render="formPesquisar, formResultado"
+					profile="clear" />
+
+				<mec:commandButton id="bt_iniciarInclusao"
+					value="#{messages.LABEL_NOVO}"
+					disabled="#{not mf:hasPermission(securityController, 'manterSessoesTerapeuticas,executar')}"
+					rendered="#{pesquisaAcomodacoesPaginatorController.dataModel.pesquisaAtiva}"
+					action="#{pesquisaAcomodacoesPaginatorController.inserirEditar}"
+					profile="add" ajax="true" />
+			</aghu:acao>
+		</h:form>
+		
+		<h:form prependId="false" id="formResultado">
+			<p:outputPanel rendered="#{pesquisaAcomodacoesPaginatorController.dataModel.pesquisaAtiva}" layout="inline">
+				<aghu:panelGeral legend="#{messages.LABEL_SALAS_ACOMODACOES}">
+					<mec:serverDataTable id="tabelaSala" dataModel="dataModel"
+						selection="itemSelecionado" controller="#{pesquisaAcomodacoesPaginatorController}">
+						<c:set var="item" value="#{item}" />
+						
+						<p:column headerText="#{messages.LABEL_ACOES_ACOMODACOES}"
+							styleClass="first-column auto-adjust"
+							exportable="false">
+
+							<mec:commandLink id="tabelaSala_link_remover"
+								profile="delete" title="#{messages.LABEL_EXCLUIR}"
+								rendered="#{mf:hasPermission(securityController, 'manterSessoesTerapeuticas,executar')}"
+								action="#{pesquisaAcomodacoesPaginatorController.excluir}">
+								<f:setPropertyActionListener for="command"
+									target="#{pesquisaAcomodacoesPaginatorController.itemSelecionado}"
+									value="#{item}" />
+							</mec:commandLink>
+
+							<mec:commandLink id="tabelaSala_link_editar"
+								profile="edit" title="#{messages.LABEL_EDITAR}"
+								rendered="#{mf:hasPermission(securityController, 'manterSessoesTerapeuticas,executar')}"
+								action="#{pesquisaAcomodacoesPaginatorController.inserirEditar}">
+								<f:setPropertyActionListener
+									target="#{cadastraAcomodacoesController.mptSala}"
+									value="#{item}" for="command" />
+							</mec:commandLink>
+
+							<mec:commandLink id="tabelaSala_link_historico"
+								title="#{messages.LABEL_HISTORICO}" styleClass="silk-historico-cirurgias silk-icon"
+								action="#{pesquisaAcomodacoesPaginatorController.historicoSala}">
+								<f:setPropertyActionListener
+									target="#{visualizaHistoricoSalasPaginatorController.salaSeq}"
+									value="#{item.seq}" for="command" />
+							</mec:commandLink>
+
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+							</f:facet>
+							<h:outputText id="descricao" value="#{pesquisaAcomodacoesPaginatorController.obterDescricaoTruncada(item.descricao)}" />
+							<p:tooltip for="descricao" direction="bottom-right" styleClass="tooltip"
+								layout="block"
+								rendered="#{item.descricao.length() gt 30}">
+								<h:outputText value="#{item.descricao}" />
+							</p:tooltip>
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_TIPO_SESSAO_ACOMODACOES}" />
+							</f:facet>
+							<h:outputText value="#{item.tipoSessao.descricao}" />
+						</p:column>
+						
+						<p:column styleClass="#{item.indSituacao.isAtivo() == true ? 'checked' : ''}">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ATIVO_ACOMODACOES}" />
+							</f:facet>
+						</p:column>
+						
+					</mec:serverDataTable>
+				</aghu:panelGeral>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

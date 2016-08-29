@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <aghu:panelGeral> 
+      <aghu:linha id="panelSelectComContrato">
+         <mec:selectBooleanCheckbox id="selecionaComContrato" value="#{manterServicosAtividadeController.comContrato}" label="#{messages.LABEL_COM_CONTRATO}" posicaoLabel="direita"> 
+           <p:ajax event="change" update="@(#panelCamposServicos)" process="@this" listener="#{manterServicosAtividadeController.ajustarCombosContratoItem}"/> 
+         </mec:selectBooleanCheckbox> 
+      </aghu:linha>  
+      <p:outputPanel id="panelCamposServicos" rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" layout="inline"> 
+        <aghu:linha>
+			<mec:suggestionBox 
+				label="#{messages.LABEL_CONTRATO}"
+				title="#{messages.TITLE_CONTRATO}" 
+				descricaoInput="nrContrato"
+				descricaoLabel="objetoContrato"
+				suggestionAction="pesquisarContratoServico" required="true"
+				posSelectionAction="posSelectionContratoServico"
+				posDeleteAction="posDeleteContratoServico"
+				readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar') or manterServicosAtividadeController.edicao}"
+				width="800"
+				rendered="#{manterServicosAtividadeController.comContrato}"
+				id="suggestionContratoServico"
+				controller="#{manterServicosAtividadeController}"
+				value="#{manterServicosAtividadeController.contrato}"
+				render="panelItensContratosServico">
+				<p:column>
+					<f:facet name="header">
+						<b>Nro</b>
+					</f:facet> #{item.nrContrato}
+	            </p:column>
+				<p:column>
+					<f:facet name="header">
+						<b>Objeto</b>
+					</f:facet> #{item.objetoContrato}
+	            </p:column>
+			</mec:suggestionBox>
+			<mec:suggestionBox 
+					label="#{messages.LABEL_SERVICO_AF}"
+					title="#{messages.TITLE_SERVICO_AF}"
+					descricaoInput="numeroAfComComplemento" 
+					descricaoLabel="nomeServ"
+					suggestionAction="buscarAutorizacaoFornecimento"
+					posSelectionAction="posSelectionSuggestionAF" required="true"
+					readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar') or manterServicosAtividadeController.edicao}"
+					width="800"
+					rendered="#{not manterServicosAtividadeController.comContrato}"
+					id="suggestionAF" controller="#{manterServicosAtividadeController}"
+					value="#{manterServicosAtividadeController.voAutForn}">
+					<p:column>
+							<f:facet name="header">
+								<b>Serviço</b>
+							</f:facet> #{item.nomeServ}
+		            </p:column>
+					<p:column>
+							<f:facet name="header">
+								<b>Numero AF</b>
+							</f:facet> #{item.numeroAf}
+		            </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>Complemento AF</b>
+							</f:facet> #{item.complementoAf}
+		            </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>Numero Interno</b>
+							</f:facet> #{item.numeroInternoAf}
+		            </p:column>
+			</mec:suggestionBox>
+			<p:outputPanel id="panelItensContratosServico" layout="inline">
+				<mec:field id="suggestionItensContratosServicoManual"
+					name="suggestionItensContratosServicoManual"
+					label="#{messages.LABEL_ITEM_CONTRATO}"
+					title="#{messages.TITLE_ITEM_CONTRATO}" required="true"
+					rendered="#{not manterServicosAtividadeController.contratoAutomatico and manterServicosAtividadeController.comContrato}"
+					readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar') or manterServicosAtividadeController.edicao}">
+					<p:selectOneMenu
+						id="sgItensContratosServicoManual"
+						styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+						value="#{manterServicosAtividadeController.codigoItemContratoManual}"
+						required="true">
+						<f:selectItem
+							itemLabel="#{mf:getDefaultValue(noSelectionLabel,'Selecione')}"
+							itemValue=""
+							noSelectionOption="true" />
+						<f:selectItems
+							value="#{manterServicosAtividadeController.listarItensContratoServico()}" />
+						<p:ajax event="change" process="@this, sgItensContratosServicoManual"  
+							listener="#{manterServicosAtividadeController.posSelectionItemContratoManual}" />
+					</p:selectOneMenu>
+				</mec:field>
+
+
+				<mec:field id="suggestionItensContratosServicoAutomatico"
+					name="suggestionItensContratosServicoAutomatico"
+					label="#{messages.LABEL_ITEM_CONTRATO}"
+					title="#{messages.TITLE_ITEM_CONTRATO}" required="true"
+					rendered="#{manterServicosAtividadeController.contratoAutomatico and manterServicosAtividadeController.comContrato}"
+					readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar') or manterServicosAtividadeController.edicao}">
+					<p:selectOneMenu
+						styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+						id="suggestionItensContratosServicoAutomaticoSelect"
+						value="#{manterServicosAtividadeController.codigoItemContratoAutomatico}"
+						required="true">
+						<f:selectItem
+							itemLabel="#{mf:getDefaultValue(noSelectionLabel,'Selecione')}"
+							itemValue="" />
+						<f:selectItems
+							value="#{manterServicosAtividadeController.listarAfContrato()}" />
+						<p:ajax event="change" process="@this"
+							listener="#{manterServicosAtividadeController.posSelectionItemContratoAutomatico}" />
+					</p:selectOneMenu>
+				</mec:field>
+			</p:outputPanel> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <p:outputPanel id="panelDirecionadorServicos" layout="inline"> 
+            <mec:selectOneMenu label="#{messages.LABEL_SERVICOS_DIRECIONADOR_TEMPO}" title="#{messages.TITLE_SERVICOS_DIRECIONADOR_TEMPO}" itemLabel="nome" value="#{manterServicosAtividadeController.servico.sigDirecionadores}" items="#{manterServicosAtividadeController.listaDirecionadores}" required="true" readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar')}" id="comboDirecionadorDeTempoServico"/> 
+          </p:outputPanel>  
+          <mec:selectOneMenu title="#{messages.TITLE_SERVICOS_SITUACAO}" label="#{messages.LABEL_SITUACAO}" enum="DominioSituacao" value="#{manterServicosAtividadeController.servico.indSituacao}" noSelectionOption="false" readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar')}" id="comboSituacaoServicos"/> 
+        </aghu:linha>  
+        <aghu:linha id="panelBotoesServicos">
+            <mec:commandButton id="btAdicionarServicos" value="#{messages.LABEL_ADICIONAR}" action="#{manterServicosAtividadeController.adicionarServico}" process="@this,suggestionContratoServico,suggestionAF,panelItensContratosServico,suggestionItensContratosServicoManual, panelDirecionadorServicos, comboDirecionadorDeTempoServico,comboSituacaoServicos" rendered="#{!manterServicosAtividadeController.edicao}" profile="add" ajax="true" render="panelSelectComContrato, panelTabelaServicos, panelCamposServicos"/>  
+            <mec:commandButton id="btGravarServicos" value="#{messages.LABEL_ALTERAR}" action="#{manterServicosAtividadeController.gravarServico}" process="@this, suggestionContratoServico,suggestionAF,panelItensContratosServico,suggestionItensContratosServicoManual, panelDirecionadorServicos, comboDirecionadorDeTempoServico,comboSituacaoServicos" rendered="#{manterServicosAtividadeController.edicao}" profile="ok" ajax="true" render="panelSelectComContrato, panelTabelaServicos,panelCamposServicos, panelBotoesServicos"/>  
+            <mec:commandButton id="btCancelarServicos" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{manterServicosAtividadeController.cancelarEdicaoServico}" rendered="#{manterServicosAtividadeController.edicao}" profile="cancel" ajax="true" render="panelSelectComContrato, panelCamposServicos, panelTabelaServicos" process="@this"/> 
+        </aghu:linha> 
+      </p:outputPanel>  
+        <aghu:linha id="panelTabelaServicos"> 
+          <mec:serverDataTable id="tabelaServicos" rowKeyVar="indServico" rendered="#{not empty manterServicosAtividadeController.listaServicos}" list="#{manterServicosAtividadeController.listaServicos}" scrollable="true">
+            <p:column rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{manterServicosAtividadeController.editarServico(item, indServico)}" rendered="#{not item.emEdicao and not manterServicosAtividadeController.edicao}" profile="edit" ajax="true" render="panelSelectComContrato, panelCamposServicos, panelBotoesServicos, panelTabelaServicos" process="@this"/>  
+              <mec:commandLink rendered="#{not item.emEdicao and manterServicosAtividadeController.edicao}" title="#{messages.LABEL_EDITAR}" onclick="PF('modalRegistroEmEdicaoEditarWG').show();" profile="edit" ajax="true" process="@this"/>  
+              <h:graphicImage styleClass="silk-icon silk-blank" style="margin:1px; padding:2px" rendered="#{item.emEdicao}"/>  
+              <mec:commandLink rendered="#{not manterServicosAtividadeController.edicao}" title="#{messages.LABEL_EXCLUIR}" action="#{manterServicosAtividadeController.excluirServico}" profile="delete" ajax="true" process="@this" render="panelTabelaServicos"> 
+                <f:setPropertyActionListener target="#{manterServicosAtividadeController.codigoServicoExclusao}" value="#{item.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterServicosAtividadeController.codigoContratoManual}" value="#{item.scoItensContrato.contrato.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterServicosAtividadeController.codigoItemContratoManual}" value="#{item.scoItensContrato.nrItem}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterServicosAtividadeController.codigoContratoAutomatico}" value="#{item.scoAfContrato.scoContrato.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterServicosAtividadeController.codigoItemContratoAutomatico}" value="#{item.scoAfContrato.seq}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink rendered="#{manterServicosAtividadeController.edicao}" title="#{messages.LABEL_EXCLUIR}" onclick="PF('modalRegistroEmEdicaoExcluirWG').show();" styleClass="silk-icon silk-delete" ajax="true" process="@this"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CONTRATO}/#{messages.LABEL_SERVICO_ITEM}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.scoItensContrato.contrato.nrContrato}/" title="#{item.scoItensContrato.contrato.objetoContrato}" rendered="#{not empty item.scoItensContrato}"/>  
+              <h:outputText value="#{item.scoAfContrato.scoContrato.nrContrato}/" title="#{item.scoAfContrato.scoContrato.objetoContrato}" rendered="#{not empty item.scoAfContrato}"/>  
+              <h:outputText value="#{item.scoItensContrato.nrItem}" title="#{item.scoItensContrato.nomeItemContrato}" rendered="#{not empty item.scoItensContrato}"/>  
+              <h:outputText value="#{manterServicosAtividadeController.pegarNumeroAF(item.scoAfContrato)}" title="#{manterServicosAtividadeController.pegarNomeAF(item.scoAfContrato)}" rendered="#{not empty item.scoAfContrato}"/>  
+              <h:outputText value="AF #{item.autorizacaoForn.propostaFornecedor.licitacao.numero}/#{item.autorizacaoForn.nroComplemento}" rendered="#{item.autorizacaoForn != null and empty item.scoAfContrato}"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_FORNECEDOR}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.scoAfContrato.scoContrato.fornecedor.nomeFantasia}" title="#{item.scoAfContrato.scoContrato.fornecedor.nomeFantasia}" rendered="#{item.autorizacaoForn == null}"/>  
+              <h:outputText value="#{item.autorizacaoForn.propostaFornecedor.fornecedor.nomeFantasia}" rendered="#{item.autorizacaoForn != null}"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SERVICO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.servico.nome}" title="#{item.servico.nome}" rendered="#{item.servico != null}"/>  
+              <h:outputText value="#{manterServicosAtividadeController.pegarNomeServicoAF(item.scoAfContrato)}" title="#{manterServicosAtividadeController.pegarNomeServicoAF(item.scoAfContrato)}" rendered="#{item.servico == null and item.scoAfContrato != null}"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SERVICO_VIGENCIA}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.scoItensContrato.contrato.dtInicioVigencia}" rendered="#{not empty item.scoItensContrato}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText>  
+              <h:outputText value="#{item.scoAfContrato.scoContrato.dtInicioVigencia}" rendered="#{not empty item.scoAfContrato}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText>  
+              <h:outputText value="#{item.autorizacaoForn.propostaFornecedor.licitacao.dtInicioFornecimento}" rendered="#{item.autorizacaoForn != null and empty item.scoAfContrato}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText>  
+              <h:outputText value=" a "/>  
+              <h:outputText value="#{item.scoItensContrato.contrato.dtFimVigencia}" rendered="#{not empty item.scoItensContrato}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText>  
+              <h:outputText value="#{item.scoAfContrato.scoContrato.dtFimVigencia}" rendered="#{not empty item.scoAfContrato}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText>  
+              <h:outputText value="#{item.autorizacaoForn.dtVenctoContrato}" rendered="#{item.autorizacaoForn != null and empty item.scoAfContrato}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SERVICO_VALOR_TOTAL}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.scoItensContrato.vlTotal}" rendered="#{not empty item.scoItensContrato}"> 
+                <f:converter converterId="currencyConverter"/> 
+              </h:outputText>  
+              <h:outputText value="#{manterServicosAtividadeController.pegarValorTotalAF(item.scoAfContrato)}" rendered="#{not empty item.scoAfContrato}"> 
+                <f:converter converterId="currencyConverter"/> 
+              </h:outputText>  
+              <h:outputText value="#{item.valorTotalItem}" rendered="#{item.autorizacaoForn != null and empty item.scoAfContrato}"> 
+                <f:converter converterId="currencyConverter"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SERVICO_VALOR_ESTIMADO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.scoItensContrato.vlEstimadoMes}" rendered="#{not empty item.scoItensContrato}"> 
+                <f:converter converterId="currencyConverter"/> 
+              </h:outputText>  
+              <h:outputText value="#{manterServicosAtividadeController.pegarValorEstimadoMesAF(item.scoAfContrato)}" rendered="#{not empty item.scoAfContrato}"> 
+                <f:converter converterId="currencyConverter"/> 
+              </h:outputText>  
+              <h:outputText value="#{item.estimadoMes}" rendered="#{item.autorizacaoForn != null and empty item.scoAfContrato}"> 
+                <f:converter converterId="currencyConverter"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SERVICO_DIRECIONADOR}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.sigDirecionadores.nome}"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SERVICO_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.indSituacao.descricao}"/> 
+            </p:column> 
+          </mec:serverDataTable>  
+          <h:outputText value="#{messages.MENSAGEM_SERVICO_NAO_ENCONTRADO_PARA_ATIVIDADE}" rendered="#{empty manterServicosAtividadeController.listaServicos and not mf:hasPermission(securityController,'editarAtividade,editar')}"/> 
+        </aghu:linha>
+    </aghu:panelGeral> 
+  </ui:composition> 
+</html>

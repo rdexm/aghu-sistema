@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+
+    <h:head>
+        <title>mec:field</title>
+    </h:head>
+    <h:body>
+        <cc:interface name="field" 
+        	displayName="Cria um Layout para os componentes de form">
+        	<cc:attribute name="id" />
+	        <cc:attribute name="label" />
+	        <cc:attribute name="labelAux" />
+	        <cc:attribute name="showLabel" default="true" />
+	        <cc:attribute name="posicaoLabel" default="acima" />
+	        <cc:attribute name="escape" default="true" />
+	        <cc:attribute name="tooltipEscape" default="false" />
+	        <cc:attribute name="readonly" default="false" />
+	        <cc:attribute name="title" />
+	        <cc:attribute name="required" default="false" />
+	        <cc:attribute name="inputViewId" />
+	        <cc:attribute name="maxlength" />
+        </cc:interface>
+
+        <cc:implementation>
+        
+			<ui:param name="modalWG" value="#{cc.clientId}ModalWG" />
+        
+	        <div id="#{cc.attrs.id}" class="aghu-boxinput">
+				<div class="aghu-linelabel">
+		        	<div class="aghu-labelguia">
+		        		<p:outputLabel value="#{cc.attrs.label}" escape="#{cc.attrs.escape}" rendered="#{cc.attrs.showLabel}"/>
+		        		<p:outputLabel value="#{cc.attrs.labelAux}" escape="#{cc.attrs.escape}" style="margin-left:30px;padding-left:5px;" rendered="#{not empty cc.attrs.labelAux}" />
+		        	</div>	
+				
+					<p:outputPanel styleClass="aghu-labelicones">
+						<p:graphicImage id="viewField" styleClass="aghu-iconeinput aghu-lupa" rendered="#{not empty cc.attrs.inputViewId}" 
+							onclick="PF('#{modalWG}').show()" title="Abrir campo em panel para edição" />
+						<p:tooltip  for="viewField" value="Visualizar"  rendered="#{not empty cc.attrs.inputViewId}" style="z-index:1015;" />					
+					
+						<h:panelGroup id="tipField" styleClass="aghu-iconeinput aghu-interrog" rendered="#{not empty cc.attrs.title and not cc.attrs.readonly}"  />
+						<p:tooltip for="tipField" value="#{cc.attrs.title}" rendered="#{not empty cc.attrs.title and not cc.attrs.readonly}" escape="#{cc.attrs.tooltipEscape}" />
+								
+						<h:panelGroup id="reqField" styleClass="aghu-iconeinput aghu-asterisco" rendered="#{cc.attrs.required and not cc.attrs.readonly}" />		
+						<p:tooltip for="reqField" value="Este campo deve ser preenchido" rendered="#{cc.attrs.required and not cc.attrs.readonly}"  />
+					</p:outputPanel>		
+				</div>
+				
+				<p:outputPanel styleClass="aghu-lineinput">
+					<cc:insertChildren/>
+				</p:outputPanel>	
+				
+				<p:dialog id="#{cc.attrs.id}Modal" header="#{cc.attrs.label}" widgetVar="#{modalWG}" closable="true" width="420px" resizable="false" fitViewport="true" 
+					rendered="#{not empty cc.attrs.inputViewId}" onShow="jq('##{cc.attrs.id}:#{cc.attrs.id}:textAreaPanel').val(jq('input##{inputViewId}').val())">
+
+    				  
+					<aghu:linha>
+		 				<p:inputTextarea id="textAreaPanel"
+		 					rows="10"  
+		 					cols="60"
+		 					style="width:95%"
+		 					maxlength="#{cc.attrs.maxlength}"  
+		 					counter="#{cc.attrs.id}display" 
+		 					counterTemplate="{0} caracteres restantes." 
+		 					autoResize="true" readonly="#{cc.attrs.readonly}" />
+						<h:outputText id="#{cc.attrs.id}display" style="font-size:10px;color:gray;font-style:italic;clear:both;float:left" rendered="#{not empty cc.attrs.maxlength}" />
+					</aghu:linha>			
+						
+					<aghu:acao>						 
+						<mec:commandButton style="margin-top:20px;float:left;" profile="ok" rendered="#{not cc.attrs.readonly}"
+							value="#{messages.LABEL_CONFIRMAR}" ajax="true" immediate="true"
+							onclick="jq('input##{inputViewId}').val(jq('##{cc.attrs.id}:#{cc.attrs.id}:textAreaPanel').val());PF('#{modalWG}').hide();">															
+						</mec:commandButton>
+						<mec:commandButton style="margin-top:20px;float:right;" profile="cancel" rendered="#{not cc.attrs.readonly}"
+							value="#{messages.LABEL_CANCELAR}" ajax="true" immediate="true"
+							onclick="PF('#{modalWG}').hide();">															
+						</mec:commandButton>
+						<mec:commandButton style="margin-top:20px;float:right;" profile="back" rendered="#{cc.attrs.readonly}"
+							value="#{messages.LABEL_VOLTAR}" ajax="true" immediate="true"
+							onclick="PF('#{modalWG}').hide();">															
+						</mec:commandButton>						
+					</aghu:acao>					
+							    
+				</p:dialog>				            
+				
+			</div>
+        </cc:implementation>
+        
+    </h:body>
+</html>

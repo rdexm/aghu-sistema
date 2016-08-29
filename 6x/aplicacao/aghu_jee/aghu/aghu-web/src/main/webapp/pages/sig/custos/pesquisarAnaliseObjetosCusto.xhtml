@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_CUSTOS}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterAnaliseObjetosCustoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterAnaliseObjetosCustoPaginatorController}"/>  
+      <h:form prependId="false" id="formFiltroAnalise"> 
+        <aghu:panelGeral id="panelGeralPesquisarCustos" legend="#{messages.LABEL_PESQUISAR_CUSTOS}"> 
+          <aghu:linha> 
+            <h:panelGrid columns="3"> 
+              <p:column style="border:none"> 
+                <mec:selectOneMenu id="competencia" label="#{messages.LABEL_COMPETENCIA}" title="#{messages.TITLE_COMPETENCIA_ANALISE}" itemLabel="competenciaMesAno" value="#{manterAnaliseObjetosCustoPaginatorController.competencia}" items="#{manterAnaliseObjetosCustoPaginatorController.listarCompetencias()}" required="true" noSelectionOption="false"/> 
+              </p:column>  
+              <p:column style="border:none"> 
+                <aghu:panelGeral legend="#{messages.LABEL_VISAO}">
+                  <mec:selectOneRadio id="tipoProcedimentoEspecialRadio" value="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens}" enum="DominioTipoVisaoAnalise" layout="pageDirection" showLabel="false"> 
+                    <p:ajax event="change" update="@(#formFiltroAnalise)" process="@this" listener="#{manterAnaliseObjetosCustoPaginatorController.validaTipoVisao}"/> 
+                  </mec:selectOneRadio> 
+                </aghu:panelGeral> 
+              </p:column>  
+              <p:column style="border:none"> 
+                <mec:inputText id="idProdutoServico" size="80" maxlength="120" label="#{messages.LABEL_PRODUTO_SERVICO}" title="#{messages.TITLE_PRODUTO_SERVICO_COMPOSICAO}" value="#{manterAnaliseObjetosCustoPaginatorController.nomeProdutoServico}" caixaAlta="false" removerCaratersEspeciais="false" required="false" readonly="#{manterAnaliseObjetosCustoPaginatorController.validaTipoVisao()}"/> 
+              </p:column> 
+            </h:panelGrid> 
+          </aghu:linha>  
+          <aghu:linha>
+          <h:panelGrid columns="3"> 
+          	<p:column style="border:none">  
+            	<mec:selectOneMenu label="#{messages.LABEL_CENTRO_PRODUCAO}" title="#{messages.TITLE_CENTRO_PRODUCAO_ANALISE}" itemLabel="nome" value="#{manterAnaliseObjetosCustoPaginatorController.sigCentroProducao}" items="#{manterAnaliseObjetosCustoPaginatorController.listarCentroProducao()}" id="comboCentroProducao"> 
+              		<p:ajax event="change" process="@this"/> 
+            	</mec:selectOneMenu>  
+             </p:column>  
+             <p:column style="border:none"> 
+               <aghu:panelGeral legend="#{messages.LABEL_TIPOS_CENTRO_PRODUCAO}">
+	          		<p:selectManyCheckbox id="tiposCentroProducao" required="false" label="#{messages.LABEL_TIPOS_CENTRO_CUSTO}" value="#{manterAnaliseObjetosCustoPaginatorController.tiposCentroProducao}" layout="pageDirection">
+	            		<f:converter converterId="dominioConverter" for="inputId"/>
+						<f:selectItems var="item" itemLabel="#{item.descricao}" itemValue="#{item}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioTipoCentroProducaoCustos')}" />
+	       			</p:selectManyCheckbox>
+       			</aghu:panelGeral>
+            </p:column>  
+              <p:column style="border:none"> 
+            <mec:suggestionBox var="centroCusto" itemValue="#{centroCusto}" label="#{messages.LABEL_CENTRO_CUSTO_ATIVIDADE}" title="#{messages.TITLE_CENTRO_CUSTO_ATIVIDADE_ANALISE}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarCentroCusto" posDeleteAction="limparCentroCusto" id="suggestionCentroCusto" controller="#{manterAnaliseObjetosCustoPaginatorController}" value="#{manterAnaliseObjetosCustoPaginatorController.fccCentroCustos}"> 
+              <p:column> 
+                <h:outputText value="#{centroCusto.codigo}"/> 
+              </p:column>  
+              <p:column> 
+                <h:outputText value="#{centroCusto.descricao}"/> 
+              </p:column> 
+            </mec:suggestionBox> 
+               </p:column> 
+            </h:panelGrid> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{manterAnaliseObjetosCustoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{manterAnaliseObjetosCustoPaginatorController.limpar}" profile="clear"/>
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formLista"> 
+        <mec:serverDataTable dataModel="dataModel" value="#{manterAnaliseObjetosCustoPaginatorController}" id="tabelaObjetos" controller="#{manterAnaliseObjetosCustoPaginatorController}"> 
+          <c:set var="temp" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink title="#{messages.VISUALIZAR_OBJETO_CUSTO_ANALISE}" action="#{manterAnaliseObjetosCustoPaginatorController.manterCusto}" rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'OBJETO_CUSTO'}" styleClass=" silk-obj-custo-vis silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.seqObjetoCustoVersao}" value="#{temp.seqCustoVersao}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{true}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.naoRecarregar}" value="#{false}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.retornaPaginaAnaliseObjetoCusto}" value="true" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_VISUALIZAR_DETALHAMENTO}" action="#{manterAnaliseObjetosCustoPaginatorController.detalheCusto}" styleClass=" silk-zoom silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{detalheAnaliseVisaoObjetoCustoController.seqPagador}" value="#{temp.seqPagador}" for="command"/> 
+              <f:setPropertyActionListener target="#{detalheAnaliseVisaoObjetoCustoController.seqCentroCusto}" value="#{temp.codigoCentroCusto}" for="command"/>  
+              <f:setPropertyActionListener target="#{detalheAnaliseVisaoObjetoCustoController.seqObjetoCustoVersao}" value="#{temp.seqCustoVersao}" for="command"/>  
+              <f:setPropertyActionListener target="#{detalheAnaliseVisaoObjetoCustoController.seqCompetencia}" value="#{manterAnaliseObjetosCustoPaginatorController.seqCompetencia}" for="command"/>  
+              <f:setPropertyActionListener target="#{detalheAnaliseVisaoObjetoCustoController.paginaIniciada}" value="false" for="command"/> 
+            </mec:commandLink>
+			<f:facet name="footer"> 
+	          <p:spacer/> 
+	        </f:facet>
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_C_PRODUCAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.nomeCentroProducao}"/> 
+            <f:facet name="footer"> 
+	          <p:spacer/> 
+	        </f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'OBJETO_CUSTO'}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_C_CUSTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.codigoCentroCusto}" title="#{temp.nomeCentroCusto}"/> 
+            <f:facet name="footer"> 
+	          <p:spacer/> 
+	        </f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'CENTRO_CUSTO'}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_C_CUSTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.codigoCentroCusto} - #{temp.nomeCentroCusto}"/> 
+            <f:facet name="footer"> 
+	          <p:spacer/> 
+	        </f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'OBJETO_CUSTO'}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME_OBJETO_CUSTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.nomeObjetoCusto}"/> 
+            <f:facet name="footer"> 
+	          <p:spacer/> 
+	        </f:facet>
+          </p:column>  
+           <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'OBJETO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TIPO}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.tipoObjetoCusto}" />
+            <f:facet name="footer"> 
+	          <p:spacer/> 
+	        </f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'OBJETO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PAGADOR}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.nomePagador}" />
+            <f:facet name="footer"> 
+	          <p:spacer/> 
+	        </f:facet>
+          </p:column>
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'OBJETO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PRD_ASSIST}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.qtAssistencial}"> 
+         		<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="6" minFractionDigits="0" groupingUsed="true"/> 
+       		</h:outputText>  
+            <f:facet name="footer"> 
+	          <p:spacer/> 
+	        </f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'OBJETO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DIRETOS}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.valorDireto}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText> 
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioDireto==0?' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioDireto}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'CENTRO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TAB_PESSOAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.pessoal}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText> 
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioPessoal==0?' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioPessoal}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'CENTRO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TAB_INSUMOS}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.insumos}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText> 
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioInsumos==0?' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioInsumos}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'CENTRO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_EQUIPAMENTOS}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.equipamentos}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText> 
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioEquipamentos==0?' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioEquipamentos}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'CENTRO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TAB_SERVICOS}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.servicos}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText> 
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioServicos==0?' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioServicos}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column>
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'CENTRO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TOTAL_DIRETOS}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.valorDireto}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText> 
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioDireto==0?' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioDireto}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column>    
+          <p:column style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_INDIRETOS}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.valorIndireto}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText> 
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioIndiretos==0?' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioIndiretos}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column>  
+          <p:column style="text-align:left;" rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'OBJETO_CUSTO'}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CUSTO_MEDIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.custoMedio}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText> 
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioCustoMedioAS==0 ? ' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioCustoMedioAS}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column>  
+          <p:column rendered="#{manterAnaliseObjetosCustoPaginatorController.tipoVisaoAnaliseItens == 'CENTRO_CUSTO'}" style="text-align:left;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TOTAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{temp.total}"> 
+              <f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+            </h:outputText>
+            <f:facet name="footer">
+	    		<h:outputText value="#{manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioTotal==0?' - ' : manterAnaliseObjetosCustoPaginatorController.somatorioAnaliseCustosObjetosCustoVO.somatorioTotal}"> 
+					<f:convertNumber type="currency" currencySymbol="R$" maxFractionDigits="2" minFractionDigits="2"/>
+	    		</h:outputText>
+			</f:facet>
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Cadastrar Equipe :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{equipeController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{equipeController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="cadastroEquipeForm"> 
+        <aghu:panelGeral id="ffdl_informacoes" legend="Equipe"> 
+          <aghu:linha> 
+            <p:outputPanel rendered="#{equipeController.aghEquipe.seq != null}" layout="inline"> 
+              <mec:inputText label="#{messages.LABEL_CODIGO}" value="#{equipeController.aghEquipe.seq}" title="Código da Equipe" readonly="true" styleclass="suggestion_input" maxlength="4" size="5" style="text-transform:uppercase" id="seq"/> 
+            </p:outputPanel>  
+            <mec:inputText label="#{messages.LABEL_NOME}" maxlength="50" value="#{equipeController.aghEquipe.nome}" required="true" title="Nome da Equipe" size="50" styleclass="suggestion_input" style="text-transform:uppercase" id="nome"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_ATIVO}" title="Situação da Equipe" value="#{equipeController.aghEquipe.situacao}" id="situacao"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_PLACAR_RISCO_NEONATAL}" title="Placar Risco Neonatal da Equipe" value="#{equipeController.aghEquipe.placarCo}" id="placarCo"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_PROFISSIONAL_RESPONSAVEL}" required="true" title="Selecione um Profissional Responsável" descricaoInput="matriculaVinculo" descricaoLabel="nome" width="400" suggestionAction="pesquisarRapServidoresVOPorCodigoDescricao" id="responsavel" controller="#{equipeController}" value="#{equipeController.responsavelEquipe}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_VINCULO}</b> 
+                </f:facet> #{item.vinculo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_MATRICULA}</b> 
+                </f:facet> #{item.matricula}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_MATRICULA}</b> 
+                </f:facet> #{item.nome}
+              </p:column> 
+            </mec:suggestionBox> 
+            <mec:inputText label="#{messages.LABEL_CODIGO_IME}" size="12" maxlength="10" value="#{equipeController.aghEquipe.codigoIme}" title="#{messages.TITLE_CODIGO_IME}" styleclass="suggestion_input" id="codigoIme"/>
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <p:outputPanel id="tabelaProfissionais" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral id="ffdl_profissionais_equipe" legend="Profissionais da Equipe"> 
+            <p:focus context="profissional"/> 
+            <aghu:linha> 
+              <mec:suggestionBox label="#{messages.LABEL_PROFISSIONAL}" title="Selecione um Profissional" descricaoInput="matriculaVinculo" descricaoLabel="nome" width="600" suggestionAction="pesquisarRapServidoresVOPorCodigoDescricao" id="profissional" controller="#{equipeController}" value="#{equipeController.profissional}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_VINCULO}</b> 
+                  </f:facet> #{item.vinculo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_MATRICULA}</b> 
+                  </f:facet> #{item.matricula}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_MATRICULA}</b> 
+                  </f:facet> #{item.nome}
+                </p:column> 
+              </mec:suggestionBox>  
+              <br clear="none"/>  
+              <mec:commandButton id="bt_adicionar" value="#{messages.LABEL_ADICIONAR}" action="#{equipeController.adicionaProfissionalEquipe}" status="commonstatus" profile="add" styleClass="bt_verde " ajax="true" render="tabelaProfissionais"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <h:outputText value="#{messages.LABEL_NENHUM_PROFISSIONAL_ENCONTRADO}" rendered="#{empty equipeController.profissionaisEquipe}"/>  
+              <mec:serverDataTable style="width: 600px; float: left !important;" rendered="#{not empty equipeController.profissionaisEquipe}" list="#{equipeController.profissionaisEquipe}" scrollable="true"> 
+                <c:set var="_profissional" value="#{item}"/>  
+                <p:column> 
+                  <mec:commandLink action="#{equipeController.removerProfissionalEquipe(_profissional)}" title="#{messages.LABEL_EXCLUIR}" profile="delete" ajax="true" render="tabelaProfissionais"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VINCULO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_profissional.vinculo}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MATRICULA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_profissional.matricula}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_profissional.nome}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_GRAVAR}" id="bt_gravar" action="#{equipeController.confirmar}" profile="ok"/>  
+          <mec:backButton immediate="true" action="#{equipeController.cancelar}"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

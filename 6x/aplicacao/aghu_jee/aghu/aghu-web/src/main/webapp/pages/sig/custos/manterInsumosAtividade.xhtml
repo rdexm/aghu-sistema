@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <aghu:panelGeral> 
+      <p:outputPanel id="panelCamposInsumo" rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" layout="inline"> 
+        <aghu:linha> 
+          <mec:suggestionBox label="#{messages.LABEL_MATERIAL}" title="#{messages.TITLE_MATERIAL_INSUMO_ATIVIDADE}" suggestionAction="listarMaterial" descricaoInput="codigo" descricaoLabel="nome" required="true" posSelectionAction="carregarUnidadeMedida" posDeleteAction="carregarUnidadeMedida" readonly="#{manterInsumosAtividadeController.emEdicao}" id="suggestMaterial" controller="#{manterInsumosAtividadeController}" value="#{manterInsumosAtividadeController.atividadeInsumos.material}" render="panelUnidadeMedidaInsumo"> 
+            <p:column>#{item.codigo}</p:column>  
+            <p:column>#{item.nome}</p:column> 
+          </mec:suggestionBox>  
+          <mec:selectOneMenu id="cboSitMaterial" label="#{messages.LABEL_SITUACAO}" required="true" title="#{messages.TITLE_SIT_MATERIAL}" enum="DominioSituacao" value="#{manterInsumosAtividadeController.atividadeInsumos.indSituacao}"/> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <aghu:panelGeral legend="#{messages.LABEL_UTILIZACAO_INSUMO}"> 
+            <h:panelGrid columns="2" border="0"> 
+              <h:column> 
+                <aghu:panelGeral legend="#{messages.LABEL_ESPECIFICA}"> 
+                  <aghu:linha> 
+                    <mec:inputNumero id="qtdUtilizada" label="#{messages.LABEL_QTD_UTILIZADA}" title="#{messages.TITLE_QTD_UTILIZADA}" value="#{manterInsumosAtividadeController.atividadeInsumos.qtdeUso}" inteiros="10" decimais="5"/>  
+                    <p:outputPanel id="panelUnidadeMedidaInsumo" layout="inline"> 
+                      <mec:field id="cboUnidadeMedidaInsumo" name="cboUnidadeMedidaInsumo" label="#{messages.LABEL_UNIDADE}" title="#{messages.TITLE_UNIDADE_INSUMO_ATIVIDADE}"> 
+                        <p:selectOneMenu id="cboUnidadeMedidaInsumoSelect" value="#{manterInsumosAtividadeController.codigoUnidadeMedida}" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"> 
+                          <f:selectItem itemLabel="#{mf:getDefaultValue(noSelectionLabel,'Selecione')}" itemValue=""/>  
+                          <f:selectItems value="#{manterInsumosAtividadeController.listarItensUnidadeMedida()}"/>  
+                          <p:ajax event="change" process="@this" listener="#{manterInsumosAtividadeController.alterarUnidadeMedida}"/> 
+                        </p:selectOneMenu> 
+                      </mec:field> 
+                    </p:outputPanel> 
+                  </aghu:linha> 
+                </aghu:panelGeral> 
+              </h:column>  
+              <h:column> 
+                <aghu:panelGeral legend="#{messages.LABEL_VIDA_UTIL}"> 
+                  <aghu:linha> 
+                    <mec:inputNumero id="qtdProdutos" label="#{messages.LABEL_QTD_PRODUTOS}" title="#{messages.TITLE_QTD_PRODUTOS}" maxlength="4" value="#{manterInsumosAtividadeController.atividadeInsumos.vidaUtilQtde}"/>  
+                    <mec:field name="labelOu"> 
+                      <br clear="none"/> ou
+                    </mec:field>  
+                    <mec:inputNumero id="tempoDuracao" label="#{messages.LABEL_TEMPO_INSUMO_ATIVIDADE}" title="#{messages.TITLE_TEMPO_INSUMO_ATIVIDADE}" maxlength="4" value="#{manterInsumosAtividadeController.atividadeInsumos.vidaUtilTempo}"/>  
+                    <mec:selectOneMenu id="cboUnidadeMedidaUtil" label="#{messages.LABEL_UNIDADE}" title="#{messages.TITLE_UNIDADE_TEMPO_INSUMO_ATIVIDADE}" value="#{manterInsumosAtividadeController.atividadeInsumos.direcionadores}" items="#{manterInsumosAtividadeController.listarDirecionador()}" ajaxValidation="false" itemLabel="nome" itemsType="entity"/> 
+                  </aghu:linha> 
+                </aghu:panelGeral> 
+              </h:column> 
+            </h:panelGrid> 
+          </aghu:panelGeral> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <p:outputPanel id="panelAcoesInsumo" layout="inline"> 
+            <mec:commandButton id="bt_adicionar_insumo" value="#{messages.LABEL_ADICIONAR}" action="#{manterInsumosAtividadeController.adicionarInsumo}" process="@this, suggestMaterial, cboSitMaterial, qtdUtilizada, cboUnidadeMedidaInsumo, qtdProdutos, tempoDuracao, cboUnidadeMedidaUtil" rendered="#{manterInsumosAtividadeController.emEdicao eq 'false'}" profile="add" ajax="true" render="paneltblistaInsumos, panelCamposInsumo"/>  
+            <mec:commandButton id="bt_adicionar_insumo_lote" value="#{messages.LABEL_ADICIONAR_EQUIPAMENTO_LOTE}" action="#{manterInsumosAtividadeController.adicionarInsumoLote}" rendered="#{!manterInsumosAtividadeController.emEdicao and manterInsumosAtividadeController.atividadeJaAdicionada}" profile="add" ajax="true" render=" paneltblistaInsumos, panelCamposInsumo, panelAcoesInsumo" process="@this"/>  
+            <mec:commandButton id="bt_alterar_insumo" value="#{messages.LABEL_ALTERAR}" action="#{manterInsumosAtividadeController.gravarInsumo}" process="@this, suggestMaterial, cboSitMaterial, qtdUtilizada, cboUnidadeMedidaInsumo, qtdProdutos, tempoDuracao, cboUnidadeMedidaUtil" rendered="#{manterInsumosAtividadeController.emEdicao}" profile="ok" ajax="true" render="paneltblistaInsumos, panelCamposInsumo, panelAcoesInsumo"/>  
+            <mec:commandButton id="bt_cancelarEdic_insumo" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{manterInsumosAtividadeController.cancelarEdicaoInsumo}" process="@this, suggestMaterial, cboSitMaterial, qtdUtilizada, cboUnidadeMedidaInsumo, qtdProdutos, tempoDuracao, cboUnidadeMedidaUtil" rendered="#{manterInsumosAtividadeController.emEdicao}" profile="cancel" ajax="true" render="paneltblistaInsumos, panelCamposInsumo, panelAcoesInsumo"/> 
+          </p:outputPanel> 
+        </aghu:linha> 
+      </p:outputPanel>  
+      <p:outputPanel id="paneltblistaInsumos" layout="inline"> 
+        <aghu:linha> 
+          <mec:serverDataTable id="tblistaInsumos" rowKeyVar="indice" rendered="#{not empty manterInsumosAtividadeController.listAtividadeInsumos}" list="#{manterInsumosAtividadeController.listAtividadeInsumos}" scrollable="true">
+            <p:column rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" style="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo ? 'background-color:#F1F1F1' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACOES}"/> 
+              </f:facet>  
+              <h:graphicImage styleClass="silk-icon silk-blank" style="margin:1px; padding:2px" rendered="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo}"/>  
+              <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{manterInsumosAtividadeController.editarInsumo(item, indice)}" rendered="#{(manterInsumosAtividadeController.codigoMaterial != item.material.codigo) and not manterInsumosAtividadeController.emEdicao}" profile="edit" ajax="true" render="panelCamposInsumo, panelAcoesInsumo, paneltblistaInsumos" process="@this"/>  
+              <mec:commandLink rendered="#{(manterInsumosAtividadeController.codigoMaterial != item.material.codigo) and manterInsumosAtividadeController.emEdicao}" title="#{messages.LABEL_EDITAR}" onclick="PF('modalRegistroEmEdicaoEditarWG').show();;" profile="edit" ajax="true" process="@this"/>  
+              <mec:commandLink rendered="#{not manterInsumosAtividadeController.emEdicao}" title="#{messages.LABEL_EXCLUIR}" action="#{manterInsumosAtividadeController.excluirInsumo}" profile="delete" ajax="true" process="@this" render="paneltblistaInsumos"> 
+                <f:setPropertyActionListener target="#{manterInsumosAtividadeController.seqInsumoExclusao}" value="#{item.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterInsumosAtividadeController.codigoInsumoExclusao}" value="#{item.material.codigo}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink rendered="#{manterInsumosAtividadeController.emEdicao}" title="#{messages.LABEL_EXCLUIR}" onclick="PF('modalRegistroEmEdicaoExcluirWG').show();" styleClass="silk-icon silk-delete" ajax="true" process="@this"/> 
+            </p:column>  
+            <p:column style="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo ? 'background-color:#F1F1F1' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.material.codigo}"/> 
+            </p:column>  
+            <p:column style="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo ? 'background-color:#F1F1F1' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_NOME}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.material.nome}"/> 
+            </p:column>  
+            <p:column style="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo ? 'background-color:#F1F1F1' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_QTD_UTILIZADA}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.qtdeUso}"> 
+                <f:convertNumber type="currency" currencySymbol="" maxFractionDigits="5" minFractionDigits="2"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column style="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo ? 'background-color:#F1F1F1' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.unidadeMedida.codigo}"/> 
+            </p:column>  
+            <p:column style="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo ? 'background-color:#F1F1F1' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_VIDA_UTIL}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.vidaUtilQtde} #{item.vidaUtilTempo} #{item.direcionadores.nome}"/> 
+            </p:column>  
+            <p:column style="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo ? 'background-color:#F1F1F1' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.indSituacao.descricao}"/> 
+            </p:column>  
+            <p:column style="#{manterInsumosAtividadeController.codigoMaterial == item.material.codigo ? 'background-color:#F1F1F1' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CUSTO_MEDIO_INSUMO}"/> 
+              </f:facet>  
+              <h:outputText value="#{manterInsumosAtividadeController.efetuarCalculoCustoMedioMaterial(item)}"> 
+                <f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/> 
+              </h:outputText> 
+            </p:column> 
+          </mec:serverDataTable>  
+          <h:outputText value="#{messages.MENSAGEM_INSUMO_NAO_ENCONTRADO_PARA_ATIVIDADE}" rendered="#{empty manterInsumosAtividadeController.listAtividadeInsumos and not mf:hasPermission(securityController,'editarAtividade,editar')}"/> 
+        </aghu:linha> 
+      </p:outputPanel> 
+    </aghu:panelGeral> 
+  </ui:composition> 
+</html>

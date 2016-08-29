@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" 
+xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" 
+xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">  
+  
+    <ui:define name="head">
+      <title>Protocolar Paciente</title>
+    </ui:define>  
+    
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{protocoloEntregaExamesController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>
+    
+    <ui:define name="body"> 
+ 
+      <h:form prependId="false" id="formCadastroProtocoloEntregaExames"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PACIENTE}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelDadosPaciente" layout="block"> 
+                <mec:serverDataTable
+                		 id="tblistaPacientesCad" 
+                		 scrollHeight="100"
+                		 controller="#{protocoloEntregaExamesController}" 
+                		 list="#{protocoloEntregaExamesController.listaPacientes}"
+                		 scrollable="true"> 
+                  <c:set var="item" value="#{item}"/>
+                  <p:ajax event="rowSelect" update="@(#tblistaPacientesCad) @(#tblistaExames)" listener="#{pesquisaExamesPorPacienteController.selecionarPaciente(item.codigo, item.consulta, item.prontuario)}"/>  
+                  <p:column width="50%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(item.codigo, item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME_SOCIAL_DO_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.nomePaciente}"/> 
+                  </p:column>  
+                  <p:column width="25%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(item.codigo, item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PRONTUARIO_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.prontuario}" converter="prontuarioConverter" styleClass="mask_prontuario"/> 
+                  </p:column>  
+                  <p:column width="25%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(item.codigo, item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CONSULTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.consulta}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_LAUDO_PARA_ENTREGA}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelCadastroProtocolo" layout="block"> 
+              <aghu:linha> 
+                 <mec:inputText id="protocolo" 
+                 	  label="#{messages.LABEL_PROTOCOLO_ENTREGA_EXAMES}"
+	                  styleClass="numerico" 
+	                  readonly="true" size="10" 
+	                  maxlength="10" 
+	                  value="#{protocoloEntregaExamesController.entregaExames.seq}">
+                 </mec:inputText> 
+                <mec:inputText label="#{messages.LABEL_NOME_RESPONSAVEL}" id="pacNome" maxlength="200" 
+	                style="text-transform:uppercase" size="200" styleclass="suggestion_input"  
+	                required="true" value="#{protocoloEntregaExamesController.entregaExames.nomeResponsavelRetirada}" pattern="[a-z\s]+$">
+                </mec:inputText>  
+                <mec:selectOneMenu id="grauDeParentesco" enum="DominioGrauParentesco"   
+	                label="#{messages.LABEL_GRAU_PARENTESCO}" title="#{messages.TITLE_GRAU_PARENTESCO}" required="true" 
+	                value="#{protocoloEntregaExamesController.entregaExames.grauParentesco}">
+                </mec:selectOneMenu>  
+                <p:outputPanel id="panelCpf" layout="block"> 
+	                <mec:inputTextCPF name="cpf" title="#{messages.TITLE_CPF_PACIENTE}" label="#{messages.LABEL_CPF}" required="true" value="#{protocoloEntregaExamesController.entregaExames.cpf}"> 
+	                  <p:ajax event="change" update="@(#panelCpf) @(#cpf)" process="@this" listener="#{protocoloEntregaExamesController.validaCPF()}"/> 
+	                </mec:inputTextCPF> 
+                </p:outputPanel>
+              </aghu:linha>  
+              <aghu:linha> 
+                <p:outputPanel id="panelDDDResidencial" layout="inline"> 
+                  <mec:inputNumero jsfConverter="javax.faces.Short" name="ddd_fone_residencial" size="2" label="#{messages.LABEL_DDD}" title="#{messages.TITLE_DDD_PACIENTE}" maxlength="2" value="#{protocoloEntregaExamesController.entregaExames.dddFoneResponsavel}"></mec:inputNumero> 
+                </p:outputPanel>  
+                <mec:inputNumero jsfConverter="javax.faces.Long" name="fone_residencial" size="10" 
+	                label="#{messages.LABEL_TELEFONE_RESIDENCIAL}" title="#{messages.TITLE_TELEFONE_RESIDENCIAL_PACIENTE}" 
+	                maxlength="8" value="#{protocoloEntregaExamesController.entregaExames.foneResponsavel}" >
+                </mec:inputNumero>  
+                <mec:inputText label="#{messages.LABEL_USUARIO_RESPONSAVEL_PROTOCOLO}" id="usuarioLogado" maxlength="50" 
+	                size="50" styleclass="suggestion_input" readonly="true" 
+	                value="#{protocoloEntregaExamesController.servidor}">
+                </mec:inputText>  
+                <mec:inputTextData id="dataRegistro" size="10" maxlength="10"  label="#{messages.LABEL_DATA_REGISTRO_PROTOCOLO}" title="#{messages.TITLE_DATA_REGISTRO_PROTOCOLO}" 
+                	readonly="true" value="#{protocoloEntregaExamesController.entregaExames.criadoEm}" tipo="data">
+                </mec:inputTextData>  
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextArea label="#{messages.LABEL_OBSERVACAO}" name="observacao" cols="120" rows="10" maxlength="340" 
+	                required="false" title="#{messages.TITLE_OBSERVACAO_REINTERNACAO_SEGUIMENTO}" ajaxValidation="true" 
+	                value="#{protocoloEntregaExamesController.entregaExames.observacao}">
+                </mec:inputTextArea> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_gravar" 
+          		value="#{messages.LABEL_GRAVAR}" 
+          		action="#{protocoloEntregaExamesController.gravar}"  
+          		render="modalProtocoloEntregaExames"
+          		profile="ok">
+          </mec:commandButton> 
+          <mec:commandButton  
+	          id="bt_voltar" 
+	          immediate="true" 
+	          value="#{messages.LABEL_CANCELAR}" 
+	          action="#{protocoloEntregaExamesController.cancelar}" 
+	          profile="back"> 
+          </mec:commandButton> 
+        </aghu:linha> 
+        <p:outputPanel id="numeroProtocoloPanel" layout="inline">
+		  <p:dialog id="modalNumeroProtocoloPanel" 
+		  		width="400" height="150" 
+		  		closable="false"
+				modal="true" 
+				resizable="false" 
+				widgetVar="modalNumeroProtocoloPanelWG">
+			<f:facet name="header">
+			  <h:outputText value="#{messages.LABEL_PROTOCOLO_CONCLUIDO}" />
+			</f:facet>
+			<c:if test="#{protocoloEntregaExamesController.exibirModalNumeroProtocolo == 'true'}">
+			  <h:outputFormat value="#{messages.MENS_PROTOCOLO_CONCLUIDO}">
+				<f:param value="#{protocoloEntregaExamesController.entregaExames.seq}" />
+			  </h:outputFormat>
+			</c:if>
+			<br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<aghu:linha>
+			  <p:commandButton id="okNumeroProtocolo" 
+			  		icon="aghu-icons-16x16 aghu-icon-check-aghu"  
+			  		styleClass="bt_cinza button-acao"
+					value="#{messages.LABEL_OK}"
+					action="#{protocoloEntregaExamesController.redirecionarAposExibirNumeroProtocolo}" />
+			</aghu:linha>
+		  </p:dialog>
+		</p:outputPanel>
+      </h:form> 
+    </ui:define> 
+  </ui:composition>
+</html>

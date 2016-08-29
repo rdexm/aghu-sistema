@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_FONTES_RECURSO_FINANC} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{fontesRecursoFinancPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_FONTES_RECURSO_FINANC}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="codigo" label="#{messages.LABEL_CODIGO_FONTES_RECURSO_FINANC}" title="#{messages.TITLE_CODIGO_FONTES_RECURSO_FINANC}" value="#{fontesRecursoFinancPaginatorController.fontesRecursoFinanc.codigo}" maxlength="10" size="11"/>  
+            <mec:inputText id="descricao" label="#{messages.LABEL_DESCRICAO_FONTES_RECURSO_FINANC}" title="#{messages.TITLE_DESCRICAO_FONTES_RECURSO_FINANC}" value="#{fontesRecursoFinancPaginatorController.fontesRecursoFinanc.descricao}" maxlength="60" size="72" style="text-transform:uppercase"/>  
+            <mec:selectOneMenu id="indSituacaoFonte" enum="DominioSituacao" label="#{messages.LABEL_INDSITUACAO_FONTES_RECURSO_FINANC}" title="#{messages.TITLE_INDSITUACAO_FONTES_RECURSO_FINANC}" value="#{fontesRecursoFinancPaginatorController.fontesRecursoFinanc.indSituacao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{fontesRecursoFinancPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{fontesRecursoFinancPaginatorController.limparPesquisa}" render="formPesquisa,formLista" ajax="true" immediate="true" styleClass="bt_cinza" profile="clear"/>
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" rendered="#{fontesRecursoFinancPaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" action="#{fontesRecursoFinancPaginatorController.inserir}" profile="add">
+              <f:setPropertyActionListener target="#{fontesRecursoFinancController.permiteEdicaoDescricao}" value="false" for="command"/>
+              <f:setPropertyActionListener target="#{fontesRecursoFinancController.visualizacaoRegistro}" value="false" for="command"/>
+          </mec:commandButton>
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formLista"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaFontesRecurso" controller="#{fontesRecursoFinancPaginatorController}"> 
+          <c:set var="fonte" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaFontesRecurso_link_editar" profile="edit" title="editar" action="#{fontesRecursoFinancPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{fontesRecursoFinancController.fontesRecursoFinanc}" value="#{fonte}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{fontesRecursoFinancPaginatorController.selecionado}" value="#{fonte}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaFontesRecurso_link_remover" profile="delete" title="excluir" action="#{fontesRecursoFinancPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{fontesRecursoFinancPaginatorController.selecionado}" value="#{fonte}"/> 
+            </mec:commandLink>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink title="#{messages.LABEL_VISUALIZAR}" action="#{fontesRecursoFinancPaginatorController.editar}" rendered="#{not mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" styleClass=" silk-zoom silk-icon"> 
+              <f:setPropertyActionListener target="#{fontesRecursoFinancController.fontesRecursoFinanc}" value="#{fonte}" for="command"/>  
+              <f:setPropertyActionListener target="#{fontesRecursoFinancController.visualizacaoRegistro}" value="#{true}" for="command"/>  
+              <f:setPropertyActionListener target="#{fontesRecursoFinancController.alteracaoRegistro}" value="#{false}" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_FONTES_RECURSO_FINANC}"/> 
+            </f:facet>  
+            <h:outputText value="#{fonte.codigo} - #{fonte.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_INDSITUACAO_FONTES_RECURSO_FINANC}"/> 
+            </f:facet>  
+            <h:outputText value="Ativo" rendered="#{fonte.indSituacao == 'A'}"/>  
+            <h:outputText value="Inativo" rendered="#{fonte.indSituacao == 'I'}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

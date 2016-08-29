@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_FORNECEDORES_IRREGULARIDADE_FISCAL} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{relatorioFornecedoresIrregularidadeFiscalController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_FORNECEDORES_IRREGULARIDADE_FISCAL}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="fornecedor" label="#{messages.LABEL_FORNECEDOR_FORNECEDORES_IRREGULARIDADE_FISCAL}" title="#{messages.TITLE_FORNECEDOR_FORNECEDORES_IRREGULARIDADE_FISCAL}" suggestionAction="pesquisarFornecedores" descricaoInput="numero" descricaoLabel="cpfCnpjRazaoSocialFormatado" maxlength="30" width="500" controller="#{relatorioFornecedoresIrregularidadeFiscalController}" value="#{relatorioFornecedoresIrregularidadeFiscalController.fornecedor}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.numero}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CPF_CNPJ}</b> 
+                </f:facet> #{item.cpfCnpjFormatado}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_RAZAO_SOCIAL}</b> 
+                </f:facet> #{item.razaoSocial}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha>
+            <mec:field id="dataPeriodo" label="#{messages.LABEL_PERIODO_VCTO_FORNECEDORES_IRREGULARIDADE_FISCAL}" title="#{messages.TITLE_PERIODO_VCTO_FORNECEDORES_IRREGULARIDADE_FISCAL}">
+                <mec:inputTextData  label="#{messages.LABEL_DATA_INICIO}" value="#{relatorioFornecedoresIrregularidadeFiscalController.dataInicial}" tipo="data"/>
+                <mec:inputTextData  label="#{messages.LABEL_DATA_FINAL}" value="#{relatorioFornecedoresIrregularidadeFiscalController.dataFinal}" tipo="data"/>
+            </mec:field> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" disabled="#{not mf:hasPermission(securityController,'consultarDatasValidadeFornecedor,pesquisar')}" action="#{relatorioFornecedoresIrregularidadeFiscalController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" action="#{relatorioFornecedoresIrregularidadeFiscalController.limparPesquisa}" immediate="true" profile="clear" ajax="true" render="formPesquisa, resultados" process="@this"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="resultados"> 
+        <p:outputPanel id="panelTitulos" rendered="#{relatorioFornecedoresIrregularidadeFiscalController.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_FORNECEDORES_IRREGULARIDADE_FISCAL}"> 
+            <aghu:linha>
+              <mec:serverDataTable id="tableFornecedores" list="#{relatorioFornecedoresIrregularidadeFiscalController.listaFornecedores}" scrollable="true" scrollHeight="200">
+                <c:set var="item" value="#{item}"/>
+                <p:column headerCustomizado="true" >
+                    <f:facet name="header">
+                        <p:selectBooleanCheckbox id="checkBoxTodosPagamentos" value="#{relatorioFornecedoresIrregularidadeFiscalController.todosSelecionados}">
+                            <p:ajax update="@(.checkBoxPagamento)" event="change" process="@this" listener="#{tituloPaginatorController.selecionarTodosPagamentos()}" />
+                        </p:selectBooleanCheckbox>
+                    </f:facet>
+                    
+                    <p:outputPanel style="text-align:center" layout="block">
+	                    <p:selectBooleanCheckbox id="checkBoxPagamento" styleClass="checkBoxPagamento" value="#{item.selecionado}">
+	                        <p:ajax process="@this" event="change" />
+	                    </p:selectBooleanCheckbox>
+                    </p:outputPanel>
+                </p:column>
+
+                <p:column sortable="true" sortBy="#{item.razaoSocial}" style="padding: 0px;">
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_FORNECEDOR_FORNECEDORES_IRREGULARIDADE_FISCAL}"/> 
+                  </f:facet>                    
+                  <p:outputPanel id="panelRazaoSocial" layout="block" style="padding: 4px 10px;">
+                  	<h:outputText value="#{relatorioFornecedoresIrregularidadeFiscalController.truncarDescricao(item.razaoSocial)}"/>  
+                  </p:outputPanel>
+                  <p:tooltip   for="panelRazaoSocial" trackMouse="true"> 
+                    <h:outputText value="#{item.fornecedorFormatado}" escape="false"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column sortable="true" sortBy="#{item.dataValidadeFgts}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DT_VAL_FGTS_FORNECEDORES_IRREGULARIDADE_FISCAL}" title="#{messages.HINT_DT_VAL_FGTS_FORNECEDORES_IRREGULARIDADE_FISCAL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.dataValidadeFgts}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column sortable="true" sortBy="#{item.dataValidadeInss}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DT_VAL_INSS_FORNECEDORES_IRREGULARIDADE_FISCAL}" title="#{messages.HINT_DT_VAL_INSS_FORNECEDORES_IRREGULARIDADE_FISCAL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.dataValidadeInss}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column sortable="true" sortBy="#{item.dataValidadeRecFed}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DT_VAL_REC_FED_FORNECEDORES_IRREGULARIDADE_FISCAL}" title="#{messages.HINT_DT_VAL_REC_FED_FORNECEDORES_IRREGULARIDADE_FISCAL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.dataValidadeRecFed}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column sortable="true" sortBy="#{item.titulosPagar}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_TITULOS_PAGAR_FORNECEDORES_IRREGULARIDADE_FISCAL}" title="#{messages.HINT_TITULOS_PAGAR_FORNECEDORES_IRREGULARIDADE_FISCAL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{item.titulosPagar}"/> 
+                </p:column>  
+                <p:column sortable="true" sortBy="#{item.comunicados}" style="padding: 0px;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COMUNICADOS_FORNECEDORES_IRREGULARIDADE_FISCAL}" title="#{messages.HINT_COMUNICADOS_FORNECEDORES_IRREGULARIDADE_FISCAL}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelComunicados" layout="block"  style="padding: 4px 10px;">
+                  	<h:outputText value="#{item.comunicados}"/>  
+                  </p:outputPanel>
+                  <p:tooltip rendered="#{not empty item.hintComunicados}" for="panelComunicados" trackMouse="true"> 
+                    <h:outputText value="#{item.hintComunicados}" escape="false"/> 
+                  </p:tooltip> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_enviarEmail" value="#{messages.LABEL_ENVIAR_COMUNICADO_EMAIL_FORN_IRREGULARIDADE_FISCAL}" block="true" action="#{relatorioFornecedoresIrregularidadeFiscalController.enviarEmail}" render="resultados" profile="add"/>  
+            <mec:commandButton id="bt_print_buttonView" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" action="#{relatorioFornecedoresIrregularidadeFiscalController.visualizarRelatorio}" profile="view" onclick="PF('loadDialogWG').show()"/>  
+            <mec:commandButton id="bt_print_buttonPrint" value="#{messages.LABEL_IMPRIMIR}" action="#{relatorioFornecedoresIrregularidadeFiscalController.imprimirRelatorio}" profile="print" onclick="PF('loadDialogWG').show()"/> 
+          </aghu:acao> 
+        </p:outputPanel>
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

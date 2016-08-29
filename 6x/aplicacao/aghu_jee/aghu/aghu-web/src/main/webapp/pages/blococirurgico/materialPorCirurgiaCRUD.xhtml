@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MATERIAIS_CONSUMIDOS}</title>
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{materialPorCirurgiaController.inicio}"/> 
+      </f:metadata> 
+     </ui:define>  
+    <ui:define name="body">
+      <mec:pageConfig controller="#{materialPorCirurgiaController}" ignoreEnter="true"/>
+      <p:outputPanel id="panelTodos" layout="inline">
+      <h:form prependId="false" id="formMaterialConsumidoLista">
+          <aghu:panelGeral legend="#{messages.TITLE_MATERIAIS_CONSUMIDOS}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="numeroAgenda" label="#{messages.LABEL_MATERIAIS_AGENDA}" value="#{materialPorCirurgiaController.cirurgia.numeroAgenda}" size="4" readonly="true"/>  
+              <mec:inputText id="dataCirurgia" label="#{messages.LABEL_MATERIAIS_DATA_CIRURGIA}" value="#{materialPorCirurgiaController.cirurgia.data}" datePattern="dd/MM/yyyy" size="11" style="width: 90px;" readonly="true"/>  
+              <mec:inputText id="nomePaciente" label="#{messages.LABEL_MATERIAIS_PACIENTE}" value="#{materialPorCirurgiaController.cirurgia.paciente.nome}" size="67" maxlength="60" removerCaratersEspeciais="false" readonly="true"/>  
+              <mec:inputText id="centroCusto" label="#{messages.LABEL_MATERIAIS_CENTRO_CUSTO}" value="#{materialPorCirurgiaController.cirurgia.centroCustos.codigo} - #{materialPorCirurgiaController.cirurgia.centroCustos.descricao}" size="67" maxlength="60" removerCaratersEspeciais="false" readonly="true"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText id="procedimentoID" label="#{messages.LABEL_PROCEDIMENTO_PRINCIPAL}" value="#{materialPorCirurgiaController.procedimento.mbcEspecialidadeProcCirgs.mbcProcedimentoCirurgicos.descricao}" size="67" maxlength="60" removerCaratersEspeciais="false" readonly="true"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>
+            <aghu:panelGeral legend="#{messages.TITLE_MATERIAIS_CADASTRO}"> 
+              <aghu:linha> 
+                <p:outputPanel rendered="#{mf:hasPermission(securityController,'materialConsumidoCirurgia,executar')}" id="panelCadastro" layout="inline"> 
+                  <mec:suggestionBox var="row" itemValue="#{row}" controller="#{materialPorCirurgiaController}" id="suggestionMaterial" requiredFake="true" readonly="#{not empty materialPorCirurgiaController.materialPorCirurgia.crgSeqId}" size="15" width="630" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarMaterial" posDeleteAction="posDeleteMaterial" posSelectionAction="verificaQuantUnidConsumo" label="#{messages.LABEL_MATERIAIS_MATERIAL}" title="#{messages.TITLE_MATERIAIS_MATERIAL}" disabled="#{materialPorCirurgiaController.emEdicao}" value="#{materialPorCirurgiaController.scoMaterial}" render="panelCadastro"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                      </f:facet> #{row.codigo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NOME}"/> 
+                      </f:facet> #{row.nome}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_MATERIAIS_UNIDADE}"/> 
+                      </f:facet> #{row.unidadeMedida.codigo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_MATERIAIS_GRUPO}"/> 
+                      </f:facet> #{row.grupoMaterial.codigo}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <mec:suggestionBox var="row" itemValue="#{row}" controller="#{materialPorCirurgiaController}" id="suggestionUnidade" requiredFake="true" label="#{messages.LABEL_MATERIAIS_UNIDADE_CONS}" title="#{messages.TITLE_MATERIAIS_UNIDADE_CONS}" suggestionAction="pesquisarUnidadeMedida" posDeleteAction="posDeleteUnidade" posSelectionAction="popularUnidadeVO" descricaoInput="codigo" descricaoLabel="descricao" size="15" readonly="#{materialPorCirurgiaController.scoMaterial == null}" height="100" width="250" value="#{materialPorCirurgiaController.scoUnidadeMedida}"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_CODIGO}</b> 
+                      </f:facet> #{row.codigo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_DESCRICAO}</b> 
+                      </f:facet> #{row.descricao}
+                    </p:column> 
+                  </mec:suggestionBox>
+                  	<script type="text/javascript" xml:space="preserve">
+						jQuery(document).ready(function(){
+							document.getElementById('qtdMat:qtdMat:inputId_input').focus();
+						});
+					</script>
+                  <mec:inputNumero requiredFake="true" id="qtdMat" label="#{messages.LABEL_MATERIAIS_QUANTIDADE}" title="#{messages.TITLE_MATERIAIS_QUANTIDADE}" value="#{materialPorCirurgiaController.quantidade}" inteiros="5" decimais="2" 
+                   size="5" maxlength="5" onkeypress="adicionar(event);">
+                  </mec:inputNumero>  
+                  <aghu:acao newLine="false"> 
+                    <mec:commandButton id="btnAdicionarMaterial" value="#{messages.LABEL_ADICIONAR}" block="true" ajax="true" action="#{materialPorCirurgiaController.adicionarMaterial}" profile="add" oncomplete="javascript:setFocusInputIndex();" render="panelListaMaterial,panelCadastro" rendered="#{!materialPorCirurgiaController.emEdicao}" />
+                    <mec:commandButton id="btnAlterarMaterial" value="#{messages.LABEL_ALTERAR}" block="true" ajax="true" action="#{materialPorCirurgiaController.adicionarMaterial}" profile="ok" oncomplete="javascript:setFocusInputIndex();" render="panelListaMaterial,panelCadastro" rendered="#{materialPorCirurgiaController.emEdicao}" />
+                    <mec:commandButton id="bt_cancelar_plano" value="#{messages.LABEL_CANCELAR_EDICAO}" rendered="#{materialPorCirurgiaController.emEdicao}" action="#{materialPorCirurgiaController.cancelarMat}" profile="cancel" ajax="true" process="@this" render="panelListaMaterial,panelCadastro"/>
+                  </aghu:acao> 
+                </p:outputPanel> 
+              </aghu:linha>  
+              <aghu:linha>
+             <p:outputPanel id="panelListaMaterial" layout="inline">                      
+              <div id="divTableMaterial" style="width: 100%; max-height: 248px; overflow:auto;">
+                  <mec:serverDataTable controller="#{materialPorCirurgiaController}" selection="itemSelecionado" id="listaMaterial" list="#{materialPorCirurgiaController.listaMbcMaterialPorCirurgia}"> 
+                    <c:set var="_material" value="#{item}"/>  
+                    <p:column style="width:50px;" rendered="#{mf:hasPermission(securityController,'materialConsumidoCirurgia,executar')}">
+                      <f:facet name="header">
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>
+                        <mec:commandLink id="link_editar" title="#{messages.LABEL_EDITAR}" ajax="true"  action="#{materialPorCirurgiaController.editarMat()}" profile="edit" render="panelCadastro">
+                        	<f:setPropertyActionListener for="command" target="#{materialPorCirurgiaController.itemSelecionado}" value="#{_material}"/>
+                        </mec:commandLink>
+                        <mec:commandLink id="link_remover" ajax="true" action="#{materialPorCirurgiaController.removerMaterial()}" rendered="#{not empty _material.crgSeqId}" title="#{messages.LABEL_EXCLUIR}" profile="delete" render="panelListaMaterial,panelCadastro">
+                        	<f:setPropertyActionListener for="command" target="#{materialPorCirurgiaController.itemSelecionado}" value="#{_material}"/>
+                        </mec:commandLink>
+                    </p:column>  
+                    <p:column style="text-align:left;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_MATERIAIS_MATERIAL}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_material.matCodigo} - #{_material.matNome}"/> 
+                    </p:column>  
+                    <p:column style="text-align:center;width:50px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_MATERIAIS_UNIDADE_MEDIDA_MAT}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_material.unidadeMedidaMat}"/> 
+                    </p:column>  
+                    <p:column style="text-align:center;width:50px;"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_MATERIAIS_UNIDADE_MEDIDA_CONS}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_material.unidadeMedidaCons}"/> 
+                    </p:column>  
+                    
+                    <p:column style="text-align:center; width:50px;" rendered="#{mf:hasPermission(securityController,'materialConsumidoCirurgia,executar')}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_MATERIAIS_QUANTIDADE}"/> 
+                      </f:facet>
+		                  	<pe:inputNumber id="quantidade"
+													decimalSeparator=","
+													value="#{_material.quantidade}" size="11" maxlength="5"
+													onkeypress="onKeyPressFunction(event);" 
+													onfocus="this.style='background-color:yellow!important';setCampoComFocus(this);"
+													onblur="this.style='background-color:white!important'"					                  
+													rendered="#{mf:hasPermission(securityController,'materialConsumidoCirurgia,executar')}"
+													decimalPlaces="2"
+													thousandSeparator="."
+													maxValue="#{mf:gerarMaxValue(5, 2)}"
+													showLabel="false">
+													<p:ajax event="change" bypassUpdates="false" process="@this"/>
+		                  </pe:inputNumber>
+                    </p:column>
+
+										<p:column style="text-align:center; width:50px;"
+											rendered="#{not mf:hasPermission(securityController,'materialConsumidoCirurgia,executar')}">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_MATERIAIS_QUANTIDADE}" />
+											</f:facet>
+											<h:outputText id="qtdOutput" value="#{_material.quantidade}" />
+										</p:column>
+										
+										<p:column style="text-align:center; width:50px; #{(_material.origem != null and _material.origem eq 'SS') ? 'background-color:#008000' : ''}"
+											rendered="#{materialPorCirurgiaController.dispensario}">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_MATERIAIS_ORIGEM}" />
+											</f:facet>
+											<h:outputText id="origemOutput" value="#{_material.origem}" />
+										</p:column>
+								</mec:serverDataTable>
+				</div>
+				</p:outputPanel>
+              </aghu:linha> 
+            </aghu:panelGeral>
+          <p:outputPanel id="panelFormGravar" layout="inline"> 
+            <aghu:acao>
+            
+              <mec:commandButton
+	              id="bt_gravar" 
+	              value="#{messages.LABEL_GRAVAR}" 
+	              block="true" 
+	              rendered="#{mf:hasPermission(securityController,'materialConsumidoCirurgia,executar')}" 
+	              action="#{materialPorCirurgiaController.gravar}" 
+	              render="panelCadastro,panelListaMaterial,panelFormGravar" 
+	              profile="ok" 
+	              ajax="true" 
+	              process="@this"/>  
+              
+              <mec:commandButton id="bt_novaLista" value="#{messages.LABEL_MATERIAIS_NOVA_LISTA}" onclick="PF('modalNovaListaWG').show();" rendered="#{mf:hasPermission(securityController,'materialConsumidoCirurgia,executar') and not materialPorCirurgiaController.listaVazia}" profile="ok" ajax="true" process="@this"/>  
+              <mec:commandButton id="bt_visualizarImpressao" value="#{messages.LABEL_MATERIAIS_VISUALIZAR_IMPRESSAO}" disabled="FALSE" rendered="#{mf:hasPermission(securityController,'imprimirRegistroNotaSala,imprimir') and not materialPorCirurgiaController.listaVazia}" action="#{materialPorCirurgiaController.getVisualizarRelatorio}" profile="view" ajax="true" process="@this"> 
+                <f:setPropertyActionListener target="#{relatorioRegistroDaNotaDeSalaController.crgSeq}" value="#{materialPorCirurgiaController.cirurgia.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{relatorioRegistroDaNotaDeSalaController.voltarPara}" value="blococirurgico-materialPorCirurgiaCRUD" for="command"/>
+              </mec:commandButton>  
+              <mec:commandButton id="bt_imprimir" value="#{messages.LABEL_IMPRIMIR}" disabled="false" rendered="#{mf:hasPermission(securityController,'imprimirRegistroNotaSala,imprimir') and not materialPorCirurgiaController.listaVazia}" action="#{materialPorCirurgiaController.directPrint}" profile="print" ajax="true" process="@this"/>
+              <mec:backButton id="bt_voltar" formId="formMaterialConsumidoLista" value="#{messages.LABEL_VOLTAR}" propagation="end" action="#{materialPorCirurgiaController.voltar}" icon="aghu-icons-16x16 aghu-icon-back" styleClass="button-acao bt_vermelho" immediate="true"/>
+            </aghu:acao> 
+          </p:outputPanel>
+        </h:form> 
+      </p:outputPanel>
+      <p:dialog id="modalNovaLista" width="400" height="150" modal="true" resizable="false" widgetVar="modalNovaListaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_MATERIAIS_NOVA_LISTA}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_MATERIAIS_NOVA_LISTA} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+	 	<h:form prependId="false" id="formModalNovaLista"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{materialPorCirurgiaController.novaLista}" oncomplete="PF('modalNovaListaWG').hide();" id="bt_gerar_nova_lista" profile="ok" ajax="true" render="panelCadastro,panelListaMaterial,panelFormGravar"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalNovaListaWG').hide();" id="bt_cancelarNovaLista" profile="cancel" ajax="true" process="@this"/>
+		</h:form>
+        </h:panelGroup> 
+      </p:dialog>
+      <script type="text/javascript" xml:space="preserve">	
+			//<![CDATA[			    
+				var campoComFocus;
+				var splitName;
+				var posicaoAtual;
+				var proximaPosicao;
+				var posicaoOld = -1;
+	
+				function pressedUp(){
+					processaSplit();
+		        	proximaPosicao = posicaoAtual-1;
+		        	setFocus();
+				}
+				function pressedDown() {
+					processaSplit();
+		        	proximaPosicao = posicaoAtual+1;
+		        	setFocus();
+				}
+				function setFocusInputIndex() {
+					setTimeout(function(){setFocus()}, 150);
+				}
+				function setFocus() {
+					if (proximaPosicao > -1) {
+						var id = splitName[0] + ':' + splitName[1] + ':' + proximaPosicao + ':' + splitName[3];
+						var element = document.getElementById(id);
+						element.focus();
+						//setFocus(element);
+					}
+				}
+				function setCampoComFocus(campo) {
+					campoComFocus = campo;
+					processaSplit();
+					posicaoOld = posicaoAtual;
+				}
+				function processaSplit() {
+					splitName = campoComFocus.id.split(':');
+		        	posicaoAtual = parseInt(splitName[2]);
+		        }
+				function adicionar(Event) {
+					if(document.all) {
+			           Tecla = Event.keyCode; // Internet Explorer
+			        } else {
+			         	Tecla = Event.which; // Mozilla, etc.
+			        }
+					var btnCadastrar = document.getElementById('btnAdicionarMaterial:button');
+					if(btnCadastrar == null && btnCadastrar == undefined) {
+						btnCadastrar = document.getElementById('btnAlterarMaterial:button');
+					}
+					if(btnCadastrar != null || btnCadastrar != undefined) {
+					if(Tecla == 13) {
+						btnCadastrar.focus();						
+						btnCadastrar.click();
+					}
+					if(Tecla == 9) {
+						btnCadastrar.focus();
+					}
+				}							
+			}
+			function onKeyPressFunction(Event) {
+			        tecla = Event.keyCode; // Internet Explorer
+		        	if(tecla == null || tecla == undefined) {
+		        		tecla = Event.which;
+			        }
+		        	if(tecla == 38) {	
+						pressedUp();
+			        }
+		        	if(tecla == 40) {
+		        		pressedDown();
+			        }
+				}
+			// ]]>
+		</script>
+    </ui:define> 
+  </ui:composition> 
+</html>

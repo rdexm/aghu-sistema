@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_CONSULTAR_ENCAMINHAR_PAC_AGUARDO_JULGAMENTO']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title>  
+     
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{encaminhaPacAguardoJulgamentoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>      
+    <ui:define name="body">       
+    <mec:pageConfig controller="#{encaminhaPacAguardoJulgamentoPaginatorController}"/>        
+    <h:form prependId="false" id="pacFrm">         
+      <aghu:panelGeral legend="#{messages.LABEL_CONSULTAR_PAC_REGISTRO_JULGAMENTO}">           
+    	<p:outputPanel id="panelFiltros" layout="inline">             
+    		<aghu:linha>               
+    			<mec:inputNumero id="nroPacNf" label="#{messages.LABEL_NRO_DO_PAC}" title="#{messages.TITLE_NRO_DO_PAC}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.nroPac}" size="10" maxlength="6">                 
+    				<p:ajax event="change" eventsQueue="blurQueue" update="@(#panelFiltros)" listener="#{encaminhaPacAguardoJulgamentoPaginatorController.limparFiltros}"/>               
+    			</mec:inputNumero>                
+    			<mec:inputText id="descricaoTf" label="#{messages.LABEL_DESCRICAO_PAC}" title="#{messages.TITLE_DESCRICAO_PAC}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.descricao}" maxlength="60" readonly="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.nroPac != null}" size="60" style="text-transform: uppercase"/>                
+    			<mec:suggestionBox id="modalidadeSb" var="modalidade" itemValue="#{modalidade}" label="#{messages.LABEL_MODALIDADE_PAC}" title="#{messages.TITLE_TIPO_MODALIDADE_PAC}" descricaoInput="codigo" descricaoLabel="descricao" readonly="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.nroPac != null}" suggestionAction="pesquisarModalidades" controller="#{encaminhaPacAguardoJulgamentoPaginatorController}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.modalidade}">                 
+    				<p:column>                   
+    					<f:facet name="header">                     
+    						<h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;}"/>                   
+    					</f:facet> #{modalidade.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                  </f:facet> #{modalidade.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:selectOneMenu id="situacaoSom" itemLabel="descricao" label="#{messages.LABEL_SITUACAO_PAC}" title="#{messages.TITLE_SITUACAO_PAC_JULGAR}" readonly="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.nroPac != null}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.situacao}" items="#{encaminhaPacAguardoJulgamentoPaginatorController.obterSituacoes()}"> 
+                <f:converter converterId="dominioConverter" for="inputId"/> 
+              </mec:selectOneMenu>  
+              <mec:selectBooleanCheckbox label="#{messages.LABEL_TEM_PROPOSTA}" title="#{messages.TITLE_TEM_PROPOSTA}" id="temProposta" readonly="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.nroPac != null}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.criteria.pacPossuiProposta}"/> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{encaminhaPacAguardoJulgamentoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{encaminhaPacAguardoJulgamentoPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/> 
+             <mec:commandButton value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{encaminhaPacAguardoJulgamentoPaginatorController.getVoltarParaUrl()}"  rendered="#{not empty encaminhaPacAguardoJulgamentoPaginatorController.voltarParaUrl}" styleClass="bt_voltar bt_cinza" profile="back"/> 
+   
+        </aghu:acao> 
+       <br/>
+        
+        <div style="margin:0 20px 0 10px;float-left;"> 
+        <p:outputPanel id="pacGridPanel" rendered="#{encaminhaPacAguardoJulgamentoPaginatorController.dataModel.pesquisaAtiva}">
+         
+          <aghu:column type="table" width="calc(100% - 232px)"> 
+             <mec:serverDataTable dataModel="dataModel" id="pacGrid" value="#{encaminhaPacAguardoJulgamentoPaginatorController}" controller="#{encaminhaPacAguardoJulgamentoPaginatorController}"> 
+               <c:set var="pac" value="#{item}"/>  
+               <p:column headerText="Ações" style="width:60px" styleClass="first-column auto-adjust" exportable="false"> 
+                 <h:selectBooleanCheckbox value="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsDisponiveis[pac.numero]}"> 
+                   <p:ajax event="click" update="@(#panelBotoes)" process="@this"/> 
+                 </h:selectBooleanCheckbox>  
+                 <mec:commandLink title="#{messages.HINT_REGISTRAR_JULGAMENTO_PAC_LOTE}" style="margin-bottom: -3px;" rendered="#{mf:hasPermission(securityController,'julgarProposta,gravar')}" action="#{encaminhaPacAguardoJulgamentoPaginatorController.registraJulgamentoPacLote}" styleClass=" silk-table-multiple silk-icon"> 
+                   <f:setPropertyActionListener target="#{registraJulgamentoPacLoteController.numeroPac}" value="#{pac.numero}" for="command"/>  
+                   <f:setPropertyActionListener target="#{registraJulgamentoPacLoteController.voltarParaUrl}" value="consultarEncaminharPacAguardoJulgamento" for="command"/> 
+                 </mec:commandLink>  
+                 <mec:commandLink title="#{messages.HINT_REGISTRAR_JULGAMENTO_PAC}" style="margin-bottom: -3px;" rendered="#{mf:hasPermission(securityController,'julgarProposta,gravar')}" action="#{encaminhaPacAguardoJulgamentoPaginatorController.registraJulgamentoPac}" styleClass=" silk-page-go silk-icon"> 
+                   <f:setPropertyActionListener target="#{registraJulgamentoPacController.numeroPac}" value="#{pac.numero}" for="command"/>  
+                   <f:setPropertyActionListener target="#{registraJulgamentoPacController.voltarParaUrl}" value="consultarEncaminharPacAguardoJulgamento" for="command"/> 
+                 </mec:commandLink> 
+               </p:column>  
+               <p:column> 
+                 <f:facet name="header"> 
+                   <h:outputText value="#{messages.LABEL_GRID_NRO_PAC}"/> 
+                 </f:facet>
+                 <p:outputPanel id="panelNroPac">  
+                 	<h:outputText value="#{encaminhaPacAguardoJulgamentoPaginatorController.getDescricao(pac, true)}"/>
+                 </p:outputPanel>  
+                 <p:tooltip for="panelNroPac" style="width:300px;word-wrap:break-word;" styleClass="tooltip"> 
+                   <h:outputText value="#{encaminhaPacAguardoJulgamentoPaginatorController.getDescricao(pac, false)}"/> 
+                 </p:tooltip> 
+               </p:column>  
+               <p:column> 
+                 <f:facet name="header"> 
+                   <h:outputText value="#{messages.LABEL_MODALIDADE_PAC}"/> 
+                 </f:facet>  
+                 <h:outputText value="#{pac.modalidade}"/> 
+               </p:column>  
+               <p:column> 
+                 <f:facet name="header"> 
+                   <h:outputText value="#{messages.LABEL_SITUACAO_PAC}"/> 
+                 </f:facet>  
+                 <h:outputText value="#{pac.situacao.descricao}"/> 
+               </p:column>  
+               <p:column> 
+                 <f:facet name="header"> 
+                   <h:outputText value="#{messages.LABEL_QTDE_ITENS_PAC}"/> 
+                 </f:facet>  
+                 <h:outputText value="#{pac.qtdeItens}"/> 
+               </p:column>  
+               <p:column> 
+                 <f:facet name="header"> 
+                   <h:outputText value="#{messages.LABEL_QTDE_ITENS_JULGADOS_PAC}"/> 
+                 </f:facet>  
+                 <h:outputText value="#{pac.qtdeItensJulgados}"/> 
+               </p:column> 
+             </mec:serverDataTable> 
+          </aghu:column>
+          <aghu:column type="button" id="columnBotoes" width="232px">   
+             <p:outputPanel id="panelBotoes" layout="inline"> 
+                 <mec:commandButton id="encaminharCompradorBt" value="#{messages.LABEL_ENCAMINHAR_COMPRADOR}" action="#{encaminhaPacAguardoJulgamentoPaginatorController.encaminharComprador()}" disabled="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados.isEmpty() or                                             not mf:hasPermission(securityController,'cadastrarProposta,gravar')}" styleClass="bt_cinza"/>  
+                 <mec:commandButton id="encaminharParecerTecnicoBt" value="#{messages.LABEL_ENCAMINHAR_PARECER_TECNICO}" action="#{encaminhaPacAguardoJulgamentoPaginatorController.encaminharParecerTecnico()}" disabled="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados.isEmpty() or                                             not mf:hasPermission(securityController,'cadastrarProposta,gravar')}" rendered="#{encaminhaLicitacoesLiberarController.verificarUtilizaParecerTecnico()}" styleClass="bt_cinza"/>  
+                 <mec:commandButton id="impressaoQuadroProvisorioBt" value="#{messages.LABEL_IMPRESSAO_QUADRO_PROVISORIO}" action="#{encaminhaPacAguardoJulgamentoPaginatorController.verQuadroProvisorio()}" rendered="#{(mf:hasPermission(securityController,'consultarProposta,visualizar') or mf:hasPermission(securityController,'cadastrarProposta,gravar')) and (encaminhaLicitacoesLiberarController.verificarUtilizaParecerTecnico()) }" disabled="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados.isEmpty() or                                                                not (mf:hasPermission(securityController,'cadastrarProposta,gravar') or mf:hasPermission(securityController,'consultarProposta,gravar'))}" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{relatorioQuadroPropostasProvisorioController.pacs}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados}" for="command"/>  
+                    <f:setPropertyActionListener target="#{relatorioQuadroPropostasProvisorioController.voltarParaUrl}" value="compras-consultarEncaminharPacAguardoJulgamento" for="command"/> 
+                 </mec:commandButton>  
+                 <mec:commandButton id="impressaoQuadroJulgamentoBt" value="#{messages.LABEL_IMPRESSAO_QUADRO_JULGAMENTO}" action="#{encaminhaPacAguardoJulgamentoPaginatorController.verQuadroJulgamento()}" disabled="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados.isEmpty() or                                                                not (mf:hasPermission(securityController,'cadastrarProposta,gravar') or mf:hasPermission(securityController,'consultarProposta,gravar'))}" styleClass="bt_cinza"> 
+                   <f:setPropertyActionListener target="#{relatorioQuadroJulgamentoPropostaController.pacs}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados}" for="command"/>  
+                   <f:setPropertyActionListener target="#{relatorioQuadroJulgamentoPropostaController.voltarParaUrl}" value="compras-consultarEncaminharPacAguardoJulgamento" for="command"/> 
+                 </mec:commandButton>  
+                 <mec:commandButton id="impressaoQuadroAprovacaoBt" disabled="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados.isEmpty() or                                             not mf:hasPermission(securityController,'consultarProposta,visualizar')}" value="#{messages.LABEL_IMPRESSAO_QUADRO_APROVACAO}" onclick="PF('impressaoQuadroAprovacaoModalWG').show();" ajax="true" styleClass="bt_cinza"/> 
+             </p:outputPanel> 
+         </aghu:column>
+          
+        </p:outputPanel> 
+        </div>
+        
+      </h:form>  
+      <p:dialog id="impressaoQuadroAprovacaoModal" width="400" height="150" modal="true" resizable="false" widgetVar="impressaoQuadroAprovacaoModalWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_IMPRESSAO_QUADRO_APROVACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MESSAGE_EFETUAR_IMPRESSAO_QUADRO_ASSINATURAS} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{encaminhaPacAguardoJulgamentoPaginatorController.imprimirQuadroAprovacao(true)}" profile="search"> 
+              <f:setPropertyActionListener target="#{relatorioQuadroAprovacaoComprasLicitacaoController.origem}" value="consultarEncaminharPacAguardoJulgamento" for="command"/>  
+              <f:setPropertyActionListener target="#{relatorioQuadroAprovacaoComprasLicitacaoController.pacs}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados}" for="command"/>  
+              <f:setPropertyActionListener target="#{relatorioQuadroAprovacaoComprasLicitacaoController.assinaturas}" value="true" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" action="#{encaminhaPacAguardoJulgamentoPaginatorController.imprimirQuadroAprovacao(false)}" profile="cancel"> 
+              <f:setPropertyActionListener target="#{relatorioQuadroAprovacaoComprasLicitacaoController.origem}" value="consultarEncaminharPacAguardoJulgamento" for="command"/>  
+              <f:setPropertyActionListener target="#{relatorioQuadroAprovacaoComprasLicitacaoController.pacs}" value="#{encaminhaPacAguardoJulgamentoPaginatorController.pacsSelecionados}" for="command"/>  
+              <f:setPropertyActionListener target="#{relatorioQuadroAprovacaoComprasLicitacaoController.assinaturas}" value="false" for="command"/> 
+            </mec:commandButton> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

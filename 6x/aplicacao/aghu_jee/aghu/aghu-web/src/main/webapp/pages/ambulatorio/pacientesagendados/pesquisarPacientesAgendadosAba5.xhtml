@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+<ui:composition>
+	<STYLE type="text/css">
+		.cor1{
+			background: #B3D9B3;
+		}
+		.cor2{
+			background: #66D9B3;
+		}
+		.cor3{
+			background: #B3D9FF;
+		}
+		.cor4{
+			background: #00D9FF;
+		}
+	
+	</STYLE>
+	
+	<aghu:panelGeral>
+		<aghu:linha>
+			<mec:serverDataTable id="resultListAb5"
+				style="margin: 0px !important;"
+				list="#{pesquisarPacientesAgendadosController.pacientesPendentesList}"
+				scrollable="true" rowClass="#{item.prioridade eq 1 ? 'cor1': item.prioridade eq 4 ? 'cor2' : item.prioridade eq 3 ? 'cor3' : 'cor4'}"
+				rowIndexVar="rowIndex">
+
+				<c:set var="item" value="#{item}" />
+				
+			<p:column  style="width:9%;" sortBy="#{item.reaberto}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_REABRIR}"/> 
+            </f:facet>  
+            
+            <p:outputPanel style="margin-left:37%;" id="checkid_Ab4" layout="inline">
+	            <p:selectBooleanCheckbox rendered="#{item.prioridade eq 4 }" value="#{item.reaberto}" style="border:0px;vertical-align:middle;">
+					<p:ajax event="change" 
+						update="@(#panelConfirmacaoReabrirPendente)" process="@this" 
+						listener="#{pesquisarPacientesAgendadosController.prepararReabrirPendenteEmtatendimento(item)}" 
+						oncomplete="PF('modalConfirmacaoReabrirPendenteWG').show();"
+					/>
+				</p:selectBooleanCheckbox> 
+				<p:selectBooleanCheckbox rendered="#{item.prioridade ne 4}" value="#{item.reaberto}" style="border:0px;vertical-align:middle;">
+					<p:ajax event="change" 
+						listener="#{pesquisarPacientesAgendadosController.prepararReabrirPendente(item)}"
+					/>
+				</p:selectBooleanCheckbox>  
+			</p:outputPanel> 
+          </p:column>  
+
+				<p:column style="width:12%;" sortBy="#{item.dtConsulta}" sortable="true" >
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_DATA_HORA}" />
+					</f:facet>
+
+					<h:outputText value="#{item.dtConsulta}">
+						<f:convertDateTime locale="pt_BR" type="both" dateStyle="medium" timeStyle="short" />
+					</h:outputText>
+				</p:column>
+
+				<p:column style="width:8%;" sortBy="#{item.numero}" sortable="true">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_CONSULTA}" />
+					</f:facet>
+
+					<h:outputText value="#{item.numero}" />
+				</p:column>
+
+				<p:column style="width:10%;" sortBy="#{pesquisarPacientesAgendadosController.formatarProntuario(item.prontuario)}" sortable="true">
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_PRONTUARIO}" />
+					</f:facet>
+
+					<h:outputText value="#{item.prontuario}" />
+				</p:column>
+
+				<p:column style="width:25%;" sortBy="#{item.nome}" sortable="true">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_PACIENTE}" />
+					</f:facet>
+
+					<h:outputText id="focus" value="#{pesquisarPacientesAgendadosController.formatarValorTamanhoLimite(item.nome, 25)}" />
+
+					<p:tooltip id="toolTipFade" for="focus" styleClass="tooltip" layout="block" >
+						<ui:fragment rendered="#{item.nome ne null and item.nome.length() gt 25}">
+							<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_PACIENTE}"/> 
+							<h:outputText value=" : "/> 
+							<h:outputText value="#{item.nome}"/>
+							
+							<br clear="none"/>
+						</ui:fragment>
+							
+						<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_AGENDA}"/> 
+						<h:outputText value=" : "/> 
+						<h:outputText value="#{item.especialidade}"/>
+
+						<br clear="none"/>
+
+	             		<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_EQUIPE}"/>
+						<h:outputText value=" : "/> 
+						<h:outputText value="#{item.equipe}" /> 
+
+						<br clear="none"/>
+
+						<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_PROFISSIONAL}"/>
+						<h:outputText value=" : "/> 
+						<h:outputText value="#{item.profissional}" /> 
+					</p:tooltip>
+				</p:column>
+
+				<p:column  style="width:8%;" sortBy="#{item.hrInicioAtendimento}" sortable="true">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_INICIO}" />
+					</f:facet>
+
+					<h:outputText value="#{item.hrInicioAtendimento}">
+						<f:convertDateTime pattern="HH:mm" />
+					</h:outputText>
+				</p:column>
+
+				<p:column style="width:8%;" sortBy="#{item.salaMicro}" sortable="true">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_SALA}" />
+					</f:facet>
+
+					<h:outputText value="#{item.salaMicro}" />
+				</p:column>
+
+				<p:column style="width:20%;" sortBy="#{item.responsavel}" sortable="true">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_RESPONSAVEL}" />
+					</f:facet>
+
+					<h:outputText id="gridValorResponsavel" value="#{pesquisarPacientesAgendadosController.formatarValorTamanhoLimite(item.responsavel, 20)}" />
+					<p:tooltip id="toolTipResponsavel" for="gridValorResponsavel" styleClass="tooltip" layout="block"
+							rendered="#{item.responsavel ne null and item.responsavel.length() gt 20}">
+						<h:outputText value="#{item.responsavel}" />
+					</p:tooltip>
+				</p:column>
+			</mec:serverDataTable>
+		</aghu:linha>
+
+		<aghu:linha>
+			<div style="margin-top:4%;" >
+				<div class="ui-grid-row">
+				<div class="ui-grid-col-3">
+				<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_LEGENDA_CORES}" />
+				</div>
+				</div>
+			</div>
+		</aghu:linha>
+		<aghu:linha>
+				<h:outputLabel class="ui-grid-col-3" style="width: 15%; background-color: #B3D9B3; margin-top:1%;margin-left:%" value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_LEGENDA_AGUARDANDO}" />
+				<h:outputLabel class="ui-grid-col-3" style="width: 20%; background-color: #66D9B3; margin-top:1%;margin-left:5%" value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_LEGENDA_EM_ATENDIMENTO}" />
+				<h:outputLabel class="ui-grid-col-3" style="width: 20%; background-color: #B3D9FF; margin-top:1%;margin-left:5%" value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_LEGENDA_PENDENCIA_OUTRO_USUARIO}" />
+				<h:outputLabel class="ui-grid-col-3" style="width: 18%; background-color: #00D9FF; margin-top:1%;margin-left:5%" value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES_LEGENDA_PENCENCIA_USUARIO}" />
+		</aghu:linha>
+	</aghu:panelGeral>
+</ui:composition>
+</html>

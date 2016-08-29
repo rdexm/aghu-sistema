@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisa Pacientes com Alta :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaPacientesComAltaPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISA_PACIENTES_COM_ALTA}"> 
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_DE}" value="#{pesquisaPacientesComAltaPaginatorController.dataInicial}" title="#{messages.TITLE_LABEL_DATA_INICIAL_PESQ}" required="true" id="dataInicial" tipo="data"/>  
+            <mec:inputTextData label="#{messages.LABEL_ATE}" value="#{pesquisaPacientesComAltaPaginatorController.dataFinal}" title="#{messages.TITLE_LABEL_DATA_FINAL_PESQ}" required="true" id="dataFinal" tipo="data"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_ALTA_ADMINISTRATIVA}" title="#{messages.TITLE_ALTA_ADMINISTRATIVA}" value="#{pesquisaPacientesComAltaPaginatorController.altaAdministrativa}" id="incluirPassivos"/>  
+            <mec:selectOneMenu enum="DominioOrdenacaoPesquisaPacComAlta" label="#{messages.LABEL_ORDENACAO}" value="#{pesquisaPacientesComAltaPaginatorController.ordenacao}" title="#{messages.TITLE_ORDENACAO}" id="ordenacao"/>  
+            <mec:selectOneMenu enum="DominioTipoAlta" label="#{messages.LABEL_TIPOS_ALTA}" value="#{pesquisaPacientesComAltaPaginatorController.tipoAlta}" title="#{messages.TITLE_TIPOS_ALTA}" id="tipoAlta"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_TIPO_ALTA}" title="#{messages.TITLE_LABEL_TIPO_ALTA_PESQ}" converter="#{ainTiposAltaMedicaConverter}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarTipoAltaMedicaPorCodigoEDescricao" id="suggestionTipoAltaMedica" controller="#{pesquisaPacientesComAltaPaginatorController}" value="#{pesquisaPacientesComAltaPaginatorController.tipoAltaMedica}"> 
+              <p:column>#{item.codigo}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox label="#{messages.LABEL_ESPECIALIDADE}" title="#{messages.TITLE_LABEL_ESPECIALIDADE_PESQ}" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" suggestionAction="listarEspecialidadesPorSigla" id="especialidade" controller="#{pesquisaPacientesComAltaPaginatorController}" value="#{pesquisaPacientesComAltaPaginatorController.especialidade}"> 
+              <p:column>#{item.sigla}</p:column>  
+              <p:column>#{item.nomeEspecialidade}</p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_LABEL_UNIDADE_PESQ}" converter="#{aghUnidadesFuncionaisCaracteristicasInternacaoOuEmergenciaAtivasInativasConverter}" descricaoInput="seq" descricaoLabel="LPADAndarAlaDescricao" suggestionAction="pesquisarUnidadeFuncionalPorCodigoEDescricao" id="unidadeFuncional" controller="#{pesquisaPacientesComAltaPaginatorController}" value="#{pesquisaPacientesComAltaPaginatorController.unidadeFuncional}"> 
+              <p:column>#{item.seq}</p:column>  
+              <p:column>#{item.LPADAndarAlaDescricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" block="true" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisaPacientesComAltaPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" action="#{pesquisaPacientesComAltaPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formGrid"> 
+        <p:outputPanel id="panelGrid" layout="inline"> 
+          <mec:serverDataTable id="tabelaResult" dataModel="dataModel" rendered="#{pesquisaPacientesComAltaPaginatorController.dataModel.pesquisaAtiva}" controller="#{pesquisaPacientesComAltaPaginatorController}"> 
+            <c:set var="_pac" value="#{item}"/>  
+            <p:column styleClass="auto-adjust" width="30"> 
+            <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+             </f:facet> 
+              <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{pesquisaPacientesComAltaPaginatorController.editar(_pac)}" oncomplete="PF('modalDetalhesPesquisaWG').show();;" profile="edit" ajax="true" render="modalDetalhesPesquisa" process="@this"/> 
+            </p:column>  
+            <p:column id="outCspCnv" width="50" styleClass="auto-adjust"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+              </f:facet>  
+              <h:outputText id="outProntuario" value="#{_pac.prontuario}"/>
+              <p:tooltip for="outProntuario" style="width:300px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{messages.LABEL_PRONTUARIO}: #{_pac.prontuario}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_NOME}: #{_pac.nomePac}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_OBSERVACAO}: #{_pac.observacaoPacienteAlta}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_MATRIC}: #{_pac.matricula}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_SENHA}: #{_pac.senha}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_ALTA_OBITO}: #{_pac.altaObito.descricao}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_TIPO_ALTA_ADMINISTRATIVA}: #{_pac.descricaoTipoAltaMedica}"/> 
+              </p:tooltip>  
+            </p:column>  
+            <p:column width="260"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_NOME}"/> 
+              </f:facet>  
+              <h:outputText value="#{_pac.nomePac}"/> 
+            </p:column>  
+            <p:column width="60"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_INTERNACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_pac.dthrInicioInternacao}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column width="280"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_EQUIPE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_pac.equipe}"/> 
+            </p:column>  
+            <p:column width="50"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ESP}"/> 
+              </f:facet>  
+              <h:outputText value="#{_pac.siglaEspecialidade}"/> 
+            </p:column>  
+            <p:column width="60"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ALTA_MEDICA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_pac.dthrAltaMedica}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column width="60"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LOCAL}"/> 
+              </f:facet>  
+              <h:outputText value="#{_pac.local}"/> 
+            </p:column>  
+            <p:column width="70"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SAIDA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_pac.dtSaidaPaciente}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+              </h:outputText> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalDetalhesPesquisa" width="600" height="460" modal="true" resizable="false" widgetVar="modalDetalhesPesquisaWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_DETALHES}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:form prependId="false" id="modalDetalhesPesquisaForm"> 
+          <aghu:panelGeral id="ffdl_mdaol_pessoais"> 
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_PRONTUARIO}" value="#{pesquisaPacientesComAltaPaginatorController.voAltaPaciente.prontuario}" size="10" readonly="true" id="vo_prontuario"/>  
+              <mec:inputText label="#{messages.LABEL_INTERNACAO}" value="#{pesquisaPacientesComAltaPaginatorController.voAltaPaciente.dthrInicioInternacao}" size="10" datePattern="dd/MM/yyyy" readonly="true" id="vo_dt_internacao"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_NOME_PACIENTE}" value="#{pesquisaPacientesComAltaPaginatorController.voAltaPaciente.nomePac}" size="60" readonly="true" id="vo_nome_pac"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:selectOneMenu label="#{messages.LABEL_ALTA_OBITO}" enum="DominioSimNao" value="#{pesquisaPacientesComAltaPaginatorController.voAltaPaciente.altaObito}" title="#{messages.TITLE_CRUD_SITUACAO_OBSERVACOESPACALTA}" readonly="true" id="vo_alta_obito"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_TIPO_ALTA_ADMINISTRATIVA}" value="#{pesquisaPacientesComAltaPaginatorController.voAltaPaciente.descricaoTipoAltaMedica}" size="60" readonly="true" id="vo_cod_tipo_alta_medica"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputNumero label="#{messages.LABEL_MATRIC}" value="#{pesquisaPacientesComAltaPaginatorController.voAltaPaciente.matricula}" readonly="true" id="vo_matricula"/>  
+              <mec:inputText label="#{messages.LABEL_SENHA}" value="#{pesquisaPacientesComAltaPaginatorController.voAltaPaciente.senha}" readonly="true" id="vo_senha"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox label="#{messages.LABEL_OBS}" title="Selecione uma observação para a alta do paciente." converter="#{ainObservacoesPacAltaConverter}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarObservacoesPacAlta" readonly="false" id="suggestionObservacaoAltaPaciente" controller="#{pesquisaPacientesComAltaPaginatorController}" value="#{pesquisaPacientesComAltaPaginatorController.observacoesPacAlta}"> 
+                <p:column>#{item.codigo}</p:column>  
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:linha> 
+            <mec:commandButton id="bt_gravar" action="#{pesquisaPacientesComAltaPaginatorController.associarObservacao}" value="#{messages.LABEL_GRAVAR}" oncomplete="PF('modalDetalhesPesquisaWG').hide();;" profile="ok" ajax="true" render="panelGrid" process="@this" disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/>   
+            <mec:commandButton value="#{messages.LABEL_CANCELAR}" onclick="PF('modalDetalhesPesquisaWG').hide();;return false;" profile="cancel" ajax="true"/> 
+          </aghu:linha> 
+        </h:form> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

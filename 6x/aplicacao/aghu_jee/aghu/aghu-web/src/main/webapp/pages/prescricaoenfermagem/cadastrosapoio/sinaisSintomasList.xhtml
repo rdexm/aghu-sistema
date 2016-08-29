@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_SINAIS_SINTOMAS']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{sinaisSintomasPaginatorController}"/>  
+      <h:form prependId="false" id="formSinaisSintomas"> 
+        <aghu:panelGeral legend="#{messages.TITLE_SINAIS_SINTOMAS_PESQUISAR}"> 
+          <aghu:linha> 
+            <mec:inputNumero value="#{sinaisSintomasPaginatorController.codigo}" label="#{messages.LABEL_SINAIS_SINTOMAS_CODIGO}" title="#{messages.TITLE_SINAIS_SINTOMAS_CODIGO}" maxlength="5" size="5" id="codigo"/>  
+            <mec:inputText label="#{messages.LABEL_SINAIS_SINTOMAS_DESCRICAO}" size="80" maxlength="200" title="#{messages.TITLE_SINAIS_SINTOMAS_DESCRICAO}" value="#{sinaisSintomasPaginatorController.descricao}" style="text-transform:uppercase" id="descricao"/>  
+            <mec:selectOneMenu enum="DominioSituacao" label="#{messages.LABEL_SINAIS_SINTOMAS_SITUACAO}" noSelectionOption="false" value="#{sinaisSintomasPaginatorController.situacao}" title="#{messages.TITLE_SINAIS_SINTOMAS_SITUACAO}" id="ativoInativoItens"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{sinaisSintomasPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{sinaisSintomasPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{sinaisSintomasPaginatorController.redirecionaNovo}" rendered="#{sinaisSintomasPaginatorController.exibirBotaoNovo}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formListaSinaisSintomas"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaSinaisSintomas" controller="#{sinaisSintomasPaginatorController}"> 
+          <c:set var="_sinaisSintomas" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaSinaisSintomas_link_editar" profile="edit" title="editar" action="#{sinaisSintomasPaginatorController.redirecionaEditar}"> 
+              <f:setPropertyActionListener target="#{sinaisSintomasController.codigo}" value="#{_sinaisSintomas.codigo}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{sinaisSintomasPaginatorController.sinaisSintomasSelecionado}" value="#{_sinaisSintomas}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaSinaisSintomas_link_remover" profile="delete" title="excluir" action="#{sinaisSintomasPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{sinaisSintomasPaginatorController.sinaisSintomasSelecionado}" value="#{_sinaisSintomas}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="lb_cadastrar" title="#{messages.LABEL_CADASTRAR_SINONIMO}" rendered="#{mf:hasPermission(securityController,'consultarSinonimosSinaisSintomas,consultar')}" action="#{sinaisSintomasController.cadastrarSinonimos}" styleClass=" silk-cadastrar_sinonimos silk-icon"> 
+              <f:setPropertyActionListener target="#{cadastroSinonimoSinaisSintomasController.cdeCodigo}" value="#{_sinaisSintomas.codigo}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroSinonimoSinaisSintomasController.descricao}" value="#{_sinaisSintomas.descricao}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroSinonimoSinaisSintomasController.situacao}" value="#{_sinaisSintomas.situacao}" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_sinaisSintomas.codigo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{(_sinaisSintomas.descricao.length() &gt; 40)}"> 
+              <h:outputText value="#{_sinaisSintomas.descricao}"/> 
+            </p:tooltip>  
+            <h:outputText value="#{(_sinaisSintomas.descricao.length() &gt; 40) ? fn:substring(_sinaisSintomas.descricao,0,40) : _sinaisSintomas.descricao}"/>  
+            <h:outputText value="..." rendered="#{(_sinaisSintomas.descricao.length() &gt; 40)}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_sinaisSintomas.situacao.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

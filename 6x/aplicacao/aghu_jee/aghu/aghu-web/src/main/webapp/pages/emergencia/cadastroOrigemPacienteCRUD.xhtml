@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_ORIGEM_PACIENTE}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroOrigemPacientePaginatorController}"/>  
+      <h:form prependId="false" id="formPesq"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISA_ORIGEM_PACIENTE}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelCamposPesquisa" layout="inline"> 
+              <mec:inputNumero id="codigo" label="#{messages.LABEL_CODIGO_ORIGEM_PACIENTE}" title="#{messages.HELP_CODIGO_PESQUISA_ORIGEM_PACIENTE}" value="#{cadastroOrigemPacientePaginatorController.pesquisaSeq}" maxlength="10" size="10" converter="javax.faces.Long"/>  
+              <mec:inputText id="descricao" label="#{messages.LABEL_DESCRICAO_ORIGEM_PACIENTE}" title="#{messages.HELP_DESCRICAO_PESQUISA_ORIGEM_PACIENTE}" value="#{cadastroOrigemPacientePaginatorController.pesquisaDescricao}" maxlength="100" size="72" style="text-transform:uppercase"></mec:inputText>  
+              <mec:selectOneMenu id="indSituacao" label="#{messages.LABEL_SITUACAO_ORIGEM_PACIENTE}" title="#{messages.HELP_SITUACAO_PESQUISA_ORIGEM_PACIENTE}" value="#{cadastroOrigemPacientePaginatorController.pesquisaIndSituacao}" enum="DominioSituacao"></mec:selectOneMenu> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{cadastroOrigemPacientePaginatorController.pesquisar}" profile="search"></mec:commandButton>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{cadastroOrigemPacientePaginatorController.limparPesquisa}" profile="clear"></mec:commandButton> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formResultado"> 
+        <p:outputPanel id="panelResultado" layout="block" rendered="#{cadastroOrigemPacientePaginatorController.pesquisaAtiva}"> 
+          <aghu:panelGeral legend="#{messages.TITLE_ORIGEM_PACIENTE}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelCamposExibicao" layout="inline"> 
+                <mec:inputText id="descricaoEdicao" label="#{messages.LABEL_DESCRICAO_ORIGEM_PACIENTE}" title="#{messages.HELP_DESCRICAO_ORIGEM_PACIENTE}" value="#{cadastroOrigemPacientePaginatorController.descricao}" requiredFake="true" maxlength="100" size="72" style="text-transform:uppercase"></mec:inputText>  
+                <mec:selectBooleanCheckbox id="ativoEdicao" label="#{messages.LABEL_ATIVO_PESQUISAR_PACIENTE}" title="#{messages.HELP_ATIVO_ORIGEM_PACIENTE}" value="#{cadastroOrigemPacientePaginatorController.indSituacao}"></mec:selectBooleanCheckbox> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelBotoes" layout="inline">
+				<mec:commandButton
+					value="#{messages.LABEL_DESCRICAO_ORIGEM_PACIENTE_ADICIONAR}"
+					id="bt_adicionarOrigemPaciente"
+					style="float:left; margin-top:10px;"
+					rendered="#{!cadastroOrigemPacientePaginatorController.alterar and cadastroOrigemPacientePaginatorController.permissaoManterOrigemPaciente}"
+					action="#{cadastroOrigemPacientePaginatorController.persistir}"
+					render="panelBotoes,camposPesquisa,panelTabela" profile="add"/>
+				<mec:commandButton
+					value="#{messages.LABEL_DESCRICAO_ORIGEM_PACIENTE_ALTERACAO}" 
+					rendered="#{cadastroOrigemPacientePaginatorController.alterar and cadastroOrigemPacientePaginatorController.permissaoManterOrigemPaciente}"
+					id="bt_adicionarOrigemPaciente_adicionar"
+					style="float:left; margin-top:10px;"
+					action="#{cadastroOrigemPacientePaginatorController.persistir}"
+					render="panelBotoes,camposPesquisa,panelTabela" profile="ok"/>
+				<mec:commandButton value="#{messages.LABEL_DESCRICAO_ORIGEM_PACIENTE_CANCELAR_EDICAO}" id="bt_cancelarEdicao" rendered="#{cadastroOrigemPacientePaginatorController.alterar}" style="float:left; margin-top:10px;" action="#{cadastroOrigemPacientePaginatorController.cancelarEdicao}" render="panelBotoes,camposPesquisa" profile="cancel"></mec:commandButton> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <!-- LISTAGEM DE ORIGEM PACIENTES DA EMERGENCIA -->  
+            <aghu:linha> 
+              <p:outputPanel id="panelTabela" layout="inline"> 
+                <mec:serverDataTable id="tabelaOrigemPaciente" dataModel="dataModel" removeModalMsg="#{messages.MODAL_MESSAGE_ORIGEM_PACIENTE}" controller="#{cadastroOrigemPacientePaginatorController}"> 
+                  <c:set var="item" value="#{item}"/>
+                  <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                    <mec:commandLink id="ativarInativar" action="#{cadastroOrigemPacientePaginatorController.inativar}" title="#{cadastroOrigemPacientePaginatorController.getConvertDominioSituacaoToBoolean(item.indSituacao) ? messages.LABEL_DESCRICAO_ORIGEM_PACIENTE_DESATIVAR : messages.LABEL_DESCRICAO_ORIGEM_PACIENTE_ATIVAR}" ajaxSingle="true" reRender="panelSituacao" rendered="#{cadastroOrigemPacientePaginatorController.alterar  eq 'false' and cadastroOrigemPacientePaginatorController.permissaoManterOrigemPaciente}" styleClass="#{cadastroOrigemPacientePaginatorController.getConvertDominioSituacaoToBoolean(item.indSituacao) ? 'silk-icon silk-activate' : 'silk-icon silk-desactive'}"> 
+                      <f:setPropertyActionListener target="#{cadastroOrigemPacientePaginatorController.mamOrigemPaciente}" value="#{item}" for="command"/> 
+                    </mec:commandLink>  
+                    <mec:commandLink id="editar" title="#{messages.CASCA_LABEL_EDITAR}" action="#{cadastroOrigemPacientePaginatorController.editar}" ajaxSingle="true" reRender="panelCamposExibicao,panelTabela" rendered="#{cadastroOrigemPacientePaginatorController.alterar  eq 'false' and cadastroOrigemPacientePaginatorController.permissaoManterOrigemPaciente}" profile="edit"> 
+                      <f:setPropertyActionListener target="#{cadastroOrigemPacientePaginatorController.mamOrigemPaciente}" value="#{item}" for="command"/> 
+                    </mec:commandLink>  
+                    <mec:commandLink id="tabelaOrigemPaciente_link_remover" profile="delete" title="excluir" action="#{cadastroOrigemPacientePaginatorController.excluir}"
+                    	rendered="#{cadastroOrigemPacientePaginatorController.alterar  eq 'false' and cadastroOrigemPacientePaginatorController.permissaoManterOrigemPaciente}">
+                      <f:setPropertyActionListener for="command" target="#{cadastroOrigemPacientePaginatorController.mamOrigemPaciente}" value="#{item}"/>
+                    </mec:commandLink>
+                  </p:column>
+                  <p:column sortBy="#{item.seq}" sortable="true" style="width:10px; white-space:nowrap; #{(cadastroOrigemPacientePaginatorController.alterar eq true and  item.seq eq cadastroOrigemPacientePaginatorController.mamOrigemPaciente.seq) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO_ORIGEM_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.seq}"/> 
+                  </p:column>  
+                  <p:column sortBy="#{item.descricao}" sortable="true" style="#{(cadastroOrigemPacientePaginatorController.alterar eq true and item.seq eq cadastroOrigemPacientePaginatorController.mamOrigemPaciente.seq) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO_ORIGEM_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.descricao}"/> 
+                  </p:column>  
+                  <p:column style="text-align:center; width: 100px; #{(cadastroOrigemPacientePaginatorController.alterar eq true and item.seq eq cadastroOrigemPacientePaginatorController.mamOrigemPaciente.seq) ? 'background-color:#EEE8AA' : ''}"> 
+                    <p:outputPanel id="panelSituacao" layout="inline"> 
+                      <h:outputText id="indSituacao" styleClass="#{cadastroOrigemPacientePaginatorController.getConvertDominioSituacaoToBoolean(item.indSituacao) ? 'silk-icon silk-checked' : ''}" readOnly="true"/> 
+                    </p:outputPanel>  
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ATIVO_PESQUISAR_PACIENTE}"/> 
+                    </f:facet> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition>
+</html>

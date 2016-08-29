@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PESQUISAR_TEXTO_PADRAO_PARECER}</title>
+	</ui:define>
+	<ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisarTextoParecerPadraoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+	<ui:define name="body">
+		<mec:pageConfig controller="#{pesquisarTextoParecerPadraoController}"
+			ignoreEnter="true" scrollable= "false"/>
+		<h:form prependId="false" id="siglapesquisarTextoPadraoParecer"
+			name="siglapesquisarTextoPadraoParecer">
+			<aghu:panelGeral legend="#{messages.LEGENDA_TEXTO_PADRAO_PARECER}">
+				<aghu:linha>
+					<mec:inputText label="#{messages.LABEL_SIGLA}"
+						title="#{messages.TITLE_SIGLA_PADRAO_PARECER}" size="15"
+						maxlength="10" id="ibpesquisarTextoPadraoParecerSigla"
+						value="#{pesquisarTextoParecerPadraoController.siglaMpmTextoPadraoParecer}"
+						style="text-transform:uppercase" />
+					<mec:inputTextArea
+						label="#{messages.LABEL_DESCRICAO_TEXTO_PADRAO_PARECER}"
+						title="#{messages.TITLE_DESCRICAO_PADRAO_PARECER}" cols="158"
+						rows="3" maxlength="100"
+						id="ibpesquisarTextoPadraoParecerDescricao"
+						value="#{pesquisarTextoParecerPadraoController.descricaoMpmTextoPadraoParecer}"
+						style="text-transform:uppercase" />
+				</aghu:linha>
+			</aghu:panelGeral>		
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}" block="true"
+					action="#{pesquisarTextoParecerPadraoController.pesquisar}"
+					styleClass="bt_verde" profile="search"
+					render="tabelaPesquisarTextoPadraoParacer, bt_novo" />
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					immediate="true" block="true"
+					action="#{pesquisarTextoParecerPadraoController.limpar}"
+					styleClass="bt_cinza" profile="clear" />
+				<mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}"
+					block="false"
+					rendered="#{pesquisarTextoParecerPadraoController.pesquisaAtiva}"
+					action="#{pesquisarTextoParecerPadraoController.novo}"
+					styleClass="bt_cinza" profile="add" />
+			</aghu:acao>	
+			<aghu:linha>
+			</aghu:linha>
+			<aghu:linha style="width:990px; margin-left:10px; margin-right:10px;">
+				<mec:serverDataTable id="tabelaPesquisarTextoPadraoParacer"
+					rowKeyVar="index" scrollable="true"
+					list="#{pesquisarTextoParecerPadraoController.listaMpmTextoPadraoParecer}"
+					controller="#{pesquisarTextoParecerPadraoController}"
+					rendered="#{pesquisarTextoParecerPadraoController.pesquisaAtiva}"
+					scrollHeight="430px" height="40px"
+					selection="mpmTextoPadraoParecerSelecionado">
+					<c:set var="item" value="#{item}" />
+					<p:column headerText="Ações" width="40" style="text-align: center"
+						exportable="false">
+						<mec:commandLink
+							id="tabelaPesquisarTextoPadraoParacer_link_editar" profile="edit"
+							title="Editar"
+							action="#{pesquisarTextoParecerPadraoController.editar}"
+							rendered="#{mf:hasPermission(securityController, 'manterTextoParecer,pesquisar')}">
+							<f:setPropertyActionListener for="command"
+								target="#{manterTextoPadraoParecerController.editarAtiva}"
+								value="true" />
+							<f:setPropertyActionListener for="command"
+								target="#{manterTextoPadraoParecerController.siglaAntiga}"
+								value="#{item.sigla}" />
+							<f:setPropertyActionListener for="command"
+								target="#{pesquisarTextoParecerPadraoController.edicaoAtiva}"
+								value="true" />
+						</mec:commandLink>
+						<mec:commandLink
+							id="tabelaPesquisarTextoPadraoParacer_link_remover"
+							profile="delete" title="Excluir"
+							action="#{pesquisarTextoParecerPadraoController.excluir(item)}"
+							rendered="#{mf:hasPermission(securityController, 'manterTextoParecer,pesquisar')}">
+						</mec:commandLink>
+					</p:column>
+					<p:column sortBy="#{item.sigla}" sortable="true"
+						style="text-align: center" text-transform="uppercase" width="50">
+						<h:outputText value="#{item.sigla}" />
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_SIGLA}" />
+						</f:facet>
+					</p:column>
+					<p:column sortBy="#{item.descricao}" sortable="true" width="500px;"
+						text-transform="uppercase">
+						<h:outputText id="descricao"
+							value="#{pesquisarTextoParecerPadraoController.obterHint(item.descricao,120)}" />
+						<p:overlayPanel id="hintDescricao" for="descricao"
+							showEvent="mouseover" hideEvent="mouseout"
+							rendered="#{item.descricao.length() > 120}">
+							<h:outputText value="#{item.descricao}" />
+						</p:overlayPanel>
+						<f:facet name="header">
+							<h:outputText
+								value="#{messages.LABEL_DESCRICAO_TEXTO_PADRAO_PARECER}" />
+						</f:facet>
+					</p:column>
+				</mec:serverDataTable>
+			</aghu:linha>
+		</h:form>		
+	</ui:define>
+</ui:composition>
+</html>

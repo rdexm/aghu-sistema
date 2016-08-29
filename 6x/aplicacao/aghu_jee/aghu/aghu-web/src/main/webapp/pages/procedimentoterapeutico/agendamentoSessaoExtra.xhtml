@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.TITLE_AGENDAR_SESSAO_EXTRA}</title>
+		<style>
+			.comboBoxSize { width: 290px !important; 
+			}
+		</style>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{agendamentoSessaoExtraController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{agendamentoSessaoExtraController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formPrincipal">
+			<pe:remoteCommand name="selecionarCiclo"
+				update="@(#pesquisaPacientePanel) @(#panelDia)" immediate="true"
+				actionListener="#{agendamentoSessaoExtraController.obterDiaPrescricaoVO}">
+				<pe:assignableParam name="param1"
+					assignTo="#{agendamentoSessaoExtraController.prescricaoPacientePTVO.cloSeq}" />
+			</pe:remoteCommand>
+			<pe:remoteCommand name="selecionarDia"
+				update="@(#panelDia) @(#horaFinal)" process="@(#horaInicio), @this"
+				actionListener="#{agendamentoSessaoExtraController.relacionarDiaSelecionado}">
+				<pe:assignableParam name="param2"
+					assignTo="#{agendamentoSessaoExtraController.diaPrescricaoVO.seq}" />
+			</pe:remoteCommand>
+			<p:outputPanel id="pagenGeral" layout="inline">
+				<aghu:panelGeral legend="#{messages.TITLE_AGENDAR_SESSAO_EXTRA}">
+					<p:outputPanel id="panelPrincipal" layout="inline">
+						<aghu:linha>
+							<mec:selectOneMenu id="tipoSessao" requiredFake="true"
+								label="#{messages.LABEL_TIPO_SESSAO_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_TIPO_SESSAO_AGENDAR_SESSAO_EXTRA}"
+								value="#{agendamentoSessaoExtraController.mptTipoSessaoSelecionado}"
+								items="#{agendamentoSessaoExtraController.listaMptTipoSessao}"
+								itemLabel="descricao" maxlength="60" width="120px"
+								styleClass="comboBoxSize">
+								<p:ajax event="change"
+									listener="#{agendamentoSessaoExtraController.atualizarListaSala}"
+									update="@(#sala)" />
+							</mec:selectOneMenu>
+
+							<mec:selectOneMenu id="sala" required="true"
+								label="#{messages.LABEL_SALA}"
+								readonly="#{agendamentoSessaoExtraController.mptTipoSessaoSelecionado == null}"
+								title="#{messages.TITLE_SALA_AGENDAR_SESSAO_EXTRA}"
+								value="#{agendamentoSessaoExtraController.mptSalasSelecionado}"
+								items="#{agendamentoSessaoExtraController.listaMptSalas}"
+								itemLabel="descricao" maxlength="60" size="120"
+								styleClass="comboBoxSize">
+							</mec:selectOneMenu>
+
+							<mec:inputTextData id="data" label="#{messages.LABEL_DATA}"
+								title="#{messages.TITLE_DATA_INICIAL_AGENDAR_SESSAO}"
+								required="true" readonly="true"
+								value="#{agendamentoSessaoExtraController.dataAtual}"
+								tipo="data" size="8" />
+
+							<mec:inputTextData id="horaInicio"
+								label="#{messages.LABEL_HORA_INICIAL_TIPOS_SESSAO}"
+								title="#{messages.TITLE_HORA_INICIO_AGENDAMENTO_EXTRA}"
+								requiredFake="true"
+								value="#{agendamentoSessaoExtraController.horaInicio}"
+								tipo="hora" size="8" />
+
+							<mec:inputTextData id="horaFinal"
+								label="#{messages.LABEL_HORA_FINAL_TIPOS_SESSAO}"
+								title="#{messages.TITLE_HORA_FIM_AGENDAMENTO_EXTRA}"
+								required="true" readonly="true" disabled="true"
+								value="#{agendamentoSessaoExtraController.horaFim}" tipo="hora"
+								size="8" />
+						</aghu:linha>
+
+						<aghu:linha>
+							<mec:suggestionBox var="row" itemValue="#{row}"
+								id="sbAutorizadoPor" label="#{messages.LABEL_AUTORIZADO_POR}"
+								title="#{messages.TITLE_AUTORIZADO_POR}"
+								controller="#{agendamentoSessaoExtraController}" required="true"
+								suggestionAction="obterServidorAutorizadoSolicitadoSB"
+								descricaoInput="matriculaVinculo" cache="false"
+								descricaoLabel="nome" maxlength="60" lenght="60" width="620px"
+								descricaoLimite="30"
+								value="#{agendamentoSessaoExtraController.autorizadoPor}">
+								<p:column style="width:20px;">
+									<f:facet name="header">
+										<b>#{messages.LABEL_MATRICULA}</b>
+									</f:facet> #{row.matricula}
+		        			</p:column>
+								<p:column style="width:120px;">
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO_VINCULO}</b>
+									</f:facet> #{row.vinculo}
+		        			</p:column>
+								<p:column style="width:380px;">
+									<f:facet name="header">
+										<b>#{messages.LABEL_NOME_AGENDAR_SESSAO}</b>
+									</f:facet> #{row.nome}
+		        			</p:column>
+							</mec:suggestionBox>
+							<mec:suggestionBox var="row" itemValue="#{row}"
+								id="sbSolicitadoPor" label="#{messages.LABEL_SOLICITADO_POR}"
+								title="#{messages.TITLE_SOLICITADO_POR}"
+								controller="#{agendamentoSessaoExtraController}" required="true"
+								suggestionAction="obterServidorAutorizadoSolicitadoSB"
+								descricaoInput="matriculaVinculo" cache="false"
+								descricaoLabel="nome" maxlength="60" lenght="60" width="620px"
+								descricaoLimite="30"
+								value="#{agendamentoSessaoExtraController.solicitadoPor}">
+								<p:column>
+									<f:facet name="header" style="width:20px;">
+										<b>#{messages.LABEL_MATRICULA}</b>
+									</f:facet> #{row.matricula}
+		        			</p:column>
+								<p:column>
+									<f:facet name="header" style="width:120px;">
+										<b>#{messages.LABEL_CODIGO_VINCULO}</b>
+									</f:facet> #{row.vinculo}
+		        			</p:column>
+								<p:column>
+									<f:facet name="header" style="width:380px;">
+										<b>#{messages.LABEL_NOME_AGENDAR_SESSAO}</b>
+									</f:facet> #{row.nome}
+		        			</p:column>
+							</mec:suggestionBox>
+							<mec:suggestionBox var="row" itemValue="#{row}"
+								id="sbJustificativa" label="#{messages.LABEL_JUSTIFICATIVA}"
+								title="#{messages.TITLE_JUSTIFICATIVA}"
+								controller="#{agendamentoSessaoExtraController}" required="true"
+								suggestionAction="obterListaJustificativaSB"
+								descricaoInput="seq" descricaoLabel="descricao" maxlength="60"
+								lenght="60"
+								value="#{agendamentoSessaoExtraController.mptJustificativa}">
+								<p:column style="width:20px;">
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{row.seq}
+		        			</p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO_TIPOS_SESSAO}</b>
+									</f:facet> #{row.descricao}
+		        			</p:column>
+							</mec:suggestionBox>
+						</aghu:linha>
+
+						<aghu:linha style="margin-right:-13px;">
+							<mec:inputTextArea id="taDescricaoJustificativa"
+								label="#{messages.LABEL_JUSTIFICATIVA_DESCRICAO}"
+								title="#{messages.TITLE_JUSTIFICATIVA_DESCRICAO}" rows="5"
+								maxlength="200" cols="128" required="true"
+								value="#{agendamentoSessaoExtraController.complementoJustificativa}" />
+						</aghu:linha>
+
+						<aghu:linha
+							style="margin-left: -8px !important; margin-right:-5px !important; width: 970px;">
+							<aghu:panelGeral
+								legend="#{messages.TITLE_DADOS_PACIENTE_AGENDAR_SESSAO}">
+								<h:form prependId="false" id="formBuscaGrupoCompomentes">
+									<aghu:linha>
+										<p:outputPanel id="pesquisaPacientePanel" layout="inline">
+											<mec:pesquisaPaciente id="pesqPaciente"
+												render="@(#panelPrescricao) @(#panelDia)" required="true"
+												valueChangeListener="#{agendamentoSessaoExtraController.pesquisaPaciente}"
+												value="#{agendamentoSessaoExtraController.paciente}" />
+
+											<mec:commandButton
+												value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true"
+												profile="search"
+												action="#{agendamentoSessaoExtraController.redirecionarPesquisaFonetica}"
+												style="margin-top: 15px !important"
+												styleClass="icon-pesquisa-fonetica bt_cinza">
+												<f:setPropertyActionListener
+													target="#{pesquisaPacienteController.cameFrom}"
+													value="procedimentoterapeutico-agendamentoSessaoExtra"
+													for="command" />
+												<f:setPropertyActionListener
+													target="#{pesquisaPacienteController.exibeBotaoEditar}"
+													value="false" for="command" />
+												<f:setPropertyActionListener
+													target="#{pesquisaPacienteController.paramExibeBotaoIncluir}"
+													value="false" for="command" />
+												<f:setPropertyActionListener
+													target="#{pesquisaPacienteController.obrigarLista}"
+													value="true" for="command" />
+												<f:param name="cid"
+													value="#{javax.enterprise.context.conversation.id}" />
+											</mec:commandButton>
+										</p:outputPanel>
+									</aghu:linha>
+									<aghu:linha>
+										<p:outputPanel id="panelPrescricao" layout="inline">
+											<h:form prependId="false" id="formTabela">
+												<mec:serverDataTable id="tabelaHorarios" scrollable="true"
+													render="panelPrescricao" scrollHeight="140"
+													controller="#{agendamentoSessaoExtraController}"
+													rowKeyVar="row"
+													list="#{agendamentoSessaoExtraController.listaPrescricaoPacientePTVO}"
+													rendered="#{not empty agendamentoSessaoExtraController.listaPrescricaoPacientePTVO}">
+													<c:set var="item" value="#{item}" />
+
+													<p:column style="width:20px;">
+														<p:outputPanel id="panelRadioComposicao" layout="inline"
+															rendered="#{not item.cloSeq.equals(agendamentoSessaoExtraController.prescricaoPacientePTVO.cloSeq)}">
+															<input type="radio" id="rbHoras" name="group2"
+																align="center" class="serverDataTable"
+																onchange="selecionarCiclo(#{item.cloSeq})" />
+														</p:outputPanel>
+														<p:outputPanel id="panelRadioComposicaoAux"
+															rendered="#{item.cloSeq.equals(agendamentoSessaoExtraController.prescricaoPacientePTVO.cloSeq)}"
+															layout="inline">
+															<input type="radio" id="rbHorasAux" name="group2"
+																class="serverDataTable" checked="checked"
+																onchange="selecionarCiclo(#{item.cloSeq})" />
+														</p:outputPanel>
+													</p:column>
+													<p:column style="width: 60px;">
+														<f:facet name="header">
+															<h:outputText
+																value="#{messages.LABEL_CICLO_AGENDAR_SESSAO}" />
+														</f:facet>
+														<h:outputText value="#{item.ciclo}" />
+													</p:column>
+
+													<p:column>
+														<f:facet name="header">
+															<h:outputText
+																value="#{messages.LABEL_PROTOCOLO_AGENDAR_SESSAO}" />
+														</f:facet>
+														<h:outputText
+															value="#{agendamentoSessaoExtraController.obterProtocoloPrescricaoVOPorCloSeq(item.cloSeq)}" />
+													</p:column>
+
+													<p:column>
+														<f:facet name="header">
+															<h:outputText value="#{messages.TITLE_RESPONSAVEL}" />
+														</f:facet>
+														<h:outputText
+															value="#{item.nomeResponsavel1 != null ? item.nomeResponsavel1 : item.nomeResponsavel2}" />
+													</p:column>
+
+												</mec:serverDataTable>
+											</h:form>
+										</p:outputPanel>
+									</aghu:linha>
+									<aghu:linha>
+										<p:outputPanel id="panelDia" layout="inline">
+											<h:form prependId="false" id="formTabela2">
+												<mec:serverDataTable id="tabelaDias" scrollable="true"
+													rowKeyVar="row" scrollHeight="140"
+													controller="#{agendamentoSessaoExtraController}"
+													rendered="#{not empty agendamentoSessaoExtraController.listaDiaPrescricaoVO}"
+													list="#{agendamentoSessaoExtraController.listaDiaPrescricaoVO}">
+
+													<c:set var="item" value="#{item}" />
+
+													<p:column style="width:20px;">
+														<p:outputPanel id="panelRadioDia" layout="inline"
+															rendered="#{not item.seq.equals(agendamentoSessaoExtraController.diaPrescricaoVO.seq)}">
+															<input type="radio" id="rbDia" name="group3"
+																align="center" class="serverDataTable"
+																onchange="selecionarDia(#{item.seq})" />
+														</p:outputPanel>
+														<p:outputPanel id="panelRadioDiaAux"
+															rendered="#{item.seq.equals(agendamentoSessaoExtraController.diaPrescricaoVO.seq)}"
+															layout="inline">
+															<input type="radio" id="rbDiaAux" name="group3"
+																class="serverDataTable" checked="checked"
+																onchange="selecionarDia(#{item.seq})" />
+														</p:outputPanel>
+													</p:column>
+
+													<p:column style="width:180px;">
+														<f:facet name="header">
+															<h:outputText
+																value="#{messages.LABEL_DIA_AGENDAR_SESSAO}" />
+														</f:facet>
+														<h:outputText
+															value="#{agendamentoSessaoExtraController.obterDiaSessao(item.dia)}" />
+													</p:column>
+
+													<p:column>
+														<f:facet name="header">
+															<h:outputText
+																value="#{messages.LABEL_TEMPO_TIPOS_SESSAO}" />
+														</f:facet>
+														<h:outputText
+															value="#{agendamentoSessaoExtraController.obterTempoAdministracao(item.tempoAdministracao)}" />
+													</p:column>
+
+												</mec:serverDataTable>
+											</h:form>
+										</p:outputPanel>
+									</aghu:linha>
+								</h:form>
+							</aghu:panelGeral>
+						</aghu:linha>
+					</p:outputPanel>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<mec:commandButton id="btAgendarExtra" profile="ok"
+						render="@(#formPrincipal)" value="#{messages.LABEL_AGENDAR_EXTRA}"
+						process="@this"
+						action="#{agendamentoSessaoExtraController.gravar}">
+					</mec:commandButton>
+				</aghu:acao>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

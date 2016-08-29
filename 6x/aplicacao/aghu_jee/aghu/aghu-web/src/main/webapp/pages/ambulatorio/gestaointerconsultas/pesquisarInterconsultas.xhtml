@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PESQUISAR_INTERCONSULTAS}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{pesquisarInterconsultasPaginatorController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			ignoreEnter="true" controller="#{pesquisarInterconsultasPaginatorController}" />
+		<h:form prependId="false" id="campos">
+			<aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_INTERCONSULTAS}">
+				<aghu:linha>
+					<mec:inputTextProntuario id="prontuario"
+						label="#{messages.LABEL_PESQUISAR_CONSULTAS_AGENDA_PRONTUARIO}"
+						title="#{messages.TITLE_PRONTUARIO_INTERCONSULTAS}"
+						value="#{pesquisarInterconsultasPaginatorController.filtro.paciente.prontuario}"
+						maxlength="9" size="10"></mec:inputTextProntuario>					
+					<mec:inputNumero id="interconsulta"
+						label="#{messages.LABEL_INTERCONSULTA}"
+						title="#{messages.TITLE_INTERCONSULTAS}"
+						value="#{pesquisarInterconsultasPaginatorController.filtro.consultaMarcada.numero}"
+						maxlength="10" size="10"></mec:inputNumero>
+					<mec:inputNumero id="consultaRetorno"
+						label="#{messages.LABEL_CONSULTA_RETORNO}"
+						title="#{messages.TITLE_CONSULTA_RETORNO_INTERCONSULTAS}"
+						value="#{pesquisarInterconsultasPaginatorController.filtro.consultaRetorno.numero}"
+						maxlength="10" size="10"></mec:inputNumero>
+					<mec:selectOneMenu id="consultoria" enum="DominioSimNao"
+						noSelectionOption="false"
+						label="#{messages.LABEL_AVISO_CONSULTORIA}"
+						title="#{messages.TITLE_AVISO_CONSULTORIA_INTERCONSULTAS}"
+						value="#{pesquisarInterconsultasPaginatorController.consultoriaCombo}">
+						<p:ajax event="change"
+							update="@(#panelComboSituacao) @(#panelDatas) @(#panelSetor)"
+							process="@this"
+							listener="#{pesquisarInterconsultasPaginatorController.desabilitarCampoSituacao}" />
+					</mec:selectOneMenu>
+					<mec:selectOneMenu id="excuido" enum="DominioSimNao"
+						noSelectionOption="false"
+						label="#{messages.LABEL_VISUALIZAR_APENAS_EXCUIDO}"
+						title="#{messages.TITLE_VIZUALISAR_EXCLUIDOS_INTERCONSULTAS}"
+						value="#{pesquisarInterconsultasPaginatorController.excluidosCombo}"></mec:selectOneMenu>
+				</aghu:linha>
+				<aghu:linha>
+					<p:outputPanel id="panelComboSituacao" layout="inline">
+						<mec:selectOneMenu id="situacao"
+							noSelectionLabel="#{mf:getDefaultValue(noSelectionLabel, 'Todas')}"
+							label="#{messages.LABEL_SITUACAO}"
+							readonly="#{pesquisarInterconsultasPaginatorController.desabilitarSituacao}"
+							title="#{messages.TITLE_SITUACAO_INTERCONSULTAS}"
+							value="#{pesquisarInterconsultasPaginatorController.filtro.situacao}">
+							<f:selectItems id="situacaoCombo" var="item"
+								value="#{pesquisarInterconsultasPaginatorController.obterListaSituacao()}"
+								itemLabel="#{item.label}" itemValue="#{item.value}" />
+							<p:ajax event="change" update="@(#panelDatas) @(#panelSetor)"
+								process="@this"
+								listener="#{pesquisarInterconsultasPaginatorController.desabilitarCamposDatas}" />
+						</mec:selectOneMenu>
+					</p:outputPanel>
+
+					<mec:selectOneMenu id="prioridade"
+						enum="DominioPrioridadeInterconsultas"
+						noSelectionLabel="#{mf:getDefaultValue(noSelectionLabel, 'Todas')}"
+						label="#{messages.LABEL_PRIORIDADE}"
+						title="#{messages.TITLE_PRIORIDADE_INTERCONSULTAS}"
+							value="#{pesquisarInterconsultasPaginatorController.filtro.prioridadeAprovada}"></mec:selectOneMenu>  
+						<mec:suggestionBox id="agenda" 
+							label="#{messages.LABEL_AGENDA}" 
+						title="#{messages.TITLE_ESPECIALIDADE_INTERCONSULTAS}"
+						suggestionAction="pesquisarPorSiglaOuNomeEspecialidade"
+						descricaoInput="sigla" var="item"
+						descricaoLabel="nomeEspecialidade" maxlength="30" width="420"
+						controller="#{pesquisarInterconsultasPaginatorController}"
+						value="#{pesquisarInterconsultasPaginatorController.aghEspecialidades}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_AGENDA}</b>
+							</f:facet> #{item.sigla}
+                        </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_NOME}</b>
+							</f:facet> #{item.nomeEspecialidade}
+                        </p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<aghu:linha>
+					<p:outputPanel id="panelDatas" layout="inline">
+						<mec:inputTextData id="dataInicial"
+							label="#{messages.LABEL_DATA_INICIAL}" size="15"
+							readonly="#{pesquisarInterconsultasPaginatorController.desabilitarDatas}"
+							value="#{pesquisarInterconsultasPaginatorController.dataInicial}"
+							title="#{messages.TITLE_DATA_INICIAL_INTERCONSULTAS}"
+							required="false" tipo="data"></mec:inputTextData>
+						<mec:inputTextData id="dataFinal"
+							label="#{messages.LABEL_DATA_FINAL}" size="15"
+							readonly="#{pesquisarInterconsultasPaginatorController.desabilitarDatas}"
+							value="#{pesquisarInterconsultasPaginatorController.dataFinal}"
+							title="#{messages.TITLE_DATA_FINAL_INTERCONSULTAS}"
+							required="false" tipo="data"></mec:inputTextData>
+					</p:outputPanel>
+					<mec:selectOneMenu id="ordenacao"
+						label="#{messages.LABEL_ORDENAR_POR}"
+						title="#{messages.TITLE_ORDENACAO_INTERCONSULTAS}"
+						noSelectionOption="false"
+						value="#{pesquisarInterconsultasPaginatorController.ordenar}">
+						<f:selectItems id="ordenacaoSetor" var="item"
+							value="#{pesquisarInterconsultasPaginatorController.obterListaOrdenacao()}"
+							itemLabel="#{item.label}" itemValue="#{item.value}" />
+					</mec:selectOneMenu>
+					<p:outputPanel id="panelSetor" layout="inline">
+						<mec:suggestionBox id="setor"
+							label="#{pesquisarInterconsultasPaginatorController.labelSetor}"
+							title="#{pesquisarInterconsultasPaginatorController.titleSetor}"
+							suggestionAction="obterSetor" descricaoInput="sigla"
+							descricaoLabel="descricao"
+							readonly="#{pesquisarInterconsultasPaginatorController.suggestionBoxSetor}"
+							controller="#{pesquisarInterconsultasPaginatorController}"
+							value="#{pesquisarInterconsultasPaginatorController.unidadeFuncional}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_SIGLA}</b>
+								</f:facet> #{item.sigla}
+                            </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.descricao}
+                            </p:column>
+						</mec:suggestionBox>
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					action="#{pesquisarInterconsultasPaginatorController.pesquisar}"
+					render="formLista, panelLista, lista" profile="ok"></mec:commandButton>
+				<mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}"
+					action="#{pesquisarInterconsultasPaginatorController.limpar}"
+					render="campos, formLista" profile="clear" ajax="true"
+					process="@this"></mec:commandButton>
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formLista">
+			<aghu:linha>
+			<aghu:column type="table">
+				<p:outputPanel id="panelLista"
+						visible="#{pesquisarInterconsultasPaginatorController.dataModel.pesquisaAtiva}"
+						layout="inline">
+						<mec:serverDataTable id="lista" dataModel="dataModel"
+							render="bt_Auditoria, bt_Marcar_Consulta, bt_detalhar_Cadastro"
+							selection="parametroSelecionado"
+							controller="#{pesquisarInterconsultasPaginatorController}"
+							ajax="true">
+							<c:set var="item" value="#{item}" />
+							<p:ajax event="rowSelect"
+									update="@(#tabelaAcao)"
+									listener="#{pesquisarInterconsultasPaginatorController.desabilitarBotoeslaterais()}" />							
+							<p:column styleClass="first-column auto-adjust"
+								exportable="false">
+			                  <f:facet name="header"> 
+			                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+			                  </f:facet>  								
+								<mec:commandLink id="lnk_editar"
+									action="#{pesquisarInterconsultasPaginatorController.editar}"
+									rendered="#{mf:hasPermission(securityController, 'manterGestaoInterconsultas,executar')}"
+									title="#{messages.CASCA_LABEL_EDITAR}" profile="edit"
+									ajax="true" process="@this">
+									<f:setPropertyActionListener
+										target="#{gestaoInterconsultasController.mamInterconsultas}"
+										value="#{item}" for="command" />
+								</mec:commandLink>
+								<h:graphicImage styleClass="silk-icon silk-pencil"
+									rendered="#{!mf:hasPermission(securityController, 'manterGestaoInterconsultas,executar')}" />
+								<p:outputPanel id="panelE" layout="inline">
+									<mec:commandLink id="lnk_excluir_on"
+										action="#{pesquisarInterconsultasPaginatorController.excluir}"
+										title="#{messages.EXCLUIDO_ON}"
+										rendered="#{item.pendente.toString().equals('C') and mf:hasPermission(securityController, 'manterGestaoInterconsultas,executar')}"
+										styleClass="silk-icon silk-delete" 
+										ajax="true" 
+										render="panelModal" process="@this"
+										>
+										<f:setPropertyActionListener
+											target="#{pesquisarInterconsultasPaginatorController.parametroSelecionado}"
+											value="#{item}" for="command" />
+									</mec:commandLink>
+									<mec:commandLink id="lnk_excluir_off"
+										action="#{pesquisarInterconsultasPaginatorController.excluir}"
+										title="#{messages.EXCLUIDO_OFF}"
+										rendered="#{!item.pendente.toString().equals('C') and mf:hasPermission(securityController, 'manterGestaoInterconsultas,executar')}"
+										ajax="true"
+										styleClass="silk-icon silk-delete-disabled" 
+										render="panelModal" process="@this"
+										>
+										<f:setPropertyActionListener
+											target="#{pesquisarInterconsultasPaginatorController.parametroSelecionado}"
+											value="#{item}" for="command" />
+									</mec:commandLink>
+								</p:outputPanel>
+								<p:outputPanel id="panelAvisado" layout="inline">
+									<mec:commandLink id="lnk_avisado_on"
+										action="#{pesquisarInterconsultasPaginatorController.atualizarAviso(item)}"
+										title="#{messages.AVISADO_ON}"
+										rendered="#{pesquisarInterconsultasPaginatorController.rederizarAtivar(item) and mf:hasPermission(securityController, 'manterGestaoInterconsultas,executar')}"
+										styleClass="silk-icon silk-telefone" ajax="true" 
+										render="panelModal" process="@this"
+										>
+										<f:setPropertyActionListener
+											target="#{pesquisarInterconsultasPaginatorController.parametroSelecionado}"
+											value="#{item}" for="command" />
+									</mec:commandLink>
+									<mec:commandLink id="lnk_avisado_off"
+										action="#{pesquisarInterconsultasPaginatorController.atualizarAviso(item)}"
+										title="#{messages.AVISADO_OFF}"
+										rendered="#{pesquisarInterconsultasPaginatorController.rederizarDesativar(item) and mf:hasPermission(securityController, 'manterGestaoInterconsultas,executar')}"
+										styleClass="silk-icon silk-telefone-off" ajax="true"
+										render="panelModal" process="@this"
+										>
+										<f:setPropertyActionListener
+											target="#{pesquisarInterconsultasPaginatorController.parametroSelecionado}"
+											value="#{item}" for="command" />
+									</mec:commandLink>
+									<h:graphicImage id="btAvisado"
+										styleClass="silk-icon silk-deactivate"
+										rendered="#{!mf:hasPermission(securityController, 'manterGestaoInterconsultas,executar')}" />
+								</p:outputPanel>
+							</p:column>
+
+							<p:column style="width: 50px;">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_DATA_SOLICITACAO_INTERCONSULTA}" />
+								</f:facet>
+								<h:outputText value="#{item.dthrCriacao}">
+									<f:convertDateTime locale="pt_BR" tipo="ambos"
+										dateStyle="medium" />
+								</h:outputText>
+							</p:column>
+							<p:column style="width: 150px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_NOME}" />
+								</f:facet>
+								<p:outputPanel rendered="#{not empty item.paciente}" layout="inline">
+								
+									<mec:commandLink action="#{pesquisarInterconsultasPaginatorController.interConsultaMarcadaRetorno}"
+												 oncomplete="PF('modalInterconsultaRetornoWG').show();"
+												 ajax="true" render="panelModal">
+										<h:outputText id="nomePaciente"
+											value="#{pesquisarInterconsultasPaginatorController.obterHint(item.paciente.nome, 18)}" />
+										<p:tooltip direction="bottom-right" styleClass="tooltip"
+											layout="block" style="width:250px; word-wrap: break-word;"
+											for="nomePaciente"
+											rendered="#{item.paciente.nome.length() &gt; 11}">
+											<h:outputText value="#{item.paciente.nome}" />
+										</p:tooltip>
+										<f:setPropertyActionListener
+											target="#{pesquisarInterconsultasPaginatorController.parametroSelecionado}"
+											value="#{item}" for="command" />
+									</mec:commandLink>
+									
+									
+								</p:outputPanel>
+							</p:column>
+							<p:column style="width: 45px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+								</f:facet>
+								<h:outputText value="#{item.paciente.prontuario}" />
+							</p:column>
+							<p:column style="width: 70px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_TELEFONE}" />
+								</f:facet>
+								<h:outputText
+									value="#{item.paciente.dddFoneResidencial} - #{item.paciente.foneResidencial}"
+									rendered="#{not empty item.paciente.dddFoneResidencial and not empty item.paciente.foneResidencial}" />
+								<h:outputText value="#{item.paciente.dddFoneResidencial}"
+									rendered="#{not empty item.paciente.dddFoneResidencial and empty item.paciente.foneResidencial}" />
+								<h:outputText value="#{item.paciente.foneResidencial}"
+									rendered="#{empty item.paciente.dddFoneResidencial and not empty item.paciente.foneResidencial}" />
+							</p:column>
+							<p:column style="width: 45px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_AGENDA}" />
+								</f:facet>
+								<p:outputPanel rendered="#{not empty item.especialidadeAdm}"
+								    id="especialidadeAdm"
+									layout="inline">
+									<h:outputText value="#{item.especialidadeAdm.sigla}" />
+									<p:tooltip direction="bottom-right" styleClass="tooltip"
+									    for="especialidadeAdm"
+										layout="block" style="width:250px; word-wrap: break-word;">
+										<h:outputText
+											value="#{item.especialidadeAdm.nomeEspecialidade}" />
+									</p:tooltip>
+								</p:outputPanel>
+							</p:column>
+							<p:column style="width: 50px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_PRIORIDADE}" />
+								</f:facet>
+								<p:outputPanel rendered="#{not empty item.prioridadeAprovada}"
+									layout="inline">
+									<h:outputText value="#{item.prioridadeAprovada.descricao}" />
+								</p:outputPanel>
+							</p:column>
+							
+							<p:column style="width: 50px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_INTERCONSULTA}" />
+								</f:facet>								
+									<h:outputText id="linkDataHoraInterconsulta" value="#{item.consultaMarcada.dtConsulta}"> 
+					                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+					                </h:outputText>		
+									<p:tooltip direction="bottom-right" for="linkDataHoraInterconsulta" styleClass="tooltip">
+										<h:outputText value="#{messages.LINK_CONSULTA_RETORNO}" />
+									</p:tooltip>									
+							</p:column>							
+
+							<p:column style="width: 50px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_CONS_RETORNO}" />
+								</f:facet>								              
+								    <h:outputText id="linkDataHoraConsultaRetorno" value="#{item.consultaRetorno.dtConsulta}"> 
+					                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+					                </h:outputText>	
+									<p:tooltip direction="bottom-right" styleClass="tooltip" for="linkDataHoraConsultaRetorno">
+										<h:outputText value="#{messages.LINK_CONSULTA_RETORNO}" />
+									</p:tooltip>								
+							</p:column>
+							<p:column style="width: 45px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_CONS_AVISADO}" />
+								</f:facet>
+								<center>
+									<h:graphicImage id="imagemCheckAvisado"
+										styleClass="silk-icon silk-checked"
+										rendered="#{pesquisarInterconsultasPaginatorController.avisadoRetorno(item)}" />
+								</center>
+							</p:column>
+							<p:column style="width: 45px;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_CONS_EXCLUIDO}" />
+								</f:facet>
+								<center>
+									<h:graphicImage id="imagemCheckExcluido"
+										styleClass="silk-icon silk-checked"
+										rendered="#{pesquisarInterconsultasPaginatorController.excluidoRetorno(item)}" />
+								</center>
+							</p:column>
+						</mec:serverDataTable>
+					</p:outputPanel>						
+						</aghu:column>	
+												
+						<aghu:column type="button">      
+							<p:outputPanel id="tabelaAcao" layout="inline">
+								<aghu:acao> 
+									<mec:commandButton
+										disabled="#{pesquisarInterconsultasPaginatorController.desabilitarBotoes}"
+										id="bt_Auditoria" value="#{messages.LABEL_AUDITORIA}"
+										action="#{pesquisarInterconsultasPaginatorController.truncarCamposAuditoria}"
+										oncomplete="PF('modalAuditoriaWG').show();"
+										ajax="true" render="panelModal" process="@this" />
+									<mec:commandButton
+										disabled="#{pesquisarInterconsultasPaginatorController.desabilitarBotoes}"
+										id="bt_detalhar_Cadastro"
+										value="#{messages.LABEL_DETALHAR_CADASTRO}"
+										action="#{pesquisarInterconsultasPaginatorController.detalharCadastro}"/>
+									<mec:commandButton
+										disabled="#{pesquisarInterconsultasPaginatorController.desabilitarBotoes or !mf:hasPermission(securityController, 'manterGestaoInterconsultas,executar')}"
+										id="bt_Marcar_Consulta"
+										value="#{messages.LABEL_MARCAR_CONSULTA}"
+										action="#{pesquisarInterconsultasPaginatorController.marcarConsulta}"/>
+								</aghu:acao>		
+							</p:outputPanel>
+						</aghu:column>
+			</aghu:linha>
+		</h:form>
+		<p:outputPanel id="panelModal" layout="inline">
+			<h:form prependId="false">
+				<p:outputPanel layout="inline">
+					<ui:decorate
+						template="/pages/ambulatorio/gestaointerconsultas/modalInterconsultaRetorno.xhtml" />
+				</p:outputPanel>
+			</h:form>
+			<h:form prependId="false">
+				<p:outputPanel layout="inline">
+					<ui:decorate
+						template="/pages/ambulatorio/gestaointerconsultas/modalAuditoria.xhtml" />
+				</p:outputPanel>
+			</h:form>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

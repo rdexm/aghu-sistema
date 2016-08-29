@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.LABEL_PESQUISAR_SALAS_ACOMODACOES_SESSOES_TERAPEUTICAS}</title>
+		<style>
+			div.ui-selectonemenu-items-wrapper{
+			   overflow-x: hidden !important;
+			}
+		</style>
+	</ui:define>	
+	<ui:define name="body">
+	 	<mec:pageConfig controller="#{relatorioTaxaOcupacaoController}" ignoreEnter="true"/> 
+	 	<h:form prependId="false" id="formFiltro"> 	 	
+		 	<aghu:panelGeral id="panelFiltro" legend="#{messages.LABEL_PESQUISAR_SALAS_ACOMODACOES_SESSOES_TERAPEUTICAS}">
+				<aghu:linha>	 	
+		 			<mec:inputTextData id="dtPeriodoInicial" value="#{relatorioTaxaOcupacaoController.periodoInicial}" 
+		 				label="#{messages.LABEL_PERIODO_INICIAL}" requiredFake="true" tipo="data"/>
+		 			<mec:inputTextData id="dtPeriodoFinal" value="#{relatorioTaxaOcupacaoController.periodoFinal}" 
+		 				label="#{messages.LABEL_PERIODO_FINAL}" requiredFake="true" tipo="data"/>
+					<mec:selectOneMenu id="cbTipoSessao" itemLabel="descricao" 
+				    		label="#{messages.LABEL_TIPO_DE_SESSAO}" 
+				    		requiredFake="true" style="width: 150px !important;"
+				    		items="#{relatorioTaxaOcupacaoController.listaMptTipoSessao}" 
+				    		value="#{relatorioTaxaOcupacaoController.tipoSessao}">
+				    	<p:ajax event="change" listener="#{relatorioTaxaOcupacaoController.carregarComboSalas}" process="@this" update="@(#cbSalas)" />
+				    </mec:selectOneMenu>
+				    <mec:selectOneMenu id="cbSalas" itemLabel="descricao" 
+			    		label="#{messages.LABEL_SALA}" requiredFake="#{relatorioTaxaOcupacaoController.requiredSala}"
+			    		style="width: 150px !important;"
+			    		items="#{relatorioTaxaOcupacaoController.listaMptSalas}" 
+			    		value="#{relatorioTaxaOcupacaoController.sala}" />		    		
+				    <mec:selectOneMenu id="cbTurno"
+						label="#{messages.LABEL_TURNO}"
+						enum="DominioTurno" style="width: 100px !important;"
+						value="#{relatorioTaxaOcupacaoController.turno}">
+							<p:ajax event="change" listener="#{relatorioTaxaOcupacaoController.obterHorariosTurno}" />
+					</mec:selectOneMenu>
+						
+					<mec:selectOneRadio id="radioEnfase" label="#{messages.LABEL_ENFASE}" value="#{relatorioTaxaOcupacaoController.enfase}" required="false"
+						title="#{messages.TITLE_ENFASE}"> 		                
+		                <f:selectItem id="radioEnfaseSala" itemLabel="#{messages.LABEL_SALA}" itemValue="#{relatorioTaxaOcupacaoController.valorRadioSala}"/>
+		                <f:selectItem id="radioEnfasePoltrona" itemLabel="#{messages.LABEL_LOCAL}" itemValue="#{relatorioTaxaOcupacaoController.valorRadioPoltrona}"/>
+		                <p:ajax event="change" listener="#{relatorioTaxaOcupacaoController.iniciarChart}" process="@this" update="@(#panelChart), @(#cbSalas)" />  		              
+		           	</mec:selectOneRadio>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao> 
+	          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{relatorioTaxaOcupacaoController.pesquisar}" 
+					profile="search" />
+	          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{relatorioTaxaOcupacaoController.limpar}"
+					profile="clear" immediate="true" />
+	        </aghu:acao>	    			    	
+		</h:form>
+		
+		<br/>
+		
+		<h:form prependId="false" id="formGrafico"> 	
+			<aghu:panelGeral id="panelChart" legend="#{relatorioTaxaOcupacaoController.labelPanelGrafico}">
+				<aghu:linha>
+					<p:chart id="chartLine1" type="line" model="#{relatorioTaxaOcupacaoController.animatedModel}" rendered="#{relatorioTaxaOcupacaoController.renderChartLine}"
+						widgetVar="widgetChartTaxaOcupacao" style="width:800px; margin-left:30px;" />
+					<p:chart id="chartBar1" type="bar" model="#{relatorioTaxaOcupacaoController.animatedBarModel}" rendered="#{relatorioTaxaOcupacaoController.renderChartBar}"
+						widgetVar="widgetChartBarTaxaOcupacao" style="width:800px; margin-left:30px;" />
+				</aghu:linha>
+		    </aghu:panelGeral>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

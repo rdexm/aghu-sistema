@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_CONTAS_HOSPITALARES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterContaHospitalarPaginatorController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterContaHospitalarPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_CONTA_HOSPITALAR}"> 
+          <aghu:linha> 
+          	<p:outputPanel	id="panelPesquisa"	layout="inline">
+				<mec:pesquisaPaciente id="pesqPaciente" 
+					valueChangeListener="#{manterContaHospitalarPaginatorController.pesquisaPaciente}"
+					value="#{manterContaHospitalarPaginatorController.paciente}"
+					render="panelPesquisa" />
+				<aghu:acao newLine="false">
+					<mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}"
+						immediate="true" block="true" requestDelay="1000"
+						action="#{manterContaHospitalarPaginatorController.redirecionarPesquisaFonetica}"
+						styleClass=" bt_cinza icon-pesquisa-fonetica">
+						<f:setPropertyActionListener
+							target="#{pesquisaPacienteController.cameFrom}"
+							value="faturamento-manterContaHospitalarList" for="command" />
+						<f:setPropertyActionListener
+							target="#{pesquisaPacienteController.exibeBotaoEditar}"
+							value="#{false}" for="command" />
+						<f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/>
+					</mec:commandButton>
+				</aghu:acao>
+			</p:outputPanel>
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero value="#{manterContaHospitalarPaginatorController.contaHospitalar}" 
+            	label="#{messages.LABEL_CONTA_HOSPITALAR}" title="#{messages.TITLE_LIST_CONTA_HOSPITALAR}" 
+            	maxlength="8" size="9" id="contaHospitalar"/>
+            <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO}" 
+							title="#{messages.TITLE_LIST_SITUACAO}"  
+							value="#{manterContaHospitalarPaginatorController.situacao}" 
+							items="#{manterContaHospitalarPaginatorController.situacaoesConta}" 
+							itemLabel="descricao" noSelectionOption="true"
+			/>  
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" 
+          	action="#{manterContaHospitalarPaginatorController.pesquisar}" profile="search"/>  
+          
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" 
+          	action="#{manterContaHospitalarPaginatorController.limparPesquisa}" profile="clear"
+          	render="contaHospitalar,situacao"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formConta"> 
+        <p:outputPanel id="panelLista" layout="inline"> 
+          <mec:serverDataTable dataModel="dataModel" value="#{manterContaHospitalarPaginatorController}" rendered="#{manterContaHospitalarPaginatorController.dataModel.pesquisaAtiva}" id="tabelaContas" controller="#{manterContaHospitalarPaginatorController}"> 
+            <c:set var="_conta" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+              <mec:commandLink id="tabelaContas_link_editar" profile="edit" title="editar" 
+              	action="#{manterContaHospitalarPaginatorController.editar}"> 
+                <f:setPropertyActionListener target="#{manterContaHospitalarController.seq}" value="#{_conta.cthSeq}" for="command"/>  
+                <f:setPropertyActionListener for="command" target="#{manterContaHospitalarPaginatorController.fatContaHospitalarPacSelecionado}" value="#{_conta}"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_conta.paciente.prontuario}"> 
+                <f:converter converterId="prontuarioConverter"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CONTA_HOSPITALAR}"/> 
+              </f:facet>  
+              <h:outputText value="#{_conta.cthSeq}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PACIENTE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_conta.paciente.codigo} - #{_conta.paciente.nome}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DATA_INTERNACAO_ADM}"/> 
+              </f:facet>  
+              <h:outputText value="#{_conta.cthDtIntAdministrativa}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DATA_ALTA_ADM}"/> 
+              </f:facet>  
+              <h:outputText value="#{_conta.cthDtAltaAdministrativa}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_conta.indSituacao.descricao}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

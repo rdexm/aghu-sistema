@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib"> 
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">
+    <ui:define name="head">
+      <title>#{messages.TITLE_MANTER_CARACTERISTICA_MATERIAL_ANALISE}</title>
+    </ui:define> 
+    <ui:define name="metadata">
+      <f:metadata>
+        <f:viewAction action="#{manterCaracteristicaMaterialAnaliseController.inicio}"/>
+      </f:metadata>
+    </ui:define> 
+    <ui:define name="body">
+      <mec:pageConfig controller="#{manterCaracteristicaMaterialAnaliseController}"/> 
+      <h:form prependId="false" id="pesquisa">
+        <aghu:panelGeral legend="#{messages.FIELDSET_CABECALHO_MANTER_CARACTERISTICA_MATERIAL_ANALISE}">
+          <aghu:linha>
+            <mec:inputText label="#{messages.LABEL_CODIGO}" id="codigo" size="5" maxlength="5" value="#{manterCaracteristicaMaterialAnaliseController.vo.configExameLaudoUnico.seq}" readonly="true"/> 
+            <mec:inputText label="#{messages.INPUTTEXT_SIGLA_MANTER_CARACTERISTICA_MATERIAL_ANALISE}" id="sigla" size="5" maxlength="3" value="#{manterCaracteristicaMaterialAnaliseController.vo.configExameLaudoUnico.sigla}" readonly="true"/>           
+            <mec:inputText id="field_id" title="#{manterCaracteristicaMaterialAnaliseController.vo.configExameLaudoUnico.nome}" label="#{messages.INPUTTEXT_NOME_LAUDO_MANTER_CARACTERISTICA_MATERIAL_ANALISE}" size="60" maxlength="500" value="#{manterCaracteristicaMaterialAnaliseController.nomeLaudoUnicoTrucado}" readonly="true"/>
+          </aghu:linha>
+        </aghu:panelGeral>
+      </h:form> 
+      <h:form prependId="false" id="lista">
+        <aghu:panelGeral legend="#{messages.FIELDSET_CABECALHO_MANTER_CARACTERISTICA_MATERIAL_ANALISE}">
+          <p:outputPanel id="panelCaracteristicaMaterial" style="width:99%; max-height:300px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;" layout="inline">
+            <p:dataTable id="listagem_id" value="#{manterCaracteristicaMaterialAnaliseController.lista}" style="margin: 0px !important;" rendered="#{not empty manterCaracteristicaMaterialAnaliseController.lista}" var="_item" scrollable="true" editable="true" editMode="cell">
+             
+              <p:column style="margin-left:auto;margin-right:auto;width:10%;">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.COLLUMN_ASSOCIAR}"/>
+                </f:facet> 
+               
+                <p:selectBooleanCheckbox posicaoLabel="esquerda" id="selectBooleanCheckbox_ativo" value="#{_item.ativo}" style="margin-top:-15px !important;">
+                  <p:ajax update="@(#panelCaracteristicaMaterial) @(#checkbox_secao_obrigatoria) @(#checkbox_laudo) @(#comboSecaoObrigatoria)" event="change" process="@this" listener="#{manterCaracteristicaMaterialAnaliseController.getLista()}"/>
+                </p:selectBooleanCheckbox>
+               
+              </p:column> 
+              <p:column style="margin-left:auto;margin-right:auto;width:30%;">
+                <f:facet name="header">                
+                  <h:outputText value="#{messages.COLLUMN_SECAO_OBRIGATORIA}" title="#{messages.TITLE_SECAO_OBRIGATORIA}"/>                 
+                </f:facet> 
+                <p:outputPanel id="teste">
+                <p:selectBooleanCheckbox id="checkbox_secao_obrigatoria" disabled="#{not _item.ativo}" value="#{_item.obrigatorio}" style="margin:10px !important;float: left;">
+                  <p:ajax update="@(#panelCaracteristicaMaterial) @(#comboSecaoObrigatoria)" event="change" process="@this" listener="#{manterCaracteristicaMaterialAnaliseController.getLista()}"/>
+                </p:selectBooleanCheckbox>
+                 </p:outputPanel>
+                <p:selectOneMenu id="comboSecaoObrigatoria"
+                        disabled="#{not manterCaracteristicaMaterialAnaliseController.habilitaSecaoObrigatoria(_item.ativo,_item.obrigatorio)}"
+                        value="#{_item.secaoObrigatoria}"
+                        onkeydown="enterInSelectField(event, '#{stopEnter}');"
+                        styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"
+                        style="width: 140px !important;margin-top: 5px;">
+                  <p:ajax event="change" process="@this"/>
+		          <f:converter converterId="dominioConverter" />
+		          <f:selectItem itemValue="" itemLabel="Nenhuma" noSelectionOption="true" />
+		          <f:selectItems var="selItem" itemLabel="#{selItem.descricao}" value="#{mf:getEnumItens('br.gov.mec.aghu.dominio', 'DominioWorkflowExamePatologia')}" />
+		        </p:selectOneMenu>
+              </p:column> 
+              <p:column style="margin-left:auto;margin-right:auto;width:10%;">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.COLLUMN_LAUDO}" title="#{messages.TITLE_LAUDO_SECAO}"/>
+                </f:facet> 
+                <p:selectBooleanCheckbox posicaoLabel="esquerda" id="checkbox_laudo" disabled="#{not _item.ativo or _item.secaoConfExames.descricao eq 'IBL'}" value="#{_item.impressao}" style="margin-top:-15px !important;"/>
+              </p:column> 
+              <p:column style="margin-left:auto;margin-right:auto;width:20%;">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.COLLUMN_ABA_MANTER_CARACTERISTICA_MATERIAL_ANALISE}"/>
+                </f:facet> 
+                <h:outputText value="#{_item.secaoConfExames.aba.descricao}"/>
+              </p:column> 
+              <p:column style="margin-left:auto;margin-right:auto;width:30%;">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.COLLUMN_SECAO_MANTER_CARACTERISTICA_MATERIAL_ANALISE}"/>
+                </f:facet> 
+                <h:outputText value="#{_item.secaoConfExames.descricao.descricao}"/>
+              </p:column>
+            </p:dataTable>
+           
+          </p:outputPanel>
+        </aghu:panelGeral> 
+        <br clear="none"/> 
+        <p:outputPanel id="painel_botoes" layout="inline">
+          <aghu:acao>
+            <mec:commandButton id="bt_confirmar" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'manterConfiguracaoExames,executar')}" action="#{manterCaracteristicaMaterialAnaliseController.salvar}" render="painel_botoes" profile="ok"/> 
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{manterCaracteristicaMaterialAnaliseController.cancelar}" styleClass="icon-back bt_cinza" profile="back"/>
+          </aghu:acao>
+        </p:outputPanel>
+      </h:form>
+    </ui:define>
+  </ui:composition>
+</html>

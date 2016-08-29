@@ -1,0 +1,1374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">
+
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+<ui:define name="head">
+    <title>#{messages.TITLE_AGRUPAR_PROCEDIMENTO_CIRURGICO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+</ui:define>
+
+<ui:define name="metadata">
+    <f:metadata>
+        <f:viewAction action="#{listarCirurgiasController.iniciar}"/>
+    </f:metadata>
+</ui:define>
+
+<ui:define name="script">
+    function playAlertaPacienteEmTransOperatorio(){
+    var somAlerta = document.getElementById('somAlerta');
+    somAlerta.play();
+    }
+</ui:define>
+
+<ui:define name="body">
+<mec:pageConfig controller="#{listarCirurgiasController}" ignoreEnter="true"/>
+
+<audio id="somAlerta" hidden="true">
+    <source src="#{facesContext.externalContext.requestContextPath}/resources/player/beep-paciente-entrou-em-transoperatorio.ogg" type="audio/ogg;" autostart="false"/>
+</audio>
+
+<h:form prependId="false" id="formPesquisa">
+
+<p:fieldset id="filtroToggle" widgetVar="filtroToggleWG" legend="#{messages.TITLE_FILTROS_PESQUISA}#{listarCirurgiasController.tela.filtrosPesquisa}"
+            toggleable="true" toggleSpeed="500">
+
+    <aghu:linha>
+        <mec:suggestionBox width="700"
+                           size="10"
+                           id="unidadeFuncional"
+                           label="#{messages.LABEL_UNIDADE_FUNCIONAL_ITEM_PESQ}"
+                           title="#{messages.TITLE_UNIDADE_FUNCIONAL_LCIR}"
+                           descricaoInput="seq"
+                           descricaoLabel="andarAlaDescricao"
+                           suggestionAction="pesquisarUnidadeFuncional"
+                           descricaoLimite="30"
+                           required="true"
+                           posSelectionAction="limparlistaCirurgias"
+                           controller="#{listarCirurgiasController}"
+                           value="#{listarCirurgiasController.tela.unidade}"
+                           posDeleteAction="posDeleteUnidadeFuncional"
+                           ajax="true"
+                           render="filtroToggle,formListaCirurgias,suggestionSala,panelDtProcedimento"
+                           var="itemUnidadeFuncional"
+                           itemValue="#{itemUnidadeFuncional}">
+            <p:column>
+                <f:facet name="header">
+                    <b>#{messages.LABEL_CODIGO}</b>
+                </f:facet> #{itemUnidadeFuncional.seq}
+            </p:column>
+            <p:column>
+                <f:facet name="header">
+                    <b>#{messages.LABEL_DESCRICAO}</b>
+                </f:facet> #{itemUnidadeFuncional.descricao}
+            </p:column>
+        </mec:suggestionBox>
+         
+        <p:outputPanel id="panelDtProcedimento" layout="inline">
+        	<p:focus context="panelDtProcedimento" rendered="#{listarCirurgiasController.tela.unidade != null}" />
+            <mec:inputTextData id="dtProcedimento"
+                               label="#{messages.LABEL_DATA}"
+                               title="#{messages.TITLE_DATA_LCIR}"
+                               required="true"
+                               value="#{listarCirurgiasController.tela.dtProcedimento}"
+                               render="panelDtProcedimento,panelSala"
+                               readonly="#{listarCirurgiasController.tela.checkSalaRecuperacao}"
+                               tipo="data">
+                  <p:ajax event="dateSelect" process="@this" />             
+            </mec:inputTextData>                   
+        </p:outputPanel>
+        
+        <p:outputPanel id="panelSala" layout="inline">
+            <p:focus context="panelSala" rendered="#{listarCirurgiasController.tela.dtProcedimento != null}" />
+	        <mec:suggestionBox width="400"
+	                           size="10"
+	                           id="suggestionSala"
+	                           name="suggestionSala"
+	                           label="#{messages.LABEL_SALA}"
+	                           title="#{messages.TITLE_SALA_LCIR}"
+	                           render="panelEspecialidade"
+	                           suggestionAction="buscarSalasCirurgicas"
+	                           descricaoInput="id.seqp"
+	                           descricaoLabel="nome"
+	                           descricaoLimite="30"
+	                           readonly="#{(!listarCirurgiasController.tela.pesquisaLiberada and !listarCirurgiasController.liberarCamposDoFiltro) or listarCirurgiasController.tela.checkSalaRecuperacao}"
+	                           controller="#{listarCirurgiasController}"
+	                           value="#{listarCirurgiasController.tela.sala}"
+	                           var="itemSuggestionSala"
+	                           itemValue="#{itemSuggestionSala}">
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_CODIGO}</b>
+	                </f:facet> #{itemSuggestionSala.id.seqp}
+	            </p:column>
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_DESCRICAO}</b>
+	                </f:facet> #{itemSuggestionSala.nome}
+	            </p:column>
+	        </mec:suggestionBox>
+	     </p:outputPanel>
+	     <p:outputPanel id="panelEspecialidade" layout="inline">
+            <p:focus context="panelEspecialidade" rendered="#{listarCirurgiasController.tela.sala != null}" />   
+	        <mec:suggestionBox width="400"
+	                           size="10"
+	                           id="suggestionEspecialidade"
+	                           label="#{messages.LABEL_ESPECIALIDADE}"
+	                           title="#{messages.TITLE_ESPECIALIDADE_LCIR}"
+	                           suggestionAction="listarEspecialidades"
+	                           render="panelNatureza"
+	                           descricaoInput="seq"
+	                           descricaoLabel="nome"
+	                           descricaoLimite="30"
+	                           readonly="#{(!listarCirurgiasController.tela.pesquisaLiberada and !listarCirurgiasController.liberarCamposDoFiltro) or listarCirurgiasController.tela.checkSalaRecuperacao}"
+	                           controller="#{listarCirurgiasController}"
+	                           value="#{listarCirurgiasController.tela.especialidade}"
+	                           var="itemSuggestionEspecialidade"
+	                           itemValue="#{itemSuggestionEspecialidade}" >
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_CODIGO}</b>
+	                </f:facet> #{itemSuggestionEspecialidade.seq}
+	            </p:column>
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_SIGLA}</b>
+	                </f:facet> #{itemSuggestionEspecialidade.sigla}
+	            </p:column>
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_NOME}</b>
+	                </f:facet> #{itemSuggestionEspecialidade.nome}
+	            </p:column>
+	        </mec:suggestionBox>
+	     </p:outputPanel>   
+    </aghu:linha>
+    <aghu:linha>
+		<p:outputPanel id="panelNatureza" layout="inline">
+            <p:focus context="panelNatureza" rendered="#{listarCirurgiasController.tela.especialidade != null}" />
+	        <mec:selectOneMenu id="natureza"
+	                           value="#{listarCirurgiasController.tela.natureza}"
+	                           label="#{messages.VAGNE_LABEL_NATUREZA}"
+	                           title="#{messages.TITLE_NATUREZA_LCIR}"
+	                           enum="DominioNaturezaFichaAnestesia"
+	                           readonly="#{(!listarCirurgiasController.tela.pesquisaLiberada and !listarCirurgiasController.liberarCamposDoFiltro) or listarCirurgiasController.tela.checkSalaRecuperacao}">
+	                           
+				<p:ajax event="change" update="@(#panelEquipe)" />	                           
+	        </mec:selectOneMenu>                   
+	    </p:outputPanel>
+
+		<p:outputPanel id="panelEquipe" layout="inline">
+            <p:focus context="panelEquipe" rendered="#{listarCirurgiasController.tela.natureza != null}" />
+                                   
+	        <mec:suggestionBox width="900"
+	                           size="10"
+	                           id="suggestionEquipe"
+	                           label="#{messages.LABEL_EQUIPE}"
+	                           title="#{messages.TITLE_EQUIPE_LCIR}"
+	                           suggestionAction="pesquisarSuggestionEquipe"
+	                           descricaoInput="matricula"
+	                           descricaoLabel="nome"
+	                           render="panelProcedimento"
+	                           descricaoLimite="20"
+	                           readonly="#{(!listarCirurgiasController.tela.pesquisaLiberada and !listarCirurgiasController.liberarCamposDoFiltro) or listarCirurgiasController.tela.checkSalaRecuperacao}"
+	                           controller="#{listarCirurgiasController}"
+	                           value="#{listarCirurgiasController.tela.equipe}"
+	                           var="itemSuggestionEquipe"
+	                           itemValue="#{itemSuggestionEquipe}">
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_VINCULO}</b>
+	                </f:facet> #{itemSuggestionEquipe.vinCodigo}
+	            </p:column>
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_MATRICULA}</b>
+	                </f:facet> #{itemSuggestionEquipe.matricula}
+	            </p:column>
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_NOME}</b>
+	                </f:facet> #{itemSuggestionEquipe.nome}
+	            </p:column>
+		   </mec:suggestionBox>
+		</p:outputPanel>   
+		<p:outputPanel id="panelProcedimento" layout="inline">
+            <p:focus context="panelProcedimento" rendered="#{listarCirurgiasController.tela.equipe != null}" />
+	        <mec:suggestionBox width="700"
+	                           size="10"
+	                           id="suggestionProcedimento"
+	                           label="#{messages.LABEL_PROCEDIMENTO}"
+	                           render="panelSalaRecup"
+	                           title="#{messages.TITLE_PROCEDIMENTO_LCIR}"
+	                           suggestionAction="pesquisarSuggestionProcedimento"
+	                           descricaoInput="eprPciSeq"
+	                           descricaoLabel="nome"
+	                           descricaoLimite="20"
+	                           readonly="#{(!listarCirurgiasController.tela.pesquisaLiberada and !listarCirurgiasController.liberarCamposDoFiltro) or listarCirurgiasController.tela.checkSalaRecuperacao}"
+	                           controller="#{listarCirurgiasController}" value="#{listarCirurgiasController.tela.procedimento}"
+	                           var="itemSuggestionProcedimento"
+	                           itemValue="#{itemSuggestionProcedimento}">
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_CODIGO}</b>
+	                </f:facet> #{itemSuggestionProcedimento.eprPciSeq}
+	            </p:column>
+	            <p:column>
+	                <f:facet name="header">
+	                    <b>#{messages.LABEL_NOME}</b>
+	                </f:facet> #{itemSuggestionProcedimento.nome}
+	            </p:column>
+	        </mec:suggestionBox>
+	    </p:outputPanel>
+	    <p:outputPanel id="panelSalaRecup" layout="inline">
+            <p:focus context="panelSalaRecup" rendered="#{listarCirurgiasController.tela.procedimento != null}" />
+	        
+	        <mec:selectBooleanCheckbox label="#{messages.LABEL_PACIENTE_SALA_RECUPERACAO}" title="#{messages.TITLE_PACIENTE_SALA_RECUPERACAO_LCIR}" id="checkSalaRecuperacao" value="#{listarCirurgiasController.tela.checkSalaRecuperacao}" readonly="#{(!listarCirurgiasController.tela.pesquisaLiberada and !listarCirurgiasController.liberarCamposDoFiltro)}">
+	            <p:ajax event="change" listener="#{listarCirurgiasController.novaPesquisa}" update="@(#filtroToggle),@(#formListaCirurgias),@(#panelAlertaPacienteEmTransOperatorio) @(#panelCancelamento)" process="@this" />
+	        </mec:selectBooleanCheckbox>
+	    </p:outputPanel>    
+    </aghu:linha>
+    <aghu:linha>
+        <mec:commandButton id="bt_pesquisar"
+                           value="#{messages.LABEL_PESQUISAR}"                           
+                           process="@form"
+                           action="#{listarCirurgiasController.novaPesquisa}"
+                           render="filtroToggle,formListaCirurgias,panelAlertaPacienteEmTransOperatorio,listaCirurgias,formPesquisa,panelCancelamento"
+                           profile="search"/>
+        <mec:commandButton id="bt_limpar" 
+        				   action="#{listarCirurgiasController.limpar}" 
+        				   value="#{messages.LABEL_LIMPAR}" 
+        				   ajax="true" 
+        				   render="filtroToggle,botoesAcao,panelCancelamento, panelAlertaPacienteEmTransOperatorio,formListaCirurgias" 
+        				   process="@this" styleClass="bt_cinza" profile="clear"
+        				   onclick="PF('waitDialogWG').show();"
+						   oncomplete="PF('waitDialogWG').hide();"/>
+    </aghu:linha>
+</p:fieldset>
+</h:form>
+
+<h:form prependId="false" id="formListaCirurgias">
+<p:outputPanel id="outpanelPacientesEmtransoperatorio"
+               rendered="#{mf:hasPermission(securityController,'visualizarAlertaPacienteTransOperatorio,visualizar')}"
+               layout="inline">
+    <p:poll
+            interval="#{listarCirurgiasController.tempoRecarregarCirurgiasEmTransOperatorio}"
+            listener="#{listarCirurgiasController.pesquisarPacientesEmTransOperario}"
+            rendered="#{(not empty listarCirurgiasController.cirurgias and listarCirurgiasController.tela.pesquisaLiberada) or (not empty listarCirurgiasController.cirurgiasComPacientesEmTransOperatorio)}"
+            id="poll"
+            update="@(#panelAlertaPacienteEmTransOperatorio), @(#desenho1), @(#outpanelListaCirurgias)"
+            process="@this" />
+
+    <p:outputPanel id="panelAlertaPacienteEmTransOperatorio" layout="inline">
+
+        <ui:repeat id="repeatAlertaPacienteEmTransOperatorio"
+                   value="#{listarCirurgiasController.cirurgiasComPacientesEmTransOperatorio}"
+                   var="pacTransOperatorio">
+            <p:panel id="togglePanelAlertaPacienteEmTransOperatorio"
+                     header="#{messages.LABEL_PACIENTE_EM_TRANSOPERATORIO} : #{pacTransOperatorio.nomePaciente} - #{pacTransOperatorio.prontuario}"
+                     toggleable="true" toggleSpeed="500"
+                     collapsed="true"
+                     prependId="false"
+                     styleClass="aghu-panel-alert">
+                <f:facet name="header">
+                    <p:outputPanel id="panelHeaderTransOper" layout="inline">
+                        <h:outputText
+                                value="#{messages.LABEL_PACIENTE_EM_TRANSOPERATORIO}" />
+                        <h:outputText value=": " />
+                        <h:outputText value="#{pacTransOperatorio.nomePaciente}" />
+                        <h:outputText value=" - " />
+                        <h:outputText value="#{pacTransOperatorio.prontuario}">
+                            <f:converter converterId="prontuarioConverter" />
+                        </h:outputText>
+                    </p:outputPanel>
+                </f:facet>
+
+                <p:outputPanel id="panelDescricaoTransOper" layout="inline">
+                    <h:outputText value="#{messages.LABEL_PACIENTE} " />
+                    <h:outputText value=" " />
+                    <strong> <h:outputText
+                            value="#{pacTransOperatorio.nomePaciente}" />
+                    </strong>
+                    <h:outputText value=" " />
+                    <h:outputText value="#{messages.LABEL_PRONTUARIO} " />
+                    <strong>
+                        <h:outputText value="#{pacTransOperatorio.prontuario}" >
+                            <f:converter converterId="prontuarioConverter" />
+                        </h:outputText>
+                    </strong>
+                    <h:outputText
+                            value="#{messages.LABEL_ENTROU_EM_TRANSOPERATORIO_NAO_ESTA_INTERNADO}" />
+                    <strong> <h:outputText
+                            value="#{pacTransOperatorio.dataExtratoTransOperatorio}">
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+                    </h:outputText>
+                    </strong>
+                    <h:outputText
+                            value="#{messages.LABEL_ENTROU_EM_TRANSOPERATORIO_NAO_ESTA_INTERNADO_FIM}" />
+                    <br clear="none" />
+                    <br clear="none" />
+                    <mec:commandButton id="navegarInternacao" value="#{messages.LABEL_INTERNAR}" action="#{pesquisaPacienteController.navegarInternacao(pacTransOperatorio.codPaciente)}" disabled="#{not mf:hasPermission(securityController,'/internacao/solicitacao/solicitacaoInternacao.xhtml,render') or listarCirurgiasController.disabledBtnInternar(pacTransOperatorio.codPaciente)}" profile="ok" ajax="true" render="modalConfirmacao">
+                        <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/>
+                        <f:setPropertyActionListener
+                                target="#{pesquisaPacienteController.idLeito}"
+                                value="#{null}" for="command" />
+                        <f:setPropertyActionListener
+                                target="#{cadastrarPacienteController.cameFromCirurgias}"
+                                value="blococirurgico-listaCirurgias" for="command" />
+                    </mec:commandButton>
+                </p:outputPanel>
+            </p:panel>
+        </ui:repeat>
+    </p:outputPanel>
+</p:outputPanel>
+
+<aghu:panelGeral legend="#{messages.LABEL_LISTA_CIRURGIAS}" rendered="#{listarCirurgiasController.tela.pesquisaLiberada}">
+
+<aghu:column type="table">
+<p:outputPanel id="outpanelListaCirurgias" layout="inline">
+<mec:serverDataTable id="listaCirurgias" scrollHeight="200"
+                     list="#{listarCirurgiasController.cirurgias}" scrollable="true"
+                     widgetVar="listaCirurgiasWG"
+                     filteredValue="#{listarCirurgiasController.filteredCirurgias}"
+                     selection="crgSelecionada"
+                     controller="#{listarCirurgiasController}" 
+                     blockUI="false">
+
+<c:set var="_cirurgia" value="#{item}" />
+
+<ui:param name="background" value="#{_cirurgia.corExibicao != null ? 'background-color: '.concat(_cirurgia.corExibicao) : ''}" />
+
+<p:ajax event="rowSelect"
+        listener="#{listarCirurgiasController.carregarCirurgiaSelecionada}"
+        update="@(#panelBotoes) @(#panelCancelamento) @(#panelModais)" 
+       	onstart="PF('loadDialogWG').show();" 
+		oncomplete="PF('loadDialogWG').hide();" />
+
+<f:facet name="header">
+    <p:outputPanel>
+        <h:outputText
+                value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_LOCALIZAR_PACIENTE}:"
+                style="float:left" />
+        <div style="text-align: left !important;padding-left: 115px !important;">
+	        <p:inputText style="float: none !important;" id="globalFilter" value="#{listarCirurgiasController.filtroPaciente}"  
+	                     onkeypress="PF('listaCirurgiasWG').filter();" immediate="true">
+	        	<p:ajaxStatus onstart="PF('waitDialogWG').show();" onsuccess="PF('waitDialogWG').hide();"/>
+	        </p:inputText>
+        </div>
+    </p:outputPanel>
+   
+</f:facet>
+
+
+<p:column style="width:70px;white-space:nowrap; #{background}">
+
+    <f:facet name="header">
+        <h:outputText value="#{messages.LABEL_ACAO}"/>
+    </f:facet>
+
+
+    <mec:commandLink id="detalhar"
+                     title="#{messages.TITLE_OUTRA_DESCRICAO_LCIR}"
+                     style="padding-top: 0px; padding-bottom: 0px;"
+                     action="#{listarCirurgiasController.redirecionarDescricaoCirurgica(_cirurgia)}"
+                     rendered="#{listarCirurgiasController.habilitaBotoesDescricaoCirurgica(_cirurgia.outraDescricao,mf:hasPermission(securityController,'realizarDescricaoCirurgica,executar'), mf:hasPermission(securityController,'realizarDescricaoCirurgicaPDT,executar'))}"
+                     styleClass=" silk-page-text-edit silk-icon" />
+
+    <mec:commandLink id="descrever"
+                     title="#{messages.TITLE_DESCRICAO_LCIR}"
+                     style="padding-top: 0px; padding-bottom: 0px;"
+                     action="#{listarCirurgiasController.redirecionarDescricaoCirurgica(_cirurgia)}"
+                     rendered="#{listarCirurgiasController.habilitaBotoesDescricaoCirurgica(_cirurgia.descrever, mf:hasPermission(securityController,'realizarDescricaoCirurgica,executar'), mf:hasPermission(securityController,'realizarDescricaoCirurgicaPDT,executar'))}"
+                     styleClass=" silk-page-text-add silk-icon" />
+
+    <mec:commandLink id="editar"
+                     title="#{messages.TITLE_EDITAR_LCIR}"
+                     style="padding-top: 0px; padding-bottom: 0px;"
+                     action="#{listarCirurgiasController.redirecionarEdicaoDescricaoCirurgica(_cirurgia)}"
+                     rendered="#{listarCirurgiasController.habilitaBotoesDescricaoCirurgica(_cirurgia.outraDescricao, mf:hasPermission(securityController,'realizarDescricaoCirurgica,executar'), mf:hasPermission(securityController,'realizarDescricaoCirurgicaPDT,executar'))}"
+                     profile="edit" />
+
+    <mec:commandLink id="btnVisualizar"
+                     title="#{messages.TITLE_VISUALIZAR_LCIR}"
+                     style="padding-top: 0px; padding-bottom: 0px;"
+                     action="#{listarCirurgiasController.visualizarDescricaoCirurgicaOuPDT(_cirurgia)}"
+                     rendered="#{listarCirurgiasController.habilitaBotoesDescricaoCirurgica(_cirurgia.outraDescricao, mf:hasPermission(securityController,'realizarDescricaoCirurgica,executar'), mf:hasPermission(securityController,'realizarDescricaoCirurgicaPDT,consultar'))}"
+                     styleClass=" silk-magnifier silk-icon" ajax="true" />
+
+    <mec:commandLink title="#{messages.TITLE_ABRIR_PRONTUARIO_ONLINE}" 
+           	   		style="padding: 0px 4px;" 
+           	   		rendered="#{not empty _cirurgia.prontuario and mf:hasPermission(securityController, '/paciente/prontuarioonline/arvorePOL.xhtml,render')}" 
+           	   		onclick="parent.addPOLProntuario(#{_cirurgia.prontuario})" 
+           	   		styleClass="silk-icon silk-pol16 silk-icon" ajax="true" />
+</p:column>
+
+<p:column id="dataInicioCirurgia"
+          sortBy="#{_cirurgia.dataInicioCirurgia}" style="white-space:nowrap !important; width:35px; #{background}" >
+    <f:facet name="header">
+        <h:outputText value="#{messages.LABEL_HORA}" />
+    </f:facet>
+    <h:outputText value="#{_cirurgia.dataInicioCirurgia}">
+        <f:convertDateTime pattern="HH:mm" />
+    </h:outputText>
+</p:column>
+
+<p:column id="crgSala" sortBy="#{_cirurgia.crgSalaOrdem}" style="white-space:nowrap !important; width:33px; #{background}">
+    <f:facet name="header">
+        <h:outputText value="#{messages.LABEL_SALA}" />
+    </f:facet>
+    <h:outputText
+            value="#{not empty _cirurgia.crgSalaTruncado ? _cirurgia.crgSalaTruncado : _cirurgia.crgSala}"
+            title="#{_cirurgia.crgSala}" alt="#{_cirurgia.crgSala}" />
+
+</p:column>
+
+<p:column style="display: none;"
+          filterBy="#{_cirurgia.nomePaciente}" filterMatchMode="contains">
+
+    <h:outputText
+            value="#{not empty _cirurgia.nomePacienteTruncado ? _cirurgia.nomePacienteTruncado : _cirurgia.nomePaciente}" />
+</p:column>
+
+<p:column style="display: none;"
+          filterBy="#{_cirurgia.prontuario}" filterMatchMode="contains">
+
+    <h:outputText value="#{_cirurgia.prontuario}" />
+</p:column>
+
+<p:column id="nomePaciente"
+          style="width:159px; background-color:#{_cirurgia.corExibicaoColunaPaciente ne null ? _cirurgia.corExibicaoColunaPaciente : _cirurgia.corExibicao};"
+          sortBy="#{_cirurgia.nomePaciente}">
+    <f:facet name="header">
+        <h:outputText value="#{messages.LABEL_PACIENTE}" />
+    </f:facet>
+	<h:outputText id="prontuarioPacTruncado" value="#{_cirurgia.prontuario}" />
+    <h:outputText value=" - "
+                  rendered="#{not empty _cirurgia.prontuario}" />
+    <h:outputText id="nomePacTruncado"
+                  value="#{not empty _cirurgia.nomePacienteTruncado ? _cirurgia.nomePacienteTruncado : _cirurgia.nomePaciente}" />
+	<div style="z-index: 9999 !important;">
+     <p:contextMenu for="nomePacTruncado" id="contexto" style="margin-top: -30px;">
+    	<p:menuitem disabled="true" id="itemContexto" onclick="return false;">
+			<h:outputText value="#{_cirurgia.nomePaciente}" />
+		</p:menuitem>
+    </p:contextMenu>
+	</div>
+    <p:tooltip direction="bottom-right" styleClass="tooltip"
+               layout="block" rendered="true" for="nomePacTruncado,prontuarioPacTruncado">
+        <p:outputPanel rendered="#{_cirurgia.colunaGmr}" layout="inline">
+            <h:outputText
+                    value="#{listarCirurgiasController.legendaTitles.TITLE_GMR}" />
+            <br clear="none" />
+            <br clear="none" />
+        </p:outputPanel>
+        <h:outputText value="#{messages.LABEL_PACIENTE}: " />
+        <h:outputText value="#{_cirurgia.prontuario}" />
+        <h:outputText value=" - "
+                      rendered="#{not empty _cirurgia.prontuario}" />
+        <h:outputText value="#{_cirurgia.nomePaciente}" />
+        <br clear="none" />
+        <h:outputText value="#{messages.LABEL_ESPECIALIDADE}: " />
+        <h:outputText value="#{_cirurgia.siglaEspecialidade}" />
+        <h:outputText value=" - " />
+        <h:outputText value="#{_cirurgia.nomeEspecialidade}" />
+        <br clear="none" />
+        <h:outputText value="#{messages.LABEL_LEITO}: " />
+        <h:outputText value="#{_cirurgia.informacaoQuartoLeito}" />
+        <br clear="none" />
+        <h:outputText value="#{messages.LABEL_CARATER}: " />
+        <h:outputText value="#{_cirurgia.naturezaAgenda.descricao}" />
+        <br clear="none" />
+        <h:outputText value="#{messages.LABEL_HORARIO_TERMINO}: " />
+        <h:outputText value="#{_cirurgia.dataFimCirurgia}">
+            <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+        </h:outputText>
+    </p:tooltip>
+</p:column>
+<p:column id="crgProcPrinc" sortBy="#{_cirurgia.crgProcPrinc}" style="width:147px; #{background}">
+    <f:facet name="header">
+        <h:outputText value="#{messages.LABEL_PROCEDIMENTO_PRINCIPAL}" />
+    </f:facet>
+    <h:outputText
+            value="#{not empty _cirurgia.crgProcPrincTruncado ? _cirurgia.crgProcPrincTruncado : _cirurgia.crgProcPrinc}"
+            title="#{_cirurgia.crgProcPrinc}"
+            alt="#{_cirurgia.crgProcPrinc}" />
+</p:column>
+
+<p:column id="ladoCirurgia" sortBy="#{_cirurgia.ladoCirurgia}" style="width:49px; #{background}">
+    <f:facet name="header">
+        <h:outputText value="#{messages.LABEL_LADO_CIRURGIA}" />
+    </f:facet>
+    <h:outputText value="#{_cirurgia.ladoCirurgia.descricao}" />
+</p:column>
+
+<p:column sortBy="#{_cirurgia.crgEquipe}" style="width:79px; #{background}">
+    <f:facet name="header">
+        <h:outputText value="#{messages.LABEL_EQUIPE}" />
+    </f:facet>
+    <h:outputText
+            value="#{not empty _cirurgia.crgEquipeTruncado ? _cirurgia.crgEquipeTruncado : _cirurgia.crgEquipe}"
+            title="#{_cirurgia.crgEquipe}" alt="#{_cirurgia.crgEquipe}" />
+</p:column>
+
+<p:column
+        style="text-align:center; width:24px; background-color:#{listarCirurgiasController.cirurgiaDaPesquisaEmTransOperatorio(_cirurgia)};"
+        sortBy="#{_cirurgia.sortDesenho1}">
+    <f:facet name="header" />
+    <p:outputPanel id="desenho1"
+                   rendered="#{not empty _cirurgia.desenho1}">
+        <mec:commandLink id="acompanhamentoCirurgia"
+                         style="padding-top: 0px; padding-bottom: 0px;"
+                         title="#{_cirurgia.titleDesenho1}"
+                         alt="#{_cirurgia.titleDesenho1}"
+                         action="#{listarCirurgiasController.redirecionarAcompanharCirurgia()}"
+                         rendered="#{mf:hasPermission(securityController,'/blococirurgico/acompanhamentoCirurgia.xhtml,render') and not _cirurgia.situacao.name().equals('CANC')}"
+                         styleClass="silk-icon #{_cirurgia.desenho1}" ajax="true"
+                         onclick="PF('waitDialogWG').show();">
+            <f:setPropertyActionListener
+                    target="#{acompanhamentoCirurgiaController.crgSeq}"
+                    value="#{_cirurgia.crgSeq}" for="command" />
+            <f:setPropertyActionListener
+                    target="#{acompanhamentoCirurgiaController.voltarPara}"
+                    value="blococirurgico-listaCirurgias" for="command" />
+        </mec:commandLink>
+        <p:graphicImage style="padding-top: 0px; padding-bottom: 0px;" styleClass="silk-icon #{_cirurgia.desenho1}"
+                        rendered="#{not mf:hasPermission(securityController,'/blococirurgico/acompanhamentoCirurgia.xhtml,render') or _cirurgia.situacao.name().equals('CANC')}"
+                        disabled="true" />
+    </p:outputPanel>
+</p:column>
+
+<p:column
+        style="text-align:center; width:24px; background-color:#{_cirurgia.corExibicao};"
+        sortBy="#{_cirurgia.desenho2}">
+    <f:facet name="header" />
+    <p:outputPanel rendered="#{not empty _cirurgia.desenho2}">
+        <mec:commandLink style="padding-top: 0px; padding-bottom: 0px;"
+                         title="#{_cirurgia.titleDesenho2}"
+                         alt="#{_cirurgia.titleDesenho2}"
+                         styleClass="silk-icon #{_cirurgia.desenho2}" ajax="true" />
+    </p:outputPanel>
+</p:column>
+
+<p:column
+        style="text-align:center; width:24px; background-color:#{_cirurgia.corExibicao};"
+        sortBy="#{_cirurgia.desenho3}">
+    <f:facet name="header" />
+    <p:outputPanel rendered="#{not empty _cirurgia.desenho3}">
+        <mec:commandLink style="padding-top: 0px; padding-bottom: 0px;"
+                         title="#{_cirurgia.titleDesenho3}"
+                         alt="#{_cirurgia.titleDesenho3}"
+                         styleClass="silk-icon #{_cirurgia.desenho3}" ajax="true" />
+    </p:outputPanel>
+</p:column>
+
+<p:column
+        style="text-align:center; width:24px; background-color:#{_cirurgia.corExibicao};"
+        sortable="false" sortBy="#{_cirurgia.desenho4}">
+    <f:facet name="header" />
+    <p:outputPanel rendered="#{not empty _cirurgia.desenho4}">
+        <mec:commandLink style="padding-top: 0px; padding-bottom: 0px;"
+                         title="#{_cirurgia.titleDesenho4}"
+                         alt="#{_cirurgia.titleDesenho4}"
+                         styleClass="silk-icon #{_cirurgia.desenho4}" ajax="true" />
+    </p:outputPanel>
+</p:column>
+
+<p:column id="desenho5"
+          style="text-align:center; width:24px; background-color:#{_cirurgia.corExibicao};"
+          sortBy="#{_cirurgia.desenho5}">
+    <f:facet name="header" />
+    <p:outputPanel rendered="#{not empty _cirurgia.desenho5}">
+        <mec:commandLink style="padding-top: 0px; padding-bottom: 0px;"
+                         title="#{_cirurgia.titleDesenho5}"
+                         alt="#{_cirurgia.titleDesenho5}"
+                         styleClass="silk-icon #{_cirurgia.desenho5}" ajax="true" />
+    </p:outputPanel>
+</p:column>
+
+
+
+
+<p:column sortBy="#{_cirurgia.desenho6}" style="text-align:center; width:24px; background-color:#{_cirurgia.corExibicao};">
+     <p:outputPanel id="panelIconePendencia" layout="block">
+             <mec:commandLink id="btRedirecionaPendenciasAssinaturaAghDocs"
+                onclick="pendenciaAssinatura('#{listarCirurgiasController.urlPendenciaDigital}', '#{listarCirurgiasController.obterTokenUsuarioLogado()}'); return false;"
+               	rendered="#{not empty _cirurgia.desenho6 and listarCirurgiasController.direcionaAghDocs}"
+               	disabled="#{not mf:hasPermission(securityController, 'assinaturaDigital,alterarContextoProfissional')}"
+               	title="#{_cirurgia.titleDesenho6}"
+                alt="#{_cirurgia.titleDesenho6}"
+               	styleClass="silk-certificacao-digital silk-icon"> 
+             </mec:commandLink>  
+               
+              <mec:commandLink id="btRedirecionaPendenciasAssinatura"
+               	action="#{listarCirurgiasController.redirecionarListarPendenciasAssinatura(_cirurgia.pacCodigo)}"
+               	rendered="#{not empty _cirurgia.desenho6 and (not listarCirurgiasController.direcionaAghDocs)}"
+               	disabled="#{not mf:hasPermission(securityController, 'assinaturaDigital,alterarContextoProfissional')}"
+               	title="#{_cirurgia.titleDesenho6}"
+                alt="#{_cirurgia.titleDesenho6}"
+               	styleClass="silk-certificacao-digital silk-icon"> 
+              </mec:commandLink>
+	</p:outputPanel>
+ </p:column>
+
+
+</mec:serverDataTable>
+</p:outputPanel>
+</aghu:column>
+
+<div style="padding-right:80px;">
+<aghu:column type="button"  style="width:150px;margin-bottom: 5px">
+    <p:outputPanel id="panelBotoes">
+      <aghu:panelGeral>	
+        <mec:commandButton id="bt_solicitar"
+                           value="#{messages.LABEL_SOLIC_EXAMES}"
+                           action="#{listarCirurgiasController.redirecionarSolicitacaoExame}"
+                           disabled="#{not listarCirurgiasController.crgSelecionada.btSolicitar or  not mf:hasPermission(securityController,'/exames/solicitacao/solicitacaoExameCRUD.xhtml,render')}"
+                           rendered="#{not listarCirurgiasController.moduloExamesLaudoNaoEstaAtivoEEhHospitalClinicas()}"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{solicitacaoExameController.atendimentoSeq}"
+                    value="#{listarCirurgiasController.atdSeqSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{solicitacaoExameController.paginaChamadora}"
+                    value="blococirurgico-listaCirurgias" for="command" />
+        </mec:commandButton>
+        <mec:commandButton id="bt_solicitar_hopspital_clinicas_ahgweb"
+                           value="#{messages.LABEL_SOLIC_AGHWEB}"
+                           onclick="solicitacao('#{listarCirurgiasController.urlBaseWebForms}', '#{listarCirurgiasController.atdSeqSelecionado}',                  '#{listarCirurgiasController.obterTokenUsuarioLogado()}', '#{listarCirurgiasController.banco}'); return false;"
+                           disabled="#{listarCirurgiasController.validarUrlBaseWebFormsBanco() or not listarCirurgiasController.crgSelecionada.btSolicitar or                 not mf:hasPermission(securityController,'/exames/solicitacao/solicitacaoExameCRUD.xhtml,render')}"
+                           rendered="#{listarCirurgiasController.habilitarContgExamesAGHWeb()}"
+                           styleClass="bt_cinza" 
+                           style="width: 100%;margin-bottom: 5px"/>
+        <mec:commandButton id="bt_fluxograma"
+                           value="#{messages.LABEL_FLUXO}"
+                           action="#{listarCirurgiasController.redirecionarPesquisaFluxograma}"
+                           disabled="#{empty listarCirurgiasController.crgSelecionada or not mf:hasPermission(securityController,'verFluxograma,pesquisar')}"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{pesquisaFluxogramaController.prontuario}"
+                    value="#{listarCirurgiasController.prontuarioSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{pesquisaFluxogramaController.voltarPara}"
+                    value="blococirurgico-listaCirurgias" for="command" />
+        </mec:commandButton>
+        <mec:commandButton id="bt_prescrever_med_hopspital_clinicas_ahgweb"
+  		                   value="#{messages.LABEL_PRESCREVER}"
+		                   onclick="prescricao_medica('#{listarCirurgiasController.urlBaseWebForms}', '#{listarCirurgiasController.atdSeqSelecionado}',                  '#{listarCirurgiasController.obterTokenUsuarioLogado()}', '#{listarCirurgiasController.banco}'); return false;"
+		                   disabled="#{listarCirurgiasController.validarUrlBaseWebFormsBanco() or not listarCirurgiasController.botaoPrescreverHabilitado}"
+		                   rendered="#{(mf:hasPermission(securityController,'/prescricaomedica/verificaprescricao/verificaPrescricaoMedica.xhtml,render')
+		                	   	     or not mf:hasPermission(securityController,'/prescricaoenfermagem/elaboracaoPrescricaoEnfermagem.xhtml,render')
+		                		     and not mf:hasPermission(securityController,'/prescricaomedica/verificaprescricao/verificaPrescricaoMedica.xhtml,render'))
+		                		     and listarCirurgiasController.moduloPrescricaoMedicaNaoEstaAtivoEEhHospitalClinicas()}"
+		                   styleClass="bt_cinza" 
+		                   style="width: 100%;margin-bottom: 5px"/>
+        <mec:commandButton id="bt_prescrever_med"
+                           value="#{messages.LABEL_PRESCREVER}"
+                           action="#{listarCirurgiasController.redirecionarPrescricaoMedica}"
+                           disabled="#{not listarCirurgiasController.botaoPrescreverHabilitado}"
+                           rendered="#{(mf:hasPermission(securityController,'/prescricaomedica/verificaprescricao/verificaPrescricaoMedica.xhtml,render')
+                                     or not mf:hasPermission(securityController,'/prescricaoenfermagem/elaboracaoPrescricaoEnfermagem.xhtml,render')
+                                     and not mf:hasPermission(securityController,'/prescricaomedica/verificaprescricao/verificaPrescricaoMedica.xhtml,render'))
+                                     and not listarCirurgiasController.moduloPrescricaoMedicaNaoEstaAtivoEEhHospitalClinicas()}"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{verificarPrescricaoMedicaController.atendimentoSeq}"
+                    value="#{listarCirurgiasController.atdSeqSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{verificarPrescricaoMedicaController.voltarPara}"
+                    value="blococirurgico-listaCirurgias" for="command" />
+        </mec:commandButton>
+        <mec:commandButton id="bt_prescrever_enf_hospital_clinicas_aghweb"
+                           value="#{messages.LABEL_PRESCREVER}"
+                           onclick="prescricao_enfermagem('#{listarCirurgiasController.urlBaseWebForms}', '#{listarCirurgiasController.atdSeqSelecionado}',                 '#{listarCirurgiasController.obterTokenUsuarioLogado()}', '#{listarCirurgiasController.banco}'); return false;"
+                           disabled="#{listarCirurgiasController.validarUrlBaseWebFormsBanco() or                   not listarCirurgiasController.botaoPrescreverHabilitado}"
+                           rendered="#{mf:hasPermission(securityController,'/prescricaoenfermagem/elaboracaoPrescricaoEnfermagem.xhtml,render')
+                           			 and not mf:hasPermission(securityController,'/prescricaomedica/verificaprescricao/verificaPrescricaoMedica.xhtml,render')
+                           			 and listarCirurgiasController.moduloPrescricaoEnfermagemNaoEstaAtivoEEhHospitalClinicas()}"
+                           styleClass="bt_cinza" 
+                           style="width: 100%;margin-bottom: 5px"/>
+        <mec:commandButton id="bt_prescrever_enf"
+                           value="#{messages.LABEL_PRESCREVER}"
+                           action="#{listarCirurgiasController.redirecionarPrescricaoEnfermagem}"
+                           disabled="#{not listarCirurgiasController.botaoPrescreverHabilitado}"
+                           rendered="#{mf:hasPermission(securityController,'/prescricaoenfermagem/elaboracaoPrescricaoEnfermagem.xhtml,render')
+                           			 and not mf:hasPermission(securityController,'/prescricaomedica/verificaprescricao/verificaPrescricaoMedica.xhtml,render')
+                           			 and not listarCirurgiasController.moduloPrescricaoEnfermagemNaoEstaAtivoEEhHospitalClinicas()}"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{elaboracaoPrescricaoEnfermagemController.atdSeq}"
+                    value="#{listarCirurgiasController.atdSeqSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{elaboracaoPrescricaoEnfermagemController.voltarPara}"
+                    value="blococirurgico-listaCirurgias" for="command" />
+        </mec:commandButton>
+        <mec:commandButton id="bt_evolucao"
+                           value="#{messages.LABEL_EVOLUCAO}"
+                           onclick="evolucao('#{listarCirurgiasController.urlBaseWebForms}', '#{listarCirurgiasController.atdSeqSelecionado}',                  '#{listarCirurgiasController.obterTokenUsuarioLogado()}', '#{listarCirurgiasController.banco}'); return false;"
+                           disabled="#{empty listarCirurgiasController.crgSelecionada or listarCirurgiasController.validarUrlBaseWebFormsBanco() or                   not listarCirurgiasController.habilitaBotaoEvolucao(                    mf:hasPermission(securityController,'/prescricaoenfermagem/elaboracaoPrescricaoEnfermagem.xhtml,render')                        ,mf:hasPermission(securityController,'/prescricaomedica/verificaprescricao/verificaPrescricaoMedica.xhtml,render'))}"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px" />
+        <mec:commandButton id="bt_laudoAIH"
+                           value="#{messages.LABEL_LAUDO_AIH}"
+                           action="#{listarCirurgiasController.redirecionarLaudoAih}"
+                           disabled="#{ !(mf:hasPermission(securityController,'pesquisaSolicitacoesInternacao,pesquisar')                   and listarCirurgiasController.crgSelecionada.crgSeq != null)}"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{laudoAIHPaginatorController.pacCodigo}"
+                    value="#{listarCirurgiasController.pacCodigoSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{laudoAIHPaginatorController.pacCodigoFonetica}"
+                    value="#{null}" for="command" />
+            <f:setPropertyActionListener
+                    target="#{laudoAIHPaginatorController.voltarPara}"
+                    value="listarCirurgias" for="command" />
+            <f:setPropertyActionListener
+                    target="#{laudoAIHPaginatorController.iniciaPesquisando}"
+                    value="#{true}" for="command" />
+        </mec:commandButton>
+        <mec:commandButton
+        		id="visualizarRegistros"
+                action="#{listarCirurgiasController.redirecionarVisualizarRegistros()}"
+                value="Controles"
+                title="#{messages.LABEL_TOOLTIP_VISUALIZAR_CONTROLE}"
+                disabled="#{not mf:hasPermission(securityController,'visualizarControlesPac,render') and not listarCirurgiasController.habilitaBotaoVisualizarRegistros()}"
+                styleClass="bt_cinza"
+                style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{registrosPacienteController.atdSeq}"
+                    value="#{listarCirurgiasController.atdSeqSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{registrosPacienteController.codigoPaciente}"
+                    value="#{listarCirurgiasController.pacCodigoSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{registrosPacienteController.voltarPara}"
+                    value="blococirurgico-listaCirurgias" for="command" />
+        </mec:commandButton>
+        <mec:commandButton id="bt_imprime_pulseira"
+                           value="#{messages.LABEL_PULSEIRA}"
+                           disabled="#{not mf:hasPermission(securityController,'imprimirPulseiraIdentificacaoPaciente,imprimir') or not listarCirurgiasController.crgSelecionada.btImprimirPulseira}"
+                           action="#{impressaoPulseiraController.imprimePulseira}"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{impressaoPulseiraController.aipPacCodigo}"
+                    value="#{listarCirurgiasController.pacCodigoSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{impressaoPulseiraController.atdSeq}"
+                    value="#{listarCirurgiasController.atdSeqSelecionado}"
+                    for="command" />
+        </mec:commandButton>
+        <mec:commandButton id="bt_imprime_etiquetas"
+                           value="#{messages.LABEL_ETIQUETAS}"
+                           oncomplete="PF('modalEtiquetasWG').show();"
+                           disabled="#{not mf:hasPermission(securityController,'impressaoEtiquetasIdentificacaoMedItensPacMista,imprimir') or empty listarCirurgiasController.crgSelecionada}"
+                           action="#{impressaoEtiquetasIdentificacaoController.habiltaEtiquetaPct}"
+                           render="modalEtiquetas" ajax="true" styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{impressaoEtiquetasIdentificacaoController.pacCodigoSelecionado}"
+                    value="#{listarCirurgiasController.pacCodigoSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{impressaoEtiquetasIdentificacaoController.atdSeqSelecionado}"
+                    value="#{listarCirurgiasController.atdSeqSelecionado}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{impressaoEtiquetasIdentificacaoController.cirurgiaSelecionada}"
+                    value="#{listarCirurgiasController.crgSelecionada}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{impressaoEtiquetasIdentificacaoController.dtProcedimento}"
+                    value="#{listarCirurgiasController.tela.dtProcedimento}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{impressaoEtiquetasIdentificacaoController.unidade}"
+                    value="#{listarCirurgiasController.tela.unidade}" for="command" />
+            <f:setPropertyActionListener
+                    target="#{impressaoEtiquetasIdentificacaoController.prontuarioSelecionado}"
+                    value="#{listarCirurgiasController.prontuarioSelecionado}"
+                    for="command" />
+        </mec:commandButton>
+        <mec:commandButton id="bt_anotacoes"
+                           value="#{messages.LABEL_OBSERVACAO}"
+                           action="#{listarCirurgiasController.redirecionarCadastroAnotacoes()}"
+                           disabled="#{empty listarCirurgiasController.crgSelecionada.crgSeq or not mf:hasPermission(securityController,'manterAnotacoesAgendamentoEletivo,executar')                   or not mf:hasPermission(securityController,'manterAnotacoesAgendamentoEletivo,consultar')                  }"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px">
+            <f:setPropertyActionListener
+                    target="#{cadastroAnotacoesController.mbcCirurgiaCodigo}"
+                    value="#{listarCirurgiasController.crgSelecionada.crgSeq}"
+                    for="command" />
+            <f:setPropertyActionListener
+                    target="#{cadastroAnotacoesController.voltarPara}"
+                    value="listarCirurgias" for="command" />
+        </mec:commandButton>
+        <mec:commandButton id="bt_impPreAne"
+                           value="#{messages.LABEL_IMP_PRE_ANA}"
+                           action="#{listarCirurgiasController.redirecionarRelatorioAvaliacaoPreAnestesica}"
+                           disabled="#{empty listarCirurgiasController.crgSelecionada or not (listarCirurgiasController.isImpPreAne and(mf:hasPermission(securityController,'relatorioAvaliacaoPreAnestesica,visualizar') or mf:hasPermission(securityController,'relatorioAvaliacaoPreAnestesica,imprimir'))) }"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px" />
+
+        <mec:commandButton id="bt_anestesia"
+                           value="#{messages.LABEL_ANESTESIA}"
+                           disabled="#{not mf:hasPermission(securityController,'realizarAtoAnestesico,visualizar') or not listarCirurgiasController.habilitarAnestesia()}"
+                           action="#{listarCirurgiasController.processarUrlBaseAnestesia()}"
+                           onclick="{PF('modalConfirmacaoCancelarFichaAnestesicaWG').show();return false;}"
+                           styleClass="bt_cinza"
+                           style="width: 100%;margin-bottom: 5px"/>
+        <mec:commandButton
+        		id="legendaCirurgia"
+                value="#{messages.LABEL_PORTAL_PLANEJAMENTO_CIRG_LEGENDA}"
+                onclick="{PF('modalLegendaCirurgiasWG').show();return false;}"
+                styleClass="bt_cinza" 
+                style="width: 100%;margin-bottom: 5px"/>
+      </aghu:panelGeral>   
+    </p:outputPanel>
+</aghu:column>
+</div>
+		<aghu:linha>
+			<p:outputPanel id="panelCancelamento" layout="inline">
+				<mec:field id="motivoCancelamentoField" size="100"
+					label="#{messages.LABEL_MOTIVO_CANC}"
+					title="#{messages.TITLE_MOTIVO_CANC_LCIR}">
+					<p:selectOneMenu id="motivoCancelamento"
+						value="#{listarCirurgiasController.motivoCancelamentoVO}"
+						onkeydown="enterInSelectField(event, '#{stopEnter}');"
+						disabled="#{empty listarCirurgiasController.crgSelecionada.listaMotivoCancelamentoVO}"
+						styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all">
+						<f:converter converterId="motivoCancelamentoVOConverter" />
+						<f:selectItem id="selecione_motivoCanc"
+							itemLabel="#{messages.LABEL_SELECIONE}" itemValue="" />
+						<f:selectItems
+							value="#{listarCirurgiasController.crgSelecionada.listaMotivoCancelamentoVO}"
+							var="item" itemLabel="#{item.descricao}" />
+						<p:ajax event="change" update="@(#panelCancelamento) "
+							process="@this"
+							listener="#{listarCirurgiasController.popularListaValoresQuestaoEComplemento}" />
+					</p:selectOneMenu>
+				</mec:field>
+				<mec:selectOneMenu id="questao"
+					items="#{listarCirurgiasController.crgSelecionada.listaValorValidoCanc}"
+					label="#{listarCirurgiasController.crgSelecionada.questao.descricao}"
+					title="#{messages.TITLE_ESPECIFICAR_LCIR}"
+					rendered="#{listarCirurgiasController.questao ne null}"
+					itemLabel="valor"
+					value="#{listarCirurgiasController.valorValidoCanc}"
+					converter="mbcValorValidoCancConverter" ajax="true"
+					process="@this"
+					disabled="#{empty listarCirurgiasController.crgSelecionada.listaValorValidoCanc}">
+				</mec:selectOneMenu>
+				<mec:inputText id="complementoCanc" size="40" maxlength="40"
+					label="#{messages.LABEL_DESCRICAO}"
+					title="#{messages.TITLE_DESCRICAO_LCIR}"
+					value="#{listarCirurgiasController.complementoCanc}"
+					rendered="#{listarCirurgiasController.motivoCancelamentoVO ne null}"
+					caixaAlta="false" removerCaratersEspeciais="false" />
+				<aghu:acao>
+					<div style="padding-top: 18px;">
+						<mec:commandButton id="bt_alterar"
+							value="#{messages.LABEL_ALTERAR}"
+							action="#{listarCirurgiasController.prepararAlterarCirurgia}"
+							disabled="#{listarCirurgiasController.crgSelecionada eq null or listarCirurgiasController.motivoCancelamentoVO eq null   
+							  or empty listarCirurgiasController.crgSelecionada.listaMotivoCancelamentoVO}"
+							status="blockstatus" profile="ok" process="panelCancelamento"
+							ajax="true"
+							render="formListaCirurgias,listaCirurgias,filtroToggle,botoesAcao,panelCancelamento,outpanelListaCirurgias" />
+					</div>
+				</aghu:acao>
+			</p:outputPanel>
+		</aghu:linha>
+	</aghu:panelGeral>
+</h:form>
+<p:outputPanel id="panelModais">
+ <p:dialog id="modalConfirmacaoCancelamento" width="400" height="170" modal="true" resizable="false" widgetVar="modalConfirmacaoCancelamentoWG"> 
+    <f:facet name="header"> 
+      <h:panelGroup> 
+        <h:outputText value="#{messages.LABEL_CONFIRMA_CANCELAMENTO}"/> 
+      </h:panelGroup> 
+    </f:facet>  
+    <h:outputText value="#{messages.LABEL_MENSAGEM_CONFIRMA_CANCELAMENTO}"/>
+    <br clear="none"/><br clear="none"/><br clear="none"/>  
+    <h:panelGroup> 
+      <h:form prependId="false" id="formModalConfirmacaoCancelamento"> 
+        <mec:commandButton 
+        	id="bt_ok_confirmacao_cancelamento"
+        	value="#{messages.LABEL_OK}" profile="ok" 
+        	action="#{listarCirurgiasController.alterarCirurgia}"
+        	oncomplete="PF('modalConfirmacaoCancelamentoWG').hide();" 
+        	process="@this" ajax="true"
+			render="formListaCirurgias,listaCirurgias,filtroToggle,botoesAcao,panelCancelamento"/>  
+        <mec:commandButton 
+        	id="bt_cancela_confirmacao_cancelamento"
+        	value="#{messages.LABEL_CANCELAR}" profile="cancel" 
+        	onclick="PF('modalConfirmacaoCancelamentoWG').hide(); return false;"  
+        	ajax="true"/> 
+        </h:form> 
+      </h:panelGroup> 
+  </p:dialog>  
+<p:dialog id="modalLegendaCirurgias" style="text-align:center;"
+          height="500" width="800" autosized="true" modal="true"
+          resizable="false" widgetVar="modalLegendaCirurgiasWG"
+          closable="true">
+<f:facet name="header">
+    <h:outputText
+            value="#{messages.LABEL_PORTAL_PLANEJAMENTO_CIRG_LEGENDA}" />
+</f:facet>
+<aghu:linha>
+    <div style="text-align: -moz-center; margin: 15px auto 10px">
+        <aghu:panelGeral>
+            <h:form id="legencaCirurgias" prependId="false">
+
+                <table width="700px" cellpadding="2" cellspacing="5">
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.CANCELADA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TILE_CANCELADA}" />
+                        </td>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.CERIH}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_CERIH}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.REALIZADA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_REALIZADA}" />
+                        </td>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.GMR}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_GMR}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.PACIENTE_CAMA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_PACIENTE_CAMA}" />
+                        </td>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.SILK_BLUE}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_SILK_BLUE}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.TELEFONE}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_TELEFONE}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.AGENDA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_AGENDA}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.MEDICO}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_MEDICO}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td bgcolor="#FF0000" rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.MEDICO}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{messages.TITLE_PACIENTE_TRANSOPERATORIO_NAO_ESTA_INTERNADO}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.FOLHA_DUPLA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_FOLHA_DUPLA}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.FOLHA_PREENCHIDA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_FOLHA_PREENCHIDA}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.FOLHA_VERMELHO_PREENCHIDA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_FOLHA_VERMELHO_PREENCHIDA}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.FOLHA_BRANCO}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_FOLHA_BRANCO}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.PACIENTE_SEM_INT}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_PACIENTE_SEM_INT}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.FOLHA_DUPLA_EVOLUCAO}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_FOLHA_DUPLA_EVOLUCAO}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.PROJ_PESQ}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_PROJ_PESQ}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.PRANCHETA_BRANCA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_PRANCHETA_BRANCA}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.PRANCHETA_AMARELA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_PRANCHETA_AMARELA}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.PRANCHETA_VERMELHA}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_PRANCHETA_VERMELHA}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="1" colspan="1"><mec:commandLink
+                                style="width: 25px"
+                                styleClass="silk-icon #{listarCirurgiasController.legendaIcos.CHIP}"
+                                ajax="true" /></td>
+                        <td rowspan="1" colspan="1"><h:outputText
+                                value="#{listarCirurgiasController.legendaTitles.TITLE_CHIP}" />
+                        </td>
+                    </tr>
+                </table>
+                <br clear="none" />
+            </h:form>
+        </aghu:panelGeral>
+    </div>
+</aghu:linha>
+<br clear="none" />
+</p:dialog>
+<p:dialog id="modalConfirmacaoCancelarFichaAnestesica" width="400"
+          height="160" modal="true" resizable="false"
+          widgetVar="modalConfirmacaoCancelarFichaAnestesicaWG">
+    <f:facet name="header">
+        <h:panelGroup>
+            <h:outputText value="#{messages.LABEL_CONFIRMACAO}" />
+        </h:panelGroup>
+    </f:facet>
+    <h:form>
+        <p:outputPanel id="panelExecutarAnestesia">
+            <h:outputText
+                    value="#{listarCirurgiasController.executarAnestesia()}" />
+            <br clear="none" />
+            <br clear="none" />
+            <br clear="none" />
+        </p:outputPanel>
+        <h:panelGroup>
+            <mec:commandButton id="bt_sim_confirma_anestesia"
+                               profile="ok"
+                               value="#{messages.LABEL_SIM}"
+                               action="#{listarCirurgiasController.processarUrlBaseAnestesia()}"
+                               onclick="PF('modalConfirmacaoCancelarFichaAnestesicaWG').hide();"
+                               ajax="true" render="desenho5" />
+            <mec:commandButton id="bt_nao_confirma_anestesia"
+                               profile="cancel"
+                               value="#{messages.LABEL_NAO}"
+                               onclick="PF('modalConfirmacaoCancelarFichaAnestesicaWG').hide();"
+                               ajax="true" render="desenho5" />
+        </h:panelGroup>
+    </h:form>
+</p:dialog>
+<p:dialog id="modalConfirmacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoWG">
+    <f:facet name="header">
+        <h:outputText value="#{pesquisaPacienteController.tituloModal}" />
+    </f:facet>
+    <p:outputPanel id="corpoModalConfirmacao" layout="inline">#{pesquisaPacienteController.getModalMessage()}
+        <br/>
+        <br/>
+        <br/>
+        <h:form prependId="false" id="formModalConfirmacao">
+            <mec:commandButton id="bt_internar"
+                               rendered="#{pesquisaPacienteController.exibirBotaoModalInternar}"
+                               value="#{messages.LABEL_SIM}"
+                               action="#{pesquisaPacienteController.redirecionarCadastroInternacao}"
+                               profile="search">
+                <f:setPropertyActionListener
+                        target="#{pesquisaPacienteController.cameFrom}"
+                        value="blococirurgico-listaCirurgias" for="command" />
+            </mec:commandButton>
+            <mec:commandButton id="bt_internar_edicao" rendered="#{pesquisaPacienteController.exibirBotaoModalInternarEdicao}" value="#{messages.LABEL_SIM}" action="#{pesquisaPacienteController.redirecionarEdicaoInternacao}" profile="search">
+                <f:setPropertyActionListener
+                        target="#{pesquisaPacienteController.cameFrom}"
+                        value="blococirurgico-listaCirurgias" for="command" />
+            </mec:commandButton>
+            <mec:commandButton id="bt_internar_at_urgencia" rendered="#{pesquisaPacienteController.exibirBotaoModalInternarAtendimentoUrgencia}" value="#{messages.LABEL_INTERNAR}" action="#{pesquisaPacienteController.redirecionarInternacaoAtendimentoUrgencia}" profile="search">
+                <f:setPropertyActionListener
+                        target="#{pesquisaPacienteController.cameFrom}"
+                        value="blococirurgico-listaCirurgias" for="command" />
+            </mec:commandButton>
+            <mec:commandButton id="bt_leitos" rendered="#{pesquisaPacienteController.exibirBotaoModalDispLeito}" value="#{messages.LABEL_DIS_LEITOS}" action="#{pesquisaPacienteController.redirecionarEdicaoPaciente}" profile="search">
+                <f:setPropertyActionListener
+                        target="#{pesquisaPacienteController.cameFrom}"
+                        value="blococirurgico-listaCirurgias" for="command" />
+            </mec:commandButton>
+            <mec:commandButton id="bt_continuar" rendered="#{pesquisaPacienteController.exibirBotaoModalContinuar}" value="#{messages.LABEL_CONTINUAR}" action="#{pesquisaPacienteController.redirecionarInternacaoAtendimentoUrgencia}" profile="search">
+                <f:setPropertyActionListener
+                        target="#{pesquisaPacienteController.cameFrom}"
+                        value="blococirurgico-listaCirurgias" for="command" />
+            </mec:commandButton>
+            <mec:commandButton id="bt_cancelarModal" rendered="#{pesquisaPacienteController.exibirBotaoModalCancelar}" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoWG').hide();" profile="cancel" ajax="true"/>
+            <mec:commandButton id="bt_desistirModal" rendered="#{pesquisaPacienteController.exibirBotaoModalDesistir}" value="#{messages.LABEL_DESISTIR}" onclick="PF('modalConfirmacaoWG').hide();" profile="cancel" ajax="true"/>
+            <p:outputPanel layout="block" style="margin:0 auto; width:40px;" rendered="#{pesquisaPacienteController.exibirBotaoModalOk}">
+                <mec:commandButton id="bt_okModal" value="#{messages.LABEL_OK}" action="#{pesquisaPacienteController.setExibirBotaoModalOk(Boolean.FALSE)}" onclick="PF('modalConfirmacaoWG').hide();" ajax="true" styleClass="bt_cinza"/>
+            </p:outputPanel>
+        </h:form>
+    </p:outputPanel>
+</p:dialog>
+<p:dialog id="modalEtiquetas" style="text-align:center;" height="210"
+          width="350" modal="true" resizable="false"
+          widgetVar="modalEtiquetasWG">
+    <f:facet name="header">
+        <h:outputText value="#{messages.LABEL_IMPRESSAO_ETIQUETAS}" />
+    </f:facet>
+    <h:form id="frmModalEtiquetas">
+        <aghu:linha>
+            <f:facet name="controls">
+                <h:panelGroup>
+                    <mec:commandLink
+                            actionListener="#{impressaoEtiquetasIdentificacaoController.cancelar()}"
+                            ajax="true">
+                        <h:graphicImage value="/resources/img/close.png"
+                                        onclick="PF('modalEtiquetasWG').hide();" styleClass="hidelink"
+                                        id="hidelink" />
+                    </mec:commandLink>
+                </h:panelGroup>
+            </f:facet>
+            <div style="text-align: -moz-center; margin: 15px auto 10px">
+                <aghu:panelGeral>
+                    <p:selectManyCheckbox name="listaTipoEtiquetas" 
+                                          id="listaTipoEtiquetas" layout="pageDirection"
+                                          value="#{impressaoEtiquetasIdentificacaoController.listaTipoEtiquetas}">
+                        <f:selectItem
+                                itemValue="#{impressaoEtiquetasIdentificacaoController.getDominioTipoEtiqueta('E')}"
+                                itemLabel="#{impressaoEtiquetasIdentificacaoController.getDescricaoDominioTipoEtiqueta('E')}" />
+                        <f:selectItem
+                                itemValue="#{impressaoEtiquetasIdentificacaoController.getDominioTipoEtiqueta('I')}"
+                                itemLabel="#{impressaoEtiquetasIdentificacaoController.getDescricaoDominioTipoEtiqueta('I')}" />
+                        <f:selectItem
+                                itemValue="#{impressaoEtiquetasIdentificacaoController.getDominioTipoEtiqueta('M')}"
+                                itemLabel="#{impressaoEtiquetasIdentificacaoController.getDescricaoDominioTipoEtiqueta('M')}" />
+                        <f:selectItem
+                                itemValue="#{impressaoEtiquetasIdentificacaoController.getDominioTipoEtiqueta('T')}"
+                                itemLabel="#{impressaoEtiquetasIdentificacaoController.getDescricaoDominioTipoEtiqueta('T')}"
+                                itemDisabled="#{impressaoEtiquetasIdentificacaoController.desabilitaPct}" />
+                    </p:selectManyCheckbox>
+                    <br clear="none" />
+                    <aghu:linha>
+						<p:commandButton id="bt_imprimir"
+							value="#{messages.LABEL_IMPRIMIR}" ajax="true"
+							action="#{impressaoEtiquetasIdentificacaoController.imprimirEtiquetas}"
+							oncomplete="PF('modalEtiquetasWG').hide();" update="@this"
+							process="@this listaTipoEtiquetas"
+							styleClass="button-acao bt_cinza"
+							icon="aghu-icons-16x16 aghu-icon-print" />
+
+                        <mec:commandButton id="bt_cancelarImpressaoEtiquetas"
+                                           value="#{messages.LABEL_CANCELAR}"
+                                           onclick="PF('modalEtiquetasWG').hide();"
+                                           action="#{impressaoEtiquetasIdentificacaoController.cancelar}"
+                                           profile="cancel" ajax="true" />
+                    </aghu:linha>
+                </aghu:panelGeral>
+            </div>
+        </aghu:linha>
+    </h:form>
+</p:dialog>
+</p:outputPanel>
+<script xml:space="preserve">
+			//<![CDATA[
+			function formatarMenuPacienteSemProntuario(){
+				var divItem = jQuery('div#itemContext');
+				var ancora = jQuery(divItem).find('a');
+				if (ancora != null && ancora.text().indexOf('true') > -1) {
+					var pai = divItem.parent();
+					var avo = pai.parent();
+					divItem.remove();
+					pai.remove();
+					avo.append('<div id="itemContext" class="rich-menu-item rich-menu-item-enabled" style="margin-left:25px">Paciente sem prontuário</div>');
+				}
+			}
+
+			function evolucao(url, atdSeq, token, banco) {
+				var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+p_atd_seq=' + atdSeq;
+				if (atdSeq != null) {
+					abrirJanelaModal(url,{
+							parameters: {
+								config: 'aghweb',
+								form: 'mamf_atu_internacao.fmx',
+								otherparams: otherParams
+							},
+							onClose: function() {
+
+							}
+						});
+				}
+			}
+
+
+			function solicitacao(url, atdSeq, token, banco) {
+				var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+p_atd_seq=' + atdSeq;
+				if (atdSeq != null) {
+					abrirJanelaModal(url,{
+							parameters: {
+								config: 'aghweb',
+								form: 'aelf_solicitar_exame.fmx',
+								otherparams: otherParams
+							},
+							onClose: function() {
+
+							}
+						});
+				}
+			}
+
+			function prescricao_medica(url, atdSeq, token, banco) {
+				var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+p_atd_seq=' + atdSeq;
+				if (atdSeq != null) {
+					abrirJanelaModal(url,{
+							parameters: {
+								config: 'aghweb',
+								form: 'mpmf_elab_prescricao.fmx',
+								otherparams: otherParams
+							},
+							onClose: function() {
+
+							}
+						});
+				}
+			}
+
+			function prescricao_enfermagem(url, atdSeq, token, banco) {
+				var otherParams = 'aghw_token=' + token + '+p_banco=' + banco + '+p_atd_seq=' + atdSeq;
+				if (atdSeq != null) {
+					abrirJanelaModal(url,{
+							parameters: {
+								config: 'aghweb',
+								form: 'epef_elab_prescricao.fmx',
+								otherparams: otherParams
+							},
+							onClose: function() {
+
+							}
+						});
+				}
+			}
+
+			function anestesia(url) {
+				if (url.substring(0,4)!='http'){
+					url='http://' + url;
+				}
+				abrirJanelaModal(url,null);
+			}
+
+			function pendenciaAssinatura(url, token) {
+				abrirJanelaModal(url,{
+					parameters: {
+						aghw_token: token
+					},
+					onClose: function() {
+
+					}
+				});
+			}
+			
+			// ]]>
+		</script>
+</ui:define>
+</ui:composition>
+</html>

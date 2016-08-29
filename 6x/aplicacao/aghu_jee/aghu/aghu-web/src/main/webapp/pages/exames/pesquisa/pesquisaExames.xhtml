@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" 
+xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" 
+xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+xmlns:mf="http://www.mec.gov.br/taglib">  
+
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+  
+    <ui:define name="head"> 
+      <title>Pesquisa Exames</title>
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaExameController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaExameController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <pe:remoteCommand name="atualizarPanel" process="@this"> 
+          <pe:assignableParam name="var1" assignTo="#{pesquisaExameController.filtroAberto}"/> 
+        </pe:remoteCommand>
+         <c:set var="activeIndex" value="#{pesquisaExameController.controlaAccordion()}" scope="request" />
+        <p:accordionPanel activeIndex="#{activeIndex}" id="togglePanelPesquisa" widgetVar="" oncollapse="atualizarPanel(false);" style="margin: 5px 0px !important;" dynamic="true" onTabChange="atualizarPanel(true);" prependId="false"> 
+          <p:tab title="#{messages.LABEL_FILTRO_DE_PESQUISA}">
+            <p:outputPanel id="panelPacienteFiltro" rendered="#{mf:hasPermission(securityController,'pesquisarExamesPorPaciente,pesquisar')}" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral style="margin-top: 16px !important;" legend="#{messages.LABEL_PACIENTE}"> 
+                <aghu:linha> 
+                  <p:outputPanel id="pacienteDecorate" layout="inline"> 
+                    <mec:pesquisaPaciente id="pesqPaciente" 
+	                    valueChangeListener="#{pesquisaExameController.pesquisaPaciente}" 
+	                    value="#{pesquisaExameController.paciente}" 
+	                    render="pacienteDecorate" 
+	                    readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}"/>  
+                    <br clear="none"/>  
+                    <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" 
+	                    immediate="true" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" 
+	                    action="#{pesquisaExameController.redirecionarPesquisaFonetica}" 
+	                    styleClass=" bt_cinza icon-pesquisa-fonetica">
+	                      <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="exames-pesquisaExames" for="command"/>  
+	                      <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="true" for="command"/> 
+                    </mec:commandButton> 
+                  </p:outputPanel> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:suggestionBox var="_itemUnidadeFuncional" 
+                  			         itemValue="#{_itemUnidadeFuncional}" 
+                  			         label="#{messages.LABEL_UNIDADE_FUNCIONAL}" 
+                  			         title="#{messages.TITLE_UNIDADE_FUNCIONAL}" 
+                  			         suggestionAction="pesquisarUnidadeFuncional"
+                  			         posDeleteAction="limparSBLeito" 
+                  			         descricaoInput="seq"
+                  			         render="leitoPac" 
+                  			         descricaoLabel="andarAlaDescricao" 
+                  			         width="350" 
+                  			         converter="#{aghUnidadesFuncionaisPorAndarAlaDescricaoCaracteristicaUnidadeExecutoraExamesConverter}" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" 
+                  			         id="sbUnidadeFuncional" 
+                  			         controller="#{pesquisaExameController}" 
+                  			         value="#{pesquisaExameController.filtro.aelUnffuncionalPac}">                  				 
+                    <p:column>#{_itemUnidadeFuncional.andarAlaDescricao}</p:column>  
+                    <p:column>#{_itemUnidadeFuncional.seq}</p:column> 
+                  </mec:suggestionBox>
+                  
+                  
+                  <mec:suggestionBox id="leitoPac" 
+                  			         var="_itemUnidadeFuncional"
+                  			         itemValue="#{_itemUnidadeFuncional}"
+                  			         label="#{messages.LABEL_LEITO}"
+                  			         suggestionAction="pesquisarLeito"
+                  			         descricaoInput="leitoID" 
+                  			         descricaoLabel="leitoID" 
+                  			         width="350"
+                  			         title="Informe o leito para efetuar a pesquisa." 
+                  			         readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" 
+                  			         controller="#{pesquisaExameController}" 
+                  			         value="#{pesquisaExameController.filtro.leitoPac}"> 
+                    <p:column>#{_itemUnidadeFuncional.leitoID}</p:column> 
+                  </mec:suggestionBox>
+                    
+                  <mec:inputNumero label="#{messages.LABEL_CONSULTA}" title="#{messages.TITLE_CONSULTA_PE}" maxlength="8" value="#{pesquisaExameController.filtro.consultaPac}" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" id="consulta"/> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:suggestionBox var="_itemServidor" 
+		                  			 itemValue="#{_itemServidor}" 
+		                  			 label="#{messages.LABEL_SERVIDOR}" 
+		                  			 title="Selecione o servidor para realizar a pesquisa por este campo" 
+		                  			 descricaoInput="matriculaVinculo" 
+		                  			 width="500" 
+		                  			 maxlength="15" 
+		                  			 size="10" 
+		                  			 descricaoLabel="pessoaFisica.nome" 
+		                  			 suggestionAction="obterServidorPac" 
+		                  			 readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" 
+		                  			 id="servidorPac" 
+		                  			 controller="#{pesquisaExameController}" 
+		                  			 value="#{pesquisaExameController.filtro.servidorPac}"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_VINCULO}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemServidor.id.vinCodigo}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_MATRICULA}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemServidor.id.matricula}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_NOME}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemServidor.pessoaFisica.nome}"/> 
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </aghu:linha> 
+              </aghu:panelGeral> 
+            </p:outputPanel>  
+            <p:outputPanel id="panelSolicitante" rendered="true" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral legend="#{messages.LABEL_SOLICITANTE}"> 
+                <aghu:linha> 
+                  <mec:suggestionBox id="servidorSolic"
+                                     var="_itemSolicitante" 
+                                     itemValue="#{_itemSolicitante}" 
+                                     label="#{messages.LABEL_NOME_SERVIDOR}" 
+                                     title="Selecione o servidor para realizar a pesquisa por este campo" 
+                                     descricaoInput="matriculaVinculo" 
+                                     width="500" maxlength="15" size="10" 
+                                     descricaoLabel="pessoaFisica.nome" 
+                                     suggestionAction="obterServidorSolic" 
+                                     readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}"                                       
+                                     controller="#{pesquisaExameController}" 
+                                     value="#{pesquisaExameController.filtro.servidorSolic}"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_VINCULO}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemSolicitante.id.vinCodigo}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_MATRICULA}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemSolicitante.id.matricula}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_NOME}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemSolicitante.pessoaFisica.nome}"/> 
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <mec:suggestionBox var="_itemConselho" itemValue="#{_itemConselho}" label="#{messages.LABEL_CONSELHO}" title="#{messages.LABEL_TITLE_CONSELHO_SUGGESTION}" suggestionAction="pesquisarConselhos" descricaoInput="sigla" descricaoLabel="nome" width="400" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" id="sbConselho" controller="#{pesquisaExameController}" value="#{pesquisaExameController.filtro.conselhoSolic}"> 
+                    <p:column>#{_itemConselho.sigla}</p:column>  
+                    <p:column>#{_itemConselho.nome}</p:column> 
+                  </mec:suggestionBox>  
+                  <mec:inputText label="#{messages.LABEL_NUMERO_REGISTRO}" size="10" title="#{messages.TITLE_NUMERO_CONSELHO}" maxlength="12" value="#{pesquisaExameController.filtro.numeroConselhoSolic}" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" id="conselho"/> 
+                </aghu:linha> 
+              </aghu:panelGeral> 
+            </p:outputPanel>  
+            <aghu:panelGeral legend="#{messages.LABEL_INFORMACAO_COMPLEMENTAR}"> 
+              <aghu:linha> 
+                <mec:inputNumero label="#{messages.LABEL_SOLICITACAO}" size="10" title="#{messages.TITLE_SOLICITACAO_PE}" maxlength="8" value="#{pesquisaExameController.filtro.numeroSolicitacaoInfo}" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" id="solicitacao"/>  
+                <mec:suggestionBox id="exame" var="_itemExamePat" itemValue="#{_itemExamePat}" label="#{messages.LABEL_EXAME_PATOLOGIA_CIRURGICA}" title="#{messages.TITLE_EXAME_PATOLOGIA_CIRURGICA}" suggestionAction="pesquisarAelConfigExLaudoUnico" width="500" descricaoInput="sigla" descricaoLabel="nome" maxlength="200" block="true" controller="#{pesquisaExameController}" value="#{pesquisaExameController.filtro.configExame}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_SIGLA}</b> 
+                    </f:facet> #{_itemExamePat.sigla}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME}</b> 
+                    </f:facet> #{_itemExamePat.nome}
+                  </p:column> 
+                </mec:suggestionBox>  
+
+                <mec:inputText id="numeroAp" 
+                               label="#{messages.LABEL_NUMERO_EXAME_PATOLOGIA_CIRURGICA}" 
+                               title="#{messages.TITLE_NUMERO_EXAME_PATOLOGIA_CIRURGICA}" 
+                               size="10" maxlength="9" 
+                               styleClass="mask_(999999/99)" 
+                               converter="#{numeroApConverter}"
+                               value="#{pesquisaExameController.filtro.numeroAp}" /> 
+
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:selectOneMenu label="#{messages.LABEL_ORIGEM}" title="#{messages.TITLE_ORIGEM_ATENDIMENTO}" value="#{pesquisaExameController.filtro.origemAtendimentoInfo}" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" id="origemAtendimento"> 
+                  <f:converter converterId="dominioConverter" for="inputId"/>  
+                  <f:selectItems var="_itemOrigem" itemLabel="#{_itemOrigem.descricao}" value="#{pesquisaExameController.gerarItensSelectOrigemAtendimento()}"/> 
+                </mec:selectOneMenu>  
+                <mec:selectOneMenu id="indMostraCancelados"                                                                       
+                                   label="#{messages.LABEL_EXAMES_CANCELADOS}" 
+                                   title="#{messages.TITLE_EXAMES_CANCELADOS}"
+                                   noSelectionOption="false"
+                                   enum="DominioSimNao" 
+                                   value="#{pesquisaExameController.indMostraCanceladosInfo}" 
+                                   readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" />
+                <mec:selectOneMenu id="menuRestricao"
+                                   label="#{messages.LABEL_RESTRICAO}"
+                                   title="#{messages.TITLE_RESTRICAO}" 
+                                   noSelectionOption="true" 
+                                   value="#{pesquisaExameController.restricao}"                                     
+                                   enum="DominioRestricaoUsuario"                                     
+                                   readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" />
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox var="_itemExame" itemValue="#{_itemExame}" label="#{messages.LABEL_EXAME}" title="#{messages.TITLE_EXAME}" suggestionAction="pesquisarExames" descricaoInput="descricaoCompleta" descricaoLabel="id.sigla" width="650" maxlength="55" size="55" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" id="sbExame" controller="#{pesquisaExameController}" value="#{pesquisaExameController.filtro.exameSolicitacaoInfo}"> 
+                  <p:column>#{_itemExame.descricaoCompleta}</p:column> 
+                </mec:suggestionBox>  
+                <mec:suggestionBox var="_itemUnidExecutora" itemValue="#{_itemUnidExecutora}" label="#{messages.LABEL_UNID_EXECUTORA}" title="#{messages.TITLE_UNID_EXECUTORA}" suggestionAction="pesquisarUnidadeExecutora" descricaoInput="seq" descricaoLabel="andarAlaDescricao" converter="#{aghUnidadesFuncionaisPorAndarAlaDescricaoCaracteristicaUnidadeExecutoraExamesConverter}" width="480" maxlength="55" size="55" readonly="#{!pesquisaExameController.alterarFiltroPesquisaExames}" id="sbUnidadeExecutora" controller="#{pesquisaExameController}" value="#{pesquisaExameController.filtro.aelUnfExecutoraInfo}"> 
+                  <p:column>#{_itemUnidExecutora.andarAlaDescricao}</p:column>  
+                  <p:column>#{_itemUnidExecutora.seq}</p:column> 
+                </mec:suggestionBox> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </p:tab> 
+        </p:accordionPanel>  
+        <p:outputPanel id="panelPesquisa" layout="inline"> 
+          <mec:commandButton id="bt_pesquisar" 
+                             value="#{messages.LABEL_PESQUISAR}" 
+                             defaultCommand="true" 
+                             action="#{pesquisaExameController.pesquisar}" 
+                             render="panelMain, panelPac, panelSoli" 
+                             profile="search"/>
+          <mec:commandButton id="bt_limpar" 
+                             value="#{messages.LABEL_LIMPAR}" 
+                             disabled="#{!pesquisaExameController.alterarFiltroPesquisaExames}" 
+                             action="#{pesquisaExameController.limpar}" 
+                             render="panelMain, panelPac, panelSoli" 
+                             styleClass="bt_cinza" 
+                             profile="clear"/>
+          <mec:commandButton id="bt_voltar" 
+                             value="#{messages.LABEL_VOLTAR}" 
+                             action="#{pesquisaExameController.voltar}" 
+                             rendered="#{pesquisaExameController.exibirBotaoVoltar}" 
+                             styleClass="bt_cinza" 
+                             profile="back"/>  
+          <mec:commandButton id="bt_atendimento_diverso" value="#{messages.LABEL_ATENDIMENTOS_DIVERSOS}" rendered="#{mf:hasPermission(securityController,'pesquisarAtendimentosDiversosExames,pesquisar')}" disabled="#{!pesquisaExameController.alterarFiltroPesquisaExames}" action="#{pesquisaExameController.pesquisarSolicitacaoDiversos}" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{pesquisaSolicitacaoDiversosController.voltarPara}" value="exames-pesquisaExames" for="command"/>  
+            <f:setPropertyActionListener target="#{pesquisaSolicitacaoDiversosController.codPac}" value="#{pesquisaExameController.pacCodigoFonetica}" for="command"/>  
+            <f:setPropertyActionListener target="#{pesquisaSolicitacaoDiversosController.solicitacao}" value="#{pesquisaExameController.filtro.numeroSolicitacaoInfo}" for="command"/>  
+            <f:setPropertyActionListener target="#{pesquisaSolicitacaoDiversosController.numeroAp}" value="#{pesquisaExameController.filtro.numeroAp}" for="command"/>  
+            <f:setPropertyActionListener target="#{pesquisaSolicitacaoDiversosController.mostraExamesCancelados}" value="#{pesquisaExameController.filtro.indMostraCanceladosInfo}" for="command"/> 
+          </mec:commandButton> 
+        </p:outputPanel> 
+        <p:outputPanel id="panelMain" layout="inline"> 
+          <p:outputPanel id="panelPac" rendered="#{pesquisaExameController.pesquisaPaciente}" layout="inline"> 
+            <ui:include src="/pages/exames/pesquisa/pesquisaExamesPorPaciente.xhtml"/> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelSoli" rendered="#{pesquisaExameController.pesquisaSolicitante}" layout="inline"> 
+            <ui:include src="/pages/exames/pesquisa/pesquisaExamesPorSolicitante.xhtml"/> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      <p:dialog id="modalConfirmacaoImpressaoEtiquetas" name="modalConfirmacaoImpressaoEtiquetas" width="425" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoImpressaoEtiquetasWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CONFIRMAR_IMPRESSAO_ETIQUETA}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <p:outputPanel id="panelMensagemConfirmacaoImpressaoEtiquetas" name="panelMensagemConfirmacaoImpressaoEtiquetas" layout="inline">#{pesquisaExameController.mensagemConfirmacaoImpressaoEtiquetas}</p:outputPanel>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+           
+            <mec:commandButton id="bt_ImprimirEtiquetaAmostra" value="#{messages.LABEL_IMPRIMIR}" action="#{pesquisaExameController.reimprimirAmostra()}" render="@parent:@parent:@parent" profile="search"/>  
+            <mec:commandButton id="bt_cancelarImpressaoEtiquetaAmostra" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoImpressaoEtiquetasWG').hide();" profile="cancel" ajax="true"/> 
+           
+        </h:panelGroup> 
+      </p:dialog>  
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

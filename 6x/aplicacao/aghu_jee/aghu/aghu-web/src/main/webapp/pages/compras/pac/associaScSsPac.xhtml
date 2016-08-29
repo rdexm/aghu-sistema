@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_ASSOCIAR_SC_SS_PAC} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{associaScSsPacController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="jsReady"> 
+       setTimeout(function(){jq('#numeroInicial:numeroInicial:inputId_input').focus()},300);
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{associaScSsPacController}"/>  
+      <h:form prependId="false" id="formPesquisa">        
+        <p:defaultCommand target=":formPesquisa:bt_adicionarItem:button" />
+        <p:outputPanel id="panelDadosPac" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_ASSOCIAR_SC_SS_PAC}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="numeroPac" value="#{associaScSsPacController.numeroPac}" label="#{messages.LABEL_NUM_PAC_ASSOCIAR_SC_SS_PAC}" maxlength="7" size="8" readonly="true"/>  
+              <mec:inputText id="descricaoPac" label="#{messages.LABEL_DESCRICAO_ASSOCIAR_SC_SS_PAC}" value="#{associaScSsPacController.descricaoPac}" maxlength="60" size="60" style="text-transform:uppercase" readonly="true"/>  
+              <mec:inputNumero id="vlrTotalPac" value="#{associaScSsPacController.vlrTotalItens}" inteiros="12" decimais="2" label="#{messages.LABEL_VLR_TOTAL_ASSOCIAR_SC_SS_PAC}" title="#{messages.TITLE_VLR_TOTAL_ASSOCIAR_SC_SS_PAC}"  readonly="true" style="#{associaScSsPacController.indExcedeuVlrMax ? 'background-color:#ff0000 !important;color:#fff !important;' : ''}"/>  
+              <aghu:acao newLine="false"> 
+                <h:outputText value="#{messages.LABEL_MENSAGEM1_VLR_PAC_EXCEDEU_MAX}" style="font-weight:bold; color:#ff0000; text-align:left;" rendered="#{associaScSsPacController.indExcedeuVlrMax}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_MENSAGEM2_VLR_PAC_EXCEDEU_MAX}" style="font-weight:bold; color:#ff0000; text-align:left;" rendered="#{associaScSsPacController.indExcedeuVlrMax}"/> 
+              </aghu:acao> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelFiltro" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_FILTRO_ASSOCIAR_SC_SS_PAC}"> 
+            <aghu:linha>                   
+				<mec:selectOneMenu id="tipoSolicitacaoSCSS" enum="DominioTipoSolicitacao" label="#{messages.LABEL_TIPO_ASSOCIAR_SC_SS_PAC}" title="#{messages.TITLE_TIPO_ASSOCIAR_SC_SS_PAC}" value="#{associaScSsPacController.tipoSolicitacao}" required="true"/>
+				  
+              	<mec:inputNumero name="numeroInicial" id="numeroInicial"
+              	                 label="#{messages.LABEL_NUM_SOLIC_ASSOCIAR_SC_SS_PAC}"        	                 
+              	                 value="#{associaScSsPacController.numeroInicial}" maxlength="7" size="8"/>
+               
+				<div  class="aghu-boxinput" style="padding-top: 25px;">				
+					<p:outputPanel styleClass="aghu-lineinput">
+						<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+					</p:outputPanel>			
+				</div>	
+              	<mec:inputNumero name="numeroFinal" id="numeroFinal"
+              	                 title="#{messages.TITLE_NUM_SOLIC_ASSOCIAR_SC_SS_PAC}"      
+              	                 value="#{associaScSsPacController.numeroFinal}" maxlength="7" size="8"/>       
+          </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>
+        <p:outputPanel id="panelAcao" layout="inline"> 
+          <aghu:acao>
+			<mec:commandButton id="bt_adicionarItem"
+				value="#{messages.LABEL_ADICIONAR_ASSOCIAR_SC_SS_PAC}"				
+				action="#{associaScSsPacController.pesquisar}" 
+				profile="add" />
+				
+			<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR_CAMPOS}" action="#{associaScSsPacController.limpar}" render="panelFiltro, panelResultado" profile="clear"/>  
+            <mec:commandButton id="bt_pesquisar" immediate="true" value="#{messages.LABEL_ABRIR_PESQ_ASSOCIAR_SC_SS_PAC}" action="#{associaScSsPacController.abrirPesquisa}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_VOLTAR}" immediate="true" rendered="#{!(associaScSsPacController.getListaItensPac().size() &gt; 0)}" action="#{associaScSsPacController.voltar}" styleClass="bt_voltar bt_cinza" profile="back"/> 
+          </aghu:acao> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false" id="formResultados"> 
+        <p:outputPanel id="panelResultado" layout="inline"> 
+	        <mec:serverDataTable id="resultList" list="#{associaScSsPacController.listaItensPac}"> 
+	          <c:set var="item" value="#{item}"/>  
+	          <p:column width="3%"> 
+	            <f:facet name="header"> 
+	              <h:selectBooleanCheckbox id="marcadorItem" name="marcadorItem" value="#{associaScSsPacController.valorAlternarTodos}"> 
+	                <p:ajax event="click" update="@(#formResultados)" process="@this" listener="#{associaScSsPacController.alternarSelecaoTodos}"/> 
+	              </h:selectBooleanCheckbox> 
+	            </f:facet>  
+	            <h:selectBooleanCheckbox id="selectItem" value="#{associaScSsPacController.objetoItensSelecionados[item]}"> 
+	              <p:ajax event="click" process="@this"/> 
+	            </h:selectBooleanCheckbox> 
+	          </p:column>  
+	          <p:column width="5%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_NUM_SOLIC_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>  
+	            <mec:commandLink rendered="#{item.qtdSC == null and mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar')}" action="#{associaScSsPacController.redirecionaSolicitacaoServico}"> 
+	              <f:setPropertyActionListener target="#{solicitacaoServicoController.numero}" value="#{item.numero}" for="command"/>  
+	              <f:setPropertyActionListener target="#{solicitacaoServicoController.voltarParaUrl}" value="compras-associaScSsPac" for="command"/>  
+	              <h:outputText value="#{item.numero}"/> 
+	            </mec:commandLink>  
+	            <mec:commandLink rendered="#{item.qtdSC != null and mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}" action="#{associaScSsPacController.redirecionaSolicitacaoCompra}"> 
+	              <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{item.numero}" for="command"/>  
+	              <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-associaScSsPac" for="command"/>  
+	              <h:outputText value="#{item.numero}"/> 
+	            </mec:commandLink>  
+	            <h:outputText value="#{item.numero}" style="float:right;" rendered="#{!mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar') and !mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}"/>  
+	            <p:tooltip value="#{messages.LABEL_ASSOCIADA} #{item.solAssociada != null ? item.solAssociada : ''}" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty item.solAssociada}"/> 
+	          </p:column>  
+	          <p:column width="5%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_TIPO_SOLIC_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>  
+	            <h:outputText value="#{item.qtdSC == null ? 'SS' : 'SC'}"/>  
+	            <p:tooltip value="#{item.qtdSC == null ? messages.TOOLTIP_SS : messages.TOOLTIP_SC}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+	          </p:column>  
+	          <p:column width="5%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_CAIXA_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>  
+	            <h:outputText value="#{item.caixaCod}"/>  
+	            <p:tooltip value="#{item.caixaDesc}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+	          </p:column>  
+	          <p:column width="10%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_COD_MAT_SERV_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>  
+	            <h:outputText value="#{item.codMatOuServ}"/> 
+	          </p:column>  
+	          <p:column width="43%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_MAT_SERV_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>  
+	            <h:outputText value="#{item.nomeMatOuServ}"/> 
+	          </p:column>  
+	          <p:column width="5%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_URGENTE_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>  
+	            <h:outputText value="#{item.indUrgente}"> 
+	              <f:converter converterId="simNaoConverter"/> 
+	            </h:outputText> 
+	          </p:column>  
+	          <p:column width="5%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_ESTOCAVEL_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>  
+	            <h:outputText value="#{item.qtdSC == null ? null : item.indEstocavel}"> 
+	              <f:converter converterId="simNaoConverter"/> 
+	            </h:outputText> 
+	          </p:column>  
+	          <p:column width="5%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_QTDE_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>  
+	            <h:outputText value="#{item.qtdSC == null ? item.qtdSS : item.qtdSC}" /> 
+	          </p:column>
+	            
+	          <p:column width="10%" style="#{item.solAssociada != null ? 'background-color:#FFFF99;' : ''}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_LISTA_VLR_UNIT_ASSOCIAR_SC_SS_PAC}"/> 
+	            </f:facet>
+	            <pe:inputNumber id="valorUnit"
+	                           value="#{item.valorUnitPrevisto}"
+	                           converter="#{bigDecimalConverter}"
+	                           size="10" maxlength="12"
+	                           decimalPlaces="4"                         
+	                           style="text-align:right;"> 
+	            </pe:inputNumber> 			
+			  </p:column> 		  
+	        </mec:serverDataTable> 
+	    </p:outputPanel> 
+        <aghu:acao> 
+         <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" rendered="#{associaScSsPacController.getListaItensPac().size() &gt; 0 and associaScSsPacController.voltarPara eq 'compras-processoAdmCompraCRUD'}" oncomplete="Document.getElementById('numeroInicial').focus();" action="#{associaScSsPacController.gravar}" profile="ok"> 
+            <f:setPropertyActionListener target="#{itemPacPaginatorController.numeroPac}" value="#{processoAdmComprasController.numeroPac}" for="command"/>  
+            <f:setPropertyActionListener target="#{itemPacPaginatorController.voltarParaUrl}" value="processoAdmCompraCRUD" for="command"/> 
+          </mec:commandButton> 
+          <mec:commandButton id="bt_gravar2" value="#{messages.LABEL_GRAVAR}" rendered="#{associaScSsPacController.getListaItensPac().size() &gt; 0 and associaScSsPacController.voltarPara eq 'itemPacList'}" oncomplete="Document.getElementById('numeroInicial').focus();" action="#{associaScSsPacController.gravar}" profile="ok"> 
+            <f:setPropertyActionListener target="#{itemPacPaginatorController.numeroPac}" value="#{associaScSsPacController.numeroPac}" for="command"/>  
+            <f:setPropertyActionListener target="#{itemPacPaginatorController.voltarParaUrl}" value="itemPacList" for="command"/> 
+          </mec:commandButton>   
+          <mec:commandButton immediate="true" id="bt_voltar" value="#{messages.LABEL_VOLTAR}" rendered="#{associaScSsPacController.getListaItensPac().size() &gt; 0 }" action="#{associaScSsPacController.voltar}" styleClass="bt_voltar bt_cinza" ajax="true" profile="back"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

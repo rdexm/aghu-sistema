@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_GERAR_EXAMES} :: #{messages.LABEL_PESQUISAR_SOLICITACOES_ARQUIVO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaSolicitacoesArquivoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaSolicitacoesArquivoPaginatorController}"/>  
+      <h:form prependId="false" id="formHorarioFuncionamentoUnid"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_SOLICITACOES_ARQUIVO}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestionArquivos" label="#{messages.LABEL_ARQUIVOS}" title="#{messages.TITLE_ARQUIVOS}" suggestionAction="pesquisarArquivosPeloNome" descricaoInput="nomeArquivoEntrada" size="40" maxlength="60" readonly="#{pesquisaSolicitacoesArquivoPaginatorController.arquivoSeq != null}" controller="#{pesquisaSolicitacoesArquivoPaginatorController}" value="#{pesquisaSolicitacoesArquivoPaginatorController.aelArquivoIntegracao}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_NOME_ARQUIVO}</b> 
+                </f:facet> #{item.nomeArquivoEntrada}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText id="nomePaciente" label="#{messages.LABEL_NOME_PACIENTE}" title="#{messages.TITLE_NOME_PACIENTE}" value="#{pesquisaSolicitacoesArquivoPaginatorController.nomePaciente}" size="50" maxlength="50" style="text-transform:uppercase"/>  
+            <mec:inputNumero value="#{pesquisaSolicitacoesArquivoPaginatorController.numeroSolicitacao}" label="#{messages.LABEL_NUMERO_SOLICITACAO_ARQUIVO}" title="#{messages.TITLE_NUMERO_SOLICITACAO_ARQUIVO}" maxlength="8" size="8" id="numeroSolicitacao"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectOneMenu label="#{messages.LABEL_STATUS_SOLICITACAO}" title="#{messages.TITLE_STATUS_SOLICITACAO}" id="comboStatus" style="width: 180px" value="#{pesquisaSolicitacoesArquivoPaginatorController.status}"> 
+              <f:selectItem itemLabel="#{messages.LABEL_STATUS_TODOS}" itemValue="TODOS"/>  
+              <f:selectItem itemLabel="#{messages.LABEL_STATUS_SUCESSO}" itemValue="SUCESSO"/>  
+              <f:selectItem itemLabel="#{messages.LABEL_STATUS_ERRO}" itemValue="ERRO"/>  
+              <p:ajax event="change" bypassUpdates="false" process="@this" listener="#{pesquisaSolicitacoesArquivoPaginatorController.atualizarStatus}"/> 
+            </mec:selectOneMenu> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectOneMenu label="#{messages.LABEL_TIPO_SOLICITACAO}" title="#{messages.TITLE_TIPO_SOLICITACAO}" id="comboTipo" style="width: 180px" value="#{pesquisaSolicitacoesArquivoPaginatorController.tipo}"> 
+              <f:selectItem itemLabel="#{messages.LABEL_TIPO_TODOS}" itemValue="TODOS"/>  
+              <f:selectItem itemLabel="#{messages.LABEL_TIPO_COM_AGENDA}" itemValue="COM_AGENDA"/>  
+              <f:selectItem itemLabel="#{messages.LABEL_TIPO_SEM_AGENDA}" itemValue="SEM_AGENDA"/>  
+              <p:ajax event="change" bypassUpdates="false" process="@this" listener="#{pesquisaSolicitacoesArquivoPaginatorController.atualizarTipo}"/> 
+            </mec:selectOneMenu> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisaSolicitacoesArquivoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{pesquisaSolicitacoesArquivoPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_voltar" rendered="#{pesquisaSolicitacoesArquivoPaginatorController.arquivoSeq != null}" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{pesquisaSolicitacoesArquivoPaginatorController.voltar}" styleClass=" alinha-direita bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formListarArquivosProcessados"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaSolicitacoesArquivo" controller="#{pesquisaSolicitacoesArquivoPaginatorController}"> 
+          <c:set var="_obj" value="#{item}"/>  
+          <p:column style="width:30%;#{(_obj.motivo!=null) ? 'background-color:#FF0000' : ''}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME}"/> 
+            </f:facet>  
+            <h:outputText value="#{_obj.nomePaciente}"/>  
+            <p:tooltip rendered="#{_obj.motivo!=null}" direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{messages.LABEL_MOTIVO_RECUSA}:"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{_obj.motivo}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column style="width:15%"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_NASCIMENTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_obj.dataNascimentoPaciente}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column style="width:15%"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_AGENDADA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_obj.dataHoraColeta}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column style="width:10%"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SOLICITACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_obj.aelSolicitacaoExames.seq}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME_ARQ_ENTRADA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_obj.aelArquivoIntegracao.nomeArquivoEntrada}" style="width:30%"/>  
+            <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{messages.LABEL_TOTAL_RECEBIDAS}: #{_obj.aelArquivoIntegracao.totalRecebida}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_TOTAL_GERADAS}: #{_obj.aelArquivoIntegracao.totalGerada}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_TOTAL_RECUSADAS}: #{_obj.aelArquivoIntegracao.totalRecusada}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_TOTAL_SEM_AGENDA}: #{_obj.aelArquivoIntegracao.totalSemAgenda}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column style="width:10%"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SEM_AGENDA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_obj.semAgenda.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

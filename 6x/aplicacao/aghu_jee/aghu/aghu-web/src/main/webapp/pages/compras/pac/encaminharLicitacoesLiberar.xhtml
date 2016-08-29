@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_ENCAMINHAR_LICITACOES_LIBERAR}</title>  
+      <script type="text/javascript" xml:space="preserve">   	
+ 			/*                  <![CDATA[ */
+ 						
+    		function SomenteCSV(e,txt) {    			    	
+				var tecla=(window.event)?event.keyCode:e.which;
+				if ((tecla>47 && tecla<58) || (tecla==188) || (tecla==44)) 
+					return txt.value.search(",,") == -1;
+				else {
+					if (tecla==8 || tecla==0) 
+						return true;
+					else 
+						return false;
+				}
+			}
+    		/* ]]> */
+    	</script> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{encaminhaLicitacoesLiberarController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{encaminhaLicitacoesLiberarController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <p:outputPanel id="opFormPesquisa" layout="inline" styleClass="aghu-panel-geral"> 
+          <c:set xmlns:c="http://java.sun.com/jstl/core" var="disableFields" value="#{not empty encaminhaLicitacoesLiberarController.criteria.numero                         or not empty encaminhaLicitacoesLiberarController.criteria.solicitacaoCompraId                         or not empty encaminhaLicitacoesLiberarController.criteria.solicitacaoServicoId}"></c:set>  
+          <aghu:panelGeral legend="#{messages.LABEL_ENCAMINHAR_LICITACOES_LIBERAR}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="licitacaoId" label="#{messages.LABEL_NRO_PAC_SOLIC_LIBERAR}" title="#{messages.TITLE_NRO_PAC_SOLIC_LIBERAR}" value="#{encaminhaLicitacoesLiberarController.criteria.numero}" size="10" maxlength="7" readonly="#{not empty encaminhaLicitacoesLiberarController.criteria.solicitacaoCompraId            or not empty encaminhaLicitacoesLiberarController.criteria.solicitacaoServicoId}"> 
+                <p:ajax event="change" update="@(#opFormPesquisa)" listener="#{encaminhaLicitacoesLiberarController.refreshFromLicitacaoId()}" process="@form"/>
+              </mec:inputNumero>  
+              <mec:inputText id="tfDescricao" label="#{messages.LABEL_DESC_PAC_SOLIC_LIBERAR}" title="#{messages.TITLE_DESC_PAC_SOLIC_LIBERAR}" value="#{encaminhaLicitacoesLiberarController.criteria.descricao}" size="60" style="text-transform: uppercase" readonly="#{disableFields}"/>  
+              <p:outputPanel>
+				<mec:inputTextData id="cdPeriodoInicio"
+					label="#{messages.LABEL_PERIODO_GERAC_INICIO_PAC_SOLIC_LIBERAR}"
+					title="#{messages.TITLE_PERIODO_GERAC_INICIO_PAC_SOLIC_LIBERAR}"
+					value="#{encaminhaLicitacoesLiberarController.criteria.geracao.inicio}"
+					readonly="#{disableFields}"/>					
+				
+				<div  class="aghu-boxinput" style="padding-top: 25px;">				
+					<p:outputPanel styleClass="aghu-lineinput">
+						<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+					</p:outputPanel>			
+				</div>	
+				
+				<mec:inputTextData id="cdPeriodoFim"
+					value="#{encaminhaLicitacoesLiberarController.criteria.geracao.fim}"
+					readonly="#{disableFields}"/>
+			</p:outputPanel>
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:selectOneMenu id="cbTipo" label="#{messages.LABEL_TIPO_PAC_SOLIC_LIBERAR}" title="#{messages.TITLE_TIPO_PAC_SOLIC_LIBERAR}" value="#{encaminhaLicitacoesLiberarController.criteria.tipo}" enum="DominioTipoSolicitacao" noSelectionOption="true" readonly="#{disableFields}"> 
+                <p:ajax event="change" update="@(#panelMaterial) @(#opServico)" process="@this" listener="#{encaminhaLicitacoesLiberarController.refreshFromTipo()}"/> 
+              </mec:selectOneMenu>  
+              <p:outputPanel id="panelMaterial" layout="inline"> 
+                <mec:inputNumero id="solicitacaoCompraId" label="#{messages.LABEL_NRO_SC_SOLIC_LIBERAR}" title="#{messages.TITLE_NRO_SC_SOLIC_LIBERAR}" value="#{encaminhaLicitacoesLiberarController.criteria.solicitacaoCompraId}" size="10" maxlength="7" rendered="#{encaminhaLicitacoesLiberarController.criteria.tipo == 'SC'}" readonly="#{not empty encaminhaLicitacoesLiberarController.criteria.numero                                     or not empty encaminhaLicitacoesLiberarController.criteria.solicitacaoServicoId}"> 
+                  <p:ajax event="change" update="@(#opFormPesquisa)" process="@this" listener="#{encaminhaLicitacoesLiberarController.refreshFromSolicitacaoCompraId}"/> 
+                </mec:inputNumero>  
+                <mec:suggestionBox id="sbMaterial" label="#{messages.LABEL_MATERIAL_SOLIC_LIBERAR}" title="#{messages.TITLE_MATERIAL_SOLIC_LIBERAR}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarMateriais" rendered="#{encaminhaLicitacoesLiberarController.criteria.tipo == 'SC'}" width="650" readonly="#{disableFields}" controller="#{encaminhaLicitacoesLiberarController}" value="#{encaminhaLicitacoesLiberarController.criteria.material}" render="panelMaterialToolTip"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME}</b> 
+                    </f:facet>  
+                    <h:outputText value="#{(item.nome.length() &gt; 40) ? fn:substring(item.nome,0,40) : item.nome}#{(item.nome.length() &gt; 40) ? '...' : '' }" title="#{item.nome}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet>  
+                    <h:outputText  value="#{(item.descricao.length() &gt; 40) ? fn:substring(item.descricao,0,40) : item.descricao}#{(item.descricao.length() &gt; 40) ? '...' : '' }" title="#{item.getDescricaoSplited(70)}"/> 
+                    </p:column> 
+                </mec:suggestionBox>  
+                 <p:outputPanel id="panelMaterialToolTip">                 
+	          <p:tooltip id="materialToolTip" widgetVar="materialToolTipWG" for="panelMaterial" rendered="#{encaminhaLicitacoesLiberarController.criteria.material != null}">  
+	            <h:outputText value="#{messages.LABEL_NOME}: #{encaminhaLicitacoesLiberarController.criteria.material.nome}"/>  
+	            <h:outputText value="#{messages.LABEL_DESCRICAO}: #{encaminhaLicitacoesLiberarController.criteria.material.descricao}" rendered="#{not empty encaminhaLicitacoesLiberarController.criteria.material.descricao}"/> 
+	          </p:tooltip> 
+             </p:outputPanel>
+         </p:outputPanel>
+              <p:outputPanel id="opServico" layout="inline"> 
+                <mec:inputNumero id="solicitacaoServicoId" label="#{messages.LABEL_NRO_SS_SOLIC_LIBERAR}" title="#{messages.TITLE_NRO_SS_SOLIC_LIBERAR}" value="#{encaminhaLicitacoesLiberarController.criteria.solicitacaoServicoId}" size="10" maxlength="7" rendered="#{encaminhaLicitacoesLiberarController.criteria.tipo == 'SS'}" readonly="#{not empty encaminhaLicitacoesLiberarController.criteria.numero                                     or not empty encaminhaLicitacoesLiberarController.criteria.solicitacaoCompraId}"> 
+                  <p:ajax event="change" update="@(#opFormPesquisa)" process="@this" listener="#{encaminhaLicitacoesLiberarController.refreshFromSolicitacaoServicoId}"/> 
+                </mec:inputNumero>  
+                <mec:suggestionBox id="sbServico" label="#{messages.LABEL_SERVICO_SOLIC_LIBERAR}" title="#{messages.TITLE_SERVICO_SOLIC_LIBERAR}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarServicos" rendered="#{encaminhaLicitacoesLiberarController.criteria.tipo == 'SS'}" readonly="#{disableFields}" controller="#{encaminhaLicitacoesLiberarController}" value="#{encaminhaLicitacoesLiberarController.criteria.servico}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                    </f:facet> #{item.nome}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox id="sbGestor" label="#{messages.LABEL_GESTOR_SOLIC_LIBERAR}" title="#{messages.TITLE_GESTOR_SOLIC_LIBERAR}" descricaoInput="id.matricula" descricaoLabel="pessoaFisica.nome" width="500" suggestionAction="pesquisarGestores" readonly="#{disableFields}" controller="#{encaminhaLicitacoesLiberarController}" value="#{encaminhaLicitacoesLiberarController.criteria.gestor}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MATRICULA}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.id.matricula}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.pessoaFisica.nome}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:suggestionBox id="sbModalidade" label="#{messages.LABEL_MODALIDADE_SOLIC_LIBERAR}" title="#{messages.TITLE_MODALIDADE_SOLIC_LIBERAR}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarModalidadeLicitacaoPorCodigoDescricao" readonly="#{disableFields}" controller="#{encaminhaLicitacoesLiberarController}" value="#{encaminhaLicitacoesLiberarController.criteria.modalidade}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{encaminhaLicitacoesLiberarController.pesquisar}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{encaminhaLicitacoesLiberarController.limparCampos()}" styleClass="bt_cinza" profile="clear"/>  
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" rendered="#{not empty encaminhaLicitacoesLiberarController.voltarPara}" action="#{encaminhaLicitacoesLiberarController.voltar}" styleClass=" alinha-direita bt_cinza" profile="back"/> 
+          </aghu:acao> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false" id="gridPesquisa"> 
+        <fieldset> 
+          <mec:serverDataTable dataModel="dataModel" id="tabelaLicitacoes" rendered="#{encaminhaLicitacoesLiberarController.dataModel.pesquisaAtiva}" controller="#{encaminhaLicitacoesLiberarController}"> 
+            <c:set var="licitacao" value="#{item}"/>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink id="lnkManterPropostas" title="#{messages.TITLE_INCLUIR_PROPOSTA_FORNECEDOR}" rendered="#{mf:hasPermission(securityController,'cadastrarProposta,gravar') and encaminhaLicitacoesLiberarController.verificarPropostaFornecedor(licitacao)}" action="#{encaminhaLicitacoesLiberarController.encaminharPropostaFornecedores}" styleClass=" silk-incluir-proposta-fornecedor silk-icon"> 
+                <f:setPropertyActionListener target="#{manutencaoEncaminhamentoPropostaFornecedorController.numeroLicitacao}" value="#{licitacao.numero}" for="command"/>  
+                <f:setPropertyActionListener target="#{manutencaoEncaminhamentoPropostaFornecedorController.origem}" value="encaminharLicitacoesLiberar" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="lnkVerPropostas" title="#{messages.TITLE_VER_PROPOSTA_FORNECEDOR}" rendered="#{mf:hasPermission(securityController,'consultarProposta,visualizar') and                                  not mf:hasPermission(securityController,'cadastrarProposta,gravar')}" action="#{encaminhaLicitacoesLiberarController.encaminharPropostaFornecedores}" styleClass=" silk-zoom silk-icon"> 
+                <f:setPropertyActionListener target="#{manutencaoEncaminhamentoPropostaFornecedorController.numeroLicitacao}" value="#{licitacao.numero}" for="command"/>  
+                <f:setPropertyActionListener target="#{manutencaoEncaminhamentoPropostaFornecedorController.origem}" value="encaminharLicitacoesLiberar" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="lnkIncluirPropostas" title="#{messages.TITLE_INCLUIR_PROPOSTA_FORNECEDOR}" rendered="#{mf:hasPermission(securityController,'cadastrarProposta,gravar') and (not encaminhaLicitacoesLiberarController.verificarPropostaFornecedor(licitacao))}" action="#{encaminhaLicitacoesLiberarController.encaminharItemPropostaFornecedor}" styleClass=" silk-incluir-proposta-fornecedor silk-icon"> 
+                <f:setPropertyActionListener target="#{itemPropostaFornecedorController.numeroPac}" value="#{licitacao.numero}" for="command"/>  
+                <f:setPropertyActionListener target="#{itemPropostaFornecedorController.voltarParaUrl}" value="encaminharLicitacoesLiberar" for="command"/>  
+                <f:setPropertyActionListener target="#{itemPropostaFornecedorController.novaProposta}" value="true" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink action="#{encaminhaLicitacoesLiberarController.prepararModalParametrosQuadroProvisorio(licitacao)}" title="#{messages.TITLE_VISUALIZAR_QUADRO_PROVISORIO}" propagation="nest" rendered="#{encaminhaLicitacoesLiberarController.verificarPropostaFornecedor(licitacao) and                                         encaminhaLicitacoesLiberarController.verificarUtilizaParecerTecnico() and                                         (mf:hasPermission(securityController,'consultarProposta,visualizar') or mf:hasPermission(securityController,'cadastrarProposta,gravar')) }" styleClass=" silk-page-white-text silk-icon" ajax="true" render="panelFiltroQuadroProvisorio"/>  
+              <mec:commandLink action="#{encaminhaLicitacoesLiberarController.prepararModalParametrosQuadroJulgamento(licitacao)}" title="#{messages.TITLE_VISUALIZAR_QUADRO_JULGAMENTO}" propagation="nest" rendered="#{encaminhaLicitacoesLiberarController.verificarPropostaFornecedor(licitacao) and                                          !encaminhaLicitacoesLiberarController.verificarUtilizaParecerTecnico() and                                                                                (mf:hasPermission(securityController,'consultarProposta,visualizar') or mf:hasPermission(securityController,'cadastrarProposta,gravar'))}" styleClass=" silk-page-white-text silk-icon" ajax="true" render="panelFiltroQuadroJulgamento"/>  
+              <mec:commandLink title="#{messages.TITLE_ENCAMINHAR_PARECER_TECNICO}" action="#{encaminhaLicitacoesLiberarController.setLicitacao(licitacao)}" oncomplete="PF('encaminharParecerTecnicoModalWG').show();" rendered="#{mf:hasPermission(securityController,'cadastrarProposta,gravar') and encaminhaLicitacoesLiberarController.verificarPropostaFornecedor(licitacao)}" styleClass=" silk-incluir-enc-propostas-parecer-tecnico silk-icon" ajax="true"/>  
+              <mec:commandLink title="#{messages.TITLE_ENCAMINHAR_COMISSAO_LICITACAO}" action="#{encaminhaLicitacoesLiberarController.setLicitacao(licitacao)}" oncomplete="PF('encaminharComissaoLicitacaoModalWG').show();" rendered="#{mf:hasPermission(securityController,'cadastrarProposta, gravar') and encaminhaLicitacoesLiberarController.verificarPropostaFornecedor(licitacao)}" styleClass=" silk-incluir-enc-propostas-comissao-licitacao silk-icon" ajax="true"/> 
+            </p:column>  
+            <p:column style="width: 400px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_NRO_PAC}"/> 
+              </f:facet>  
+              <h:outputText id="lctdescricao" value="#{licitacao.numero} - #{(licitacao.descricao.length() &gt; 50) ? fn:substring(licitacao.descricao,0,50) : licitacao.descricao}#{(licitacao.descricao.length() &gt; 50) ? '...' : '' }"/>  
+              <p:tooltip for="lctdescricao" value="#{licitacao.descricao}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_MODALIDADE}"/> 
+              </f:facet>  
+              <h:outputText value="#{licitacao.modalidadeLicitacao.descricao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DATA_GERACAO_ENCAMINHAR_LICITACOES_LIBERAR}"/> 
+              </f:facet>  
+              <h:outputText value="#{licitacao.dtDigitacao}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_GESTOR}"/> 
+              </f:facet>  
+              <h:outputText id="lctServidor" rendered="#{not empty licitacao.servidorDigitado.pessoaFisica.nome}" value="#{(licitacao.servidorDigitado.pessoaFisica.nome.length() &gt; 30) ? fn:substring(licitacao.servidorDigitado.pessoaFisica.nome,0,30) : licitacao.servidorDigitado.pessoaFisica.nome}#{(licitacao.servidorDigitado.pessoaFisica.nome.length() &gt; 30) ? '...' : '' }"/>  
+              <p:tooltip for="lctServidor" rendered="#{not empty licitacao.servidorDigitado.pessoaFisica.nome}" value="#{licitacao.servidorDigitado.pessoaFisica.nome}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </fieldset> 
+      </h:form>  
+      <p:dialog id="encaminharParecerTecnicoModal" width="400" height="150" modal="true" resizable="false" widgetVar="encaminharParecerTecnicoModalWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_ENCAMINHAR_PARECER_TECNICO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MESSAGE_CONFIRMA_ENCAMINHAMENTO_PARECER_TECNICO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false"> 
+            <mec:commandButton id="bt_encaminhar_pt" value="#{messages.LABEL_SIM}" action="#{encaminhaLicitacoesLiberarController.encaminharParecerTecnico()}" oncomplete="PF('encaminharParecerTecnicoModalWG').hide();" profile="search" ajax="true"/>  
+            <mec:commandButton id="bt_nao_encaminhar_pt" onclick="PF('encaminharParecerTecnicoModalWG').hide();; return false;" value="#{messages.LABEL_NAO}" profile="cancel"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="encaminharComissaoLicitacaoModal" width="400" height="150" modal="true" resizable="false" widgetVar="encaminharComissaoLicitacaoModalWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_ENCAMINHAR_COMISSAO_LICITACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MESSAGE_CONFIRMA_ENCAMINHAMENTO_COMISSAO_LICITACAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false"> 
+            <mec:commandButton id="bt_encaminhar_ct" value="#{messages.LABEL_SIM}" action="#{encaminhaLicitacoesLiberarController.encaminharComissaoLicitacao()}" oncomplete="PF('encaminharComissaoLicitacaoModalWG').hide();" profile="search" ajax="true"/>  
+            <mec:commandButton id="bt_cancelar_encaminhar_ct" onclick="PF('encaminharComissaoLicitacaoModalWG').hide();; return false;" value="#{messages.LABEL_NAO}" profile="cancel"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:outputPanel id="panelFiltroQuadroProvisorio" layout="inline"> 
+        <p:dialog id="modalFiltroQuadroProvisorio" width="300" height="270" rendered="#{encaminhaLicitacoesLiberarController.mostraFiltroQuadroProvisorio}" modal="true" resizable="false" widgetVar="modalFiltroQuadroProvisorioWG"> 
+          <f:facet name="header"> 
+	          <h:panelGroup> 
+	            <h:outputText value="#{messages.TITLE_MODAL_QUADRO_JULGAMENTO}"/> 
+	          </h:panelGroup> 
+          </f:facet>
+          <h:form prependId="false" id="formFiltroQuadroProvisorio"> 
+              <aghu:panelGeral legend="#{messages.LABEL_PARAMETROS_IMPRESSAO_QUADRO_PROVISORIO}">            
+              <aghu:linha> 
+                <mec:inputNumero id="numeroPac" label="#{messages.LABEL_NRO_PAC_PARAM_IMPRESSAO}" title="#{messages.TITLE_NRO_PAC_PARAM_IMPRESSAO}" value="#{encaminhaLicitacoesLiberarController.licitacao.numero}" size="10" maxlength="7" required="true" readonly="true"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:field name="fdItens" label="#{messages.LABEL_NRO_ITEM_INICIAL_PAC_PARAM_IMPRESSAO}" title="#{messages.TITLE_NRO_ITEM_INICIAL_PAC_PARAM_IMPRESSAO}" required="false"> 
+                  <h:inputText id="numeroItemInicial" styleClass="numerico" value="#{encaminhaLicitacoesLiberarController.numeroInicial}" name="numeroItemInicial" required="false" size="4" maxlength="4" autocomplete="off"> 
+                    <ui:insert/>  
+                    <f:converter converterId="javax.faces.Short"/>  
+                    <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                    <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                    <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                    <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/> 
+                  </h:inputText>  
+                  <span style="margin-right: 5px">Até</span>  
+                  <h:inputText id="numeroItemFinal" styleClass="numerico" value="#{encaminhaLicitacoesLiberarController.numeroFinal}" name="numeroItemFinal" required="false" size="4" maxlength="4" autocomplete="off"> 
+                    <ui:insert/>  
+                    <f:converter converterId="javax.faces.Short"/>  
+                    <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                    <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                    <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                    <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/> 
+                  </h:inputText> 
+                </mec:field> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputText id="listaItens" label="#{messages.LABEL_LISTA_ITENS_PAC_PARAM_IMPRESSAO}" title="#{messages.TITLE_LISTA_ITENS_PAC_PARAM_IMPRESSAO}" value="#{encaminhaLicitacoesLiberarController.listaItens}" size="15" maxlength="20" required="false" removerCaratersEspeciais="false" onkeypress="return SomenteCSV(event,this)" readonly="false"/> 
+              </aghu:linha> 
+            </aghu:panelGeral>
+            <aghu:acao> 
+                <mec:commandButton id="bt_itcondPagto_yes" value="#{messages.LABEL_BT_IMPRIMIR_QUADRO_PROVISORIO}" action="#{encaminhaLicitacoesLiberarController.verQuadroProvisorio()}" onclick="PF('modalFiltroQuadroProvisorioWG').hide();" profile="search"/>
+                                   
+              </aghu:acao>
+          </h:form> 
+        </p:dialog>  
+        <h:form rendered="#{encaminhaLicitacoesLiberarController.mostraFiltroQuadroProvisorio}"> 
+          <script xml:space="preserve">
+					PF('modalFiltroQuadroProvisorioWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelFiltroQuadroJulgamento" layout="inline"> 
+        <p:dialog id="modalFiltroQuadroJulgamento" width="300" height="270" rendered="#{encaminhaLicitacoesLiberarController.mostraFiltroQuadroJulgamento}" modal="true" resizable="false" widgetVar="modalFiltroQuadroJulgamentoWG"> 
+          <f:facet name="header"> 
+	          <h:panelGroup> 
+	            <h:outputText value="#{messages.TITLE_MODAL_QUADRO_JULGAMENTO}"/> 
+	          </h:panelGroup> 
+          </f:facet>
+          <h:form prependId="false" id="formFiltroQuadroJulgamento"> 
+            <aghu:panelGeral legend="#{messages.LABEL_PARAMETROS_IMPRESSAO_QUADRO_PROVISORIO}">
+              <aghu:linha> 
+                <mec:inputNumero id="numeroPacJulgamento" label="#{messages.LABEL_NRO_PAC_PARAM_IMPRESSAO}" title="#{messages.TITLE_NRO_PAC_PARAM_IMPRESSAO}" value="#{encaminhaLicitacoesLiberarController.licitacao.numero}" size="10" maxlength="7" required="true" readonly="true"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:field name="fdItensJulgamento" label="#{messages.LABEL_NRO_ITEM_INICIAL_PAC_PARAM_IMPRESSAO}" title="#{messages.TITLE_NRO_ITEM_INICIAL_PAC_PARAM_IMPRESSAO}" required="false"> 
+                  <h:inputText id="numeroItemInicialJulgamento" styleClass="numerico" value="#{encaminhaLicitacoesLiberarController.numeroInicial}" name="numeroItemInicial" required="false" size="4" maxlength="4" autocomplete="off"> 
+                    <ui:insert/>  
+                    <f:converter converterId="javax.faces.Short"/>  
+                    <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                    <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                    <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                    <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/> 
+                  </h:inputText>  
+                  <span style="margin-right: 5px">Até</span>  
+                  <h:inputText id="numeroItemFinalJulgamento" styleClass="numerico" value="#{encaminhaLicitacoesLiberarController.numeroFinal}" name="numeroItemFinal" required="false" size="4" maxlength="4" autocomplete="off"> 
+                    <ui:insert/>  
+                    <f:converter converterId="javax.faces.Short"/>  
+                    <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>  
+                    <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>  
+                    <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>  
+                    <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/> 
+                  </h:inputText> 
+                </mec:field> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputText id="listaItensJulgamento" label="#{messages.LABEL_LISTA_ITENS_PAC_PARAM_IMPRESSAO}" title="#{messages.TITLE_LISTA_ITENS_PAC_PARAM_IMPRESSAO}" value="#{encaminhaLicitacoesLiberarController.listaItens}" size="15" maxlength="20" required="false" removerCaratersEspeciais="false" onkeypress="return SomenteCSV(event,this)" readonly="false"/> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+            <aghu:acao>              
+                <mec:commandButton id="bt_itcondPagto_yesJulgamento" value="#{messages.LABEL_BT_IMPRIMIR_QUADRO_PROVISORIO}" action="#{encaminhaLicitacoesLiberarController.verQuadroJulgamento()}" onclick="PF('modalFiltroQuadroJulgamentoWG').hide();" profile="search"/>
+                  
+            </aghu:acao>
+          </h:form> 
+        </p:dialog>  
+        <h:form rendered="#{encaminhaLicitacoesLiberarController.mostraFiltroQuadroJulgamento}"> 
+          <script xml:space="preserve">
+					PF('modalFiltroQuadroJulgamentoWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

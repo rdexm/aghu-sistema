@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages['TITLE_PESQUISAR_DIAGNOSTICO_MANTER_DIAGNOSTICO']}
+			:: #{messages['NOME_ABREVIADO_PROJETO']}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{diagnosticoPaginatorController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{diagnosticoPaginatorController}" />
+		<h:form prependId="false" id="formDadosCabecalho">
+			<aghu:panelGeral
+				legend="#{messages['TITLE_PESQUISAR_MANTER_DIAGNOSTICO']}">
+				<aghu:linha>
+					<mec:suggestionBox
+						label="#{messages.LABEL_GRUPO_MANTER_DIAGNOSTICO}"
+						title="#{messages.TITLE_GRUPO_MANTER_DIAGNOSTICO}"
+						descricaoInput="seq" descricaoLabel="descricao"
+						suggestionAction="pesquisarGrupo"
+						posDeleteAction="desativarSubGrupo"
+						posSelectionAction="ativarSubgrupo" required="true" id="grupo"
+						controller="#{diagnosticoPaginatorController}"
+						value="#{diagnosticoPaginatorController.grupo}"
+						render="subGrupo, panelSubgrupo, bt_pesquisar, tabelaDiagnostico, bt_novo">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO_DIAGNOSTICO}</b>
+							</f:facet> #{item.seq}
+              </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO_DIAGNOSTICO}</b>
+							</f:facet> #{item.descricao}
+              </p:column>
+					</mec:suggestionBox>
+					<p:outputPanel id="panelSubgrupo" layout="inline">
+						<mec:suggestionBox id="subGrupo"
+							label="#{messages.LABEL_SUBGRUPO_MANTER_DIAGNOSTICO}"
+							title="#{messages.TITLE_SUBGRUPO_MANTER_DIAGNOSTICO}"
+							descricaoInput="id.sequencia" descricaoLabel="descricao"
+							suggestionAction="pesquisarSubgrupos"
+							readonly="#{diagnosticoPaginatorController.suggestionSubgrupo}"
+							posDeleteAction="desativarPesquisa"
+							posSelectionAction="ativarPesquisa" 
+							required="true"
+							controller="#{diagnosticoPaginatorController}"
+							value="#{diagnosticoPaginatorController.subGrupo}"
+							render="subGrupo, panelSubgrupo, bt_pesquisar, tabelaDiagnostico, bt_novo">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO_DIAGNOSTICO}</b>
+								</f:facet> #{item.id.sequencia}
+                </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO_DIAGNOSTICO}</b>
+								</f:facet> #{item.descricao}
+                </p:column>
+						</mec:suggestionBox>
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+			
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					disabled="#{diagnosticoPaginatorController.desativarBotaoPesquisar}"
+					action="#{diagnosticoPaginatorController.pesquisar}"
+					profile="search" />
+					
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					immediate="true"
+					action="#{diagnosticoPaginatorController.limparPesquisa}"
+					styleClass="bt_cinza" profile="clear" />
+					
+				<mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}"
+					action="#{diagnosticoPaginatorController.redirecionaNovo}"
+					rendered="#{diagnosticoPaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'manterDiagnostico,alterar')}"
+					profile="add">
+					<f:setPropertyActionListener
+						target="#{diagnosticoCRUDController.snbGnbSeq}"
+						value="#{diagnosticoPaginatorController.gnbSeq}" for="command" />
+					<f:setPropertyActionListener
+						target="#{diagnosticoCRUDController.snbSequencia}"
+						value="#{diagnosticoPaginatorController.snbSequencia}"
+						for="command" />
+					<f:setPropertyActionListener
+						target="#{diagnosticoCRUDController.sequencia}" value=""
+						for="command" />
+				</mec:commandButton>
+				<mec:backButton id="bt_voltar_subgrupo"
+					value="#{messages.LABEL_CANCELAR}" immediate="true"
+					rendered="#{diagnosticoPaginatorController.btCancelar eq true}"
+					action="#{diagnosticoPaginatorController.cancelar}" />
+			</aghu:acao>
+			<mec:serverDataTable dataModel="dataModel"
+				value="#{diagnosticoPaginatorController}" id="tabelaDiagnostico"
+				controller="#{diagnosticoPaginatorController}">
+				<c:set var="_diagnostico" value="#{item}" />
+				<p:column headerText="Ações" styleClass="first-column auto-adjust"
+					exportable="false">
+					<mec:commandLink id="tabelaDiagnostico_link_editar" profile="edit"
+						title="editar"
+						action="#{diagnosticoPaginatorController.redirecionaEditar}">
+						<f:setPropertyActionListener
+							target="#{diagnosticoCRUDController.snbGnbSeq}"
+							value="#{_diagnostico.id.snbGnbSeq}" for="command" />
+						<f:setPropertyActionListener
+							target="#{diagnosticoCRUDController.snbSequencia}"
+							value="#{_diagnostico.id.snbSequencia}" for="command" />
+						<f:setPropertyActionListener
+							target="#{diagnosticoCRUDController.sequencia}"
+							value="#{_diagnostico.id.sequencia}" for="command" />
+						<f:setPropertyActionListener for="command"
+							target="#{diagnosticoPaginatorController.diagnosticoSelecionado}"
+							value="#{_diagnostico}" />
+					</mec:commandLink>
+					<mec:commandLink id="tabelaDiagnostico_link_remover"
+						profile="delete" title="excluir"
+						action="#{diagnosticoPaginatorController.excluir}">
+						<f:setPropertyActionListener for="command"
+							target="#{diagnosticoPaginatorController.diagnosticoSelecionado}"
+							value="#{_diagnostico}" />
+					</mec:commandLink>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CODIGO_MANTER_DIAGNOSTICO}" />
+					</f:facet>
+					<h:outputText value="#{_diagnostico.id.sequencia}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+					</f:facet>
+					<p:tooltip direction="bottom-right" styleClass="tooltip"
+						layout="block">
+						<h:outputText value="#{_diagnostico.descricao}"
+							style="text-transform:uppercase" />
+					</p:tooltip>
+					<h:outputText value="#{_diagnostico.getDescricaoTrunc(40)}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText
+							value="#{messages.LABEL_DEFINICAO_MANTER_DIAGNOSTICO}" />
+					</f:facet>
+					<p:tooltip direction="bottom-right" styleClass="tooltip"
+						layout="block">
+						<h:outputText value="#{_diagnostico.definicao}"
+							style="text-transform:uppercase" />
+					</p:tooltip>
+					<h:outputText value="#{_diagnostico.getDefinicaoTrunc(40)}"
+						style="text-transform:uppercase" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_SITUACAO}" />
+					</f:facet>
+					<h:outputText value="#{_diagnostico.situacao.getDescricao()}" />
+				</p:column>
+			</mec:serverDataTable>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

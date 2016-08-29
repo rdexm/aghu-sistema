@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_AVALIAR_PAC_PARECER_TECNICO']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title>  
+      <style type="text/css" xml:space="preserve">#pacGrid { margin-top: -10px; }</style> 
+    </ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{avaliacaoPacParecerTecnicoPaginatorController}"/>  
+      <h:form prependId="false" id="pacFrm"> 
+        <aghu:panelGeral legend="#{messages.TITLE_AVALIAR_PAC_PARECER_TECNICO}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="numeroPac" label="#{messages.LABEL_AVAL_NRO_DO_PAC}" title="#{messages.TITLE_AVAL_NRO_DO_PAC}" value="#{avaliacaoPacParecerTecnicoPaginatorController.numeroPac}" size="10" maxlength="7"/>  
+            <mec:inputText id="descricaoPac" label="#{messages.LABEL_DESCRICAO_PAC}" title="#{messages.TITLE_DESCRICAO_PAC}" value="#{avaliacaoPacParecerTecnicoPaginatorController.descricaoPac}" maxlength="60" size="60" style="text-transform: uppercase"/>  
+            <mec:suggestionBox id="modalidadeSb" label="#{messages.LABEL_MODALIDADE_PAC}" title="#{messages.TITLE_TIPO_MODALIDADE_PAC}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarModalidades" controller="#{avaliacaoPacParecerTecnicoPaginatorController}" value="#{avaliacaoPacParecerTecnicoPaginatorController.modalidadePac}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_PRAZO_ENTREGA_AMOSTRA}" id="prazoEntrega" title="#{messages.TITLE_PRAZO_ENTREGA_AMOSTRA}" value="#{avaliacaoPacParecerTecnicoPaginatorController.vencida}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <p:outputPanel id="botoes" layout="inline">
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{avaliacaoPacParecerTecnicoPaginatorController.pesquisar}" profile="search" render="panelTabela"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{avaliacaoPacParecerTecnicoPaginatorController.limpar(true)}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+        </p:outputPanel>
+      </h:form>  
+      <p:outputPanel id="panelTabela" style="margin-left: 10px; margin-right: 10px;">
+      <h:form prependId="false" id="pacGridFrm" rendered="#{avaliacaoPacParecerTecnicoPaginatorController.ativo}"> 
+          <br/>
+          <aghu:linha>
+          <table width="100%"> 
+            <tr> 
+              <td rowspan="1" colspan="1"> 
+                <mec:serverDataTable dataModel="dataModel" id="pacGrid" value="#{avaliacaoPacParecerTecnicoPaginatorController}" controller="#{avaliacaoPacParecerTecnicoPaginatorController}"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column style="white-space: nowrap"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <h:selectBooleanCheckbox value="#{avaliacaoPacParecerTecnicoPaginatorController.pacsSelecionados[_item.numero]}" rendered="#{mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}"> 
+                      <p:ajax event="click" update="@(#panelBotoes)" process="@this" listener="#{avaliacaoPacParecerTecnicoPaginatorController.togglePacSelecionado(_item.numero)}"/> 
+                    </h:selectBooleanCheckbox>  
+                    <mec:commandLink title="#{messages.TITLE_VERIFICAR_PARECER_TECNICO}" style="margin-bottom: -3px;" action="#{avaliacaoPacParecerTecnicoPaginatorController.verificarParecerTecnico}" styleClass=" silk-lista-consultar silk-icon"> 
+                      <f:setPropertyActionListener target="#{avaliacaoPropostasParecerTecnicoPaginatorController.numeroPac}" value="#{_item.numero}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GRID_NRO_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{avaliacaoPacParecerTecnicoPaginatorController.obterStringTruncada(_item.getNumeroDescricao(), 50)}"/>  
+                    <p:tooltip mode="ajax" style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{avaliacaoPacParecerTecnicoPaginatorController.obterStringTruncada(_item.getNumeroDescricao(), 50)}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MODALIDADE_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.modalidadeLicitacao.descricao}"/> 
+                  </p:column>  
+                  <p:column sortBy="#{_item.dtEnvioParecTec}" sortable="true"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_ENVIO_PARTEC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.dtEnvioParecTec}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </td>  
+              <td width="1%" rowspan="1" colspan="1"> </td>  
+              <td width="1%" rowspan="1" colspan="1"> 
+                  <div class="menu-direita" style="width: 225px !important"> 
+                <p:outputPanel id="panelBotoes" rendered="#{avaliacaoPacParecerTecnicoPaginatorController.ativo and                   avaliacaoPacParecerTecnicoPaginatorController['dataModel'].rowCount gt 0 and                   mf:hasPermission(securityController,'cadastrarParecerTecnico,gravar')}" layout="inline"> 
+                    <aghu:acao>
+                    	<mec:commandButton id="encaminharCompradorBt" value="#{messages.LABEL_ENCAMINHAR_COMPRADOR}" action="#{avaliacaoPacParecerTecnicoPaginatorController.encaminharComprador()}" rendered="#{avaliacaoPacParecerTecnicoPaginatorController.ativo and mf:hasPermission(securityController,'encaminharComprador,gravar')}" disabled="#{avaliacaoPacParecerTecnicoPaginatorController.pacsSelecionados.isEmpty()}" styleClass="bt_cinza" /> 
+		        	</aghu:acao> 
+                </p:outputPanel> 
+                  </div> 
+              </td> 
+            </tr> 
+          </table> 
+         </aghu:linha> 
+      </h:form> 
+     </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

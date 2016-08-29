@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_LOG_PORTAL_EXAME_INTERNET} :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+    <mec:pageConfig controller="#{pesquisaLogExameInternetPaginatorController}"/> 
+       <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.PESQUISA_LOG_PORTAL_EXAME_INTERNET}"> 
+          <aghu:panelGeral legend="#{messages.SOLICITACAO_LOG_PORTAL_EXAME_INTERNET}"> 
+            <aghu:linha> 
+              <mec:inputTextData label="#{messages.LABEL_DATA_INICIAL}" title="#{messages.TITLE_DATA_INICIAL_EXAME_INTERNET}" required="true" value="#{pesquisaLogExameInternetPaginatorController.dataHoraInicial}" id="dataHoraInicial" tipo="datahora"/>  
+              <mec:inputTextData label="#{messages.LABEL_DATA_FINAL}" title="#{messages.TITLE_DATA_FINAL_EXAME_INTERNET}" required="true" value="#{pesquisaLogExameInternetPaginatorController.dataHoraFinal}" id="dataHoraFinal" tipo="datahora"/>  
+              <mec:selectOneMenu id="status" label="#{messages.LABEL_PESQUISA_EXAME_INTERNET_STATUS}" title="#{messages.TITLE_PESQUISA_EXAME_INTERNET_STATUS}" value="#{pesquisaLogExameInternetPaginatorController.status}" enum="DominioStatusExameInternet"/>  
+              <mec:selectOneMenu id="situacao" label="#{messages.LABEL_PESQUISA_EXAME_INTERNET_SITUACAO}" title="#{messages.TITLE_PESQUISA_EXAME_INTERNET_SITUACAO}" value="#{pesquisaLogExameInternetPaginatorController.situacao}" enum="DominioSituacaoExameInternet"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputNumero id="solic" label="#{messages.LABEL_PESQUISA_EXAME_INTERNET_SOLIC}" title="#{messages.TITLE_PESQUISA_EXAME_INTERNET_SOLIC}" size="9" maxlength="8" value="#{pesquisaLogExameInternetPaginatorController.iseSoeSeq}"/>  
+              <mec:inputNumero id="item" label="#{messages.LABEL_PESQUISA_EXAME_INTERNET_ITEM}" title="#{messages.TITLE_PESQUISA_EXAME_INTERNET_ITEM}" size="4" maxlength="3" value="#{pesquisaLogExameInternetPaginatorController.iseSeqp}"/>  
+              <mec:inputText id="localizador" label="#{messages.LABEL_PESQUISA_EXAME_INTERNET_LOCALIZ}" title="#{messages.TITLE_PESQUISA_EXAME_INTERNET_LOCALIZ}" size="10" maxlength="10" value="#{pesquisaLogExameInternetPaginatorController.localizador}" style="text-transform:uppercase"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:panelGeral legend="#{messages.SOLICITANTE_LOG_PORTAL_EXAME_INTERNET}"> 
+            <mec:suggestionBox label="#{messages.LABEL_CONSELHO}" title="#{messages.TITLE_PESQUISA_CONSELHO_GRADUACAO}" converter="#{rapConselhosProfissionaisConverter}" descricaoInput="sigla" descricaoLabel="nome" suggestionAction="pesquisarConselhosPorDescricao" style="text-transform:uppercase" id="conselho" controller="#{pesquisaLogExameInternetPaginatorController}" value="#{pesquisaLogExameInternetPaginatorController.conselhoPesquisaGraduacao}"> 
+              <p:column>#{item.sigla}</p:column>  
+              <p:column>#{item.nome}</p:column> 
+            </mec:suggestionBox>  
+            <mec:inputText label="#{messages.LABEL_NRO_REGISTRO_CONSELHO}" value="#{pesquisaLogExameInternetPaginatorController.nroRegConselho}" title="#{messages.TITLE_NRO_REGISTRO_CONSELHO}" required="false" maxlength="9" size="10" id="nroRegConselho"/>  
+            <mec:inputTextCNPJ id="txtCNPJ" label="#{messages.LABEL_CNPJ_CONTRATANTE}" title="#{messages.TITLE_CNPJ_CONTRATANTE}" value="#{pesquisaLogExameInternetPaginatorController.cnpjContratante}"/> 
+          </aghu:panelGeral> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{pesquisaLogExameInternetPaginatorController.pesquisar}" profile="search"  block="true"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{pesquisaLogExameInternetPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+     
+        <p:outputPanel id="panelResult" rendered="#{pesquisaLogExameInternetPaginatorController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_LISTA_EXAME_INTERNET}"> 
+            <mec:serverDataTable dataModel="dataModel" id="tabela" controller="#{pesquisaLogExameInternetPaginatorController}"> 
+              <c:set var="_item" value="#{item}"/>  
+              <p:column height="5"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>
+							<mec:commandLink id="reenvio_bt"
+								title="#{messages.LABEL_REENVIAR_PDF}"
+								action="#{pesquisaLogExameInternetPaginatorController.reenviarFila(_item)}"
+								rendered="#{mf:hasPermission(securityController,'logExameInternet,reenviar') and pesquisaLogExameInternetPaginatorController.habilitarReenvio(_item)}"
+								styleClass=" silk-bullet-go silk-icon" ajax="true"
+								render="panelListagem" process="@this" />
+			  </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DATA_HORA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.dataHoraStatus}"> 
+                  <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SOLICITACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.solicitacaoExames.seq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ITEM}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.itemSolicitacaoExames.id.seqp}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_GRUPO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.exameInternetGrupo.seq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_STATUS}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.status.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.situacao.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.itemSolicitacaoExames.solicitacaoExame.atendimento.prontuario}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PACIENTE}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.itemSolicitacaoExames.solicitacaoExame.atendimento.paciente.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SOLICITANTE}"/> 
+                </f:facet>  
+                <h:outputText value="#{pesquisaLogExameInternetPaginatorController.obterSolicitante(_item)}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PESQUISA_EXAME_INTERNET_LOCALIZ}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.solicitacaoExames.localizador}"/> 
+              </p:column>  
+              <p:column width="25%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_MENSAGEM}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.mensagem}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

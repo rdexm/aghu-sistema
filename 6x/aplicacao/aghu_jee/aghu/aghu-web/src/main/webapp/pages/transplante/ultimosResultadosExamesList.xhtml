@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PACIENTE}</title>
+	</ui:define>
+
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{listarUltimosResultadosExamesController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{listarUltimosResultadosExamesController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="ultimosResultadosForm">
+			
+				<aghu:panelGeral legend="#{messages.TITLE_PACIENTE}">
+					<aghu:linha>
+						<mec:inputTextProntuario id="prontuarioPaciente"
+							label="#{messages.LABEL_PRONTUARIO}"
+							value="#{listarUltimosResultadosExamesController.paciente.prontuario}"
+							readonly="true" maxlength="8"
+							style="font-weight:bold;padding-right:10px;">
+							<p:ajax event="change" process="@this" />
+						</mec:inputTextProntuario>
+						<mec:inputText id="nomePaciente" label="#{messages.LABEL_NOME}"
+							value="#{listarUltimosResultadosExamesController.paciente.nome}"
+							readonly="true" maxlength="50" size="60"
+							style="padding-right:5px; text-transform:uppercase">
+							<p:ajax event="change" process="@this" />
+						</mec:inputText>
+					</aghu:linha>
+				</aghu:panelGeral>
+				<aghu:panelGeral legend="#{messages.TITLE_ULTIMOS_RESULTADOS}">
+					<aghu:linha id="panelUltimosResultados"
+						styleClass="tabela-hachurada">
+						<mec:serverDataTable id="itensUltimosResultados"
+							scrollable="true" scrollHeight="100"
+							list="#{listarUltimosResultadosExamesController.listaVoC3}"
+							selection="listaVoC3" controller="#{listarUltimosResultadosExamesController}"
+							>
+							<c:set var="_itemVoC3" value="#{item}" />
+							<p:column style="text-align:left;" width="10%">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_ULTIMOS_RESULTADOS_EXAME}" />
+								</f:facet>
+								<h:outputText value="#{_itemVoC3.descricaoUsual}" />
+							</p:column>
+							<p:column style="text-align:left;" width="35%">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_ULTIMOS_RESULTADOS_REAGENTE}" />
+								</f:facet>
+								<h:outputText value="#{_itemVoC3.resultado}" />
+							</p:column>
+							<p:column width="5%" style="width:75px!important;text-align:left;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.DATA}" />
+								</f:facet>
+								<h:outputText value="#{_itemVoC3.dthrLiberada}" >
+									 <f:convertDateTime pattern="dd/MM/yyyy"/> 
+								</h:outputText>
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:linha>
+				</aghu:panelGeral>
+		</h:form>
+		<h:form prependId="false" id="resultadoExamesForm">
+				<aghu:panelGeral
+					legend="#{messages.TITLE_ULTIMOS_RESULTADOS_ANTI_HCV_REAGENTE}"
+					rendered="#{listarUltimosResultadosExamesController.flagExibirPainel}">
+					<aghu:linha>
+						<mec:inputText id="pcr"
+							label="#{messages.LABEL_ULTIMOS_RESULTADOS_PCR}"
+							title="#{messages.TITLE_ULTIMOS_RESULTADOS_PCR}"
+							value="#{listarUltimosResultadosExamesController.resultado}"
+							maxlength="60" size="60" required="true"
+							style="padding-right:5px; text-transform:uppercase">
+							
+						</mec:inputText>
+						<mec:inputTextData id="dataPcr"
+							label="#{messages.LABEL_ULTIMOS_RESULTADOS_DATA_PCR}"
+							title="#{messages.TITLE_ULTIMOS_RESULTADOS_DATA_PCR}"
+							value="#{listarUltimosResultadosExamesController.dataPcr}"
+							size="10" maxlength="10" required="true" tipo="data">
+							
+						</mec:inputTextData>
+					</aghu:linha>
+					<aghu:linha>
+						<aghu:acao id="bt_action_geral1"
+							style="position: absolute; bottom: 0;right: 0">
+							<mec:commandButton id="bt_adicionar_tab" 
+								process="@this, pcr, dataPcr" 
+								action="#{listarUltimosResultadosExamesController.adicionar()}"
+								value="#{messages.LABEL_ADICIONAR}" profile="add" ajax="true" render="resultadoExamesForm"
+								rendered="#{!listarUltimosResultadosExamesController.flagEditar}"  />
+							<mec:commandButton id="bt_cancelarEdicao_tab" profile="cancel"																
+								action="#{listarUltimosResultadosExamesController.cancelarEdicao}"
+								value="#{messages.LABEL_CANCELAR_EDICAO_RESULTADO_EXAMES}"
+								immediate="true" ajax="true"
+								rendered="#{listarUltimosResultadosExamesController.flagEditar}"
+								render="pcr,dataPcr,bt_action_geral1,resultadoExamesForm"
+								process="@this"/>
+							<mec:commandButton id="bt_confirmarEdicao_tab" 
+								process="@this"
+								action="#{listarUltimosResultadosExamesController.confirmarEdicao}"
+								value="#{messages.LABEL_CONFIRMAR_EDICAO_RESULTADO_EXAMES}"
+								rendered="#{listarUltimosResultadosExamesController.flagEditar}"
+								render="pcr,dataPcr,bt_action_geral1,resultadoExamesForm"
+								/>
+						</aghu:acao>
+					</aghu:linha>
+					<aghu:linha id="panelItensResultadosExames"
+						styleClass="tabela-hachurada">
+
+						<mec:serverDataTable id="itensResultGeral"																					
+							list="#{listarUltimosResultadosExamesController.resultadoExamesList}"
+							scrollable="true" scrollHeight="120"
+							selection="resultadoExames" controller="#{listarUltimosResultadosExamesController}">							
+							<c:set var="_itemResultados" value="#{item}" />
+							<p:column style="text-align:left;" width="3%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ACAO}" />
+								</f:facet>
+								<mec:commandLink title="Editar"
+									action="#{listarUltimosResultadosExamesController.editar}"
+									profile="edit" ajax="true"
+									render="bt_action_geral1, pcr,dataPcr, panelItensResultadosExames"
+									rendered="#{!_itemResultados.edita}"
+									process="@this">
+									<f:setPropertyActionListener
+										target="#{listarUltimosResultadosExamesController.resultadoExames}"
+										value="#{_itemResultados}" for="command" />
+								</mec:commandLink>
+								<mec:commandLink
+									action="#{listarUltimosResultadosExamesController.excluir}"
+									profile="delete"
+									title="#{messages.LABEL_EXCLUIR}" ajax="true"
+									styleClass="silk-icon silk-delete"
+									render="panelItensResultadosExames"
+									rendered="#{!_itemResultados.edita}"
+									process="@this, @(panelItensResultadosExames)">
+									<f:setPropertyActionListener
+										target="#{listarUltimosResultadosExamesController.resultadoExames}"
+										value="#{_itemResultados}" for="command" />
+								</mec:commandLink>
+							</p:column>
+							<p:column style="text-align:left;" width="50%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ULTIMOS_RESULTADOS_PCR}" />
+								</f:facet>
+								<h:outputText value="#{_itemResultados.resultado}" />
+							</p:column>
+							<p:column style="text-align:left;" width="5%">
+								<f:facet name="header">
+									<h:outputText
+										value="#{messages.LABEL_ULTIMOS_RESULTADOS_DATA_PCR}" />
+								</f:facet>
+								<h:outputText value="#{_itemResultados.data}">
+								<f:convertDateTime pattern="dd/MM/yyyy"/> 
+								</h:outputText>
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:linha>
+				</aghu:panelGeral>
+			
+		</h:form>
+		<br></br>
+		<h:form prependId="false" id="formDadosCabecalho">
+			<p:outputPanel id="panelCampos" layout="inline"
+				styleClass="aghu-panel-geral">
+				<aghu:linha style="margin-left:-5px;margin-top:2px">
+				<aghu:acao>
+						<mec:commandButton id="bt_voltar" immediate="true" block="true"
+							action="#{listarUltimosResultadosExamesController.cancelar}"
+							value="#{messages.LABEL_VOLTAR}"
+							styleClass=" alinha-direita bt_cinza" profile="back">
+						</mec:commandButton>
+				</aghu:acao>
+				</aghu:linha>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

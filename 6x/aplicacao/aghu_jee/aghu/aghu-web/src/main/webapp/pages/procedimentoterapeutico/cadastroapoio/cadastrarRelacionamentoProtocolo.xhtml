@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.LABEL_RELACIONAR_PROTOCOLO}</title>		
+	</ui:define>
+	<ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cadastrarRelacionamentoProtocoloPaginatorController.iniciar}" /> 
+      </f:metadata> 
+    </ui:define>
+	<ui:define name="body">
+	 	<mec:pageConfig controller="#{cadastrarRelacionamentoProtocoloPaginatorController}" ignoreEnter="true"/> 
+	 	<h:form prependId="false" id="formCadastro"> 	 	
+	 		<aghu:panelGeral legend="#{messages.LABEL_RELACIONAR_PROTOCOLO}">
+				<aghu:linha>
+					<mec:suggestionBox id="sbProtocolo"
+							label="#{messages.LABEL_DESCRICAO_PROTOCOLO}" title="#{messages.TITLE_SUGGESTION_PROTOCOLO}"
+							descricaoInput="titulo" descricaoLabel="titulo" suggestionAction="listarProtocolos" cache="false"
+							descricaoLimite="25" maxlength="50" width="90" itemValue="#{item}" var="item" render="panelBotaoVoltar"							
+							controller="#{cadastrarRelacionamentoProtocoloPaginatorController}" requiredFake="true"
+							value="#{cadastrarRelacionamentoProtocoloPaginatorController.protocoloSelecionado}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_TITULO_AGENDAR_SESSAO}</b>
+								</f:facet>
+								#{item.titulo}
+		                    </p:column>
+					</mec:suggestionBox>
+					<aghu:acao newLine="false">			    			    	
+						<mec:commandButton id="bt_adicionar" title="#{messages.TITLE_BOTAO_ADICIONAR_RELACIONAMENTO_PROTOCOLO}" value="#{messages.LABEL_ADICIONAR_CARACTERISTICAS_TIPO_SESSAO}" action="#{cadastrarRelacionamentoProtocoloPaginatorController.adicionarProtocolo}" disabled="#{cadastrarRelacionamentoProtocoloPaginatorController.impedirRelacionamento}" rendered="#{mf:hasPermission(securityController,'admPesquisaProtocolos,executar')}" profile="add"/>
+					</aghu:acao>
+			    </aghu:linha>
+			    <aghu:linha>
+			    	<mec:serverDataTable dataModel="dataModel" constrols="false" id="tabelaProtocolo" controller="#{cadastrarRelacionamentoProtocoloPaginatorController}"> 
+			          <c:set var="_item" value="#{item}"/>  
+			          <p:column style="width:40px;"> 
+			            <f:facet name="header"> 
+			              <h:outputText value="#{messages.LABEL_ACOES_ACOMODACOES}"/> 
+			            </f:facet>  
+			            <center>
+			            	<mec:commandLink id="link_exclusao" styleClass="silk-delete silk-icon" title="#{messages.TITLE_HINT_EXCLUSAO}" action="#{cadastrarRelacionamentoProtocoloPaginatorController.prepararExclusao(_item)}" rendered="#{_item.seqProtocoloAssociacao != cadastrarRelacionamentoProtocoloPaginatorController.seqProtocolo}"/>
+			            </center> 
+			          </p:column>  
+			          <p:column> 
+			            <f:facet name="header"> 
+			              <h:outputText value="#{messages.LABEL_PROTOCOLO_AGENDAR_SESSAO}"/> 
+			            </f:facet>  
+			            <h:outputText value="#{_item.titulo}"/> 
+			          </p:column>  
+			        </mec:serverDataTable>
+			    </aghu:linha>
+			</aghu:panelGeral>
+							
+			<aghu:acao> 
+				<p:outputPanel id="panelBotaoVoltar">
+		            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{cadastrarRelacionamentoProtocoloPaginatorController.preparaRetorno()}" rendered="#{cadastrarRelacionamentoProtocoloPaginatorController.protocoloSelecionado != null}" profile="back"/>
+		            <mec:commandButton id="bt_voltar2" value="#{messages.LABEL_VOLTAR}" action="#{cadastrarRelacionamentoProtocoloPaginatorController.voltar()}" rendered="#{cadastrarRelacionamentoProtocoloPaginatorController.protocoloSelecionado == null}" profile="back"/>
+	          	</p:outputPanel>	          
+	        </aghu:acao>	 		
+	 	</h:form>	
+	 	
+	 	<h:form prependId="false" id="formModalExclusao">
+		    <p:dialog id="modal_excluir" width="400" height="160"
+				autosized="false" resizeable="false"
+				modal="true" resizable="false" 
+				widgetVar="modal_excluir">
+				<f:facet name="header">
+					<h:outputText id="headerModalExclusao" value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText id="msgConfirmExclusao" value="#{messages.CONFIRMA_EXCLUSAO}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="btSimConfirmExclusao" value="#{messages.CASCA_LABEL_SIM}" action="#{cadastrarRelacionamentoProtocoloPaginatorController.excluir()}"
+						oncomplete="PF('modal_excluir').hide();" profile="ok" ajax="true" render="@(#formCadastro)" process="@this" />
+					<mec:commandButton id="btNaoConfirmExclusao" value="#{messages.CASCA_LABEL_NAO}" onclick="PF('modal_excluir').hide(); return false;"
+						profile="cancel" ajax="true" />
+				</aghu:acao>
+			</p:dialog>
+		</h:form>
+		
+		<h:form prependId="false" id="formModalRetorno">
+		    <p:dialog id="modal_retornar" width="400" height="160"
+				autosized="false" resizeable="false"
+				modal="true" resizable="false" 
+				widgetVar="modal_retornar">
+				<f:facet name="header">
+					<h:outputText id="headerModalRetorno" value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText id="msgConfirmRetorno" value="#{messages.LABEL_MS04}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="btSimConfirmRetorno" value="#{messages.CASCA_LABEL_SIM}" action="#{cadastrarRelacionamentoProtocoloPaginatorController.voltar}"
+						oncomplete="PF('modal_retornar').hide();" profile="ok" ajax="true" render="@(#formCadastro)" process="@this" />
+					<mec:commandButton id="btNaoConfirmRetorno" value="#{messages.CASCA_LABEL_NAO}" onclick="PF('modal_retornar').hide(); return false;"
+						profile="cancel" ajax="true" />
+				</aghu:acao>
+			</p:dialog>
+		</h:form>	    
+	</ui:define>
+</ui:composition>
+</html>

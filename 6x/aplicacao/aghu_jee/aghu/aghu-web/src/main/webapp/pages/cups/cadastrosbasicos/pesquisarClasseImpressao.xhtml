@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisar Classe Impressao</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{classeImpressaoController}"/>  
+      <h:form prependId="false" id="pesquisaClasseImpressaoForm"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_CLASSE_IMPRESSAO}"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_CLASSE_IMPRESSAO}" size="2" style="text-transform:uppercase" maxlength="1" value="#{classeImpressaoController.impClasseImpressao.classeImpressao}" title="#{messages.TITLE_CLASSE_IMPRESSAO}" id="classe"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_TIPO_IMPRESSORA}" size="3" enum="DominioTipoImpressoraCups" title="#{messages.TITLE_TIPO_IMPRESSORA}" value="#{classeImpressaoController.impClasseImpressao.tipoImpressora}" id="impressora"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_TIPO_CUPS}" size="3" enum="DominioTipoCups" title="#{messages.TITLE_TIPO_CUPS}" value="#{classeImpressaoController.impClasseImpressao.tipoCups}" id="cups"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{classeImpressaoController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" action="#{classeImpressaoController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" rendered="#{classeImpressaoController.classeImpressaoPaginatorController.exibirBotaoIncluirClasseImpressao}" action="#{classeImpressaoController.cadastrarNovo}" disabled="#{not mf:hasPermission(securityController,'classeImpressao,manter')}" profile="add"/> 
+        </aghu:acao>  
+        <mec:serverDataTable dataModel="dataModel" rendered="#{classeImpressaoPaginatorController.dataModel.pesquisaAtiva}" value="#{classeImpressaoPaginatorController}" id="tabelaImpressora" controller="#{classeImpressaoPaginatorController}"> 
+          <c:set var="classeImpressao" value="#{item}"/>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink action="#{classeImpressaoController.editar}" title="#{messages.TITLE_EDITAR}" disabled="#{not mf:hasPermission(securityController,'classeImpressao,manter')}" profile="edit" styleClass=" #{mf:hasPermission(securityController,'classeImpressao,manter') ? '' : '-off'}"> 
+              <f:setPropertyActionListener target="#{classeImpressaoController.idClasseImpressao}" value="#{classeImpressao.id}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.TITLE_DELETAR}" action="#{classeImpressaoController.confirmarExclusao(classeImpressao.id)}" disabled="#{not mf:hasPermission(securityController,'classeImpressao,manter')}" profile="delete" styleClass=" #{mf:hasPermission(securityController,'classeImpressao,manter') ? '' : '-off'}" ajax="true" process="@this" render="pesquisaClasseImpressaoForm" /> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CLASSE_IMPRESSAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{classeImpressao.classeImpressao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{classeImpressao.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TIPO_IMPRESSORA}"/> 
+            </f:facet>  
+            <h:outputText value="#{classeImpressao.tipoImpressora.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TIPO_CUPS}"/> 
+            </f:facet>  
+            <h:outputText value="#{classeImpressao.tipoCups}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+        
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="175" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_confirmaexclucao" onclick="PF('modalConfirmacaoExclusaoWG').hide();" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

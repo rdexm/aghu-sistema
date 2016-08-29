@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+      xmlns:ff="http://www.mec.gov.br/taglib"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite">
+
+    <h:head>
+        <title>mec:selectOneMenu</title>
+    </h:head>
+    
+	<ui:remove><!-- Comments -->	
+	COMPONENTE SELECTONEMENU
+	============================
+	Autor: Geraldo Maciel (2014)
+	
+	Renderiza um campo customizado de muliplos valores para seleção unica (combo box),
+	com carregamento das opções na carga da página.
+	
+	
+	Principais Propriedades:
+	
+	id: identificador do componente
+	label: Label do componente
+	title: Hint do componente
+	value: atributo da classe controladora (mbean) que recebe o resultado do campo
+	disabled/readonly: Habilita/desabilita o botão
+	posicaoLabel: Posição do label na tela. Valores acima(default) e abaixo
+	size: tamanho do campo
+	enum: Nome da classe de enumeração que irá fornecer os itens do combo box. Não deve ser usado juntamente com o atributo items.
+	enumPath: pacote da classe de enumeração aser usada para abastecer o combo box. Valor é default é o pacote de enumerações padrão do projeto.
+	items: coleção de BaseEntity que irá fornecer os itens do combo box. Não deve ser usado juntamente com o atributo enum.
+	itemLabel: Atributo do BaseEntity que será exibido não opções do combo box. Usado em conjunto com o atributo items.
+	
+	</ui:remove>    
+    
+    <h:body>
+        <cc:interface name="selectOneMenu" displayName="Cria um campo multivalorado para seleção unica">        
+        	
+	        <cc:attribute name="label" />
+	        <cc:attribute name="showLabel" default="true" />
+	        <cc:attribute name="posicaoLabel" default="acima" />
+	        <cc:attribute name="escape" default="true" />
+	        <cc:attribute name="readonly" default="false" />
+	        <cc:attribute name="disabled" default="false" />
+	        <cc:attribute name="title" />
+	        <cc:attribute name="required" default="false" />
+	        <cc:attribute name="requiredFake" default="false" />
+	        <cc:attribute name="value" default="" />
+			<cc:attribute name="style" />
+			<cc:attribute name="styleClass" />		
+			<cc:attribute name="immediate" default="false" />	
+			<cc:attribute name="onchange" />			
+			<cc:attribute name="noSelectionOption" default="true" />			
+			<cc:attribute name="noSelectionLabel" default="Selecione" />			
+			<cc:attribute name="enumPath" default="br.gov.mec.aghu.dominio" />			
+			<cc:attribute name="enum"  />			
+			<cc:attribute name="items"  />			
+			<cc:attribute name="itemLabel"  /> 			
+			<cc:attribute name="itemValue"  />
+			<cc:attribute name="converter" />
+			<cc:attribute name="panelStyle" />
+									
+			 <cc:editableValueHolder name="inputId"  />      
+			 
+			  <cc:clientBehavior name="change" event="change"
+                    targets="#{cc.clientId}:#{cc.clientId}:inputId" />
+                    
+              <cc:clientBehavior name="blur" event="blur"
+                    targets="#{cc.clientId}:#{cc.clientId}:inputId" />
+                    
+              <cc:clientBehavior name="click" event="click"
+                    targets="#{cc.clientId}:#{cc.clientId}:inputId" />
+                    
+              <cc:clientBehavior name="focus" event="focus"
+                    targets="#{cc.clientId}:#{cc.clientId}:inputId" />
+                    
+        </cc:interface>
+
+        <cc:implementation>
+
+        	<mec:field label="#{cc.attrs.label}" id="#{cc.clientId}"
+        		showLabel="#{cc.attrs.showLabel}" title="#{cc.attrs.title}" 
+        		posicaoLabel="#{cc.attrs.posicaoLabel}" readonly="#{cc.attrs.readonly}" 
+        		escape="#{cc.attrs.escape}" 
+        		required="#{cc.attrs.required or cc.attrs.requiredFake}">        		
+        		
+        		<p:selectOneMenu id="inputId" 
+        			value="#{cc.attrs.value}"
+					styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all #{cc.attrs.styleClass}"
+					required="#{cc.attrs.required}" 	 
+					style="#{cc.attrs.style}"					
+					panelStyle="#{cc.attrs.panelStyle}"
+					readonly="#{cc.attrs.readonly}"
+					disabled="#{cc.attrs.readonly or cc.attrs.disabled}"
+					immediate="#{cc.attrs.immediate}"		
+					onchange="#{cc.attrs.onchange}" 
+					label="#{cc.attrs.label}" converter="baseEntityConverter">
+	
+					<c:choose>        	
+						<c:when test="#{not empty cc.attrs.enum and empty cc.attrs.converter}">
+							<ui:param name="converter" value="dominioConverter" />
+						</c:when>	
+						<c:when test="#{not empty cc.attrs.items and empty cc.attrs.converter}">
+							<ui:param name="converter" value="baseEntityConverter" />
+						</c:when>
+			    		<c:otherwise>
+							<ui:param name="converter" value="#{cc.attrs.converter}" />
+			    		</c:otherwise>
+			    	</c:choose>						
+
+					<c:if test="#{cc.attrs.noSelectionOption}">
+						<f:selectItem itemValue=""
+							itemLabel="#{cc.attrs.noSelectionLabel}"
+							noSelectionOption="true" />
+					</c:if>
+	
+					<c:if test="#{not empty cc.attrs.enum}">
+						<f:selectItems var="item" itemLabel="#{item.descricao}"
+							value="#{ff:getEnumItens(cc.attrs.enumPath, cc.attrs.enum)}" />
+					</c:if>
+					
+					<c:if test="#{not empty cc.attrs.items and empty cc.attrs.itemValue}">
+						<f:selectItems var="item" itemLabel="#{mf:getProperty(cc.attrs.itemLabel, item)}"
+							value="#{cc.attrs.items}" />
+					</c:if>
+					
+					<c:if test="#{not empty cc.attrs.items and not empty cc.attrs.itemValue}">
+						<f:selectItems var="item" itemLabel="#{item[cc.attrs.itemLabel]}"
+							value="#{cc.attrs.items}"
+							itemValue="#{ff:getDefaultValue(item[cc.attrs.itemValue], item)}" />
+					</c:if>
+	
+					<cc:insertChildren />       		
+        	
+        		</p:selectOneMenu>
+        		
+        	</mec:field>	
+        		 
+        </cc:implementation>
+    </h:body>
+</html>

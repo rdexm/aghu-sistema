@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Disponibilidade de Vagas por #{LABEL_QUARTO} :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{disponibilidadeQuartoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{disponibilidadeQuartoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="Pesquisar"> 
+          <aghu:linha> 
+            <p:outputPanel id="region_quarto_combo"> 
+              <mec:suggestionBox label="#{LABEL_QUARTO}" title="Selecione um #{LABEL_QUARTO}." externalDescricaoLabel="descricaoCompletaQuarto" descricaoInput="descricao" suggestionAction="pesquisarQuartos" id="quarto" controller="#{disponibilidadeQuartoPaginatorController}" value="#{disponibilidadeQuartoPaginatorController.quarto}" render="panelResultado"> 
+                <c:set var="_quarto" value="#{item}"/>  
+                <p:column>#{_quarto.numero} / #{_quarto.unidadeFuncional.andar} #{_quarto.unidadeFuncional.indAla} - #{_quarto.unidadeFuncional.descricao}</p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CLINICA}" title="#{messages.TITLE_LABEL_CLINICA_PESQ}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarClinicas" id="clinica" controller="#{disponibilidadeQuartoPaginatorController}" value="#{disponibilidadeQuartoPaginatorController.clinica}"> 
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_LABEL_UNIDADE_PESQ}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarUnidadesFuncionais" id="unidadeFuncional" controller="#{disponibilidadeQuartoPaginatorController}" value="#{disponibilidadeQuartoPaginatorController.unidadeFuncional}"> 
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton block="true" id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{disponibilidadeQuartoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" action="#{disponibilidadeQuartoPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar" action="#{disponibilidadeQuartoPaginatorController.voltar}" rendered="#{disponibilidadeQuartoPaginatorController.exibirVoltar()}" ajax="true" styleClass="bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formListagem"> 
+        <fieldset> 
+          <mec:serverDataTable id="tabelaDisponibilidadeQuarto" dataModel="dataModel" controller="#{disponibilidadeQuartoPaginatorController}"> 
+            <c:set var="_quarto" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+              <mec:commandLink id="bt_leitos" rendered="true" title="#{messages.LABEL_LEITOS}" action="#{disponibilidadeQuartoPaginatorController.pesquisarDisponibilidadeLeito(_quarto.quarto, _quarto.clinica.codigo)}" styleClass=" silk-leito silk-icon" ajax="true"/>  
+              <mec:commandLink id="bt_internar" rendered="true" title="#{messages.LABEL_INTERNAR}" action="#{disponibilidadeQuartoPaginatorController.actionInternar(_quarto)}" oncomplete="PF('modalAvisoWG').show();;" styleClass=" silk-internacao silk-icon" ajax="true" render="corpoModalAviso"/> 
+            </p:column>  
+            <p:column sortable="true" sortBy="#{_quarto.descricao}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{LABEL_QUARTO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_quarto.descricao}"/> 
+            </p:column>  
+            <p:column sortable="true" sortBy="#{_quarto.sexoOcupacao}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SEXO_OCUPACAO}"/> 
+              </f:facet>  
+              <h:panelGroup rendered="#{_quarto.sexoOcupacaoFeminino}" styleClass="silk-icon silk-female" style="cursor: default;"/>  
+              <h:panelGroup rendered="#{_quarto.sexoOcupacaoMasculino}" styleClass="silk-icon silk-male" style="cursor: default;"/>  
+              <h:outputText value="#{_quarto.sexoOcupacao.descricao}"/> 
+            </p:column>  
+            <p:column sortable="true" sortBy="#{_quarto.sexoDeterminante}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SEXO_DETERMINANTE}"/> 
+              </f:facet>  
+              <h:panelGroup rendered="#{_quarto.sexoDeterminanteFeminino}" styleClass="silk-icon silk-female" style="cursor: default;"/>  
+              <h:panelGroup rendered="#{_quarto.sexoDeterminanteMasculino}" styleClass="silk-icon silk-male" style="cursor: default;"/>  
+              <h:outputText value="#{_quarto.sexoDeterminante.descricao}"/> 
+            </p:column>  
+            <p:column sortable="true" sortBy="#{_quarto.ala}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{LABEL_ALA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_quarto.ala}"/> 
+            </p:column>  
+            <p:column sortable="true" sortBy="#{_quarto.clinica}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CLINICA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_quarto.clinica.descricao}"/> 
+            </p:column>  
+            <p:column sortable="true" sortBy="#{_quarto.vagas}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_VAGAS}"/> 
+              </f:facet>  
+              <h:outputText value="#{_quarto.vagas}"/> 
+            </p:column>  
+            <p:column sortable="true" sortBy="#{_quarto.capacidade}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CAPACIDADE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_quarto.capacidade}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </fieldset>  
+        <fieldset class="acao"> 
+          <mec:commandButton id="bt_redirecionarSolicitacao" value="#{messages.LABEL_SOLICITAR}" action="#{redirecionarSolicitacao}" rendered="#{false and disponibilidadeQuartoPaginatorController.dataModel.pesquisaAtiva}" styleClass="bt_cinza"/>  
+          <mec:commandButton id="bt_redirecionarSolicitacoesPendentes" value="#{messages.LABEL_SOLICITCOES_PENDENTES}" action="#{redirecionarSolicitacoesPendentes}" rendered="#{false and disponibilidadeQuartoPaginatorController.dataModel.pesquisaAtiva}" styleClass="bt_cinza"/>  
+          <mec:commandButton value="#{messages.LABEL_SOLICITCOES_PENDENTES}" immediate="true" action="#{disponibilidadeQuartoPaginatorController.solicitarTransferenciaPaciente}" ajax="true"/>  
+          <mec:commandButton value="#{messages.LABEL_TRANSFERIR}" immediate="true" action="#{disponibilidadeQuartoPaginatorController.transferirPaciente}" ajax="true"/> 
+        </fieldset>  
+        <p:dialog id="modalAviso" width="400" height="150" modal="true" resizable="false" widgetVar="modalAvisoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="Quartos para Internação"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <p:outputPanel id="corpoModalAviso" layout="inline">#{disponibilidadeQuartoPaginatorController.getModalMessage()} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup layout="block" style="margin:0 auto; width:40px;"> 
+              <mec:commandButton id="bt_ok" value="#{messages.LABEL_OK}" onclick="PF('modalAvisoWG').hide();" ajax="true" styleClass="bt_cinza"/> 
+            </h:panelGroup> 
+          </p:outputPanel> 
+        </p:dialog> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_NOTIFICACOES_PESQUISAR}</title>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{notificacoesPaginatorController}" />
+		<h:form prependId="false" id="formPesquisaNotificacao">
+			<aghu:panelGeral legend="#{messages.LABEL_NOTIFICACOES_PESQUISAR}">
+				<aghu:linha>
+					<mec:inputText id="descricao"
+						label="#{messages.LABEL_NOTIFICACOES_DESCRICAO}"
+						title="#{messages.TITLE_NOTIFICACOES_DESCRICAO}"
+						value="#{notificacoesPaginatorController.descricao}"
+						removerCaratersEspeciais="false" size="30" maxlength="100"
+						style="text-transform:uppercase" />
+
+					<mec:selectOneMenu label="#{messages.LABEL_NOTIFICACOES_PROCESSO}"
+						title="#{messages.TITLE_NOTIFICACOES_PROCESSO}"
+						enum="NotificacaoJobEnum"
+						enumPath="br.gov.mec.aghu.business.scheduler"
+						value="#{notificacoesPaginatorController.processo}"
+						id="processoAgendado" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:suggestionBox id="suggestionServidor"
+						label="#{messages.LABEL_NOTIFICACOES_SERVIDOR}"
+						title="#{messages.TITLE_NOTIFICACOES_SERVIDOR}"
+						descricaoInput="id.matricula" size="25" maxlength="45" width="500"
+						disabled="false" descricaoLabel="pessoaFisica.nome"
+						suggestionAction="pesquisarServidorContato"
+						controller="#{notificacoesPaginatorController}"
+						value="#{notificacoesPaginatorController.servidorContato}">
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_VINCULO}" />
+							</f:facet>
+							<h:outputText value="#{item.id.vinCodigo}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_MATRICULA}" />
+							</f:facet>
+							<h:outputText value="#{item.id.matricula}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_NOME}" />
+							</f:facet>
+							<h:outputText value="#{item.pessoaFisica.nome}" />
+						</p:column>
+					</mec:suggestionBox>
+
+					<mec:inputNumero size="15" id="celular"
+						label="#{messages.LABEL_NOTIFICACOES_CELULAR}"
+						title="#{messages.TITLE_NOTIFICACOES_CELULAR}" maxlength="15"
+						value="#{notificacoesPaginatorController.celular}" />
+
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}" block="true"
+					action="#{notificacoesPaginatorController.pesquisar}"
+					profile="search" />
+				<mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}"
+					action="#{notificacoesPaginatorController.limparPesquisa}"
+					profile="clear" />
+				<mec:commandButton id="bt_novo"
+					value="#{messages.LABEL_NOTIFICACOES_NOVO}"
+					action="notificacoesCRUD" immediate="true"
+					rendered="#{notificacoesPaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'notificacoes,persistir')}"
+					profile="add" />
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formListaNotificacoes">
+			<mec:serverDataTable dataModel="dataModel" id="tabelaNotificacoes"
+				controller="#{notificacoesPaginatorController}">
+				<c:set var="_notificacao" value="#{item}" />
+				<p:column headerText="#{messages.LABEL_ACAO}"
+					styleClass="first-column auto-adjust" exportable="false"
+					style="width:60px; white-space:nowrap;">
+					<mec:commandLink id="tabelaNotificacoes_link_editar" profile="edit"
+						title="editar" action="notificacoesCRUD">
+						<f:setPropertyActionListener for="command"
+							target="#{manterNotificacaoController.notificacao}"
+							value="#{_notificacao}" />
+					</mec:commandLink>
+					<mec:commandLink id="tabelaNotificacoes_link_remover"
+						profile="delete" title="excluir"
+						action="#{notificacoesPaginatorController.excluir}">
+						<f:setPropertyActionListener for="command"
+							target="#{notificacoesPaginatorController.selecionado}"
+							value="#{_notificacao}" />
+					</mec:commandLink>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_NOTIFICACOES_DESCRICAO}" />
+					</f:facet>
+					<h:outputText value="#{_notificacao.descricao}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_NOTIFICACOES_PROCESSO}" />
+					</f:facet>
+					<h:outputText value="#{_notificacao.nomeProcesso}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_NOTIFICACOES_CELULARES}" />
+					</f:facet>
+					<h:outputText id="celularGrid"
+						value="#{notificacoesPaginatorController.obtemCelulares(_notificacao.seq, false)}" />
+					<p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" for="celularGrid"
+						rendered="#{_notificacao.destinos.size() gt 4}"> 
+						<h:outputText value="#{notificacoesPaginatorController.obtemCelulares(_notificacao.seq,true)}"/> 
+					</p:tooltip>
+				</p:column>
+			</mec:serverDataTable>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

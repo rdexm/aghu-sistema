@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.ANALISE_CUSTO_PACIENTE}</title>  
+     
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{visualizarCustoPacienteArvoreApresentacaoDadosController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{visualizarCustoPacienteArvoreApresentacaoDadosController}"/>  
+      <h:form prependId="false" id="arvoreSig"> 
+      	
+      	<aghu:linha> 
+         <table width="100%" cellpadding="0" cellspacing="0" style="border-spacing: 10px !important;"> 
+	        <tr valign="top"> 
+	          <td id="arvore_td" rowspan="1" colspan="1" style="height:100%;width:20%;"> 
+         <div style="border: 1px solid #CCC !important; border-radius: 3px !important; width: 290px !important; height: 343px !important; overflow:auto;">
+          <p:outputPanel layout="inline" styleClass="aghu-panel-geral"> 
+           	<p:accordionPanel id="accordionPOL" value="#{visualizarCustoPacienteArvoreApresentacaoDadosController.pacienteList}" var="pac" cache="false" dynamic="true"  
+						prependId="false" widgetVar="accordionPOLWG" styleClass="accordion-pol" activeIndex="#{visualizarCustoPacienteArvoreApresentacaoDadosController.activeTab}">
+						<p:ajax event="tabChange" listener="#{visualizarCustoPacienteArvoreApresentacaoDadosController.onTabChange}" update="@(#panelFrameExterno)"/>
+						<p:tab id="tab_#{pac.prontuario}" title="#{pac.prontuario} - #{fn:substring(pac.nome, 0,45)}" titletip="#{pac.prontuario} - #{fn:substring(pac.nome, 0,45)}" titleStyleClass="accordion-tab-pol">
+				        	<p:tree id="nodoArvore" value="#{visualizarCustoPacienteArvoreApresentacaoDadosController.pacientesMap[pac.prontuario]}" var="node" animate="true" dynamic="true" 
+								cache="false" style="border:none;width:100%;" selectionMode="single" selection="#{visualizarCustoPacienteArvoreApresentacaoDadosController.nodoSelecionado}">
+								<p:ajax event="select" listener="#{visualizarCustoPacienteArvoreApresentacaoDadosController.onNodeSelect}" update="@(#panelFrameExterno)"/>
+								<p:ajax event="expand" listener="#{visualizarCustoPacienteArvoreApresentacaoDadosController.onNodeExpand}" update="@(#panelFrameExterno)"/>	
+								<p:treeNode styleClass="node-pol">
+								<div style="display:inline-flex;"> 
+								<div style="float:left; padding-right:6px;">
+										<p:graphicImage library="img" url="#{node.tipoIcone}" rendered="#{not empty node.tipoIcone}" />
+									</div>
+								<div>
+								</div>
+									<h:outputText id="nodoValue" value="#{node.descricao}"/>
+									<p:tooltip for="nodoValue" value="#{messages.MENSAGEM_PERIODO_INTERNACAO_ARVORE_CUSTOS}" direction="bottom-right" rendered="#{visualizarCustoPacienteArvoreApresentacaoDadosController.exibirMensagemNodo(node)}" styleClass="tooltip" layout="block"/>
+								</div>
+								</p:treeNode>
+								
+							</p:tree>
+							
+				        </p:tab>
+				         <p:outputPanel id="link_voltar" layout="inline"> 
+                			<mec:commandLink id="imgPesquisar" immediate="true" action="#{visualizarCustoPacienteArvoreApresentacaoDadosController.voltar}" title="Nova Pesquisa" styleClass=" silk-zoom silk-icon"/> 
+              			</p:outputPanel>  
+				    </p:accordionPanel>				
+	      </p:outputPanel>  
+	      </div> 
+	      </td>  
+	          <td id="descricao_td" rowspan="1" colspan="1" style="height:100%;width:80%;"> 
+         	<p:outputPanel id="panelFrameExterno" layout="block">
+         	<p:outputPanel id="panelFrame" layout="block" rendered="#{visualizarCustoPacienteArvoreApresentacaoDadosController.exibirAbas}">
+                <p:tabView id="atenderTab" dynamic="false" activeIndex="#{visualizarCustoPacienteArvoreApresentacaoDadosController.activeTab}" prependId="false">                  
+                  <p:tab id="abaCustosGeral" title="Geral"> 
+                    <ui:include src="/pages/sig/custos/abaCustosGeral.xhtml"/> 
+                  </p:tab>  
+                  <p:tab id="abaCentroCusto" title="Centro de Custo"> 
+                    <ui:include src="/pages/sig/custos/abaCentroCusto.xhtml"/> 
+                  </p:tab>  
+                  <p:tab id="abaEspecialidadeMedica" title="Especialidade Médica" rendered="#{visualizarCustoGeralPacienteArvoreController.codigoCentroCusto==null}"> 
+                    <ui:include src="/pages/sig/custos/abaEspecialidadeMedica.xhtml"/> 
+                  </p:tab>  
+                  <p:tab id="abaEquipeMedica" title="Equipe Médica" rendered="#{visualizarCustoGeralPacienteArvoreController.codigoCentroCusto==null}"> 
+                    <ui:include src="/pages/sig/custos/abaEquipeMedica.xhtml"/> 
+                  </p:tab>  
+                  <p:tab id="abaDadosInternacao" title="Dados da Internação" rendered="#{visualizarCustoPacienteArvoreApresentacaoDadosController.exibirDadosInternacao}"> 
+                    <ui:include src="/pages/sig/custos/abaDadosInternacao.xhtml"/> 
+                  </p:tab> 
+                </p:tabView> 
+             </p:outputPanel>
+             </p:outputPanel>
+             </td> 
+	        </tr> 
+	      </table>
+          </aghu:linha>
+        <aghu:acao> 
+       	   <mec:commandButton id="bt_back" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{visualizarCustoPacienteArvoreApresentacaoDadosController.voltar}" profile="back" block="true"/>  
+        </aghu:acao>
+      </h:form> 
+      
+       <p:dialog id="modalVisualizarDetalheConsumo" width="900"  modal="true" resizable="false" widgetVar="modalVisualizarDetalheConsumoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_DETALHE_CONSUMO_OBJETO_CUSTO}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <h:form prependId="false"> 
+         <p:outputPanel id="panelTabelaVisualizarDetalheConsumo" layout="inline" style="width:700px" >
+	          <mec:serverDataTable id="tabelaVisualizar" list="#{visualizarCustoGeralPacienteArvoreController.listaDetalheConsumo}" scrollable="true" emptyMessage="#{messages.MENSAGEM_SEM_DETALHE_CONSUMO}">
+				
+				<p:column width="70%">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_PHI}" />
+					</f:facet>
+					<h:outputText value="#{item.phiSeq} - #{item.phiDescricao}" />
+				</p:column>
+				
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_MATERIAL}" />
+					</f:facet>
+					<h:outputText value="#{item.matCodigo}" />
+				</p:column>
+				
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_QUANTIDADE}" />
+					</f:facet>
+					<h:outputText value="#{item.quantidade}" >
+						<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="4" minFractionDigits="0"/>
+					</h:outputText>
+				</p:column>
+				
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_VALOR}" />
+					</f:facet>
+					<h:outputText value="#{item.valor}" >
+						<f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/>
+					</h:outputText>
+				</p:column>
+				
+			</mec:serverDataTable>
+		</p:outputPanel>
+          
+          <br clear="none"/>  
+          <h:panelGroup> 
+              <div style="text-align: center;"> 
+                <mec:commandButton id="bt_ok" value="#{messages.LABEL_OK}" onclick="PF('modalVisualizarDetalheConsumoWG').hide(); return false;" profile="ok"/> 
+              </div>
+          </h:panelGroup>
+          </h:form>  
+        </p:dialog> 
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

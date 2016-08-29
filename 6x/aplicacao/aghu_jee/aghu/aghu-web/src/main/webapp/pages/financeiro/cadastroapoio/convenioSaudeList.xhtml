@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.MENSAGEM_CONVENIO_SAUDE} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{convenioSaudePaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.MENSAGEM_CONVENIO_SAUDE}"> 
+          <aghu:linha> 
+            <mec:inputNumero value="#{convenioSaudePaginatorController.codigo}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_CONVENIO}" maxlength="6" size="6" id="codigo"/>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO}" size="50" maxlength="60" title="#{messages.TITLE_DESCRICAO}" value="#{convenioSaudePaginatorController.descricao}" style="text-transform:uppercase" id="descricao"/>  
+            <mec:selectOneMenu enum="DominioSituacao" label="#{messages.LABEL_ATIVO}" value="#{convenioSaudePaginatorController.situacao}" title="Campo para definir se o registro está ou não ativo." id="situacao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{convenioSaudePaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{convenioSaudePaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{convenioSaudePaginatorController.iniciarInclusao}" rendered="#{convenioSaudePaginatorController.exibirBotaoIncluir}" disabled="#{!mf:hasPermission(securityController, 'convenioSaude,alterar')}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formConvenioSaude"> 
+        <p:outputPanel rendered="#{convenioSaudePaginatorController.dataModel.pesquisaAtiva}"> 
+          <mec:serverDataTable id="tabelaConvenioSaude" value="#{convenioSaudePaginatorController}" dataModel="dataModel" title="#{messages.TITLE_CONVENIOS_SAUDES_ENCONTRADOS}" controller="#{convenioSaudePaginatorController}"> 
+            <c:set var="_item" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+              <mec:commandLink id="tabelaConvenioSaude_link_editar"
+                               profile="edit"
+                               title="editar"
+                               action="#{convenioSaudePaginatorController.editar}">
+                <f:setPropertyActionListener target="#{convenioSaudeController.codigo}" value="#{_item.codigo}" for="command"/>  
+              </mec:commandLink>
+              <mec:commandLink title="#{messages.LABEL_DETALHES_CONVENIO}" action="#{convenioSaudePaginatorController.detalharConvenio(_item)}" oncomplete="PF('modalDetalhesWG').show();;" styleClass=" silk-note silk-icon" ajax="true" render="panelModalDetalhes"/> 
+            </p:column>  
+            <p:column width="30"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.codigo}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.descricao}"/> 
+            </p:column>  
+            <p:column width="40"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_IND_PERMISSAO_INTERNACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.permissaoInternacao ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column width="40"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_IND_SEL_AUTOM_PROF}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.selecaoAutomaticaProf ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column width="40"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_IND_EXIGE_NUM_MATR }"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.exigeNumeroMatricula ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column width="40"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_IND_RESTRINGE_PROF}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.restringeProf ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column width="40"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_IND_VERF_ESCALA_PROF_INT}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.verificaEscalaProfInt ? 'Sim' : 'Não'}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ATIVO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.situacao.descricao}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel> 
+
+        <p:outputPanel id="panelModalDetalhes" layout="inline">
+         <p:dialog id="modalDetalhes" width="800" height="430" rendered="#{convenioSaudePaginatorController.renderDetalhes}" modal="true" resizable="false" widgetVar="modalDetalhesWG" closable="true">
+              <f:facet name="header">
+                 <h:panelGroup>
+                    <h:outputText value="Detalhes do Convênio Saúde"/>
+                 </h:panelGroup>
+              </f:facet>
+              <aghu:panelGeral legend="Convênio Saúde">
+                <aghu:linha>
+                    <mec:inputNumero value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.codigo}"
+                                     label="#{messages.LABEL_CODIGO}"
+                                     title="#{messages.TITLE_CODIGO_CONVENIO}"
+                                     readonly="true"
+                                     maxlength="6"
+                                     size="6"
+                                     id="codigoM"/>
+                    <mec:inputText label="#{messages.LABEL_DESCRICAO}" size="85" maxlength="60" title="#{messages.TITLE_DESCRICAO}" readonly="true" value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.descricao}" style="text-transform:uppercase" id="descricaoM"/>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.logradouro}" readonly="true" label="#{messages.LABEL_LOGRADOURO}" title="#{messages.TITLE_LOGRADOURO}" maxlength="60" size="50" style="text-transform:uppercase" id="logradouro"/>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.numeroLogradouro}" readonly="true" label="#{messages.LABEL_NUMERO_LOGRADOURO}" title="#{messages.TITLE_NUMERO_LOGRADOURO}" maxlength="6" size="5" style="text-transform:uppercase" id="nro_logradouro"/>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.complementoLogradouro}" readonly="true" label="#{messages.LABEL_COMPLEMENTO_LOGRADOURO}" title="#{messages.TITLE_COMPLEMENTO_LOGRADOURO}" maxlength="10" size="10" style="text-transform:uppercase" id="comp_logradouro"/>
+                </aghu:linha>
+                <aghu:linha>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.bairro}" readonly="true" label="#{messages.LABEL_BAIRRO}" title="#{messages.TITLE_BAIRRO}" maxlength="60" size="40" style="text-transform:uppercase" id="bairro"/>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.cep}" readonly="true" label="#{messages.LABEL_CEP}" title="#{messages.TITLE_CEP}" maxlength="9" size="8" style="text-transform:uppercase" id="cep"/>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.cidade}" readonly="true" label="#{messages.LABEL_CIDADE}" title="#{messages.TITLE_CIDADE}" maxlength="30" size="20" style="text-transform:uppercase" id="cidade"/>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.uf.sigla}" readonly="true" label="#{messages.LABEL_UF}" title="#{messages.TITLE_UF}" maxlength="2" size="3" style="text-transform:uppercase" id="uf"/>
+                </aghu:linha>
+                <aghu:linha>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.pagador.seq}" readonly="true" label="#{messages.LABEL_PAGADOR}" title="#{messages.TITLE_PAGADOR}" maxlength="4" size="5" style="text-transform:uppercase" id="pagador"/>
+                    <mec:inputText value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.pagador.descricao}" readonly="true" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESC_PAGADOR}" maxlength="45" size="40" style="text-transform:uppercase" id="desc_pagador"/>
+                </aghu:linha>
+                <aghu:linha>
+                    <mec:inputTextArea cols="60" label="#{messages.LABEL_OBS}" rows="3" readonly="true" value="#{convenioSaudePaginatorController.convenioSaudeSelecionado.observacoes}" title="#{messages.TITLE_OBS}" id="obs" maxlength="2000"/>
+                </aghu:linha>
+              </aghu:panelGeral>
+         </p:dialog>
+        </p:outputPanel>
+      </h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

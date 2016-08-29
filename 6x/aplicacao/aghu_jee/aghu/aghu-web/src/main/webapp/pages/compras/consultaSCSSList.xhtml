@@ -1,0 +1,951 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">      
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CONSULTA_SC_SS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{consultaSCSSPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <ui:remove>
+            OBSERVACAO: existem colunas duplicadas pois o grid nao exporta corretamente links entao optou-se por 
+                        colocar exportable false na coluna com link e criar uma coluna fake 
+                        que eh usada somente na exportacao com style display none
+      </ui:remove>
+      <mec:pageConfig controller="#{consultaSCSSPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_CONSULTA_SC_SS}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelNumero" layout="inline">             
+              <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.numero}" label="#{messages.LABEL_CONSULTA_SC_SS_NUMERO}" title="#{messages.TITLE_CONSULTA_SC_SS_NUMERO}" maxlength="7" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyNumero}" id="numero"> 
+                <p:ajax event="change" update="@(#panelEfetivaPeriodoDescricao) @(#panelCentroCusto) @(#panelMaterial) @(#panelServico) @(#pontoParadaPanel) @(#nroProjPanel) @(#gerAutomaticaPanel) @(#panelDetalhes1) @(#panelDetalhes2) @(#panelPAC) @(#panelGestorPAC) @(#panelAF) @(#panelGestorAF)" process="@this"/> 
+              </mec:inputNumero> 
+              <div  class="aghu-boxinput" style="padding-top: 25px;">				
+					<p:outputPanel styleClass="aghu-lineinput">
+						<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+					</p:outputPanel>			
+			 </div>
+			   <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.numeroFinal}"  maxlength="7" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyNumeroFinal}" id="numeroFinal"> 
+                <p:ajax event="change" update="@(#panelEfetivaPeriodoDescricao) @(#panelCentroCusto) @(#panelMaterial) @(#panelServico) @(#pontoParadaPanel) @(#nroProjPanel) @(#gerAutomaticaPanel) @(#panelDetalhes1) @(#panelDetalhes2) @(#panelPAC) @(#panelGestorPAC) @(#panelAF) @(#panelGestorAF)" process="@this"/> 
+              </mec:inputNumero> 	
+				
+            </p:outputPanel>  
+            <mec:selectOneMenu id="tipoSolicitacaoSCSS" enum="DominioTipoSolicitacao" label="#{messages.LABEL_CONSULTA_SC_SS_TIPO_SOLICITACAO}" title="#{messages.TITLE_CONSULTA_SC_SS_TIPO_SOLICITACAO}" value="#{consultaSCSSPaginatorController.filtro.tipoSolicitacao}"> 
+              <p:ajax event="change" update="@(#panelMaterial) @(#panelMain) @(#panelServico) @(#nroProjPanel) @(#gerAutomaticaPanel) @(#panelNumero) @this" process="@this"/> 
+            </mec:selectOneMenu>  
+            <p:outputPanel id="panelEfetivaPeriodoDescricao" layout="inline"> 
+              <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_EFETIVADA}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_EFETIVADA}" required="false" value="#{consultaSCSSPaginatorController.filtro.efetivada}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="efetivada"> 
+                <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+              </mec:selectOneMenu>
+			<p:outputPanel>
+				<mec:inputTextData id="cdPeriodoInicio"
+					label="#{messages.LABEL_CONSULTA_SC_SS_PERIODO_SOLICITACAO}"
+					title="#{messages.TITLE_CONSULTA_SC_SS_PERIODO_SOLICITACAO}"
+					value="#{consultaSCSSPaginatorController.filtro.dataInicioSolicitacao}"
+					readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioSolicitacao','getDataFimSolicitacao')}">
+					<p:ajax event="change" eventsQueue="blurQueue"
+						update="@(#panelNumero) @(#panelDetalhes1) @(#panelPAC) @(#panelAF)"
+						process="@this" />
+					<p:ajax event="blur"
+						update="@(#panelNumero) @(#panelDetalhes1) @(#panelPAC) @(#panelAF)"
+						process="@this" />	
+					 <p:ajax event="dateSelect"
+						update="@(#panelNumero) @(#panelDetalhes1) @(#panelPAC) @(#panelAF)"
+						process="@this" />		
+				</mec:inputTextData>
+								
+				<div  class="aghu-boxinput" style="padding-top: 25px;">				
+					<p:outputPanel styleClass="aghu-lineinput">
+						<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+					</p:outputPanel>			
+				</div>	
+				
+				<mec:inputTextData id="cdPeriodoFim"
+					value="#{consultaSCSSPaginatorController.filtro.dataFimSolicitacao}"
+					readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioSolicitacao','getDataFimSolicitacao')}">
+					<p:ajax event="change" eventsQueue="blurQueue"
+						update="@(#panelNumero) @(#panelDetalhes1) @(#panelPAC) @(#panelAF)"
+						process="@this" />
+					<p:ajax event="blur"
+						update="@(#panelNumero) @(#panelDetalhes1) @(#panelPAC) @(#panelAF)"
+						process="@this" />	
+					 <p:ajax event="dateSelect"
+						update="@(#panelNumero) @(#panelDetalhes1) @(#panelPAC) @(#panelAF)"
+						process="@this" />		
+				</mec:inputTextData>
+			</p:outputPanel>
+
+			<mec:inputText id="descricaoSolicitacao" label="#{messages.LABEL_CONSULTA_SC_SS_TERMO}" title="#{messages.TITLE_CONSULTA_SC_SS_TERMO}" value="#{consultaSCSSPaginatorController.filtro.descricao}" maxlength="240" size="50" style="text-transform:uppercase" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" removerCaratersEspeciais="false"> 
+                <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+            </mec:inputText> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="panelCentroCusto" layout="inline"> 
+              <mec:suggestionBox label="#{messages.LABEL_CCUSTO_SOL_COMPR}" title="#{messages.TITLE_CCUSTO_SOL_COMPR}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="listarCentroCustos" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="ccustoSolicitacao" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.centroCustoSolicitante}" render="panelNumero"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:suggestionBox label="#{messages.LABEL_CCUSTO_APL_SOL_COMPR}" title="#{messages.TITLE_CCUSTO_APL_SOL_COMPR}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="listarCentroCustos" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="ccustoAplicacao" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.centroCustoAplicacao}" render="panelNumero"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:accordionPanel id="togglePanelDetalhesSolicitacao" style="margin-left: 4px !important; margin-right: 4px !important; width: 96%" multiple="true" activeIndex="null" prependId="false"> 
+              <p:tab title="#{messages.LABEL_CONSULTA_SC_SS_PESQUISAR_POR_DET_SOLICITACAO}"> 
+                 
+                  <aghu:linha> 
+                    <p:outputPanel id="panelDetalhes1"> 
+                    
+                    <p:outputPanel>
+						<mec:inputTextData id="fdPeriodoAutorizacao"
+							label="#{messages.LABEL_CONSULTA_SC_SS_PERIODO_AUTORIZACAO}" 
+							title="#{messages.TITLE_CONSULTA_SC_SS_PERIODO_AUTORIZACAO}"
+							value="#{consultaSCSSPaginatorController.filtro.dataInicioAutorizacao}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioAutorizacao','getDataFimAutorizacao')}"
+							size="7">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelPAC) @(#panelAF)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />	
+							<p:ajax event="dateSelect" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />		
+						</mec:inputTextData>
+
+                        <div  class="aghu-boxinput" style="padding-top: 25px;">
+                            <p:outputPanel styleClass="aghu-lineinput">
+                                <p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+                            </p:outputPanel>
+                        </div>
+				
+						<mec:inputTextData id="cdPeriodoFimAutorizacao"
+							value="#{consultaSCSSPaginatorController.filtro.dataFimAutorizacao}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioAutorizacao','getDataFimAutorizacao')}"
+							size="7">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />	
+							<p:ajax event="dateSelect"	update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />		
+						</mec:inputTextData>
+			        </p:outputPanel>
+			        
+			        <p:outputPanel>
+						<mec:inputTextData id="fdPeriodoAnalise"
+							label="#{messages.LABEL_CONSULTA_SC_SS_PERIODO_ANALISE}" 
+							title="#{messages.TITLE_CONSULTA_SC_SS_PERIODO_ANALISE}"
+							value="#{consultaSCSSPaginatorController.filtro.dataInicioAnalise}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioAnalise','getDataFimAnalise')}"
+							size="7">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelPAC) @(#panelAF)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />	
+							 <p:ajax event="dateSelect" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />		
+						</mec:inputTextData>
+								
+						<div  class="aghu-boxinput" style="padding-top: 25px;">				
+							<p:outputPanel styleClass="aghu-lineinput">
+								<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+							</p:outputPanel>			
+						</div>
+
+
+                        <mec:inputTextData id="cdPeriodoFimAnalise2"
+                                           value="#{consultaSCSSPaginatorController.filtro.dataFimAnalise}"
+                                           readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioAnalise','getDataFimAnalise')}"
+                                           size="7">
+                            <p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelPAC) @(#panelAF)" process="@this" />
+                            <p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />
+                            <p:ajax event="dateSelect" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao)  @(#panelPAC) @(#panelAF)" process="@this" />
+                        </mec:inputTextData>
+			        </p:outputPanel>
+                     
+                      <mec:suggestionBox id="sbFormaCompra" required="false" label="#{messages.LABEL_CONSULTA_SC_SS_FORMA_COMPRA}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarModalidadeLicitacao" title="#{messages.TITLE_CONSULTA_SC_SS_FORMA_COMPRA}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.modalidadeLicitacao}" render="panelNumero"> 
+                        <p:column>#{item.codigo}</p:column>  
+                        <p:column>#{item.descricao}</p:column> 
+                      </mec:suggestionBox>  
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_EXCLUIDA}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_EXCLUIDA}" required="false" value="#{consultaSCSSPaginatorController.filtro.exclusao}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="excluida"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu>  
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_DEVOLVIDA}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_DEVOLVIDA}" required="false" value="#{consultaSCSSPaginatorController.filtro.devolucao}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="devolucao"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu> 
+                    </p:outputPanel>  
+                    <p:outputPanel id="gerAutomaticaPanel" layout="inline"> 
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_GER_AUT}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_GER_AUT}" required="false" value="#{consultaSCSSPaginatorController.filtro.geracaoAutomatica}" readonly="#{consultaSCSSPaginatorController.readOnlyGrupoMaterialEstocavel}" id="gerAutomatica"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu> 
+                    </p:outputPanel> 
+                  </aghu:linha>  
+                  <aghu:linha> 
+                    <p:outputPanel id="nroProjPanel" layout="inline"> 
+                      <mec:inputNumero id="nroProj" value="#{consultaSCSSPaginatorController.filtro.nroProjeto}" label="#{messages.LABEL_CONSULTA_SC_SS_NRO_PROJ}" title="#{messages.TITLE_CONSULTA_SC_SS_NRO_PROJ}" maxlength="6" size="7" ajaxValidation="false" readonly="#{consultaSCSSPaginatorController.readOnlyGrupoMaterialEstocavel}"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero> 
+                    </p:outputPanel>  
+                    <p:outputPanel id="panelDetalhes2" layout="inline"> 
+                      <mec:inputNumero id="nroInv" required="false" value="#{consultaSCSSPaginatorController.filtro.nroInvestimento}" label="#{messages.LABEL_CONSULTA_SC_SS_NRO_INVEST}" title="#{messages.TITLE_CONSULTA_SC_SS_NRO_INVEST}" maxlength="5" size="6" ajaxValidation="false" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <mec:suggestionBox id="sbVerbaGestao" required="false" label="#{messages.LABEL_CONSULTA_SC_SS_VERBA_GESTAO}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarVerbaGestaoPorSeqOuDescricao" title="#{messages.TITLE_CONSULTA_SC_SS_VERBA_GESTAO}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.verbaGestao}" render="panelNumero"> 
+                        <p:column>#{item.seq}</p:column>  
+                        <p:column>#{item.descricao}</p:column> 
+                      </mec:suggestionBox>  
+                      <mec:suggestionBox label="#{messages.LABEL_CONSULTA_SC_SS_NATUREZA_DESPESA}" title="#{messages.TITLE_CONSULTA_SC_SS_NATUREZA_DESPESA}" descricaoInput="id.codigo" descricaoLabel="descricao" suggestionAction="listarTodasNaturezaDespesa" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="sbNaturezaDespesa" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.naturezaDespesa}" render="panelNumero"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                          </f:facet> #{item.id.codigo}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                          </f:facet> #{item.descricao}
+                        </p:column> 
+                      </mec:suggestionBox>  
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_URGENTE}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_URGENTE}" required="false" value="#{consultaSCSSPaginatorController.filtro.urgente}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="urgente"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu>  
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_PRIORIDADE}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_PRIORIDADE}" required="false" value="#{consultaSCSSPaginatorController.filtro.prioridade}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="prioridade"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu>  
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_EXCLUSIVA}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_EXCLUSIVA}" required="false" value="#{consultaSCSSPaginatorController.filtro.exclusivo}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="matExclusivo"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu> 
+                    </p:outputPanel> 
+                  </aghu:linha> 
+                 
+              </p:tab> 
+            </p:accordionPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:accordionPanel id="togglePanelModosDeUso" style="margin-left: 4px !important; margin-right: 4px !important; width: 96%" multiple="true" activeIndex="null" prependId="false"> 
+              <p:tab title="#{messages.LABEL_CONSULTA_SC_SS_MATERIAL_SERVICO}">                 
+                  <aghu:linha> 
+                    <p:outputPanel id="panelMaterial" layout="inline"> 
+                      <mec:suggestionBox label="#{messages.LABEL_CONSULTA_SC_SS_MATERIAL}" title="#{messages.TITLE_CONSULTA_SC_SS_MATERIAL}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="listarMateriais" width="650" readonly="#{consultaSCSSPaginatorController.readOnlyMaterial}" id="material" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.material}" render="grupoEstocavelPanel,panelNumero,panelServico,grupoServicoPanel,panelMain,materialToolTip"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_CODIGO}</b> 
+                          </f:facet> #{item.codigo}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_NOME}</b> 
+                          </f:facet>  
+                            <h:outputText value="#{(item.nome.length() &gt; 40) ? fn:substring(item.nome,0,40) : item.nome}#{(item.nome.length() &gt; 40) ? '...' : '' }" title="#{item.nome}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_DESCRICAO}</b> 
+                          </f:facet>
+                            <h:outputText value="#{(item.descricao.length() &gt; 40) ? fn:substring(item.descricao,0,40) : item.descricao}#{(item.descricao.length() &gt; 40) ? '...' : '' }" title="#{item.getDescricaoSplited(70)}"/> 
+                        </p:column> 
+                      </mec:suggestionBox>  
+                      <pe:tooltip id="materialToolTip" for="panelMaterial" mode="ajax" disabled="#{empty consultaSCSSPaginatorController.filtro.material}"> 
+                        <h:outputText value="#{messages.LABEL_NOME}: #{consultaSCSSPaginatorController.filtro.material.nome}"/>  
+                        <br clear="none"/>  
+                        <h:outputText value="#{messages.LABEL_DESCRICAO}: #{consultaSCSSPaginatorController.filtro.material.descricao}" rendered="#{not empty consultaSCSSPaginatorController.filtro.material.descricao}"/> 
+                      </pe:tooltip>  
+                      <p:outputPanel id="grupoEstocavelPanel" layout="inline"> 
+                        <mec:suggestionBox label="#{messages.LABEL_CONSULTA_SC_SS_GRUPO_MATERIAL}" title="#{messages.TITLE_CONSULTA_SC_SS_GRUPO_MATERIAL}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="listarGrupoMateriais" width="400" readonly="#{consultaSCSSPaginatorController.readOnlyGrupoMaterialEstocavel}" id="grupoMaterial" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.grupoMaterial}" render="panelNumero,panelServico,grupoServicoPanel,panelMain"> 
+                          <p:column> 
+                            <f:facet name="header"> 
+                              <b>#{messages.LABEL_CODIGO}</b> 
+                            </f:facet> #{item.codigo}
+                          </p:column>  
+                          <p:column> 
+                            <f:facet name="header"> 
+                              <b>#{messages.LABEL_DESCRICAO}</b> 
+                            </f:facet> #{item.descricao}
+                          </p:column> 
+                        </mec:suggestionBox>  
+                        <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_ESTOCAVEL}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_ESTOCAVEL}" required="false" value="#{consultaSCSSPaginatorController.filtro.indEstocavel}" readonly="#{consultaSCSSPaginatorController.readOnlyGrupoMaterialEstocavel}" id="estocavel"> 
+                          <p:ajax event="change" update="@(#panelNumero) @(#panelServico) @(#grupoServicoPanel) @(#panelMain)" process="@this"/> 
+                        </mec:selectOneMenu> 
+                      </p:outputPanel> 
+                    </p:outputPanel> 
+                  </aghu:linha>  
+                  <aghu:linha> 
+                    <p:outputPanel id="panelServico" layout="inline"> 
+                      <mec:suggestionBox label="#{messages.LABEL_CONSULTA_SC_SS_SERVICO}" title="#{messages.TITLE_CONSULTA_SC_SS_SERVICO}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="listarServicos" width="400" readonly="#{consultaSCSSPaginatorController.readOnlyServico}" id="servico" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.servico}" render="grupoServicoPanel,panelNumero,panelMaterial,grupoEstocavelPanel,panelMain,nroProjPanel"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_CODIGO}</b> 
+                          </f:facet> #{item.codigo}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_NOME}</b> 
+                          </f:facet> #{item.nome}
+                        </p:column> 
+                      </mec:suggestionBox>  
+                      <p:outputPanel id="grupoServicoPanel" layout="inline"> 
+                        <mec:suggestionBox label="#{messages.LABEL_CONSULTA_SC_SS_GRUPO_SERVICO}" title="#{messages.TITLE_CONSULTA_SC_SS_GRUPO_SERVICO}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="listarGrupoServico" width="400" readonly="#{consultaSCSSPaginatorController.readOnlyGrupoServico}" id="grupoServico" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.grupoServico}" render="panelNumero,panelMaterial,grupoEstocavelPanel,panelMain,nroProjPanel"> 
+                          <p:column> 
+                            <f:facet name="header"> 
+                              <b>#{messages.LABEL_CODIGO}</b> 
+                            </f:facet> #{item.codigo}
+                          </p:column>  
+                          <p:column> 
+                            <f:facet name="header"> 
+                              <b>#{messages.LABEL_DESCRICAO}</b> 
+                            </f:facet> #{item.descricao}
+                          </p:column> 
+                        </mec:suggestionBox> 
+                      </p:outputPanel> 
+                    </p:outputPanel> 
+                  </aghu:linha>                 
+              </p:tab> 
+            </p:accordionPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:accordionPanel id="togglePanelPontoParada" style="margin-left: 4px !important; margin-right: 4px !important; width: 96%" multiple="true" activeIndex="null" prependId="false"> 
+              <p:tab title="#{messages.LABEL_CONSULTA_SC_SS_PESQUISAR_POR_PONTO_PARADA}"> 
+                 
+                  <aghu:linha> 
+                    <p:outputPanel id="pontoParadaPanel" layout="inline"> 
+                      <mec:suggestionBox label="#{messages.LABEL_CONSULTA_SC_SS_PONTO_PARADA_ATUAL}" title="#{messages.TITLE_CONSULTA_SC_SS_PONTO_PARADA_ATUAL}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarPontoParadaSolicitacaoPorCodigoOuDescricao" width="300" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="suggestionPontoParadaAtual" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.pontoParadaAtual}" render="panelNumero"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_CODIGO}</b> 
+                          </f:facet> #{item.codigo}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_DESCRICAO}</b> 
+                          </f:facet> #{item.descricao}
+                        </p:column> 
+                      </mec:suggestionBox>  
+                      <mec:suggestionBox label="#{messages.LABEL_CONSULTA_SC_SS_PONTO_PARADA_ANT}" title="#{messages.TITLE_CONSULTA_SC_SS_PONTO_PARADA_ANT}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarPontoParadaSolicitacaoPorCodigoOuDescricao" width="300" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="suggestionPontoParadaAnterior" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.pontoParadaAnterior}" render="panelNumero"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_CODIGO}</b> 
+                          </f:facet> #{item.codigo}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_DESCRICAO}</b> 
+                          </f:facet> #{item.descricao}
+                        </p:column> 
+                      </mec:suggestionBox> 
+                    </p:outputPanel> 
+                  </aghu:linha>
+              </p:tab> 
+            </p:accordionPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:accordionPanel id="togglePAC" style="margin-left: 4px !important; margin-right: 4px !important; width: 96%" multiple="true" activeIndex="null" prependId="false"> 
+              <p:tab title="#{messages.LABEL_CONSULTA_SC_SS_PESQUISAR_POR_PAC}"> 
+                 
+                  <p:outputPanel id="panelPAC" layout="inline"> 
+                    <aghu:linha> 
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.numeroPAC}" label="#{messages.LABEL_CONSULTA_SC_SS_NUMERO_PAC}" title="#{messages.TITLE_CONSULTA_SC_SS_NUMERO_PAC}" maxlength="7" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="numeroPAC"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <mec:inputText id="descricaoPAC" label="#{messages.LABEL_CONSULTA_SC_SS_DESCR_PAC}" title="#{messages.TITLE_CONSULTA_SC_SS_DESCR_PAC}" value="#{consultaSCSSPaginatorController.filtro.descricaoPAC}" maxlength="30" size="50" style="text-transform:uppercase" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputText>  
+                      
+                      <p:outputPanel>
+						<mec:inputTextData id="fdPeriodoAberturaPAC"
+							label="#{messages.LABEL_CONSULTA_SC_SS_PERIODO_ABER_PAC}" 
+							title="#{messages.TITLE_CONSULTA_SC_SS_PERIODO_ABER_PAC}"
+							value="#{consultaSCSSPaginatorController.filtro.dataInicioAberturaPropostaPAC}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioAberturaPropostaPAC','getDataFimAberturaPropostaPAC')}">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelAF)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelAF)" process="@this" />	
+							<p:ajax event="dateSelect" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelAF)" process="@this" />		
+						</mec:inputTextData>
+								
+						<div  class="aghu-boxinput" style="padding-top: 25px;">				
+							<p:outputPanel styleClass="aghu-lineinput">
+								<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+							</p:outputPanel>			
+						</div>	
+				
+						<mec:inputTextData id="cdPeriodoFimAberPAC"
+							value="#{consultaSCSSPaginatorController.filtro.dataFimAberturaPropostaPAC}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioAberturaPropostaPAC','getDataFimAberturaPropostaPAC')}">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelAF)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelAF)" process="@this" />	
+							<p:ajax event="dateSelect"	update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelAF)" process="@this" />		
+						</mec:inputTextData>
+			        </p:outputPanel>                   
+                      
+                      
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_TIPO_PAC}" enum="DominioTipoLicitacao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_TIPO_PAC}" required="false" value="#{consultaSCSSPaginatorController.filtro.tipoPAC}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="tipoPAC"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu>  
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_EXCLUIDO_PAC}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_EXCLUIDO_PAC}" required="false" value="#{consultaSCSSPaginatorController.filtro.exclusaoPAC}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="excluidoPAC"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu> 
+                    </aghu:linha>  
+                    <aghu:linha> 
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.numDocPAC}" label="#{messages.LABEL_CONSULTA_SC_SS_NUMERO_DOC_PAC}" title="#{messages.TITLE_CONSULTA_SC_SS_NUMERO_DOC_PAC}" maxlength="7" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="numDocPAC"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.numEditalPAC}" label="#{messages.LABEL_CONSULTA_SC_SS_NUMERO_EDITAL_PAC}" title="#{messages.TITLE_CONSULTA_SC_SS_NUMERO_EDITAL_PAC}" maxlength="7" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="numEditalPAC"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.anoComplementoPAC}" label="#{messages.LABEL_CONSULTA_SC_SS_ANO_COMPLEMENTO_PAC}" title="#{messages.TITLE_CONSULTA_SC_SS_ANO_COMPLEMENTO_PAC}" maxlength="7" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="anoComplementoPAC"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.artigoPAC}" label="#{messages.LABEL_CONSULTA_SC_SS_ARTIGO_PAC}" title="#{messages.TITLE_CONSULTA_SC_SS_ARTIGO_PAC}" maxlength="3" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="artigoPAC"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.incisoArtigoPAC}" label="#{messages.LABEL_CONSULTA_SC_SS_INCISO_ART_PAC}" title="#{messages.TITLE_CONSULTA_SC_SS_INCISO_ART_PAC}" maxlength="2" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="incisoArtigoPAC"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <mec:suggestionBox id="sbModalidadeLicitacaoPAC" required="false" label="#{messages.LABEL_CONSULTA_SC_SS_MODALIDADE_LIC_PAC}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarModalidadeLicitacao" title="#{messages.TITLE_CONSULTA_SC_SS_MODALIDADE_LIC_PAC}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.modalidadeLicitacaoPAC}" render="panelNumero"> 
+                        <p:column>#{item.codigo}</p:column>  
+                        <p:column>#{item.descricao}</p:column> 
+                      </mec:suggestionBox>  
+                      <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_TIPO_PREGAO_PAC}" enum="DominioTipoPregao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_TIPO_PREGAO_PAC}" required="false" value="#{consultaSCSSPaginatorController.filtro.tipoPregaoPAC}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="tipoPregao"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:selectOneMenu> 
+                    </aghu:linha> 
+                  </p:outputPanel>  
+                  <aghu:linha> 
+                    <p:outputPanel id="panelGestorPAC" layout="inline"> 
+                      <mec:inputNumero id="vinGestorPAC" label="#{messages.LABEL_VINCULO}" readonly="true" size="5" maxlength="3" value="#{consultaSCSSPaginatorController.filtro.servidorGestorPAC.id.vinCodigo}"/>  
+                      <mec:suggestionBox id="suggestionGestorPAC" required="false" label="#{messages.LABEL_GESTOR_PAC}" title="#{messages.TITLE_GESTOR_PAC}" width="500" descricaoInput="id.matricula" descricaoLabel="pessoaFisica.nome" suggestionAction="pesquisarServidorPorMatriculaOuNome" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.servidorGestorPAC}" render="panelGestorPAC"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_VINCULO}</b> 
+                          </f:facet> #{item.id.vinCodigo}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_FUNCIONARIO}</b> 
+                          </f:facet> #{item.id.matricula}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_NOME}</b> 
+                          </f:facet> #{item.pessoaFisica.nome}
+                        </p:column> 
+                      </mec:suggestionBox> 
+                    </p:outputPanel> 
+                  </aghu:linha>
+              </p:tab> 
+            </p:accordionPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:accordionPanel id="toggleAF" style="margin-left: 4px !important; margin-right: 4px !important; width: 96%" multiple="true" activeIndex="null" prependId="false"> 
+              <p:tab title="#{messages.LABEL_CONSULTA_SC_SS_PESQUISAR_POR_AF}"> 
+                 
+                  <p:outputPanel id="panelAF" layout="inline"> 
+                    <aghu:linha> 
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.numeroAF}" label="#{messages.LABEL_CONSULTA_SC_SS_NUMERO_AF}" title="#{messages.TITLE_CONSULTA_SC_SS_NUMERO_AF}" maxlength="7" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="numeroAF"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.nroComplementoAF}" label="#{messages.LABEL_CONSULTA_SC_SS_NUMERO_COMPLEMENTO_AF}" title="#{messages.TITLE_CONSULTA_SC_SS_NUMERO_COMPLEMENTO_AF}" maxlength="3" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="numeroComplementoAF"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      
+                      <p:outputPanel>
+						<mec:inputTextData id="fdPeriodoGeracaoAF"
+							label="#{messages.LABEL_CONSULTA_SC_SS_PERIODO_GER_AF}" 
+							title="#{messages.TITLE_CONSULTA_SC_SS_PERIODO_GER_AF}"
+							value="#{consultaSCSSPaginatorController.filtro.dataInicioGeracaoAF}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioGeracaoAF','getDataFimGeracaoAF')}">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />	
+							<p:ajax event="dateSelect" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />		
+						</mec:inputTextData>
+								
+						<div  class="aghu-boxinput" style="padding-top: 25px;">				
+							<p:outputPanel styleClass="aghu-lineinput">
+								<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+							</p:outputPanel>			
+						</div>	
+				
+						<mec:inputTextData id="cdPeriodoFimGerAF"
+							value="#{consultaSCSSPaginatorController.filtro.dataFimGeracaoAF}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioGeracaoAF','getDataFimGeracaoAF')}">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />	
+							<p:ajax event="dateSelect"	update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />		
+						</mec:inputTextData>
+			        </p:outputPanel> 
+			        
+			         <p:outputPanel>
+						<mec:inputTextData id="fdPeriodoPervEntregaAF"
+							label="#{messages.LABEL_CONSULTA_SC_SS_PERIODO_PREV_ENTR_AF}" 
+							title="#{messages.TITLE_CONSULTA_SC_SS_PERIODO_PREV_ENTR_AF}"
+							value="#{consultaSCSSPaginatorController.filtro.dataInicioPrevEntregaAF}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioPrevEntregaAF','getDataFimPrevEntregaAF')}">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />	
+							<p:ajax event="dateSelect" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />		
+						</mec:inputTextData>
+								
+						<div  class="aghu-boxinput" style="padding-top: 25px;">				
+							<p:outputPanel styleClass="aghu-lineinput">
+								<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+							</p:outputPanel>			
+						</div>	
+				
+						<mec:inputTextData id="cdPeriodoFimPervEntregaAF"
+							value="#{consultaSCSSPaginatorController.filtro.dataFimPrevEntregaAF}"
+							readonly="#{consultaSCSSPaginatorController.getReadOnlyDatas('getDataInicioPrevEntregaAF','getDataFimPrevEntregaAF')}">
+							<p:ajax event="change" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />
+							<p:ajax event="blur" update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />	
+							<p:ajax event="dateSelect"	update="@(#panelNumero) @(#panelEfetivaPeriodoDescricao) @(#panelDetalhes1) @(#panelPAC)" process="@this" />		
+						</mec:inputTextData>
+			        </p:outputPanel> 
+                    <mec:selectOneMenu label="#{messages.LABEL_CONSULTA_SC_SS_EXCLUIDO_AF}" enum="DominioSimNao" itemsType="enum" title="#{messages.TITLE_CONSULTA_SC_SS_EXCLUIDO_AF}" required="false" value="#{consultaSCSSPaginatorController.filtro.exclusaoAF}" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="excluidoAF"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                     </mec:selectOneMenu> 
+                    </aghu:linha>  
+                    <aghu:linha> 
+                      <mec:suggestionBox id="sugFornecedorAF" label="#{messages.LABEL_CONSULTA_SC_SS_FORNECEDOR_AF}" title="#{messages.TITLE_CONSULTA_SC_SS_FORNECEDOR_AF}" descricaoInput="cgcCpf" descricaoLabel="razaoSocial" suggestionAction="pesquisarFornecedoresPorCgcCpfRazaoSocial" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" width="750" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.vFornecedorAF}"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_CGC_CPF}</b> 
+                          </f:facet> #{item.cgcCpf}
+                        </p:column>                       
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_RAZAO_SOCIAL}</b> 
+                          </f:facet> #{item.razaoSocial}
+                        </p:column> 
+                      </mec:suggestionBox>  
+                      <mec:inputText id="numeroEmpenhoAF" label="#{messages.LABEL_CONSULTA_SC_SS_NUMERO_EMPENHO_AF}" title="#{messages.TITLE_CONSULTA_SC_SS_NUMERO_EMPENHO_AF}" value="#{consultaSCSSPaginatorController.filtro.nroEmpenhoAF}" maxlength="10" size="15" style="text-transform:uppercase" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputText>  
+                      <mec:inputNumero value="#{consultaSCSSPaginatorController.filtro.nroContratoAF}" label="#{messages.LABEL_CONSULTA_SC_SS_NUMERO_CONTR_AF}" title="#{messages.TITLE_CONSULTA_SC_SS_NUMERO_CONTR_AF}" maxlength="5" size="8" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" id="nroContratoAF"> 
+                        <p:ajax event="change" update="@(#panelNumero)" process="@this"/> 
+                      </mec:inputNumero>  
+                      <p:outputPanel id="panelGestorAF" layout="inline"> 
+                        <mec:inputNumero id="vinGestorAF" label="#{messages.LABEL_VINCULO}" readonly="true" size="5" maxlength="3" value="#{consultaSCSSPaginatorController.filtro.servidorGestorAF.id.vinCodigo}"/>  
+                        <mec:suggestionBox id="suggestionGestorAF" required="false" label="#{messages.LABEL_GESTOR_AF}" title="#{messages.TITLE_GESTOR_AF}" width="500" descricaoInput="id.matricula" descricaoLabel="pessoaFisica.nome" suggestionAction="pesquisarServidorPorMatriculaOuNome" readonly="#{consultaSCSSPaginatorController.readOnlyTodosCampos}" controller="#{consultaSCSSPaginatorController}" value="#{consultaSCSSPaginatorController.filtro.servidorGestorAF}" render="panelGestorAF"> 
+                          <p:column> 
+                            <f:facet name="header"> 
+                              <b>#{messages.LABEL_VINCULO}</b> 
+                            </f:facet> #{item.id.vinCodigo}
+                          </p:column>  
+                          <p:column> 
+                            <f:facet name="header"> 
+                              <b>#{messages.LABEL_FUNCIONARIO}</b> 
+                            </f:facet> #{item.id.matricula}
+                          </p:column>  
+                          <p:column> 
+                            <f:facet name="header"> 
+                              <b>#{messages.LABEL_NOME}</b> 
+                            </f:facet> #{item.pessoaFisica.nome}
+                          </p:column> 
+                        </mec:suggestionBox> 
+                      </p:outputPanel> 
+                    </aghu:linha> 
+                  </p:outputPanel>                  
+              </p:tab> 
+            </p:accordionPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{consultaSCSSPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR_CAMPOS}" action="#{consultaSCSSPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{consultaSCSSPaginatorController.voltar}" rendered="#{not empty consultaSCSSPaginatorController.voltarParaUrl}" styleClass="bt_voltar bt_cinza" profile="back"/>        
+        </aghu:acao>  
+        <p:outputPanel id="panelLista" rendered="#{(consultaSCSSPaginatorController.renderedSC or consultaSCSSPaginatorController.renderedSS) and (consultaSCSSPaginatorController.dataModel.pesquisaAtiva or consultaSSPaginatorController.dataModel.pesquisaAtiva)}" layout="inline">
+           <p:tabView id="panelMain" activeIndex="#{consultaSCSSPaginatorController.currentTabIndex}" prependId="false"> 
+            <p:tab name="tabs-1" id="tabs-1" rendered="#{consultaSCSSPaginatorController.dataModel.pesquisaAtiva and consultaSCSSPaginatorController.renderedSC}" title="#{messages.LABEL_CONSULTA_SC_SS_SC}"> 
+                <p:outputPanel id="imprimirPanel">
+		           <mec:commandButton id="bt_imprimirsol"
+			            rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar') or  mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar') or mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or  mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or mf:hasPermission(securityController,'cadastrarSCChefias,gravar')}" 
+			            action="#{consultaSCSSPaginatorController.imprimirItens}" name="bt_imprimirsolicitacao" 
+			            disabled="#{fn:length(consultaSCSSPaginatorController.allChecked)==0}" value="#{messages.LABEL_IMPRIMIR}" profile="print"> 
+				                    <f:setPropertyActionListener target="#{imprimirSolicitacaoDeComprasController.voltarParaUrl}" value="compras-consultaSCSSList" for="command"/> 
+				    </mec:commandButton> 
+		      </p:outputPanel> 
+		      <br/>
+              <mec:serverDataTableMultipleSelection dataModel="dataModel" value="#{consultaSCSSPaginatorController}" 
+              rendered="#{consultaSCSSPaginatorController.dataModel.pesquisaAtiva}" id="resultListSC" controller="#{consultaSCSSPaginatorController}"
+              draggableColumns="false"
+              selection="listaChecked"
+              updateCheckOnPage="atualizarAllChecked" 
+	          toggleSelectListener="marcarTodos" rowCheckListener="selecionarLinha" 
+	          rowUncheckListener="desmarcarLinha" 
+	          rowSelectListener="selecionarLinha"
+	          render="imprimirPanel"> 
+                <c:set var="_itemSC" value="#{item}"/>  
+                     <p:column exportable="false" selectionMode="multiple"/>
+                <p:column sortBy="#{_itemSC.numero}" sortable="true" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_NUMERO}"/> 
+                  </f:facet>  
+                  <mec:commandLink rendered="#{mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}" action="#{consultaSCSSPaginatorController.redirecionarSolicitacaoCompra}"> 
+                    <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{_itemSC.numero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-consultaSCSSList" for="command"/>  
+                    <h:outputText value="#{_itemSC.numero}"/> 
+                  </mec:commandLink>  
+                  <mec:commandLink action="#{consultaSCSSPaginatorController.redirecionarAnexarDocumentoSolicitacaoCompra}" title="#{messages.TITLE_CONTEM_ARQUIVO_ANEXO}" rendered="#{_itemSC.qtdAnexo gt 0}" styleClass=" silk-attach silk-icon"> 
+                    <f:setPropertyActionListener target="#{anexarDocumentoController.telaOrigem}" value="compras-consultaSCSSList" for="command"/>  
+                    <f:setPropertyActionListener target="#{anexarDocumentoController.origemSolicitacao}" value="SC" for="command"/>  
+                    <f:setPropertyActionListener target="#{anexarDocumentoController.numeroSolicitacao}" value="#{_itemSC.numero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{anexarDocumentoController.modoEdit}" value="#{false}" for="command"/> 
+                  </mec:commandLink>  
+                  <h:outputText value="#{_itemSC.numero}" rendered="#{not mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}"/> 
+                </p:column>  
+                
+                <p:column sortBy="#{_itemSC.numero}"  style="display: none"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_NUMERO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSC.numero}"/>                    
+                </p:column>  
+                
+                
+                <p:column sortBy="#{_itemSC.exclusao}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_EXCLUSAO}" title="#{messages.LABEL_CONSULTA_SC_SS_EXCLUSAO_HEADER}"/> 
+                  </f:facet>  
+                  <h:graphicImage id="pendenciasEliminarSC" value="/resources/img/icons/pendencias_eliminar.png" rendered="#{_itemSC.exclusao}"/>  
+                  <pe:tooltip for="pendenciasEliminarSC" rendered="#{_itemSC.exclusao}" value="#{_itemSC.hintDtExclusao}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSC.codigoMaterial}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_COD_MAT}" title="#{messages.LABEL_CONSULTA_SC_SS_COD_MATERIAL_HEADER}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSC.codigoMaterial}"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSC.nomeMaterial}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText  value="#{messages.LABEL_CONSULTA_SC_SS_NOME_MAT}"/> 
+                  </f:facet>  
+                  <h:outputText id="nomeMatSC" value="#{consultaSCSSPaginatorController.truncarTexto(_itemSC.nomeMaterial)}"/>  
+                  <pe:tooltip  for="nomeMatSC" direction="bottom-right" styleClass="tooltip" layout="block" style="width:300px; word-wrap: break-word;"> 
+                    <h:outputText value="#{messages.LABEL_NOME}: #{_itemSC.nomeMaterial}" rendered="#{_itemSC.nomeMaterial != null}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}: #{_itemSC.descricaoMaterial}" rendered="#{_itemSC.descricaoMaterial != null}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_DESCRICAO_SC} #{_itemSC.descricaoSc}" rendered="#{_itemSC.descricaoSc != null}"/> 
+                  </pe:tooltip> 
+                </p:column>  
+                <p:column sortBy="#{_itemSC.dtSolicitacao}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DT_SOLICITACAO_SOL_COMPRA}" title="#{messages.TITLE_DT_SOLICITACAO_SOL_COMPR}"/> 
+                  </f:facet>  
+                  <h:outputText id="dtSolicitacaoSC" value="#{_itemSC.dtSolicitacao}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText>  
+                  <pe:tooltip for="dtSolicitacaoSC" value="#{_itemSC.hintDtSolicitacao}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSC.seqCcReq}" sortable="true" title="#{_itemSC.centroCusto.descricao}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CCT_SOL_COMPR}" title="#{messages.LABEL_CCUSTO_SOL_COMPR}"/> 
+                  </f:facet>  
+                  <h:outputText id="seqCCReqSC" value="#{_itemSC.seqCcReq}" title="#{_itemSC.descricaoCcReq}"/>  
+                  <pe:tooltip for="seqCCReqSC" value="#{_itemSC.descricaoCcReq}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSC.seqCcAplic}" sortable="true" title="#{_itemSC.centroCustoAplicacao.descricao}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CCT_APL_SOL_COMPR}" title="#{messages.LABEL_CCUSTO_APL_SOL_COMPR}"/> 
+                  </f:facet>  
+                  <h:outputText id="seqCCAplicSC" value="#{_itemSC.seqCcAplic}"/>  
+                  <pe:tooltip for="seqCCAplicSC" value="#{_itemSC.descricaoCcAplic}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSC.seqPontoParadaProxima}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_PONTO_PARADA}" title="#{messages.TITLE_CONSULTA_SC_SS_PONTO_PARADA}"/> 
+                  </f:facet>  
+                  <h:outputText id="seqPPProximaSC" value="#{_itemSC.seqPontoParadaProxima}"/>  
+                  <pe:tooltip for="seqPPProximaSC" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{messages.LABEL_PONTO_PARADA_ATUAL}: #{_itemSC.descricaoPontoParadaProxima}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_PONTO_PARADA_ANTERIOR}: #{_itemSC.descricaoPPAnterior}"/>  
+                    <br clear="none"/> 
+                  </pe:tooltip> 
+                </p:column>  
+                <p:column sortBy="#{_itemSC.efetivada}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_EFETIVADA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSC.efetivada}"> 
+                    <f:converter converterId="simNaoConverter"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column sortBy="#{_itemSC.qtdVinculadas}" sortable="true" title="#{messages.HINT_CONSULTA_SC_SS_VINC}" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_VINC}" title="#{messages.LABEL_CONSULTA_SC_SS_ASSOCIADAS}"/> 
+                  </f:facet>  
+                  <mec:commandLink rendered="#{mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}" action="#{consultaSCSSPaginatorController.redirecionarAssociarSolicitacaoCompraServico}"> 
+                    <f:setPropertyActionListener target="#{solicitacaoCompraServicoController.numeroSolicitacaoCompra}" value="#{_itemSC.numero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{solicitacaoCompraServicoController.voltarPara}" value="compras-consultaSCSSList" for="command"/>  
+                    <h:outputText value="#{_itemSC.qtdVinculadas}"/> 
+                  </mec:commandLink>  
+                  <h:outputText value="#{_itemSC.nroSolicitacoesVinculadas}" rendered="#{not mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}"/> 
+                </p:column>  
+                
+                 <p:column sortBy="#{_itemSC.qtdVinculadas}"  style="display: none"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_VINC}" title="#{messages.LABEL_CONSULTA_SC_SS_ASSOCIADAS}"/> 
+                  </f:facet>  
+                    <h:outputText value="#{_itemSC.qtdVinculadas}" rendered="#{mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}"/> 
+                    <h:outputText value="#{_itemSC.nroSolicitacoesVinculadas}" rendered="#{not mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}"/>
+                </p:column>  
+                
+                
+                <p:column sortBy="#{_itemSC.lctNumero}" sortable="true" title="#{_itemSC.descricaoModalidadeLicitacao} - #{_itemSC.descricaoModalidadePregao}" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_PAC}" title="#{messages.LABEL_CONSULTA_SC_SS_PROC_ADM_COMPRAS}"/> 
+                  </f:facet>  
+                  <mec:commandLink rendered="#{mf:hasPermission(securityController,'consultarPAC,visualizar')}" action="#{consultaSCSSPaginatorController.redirecionarProcessoAdmCompra}"> 
+                    <f:setPropertyActionListener target="#{processoAdmComprasController.numeroPac}" value="#{_itemSC.lctNumero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{processoAdmComprasController.voltarParaUrl}" value="compras-consultaSCSSList" for="command"/>  
+                    <h:outputText id="consultaPACSC" value="#{_itemSC.lctNumero}"/> 
+                      <pe:tooltip for="consultaPACSC" value="#{_itemSC.descricaoModalidadeLicitacao} - #{_itemSC.descricaoModalidadePregao}" direction="bottom-right" styleClass="tooltip" layout="block"/>  
+                  </mec:commandLink>  
+                  <h:outputText value="#{_itemSC.lctNumero}" rendered="#{not mf:hasPermission(securityController,'consultarPAC,visualizar')}"/> 
+                </p:column> 
+                
+                 <p:column sortBy="#{_itemSC.lctNumero}" style="display: none"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_PAC}" title="#{messages.LABEL_CONSULTA_SC_SS_PROC_ADM_COMPRAS}"/> 
+                  </f:facet>                   
+                  <h:outputText value="#{_itemSC.lctNumero}"/> 
+                </p:column>   
+                
+                
+                <p:column sortBy="#{_itemSC.itlNumero}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_NR_ITEM_PAC}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSC.itlNumero}"/> 
+                </p:column>  
+                
+                <p:column sortBy="#{_itemSC.numeroAf}" sortable="true" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_AF}" title="#{messages.LABEL_CONSULTA_SC_SS_AUT_FOR}"/> 
+                  </f:facet>  
+                  <mec:commandLink id="lnkEditarAfSC" rendered="#{mf:hasPermission(securityController,'consultarAF,visualizar')}" action="#{consultaSCSSPaginatorController.redirecionarAutorizacaoFornecimento}"> 
+                    <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.voltarParaUrl}" value="compras-consultaSCSSList" for="command"/>  
+                    <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.numeroAf}" value="#{_itemSC.numeroAf}" for="command"/>  
+                    <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.numeroComplemento}" value="#{_itemSC.complementoAf}" for="command"/>  
+                    <h:outputText id="numeroAFSCLnk" value="#{_itemSC.numeroAf} / #{_itemSC.complementoAf}" rendered="#{not empty _itemSC.numeroAf}"/> 
+                    <pe:tooltip for="numeroAFSCLnk" value="#{messages.LABEL_FORNECEDOR}: #{_itemSC.nomeFantasiaFornAf}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                  </mec:commandLink>  
+                  <h:outputText id="numeroAFSC" style="font-family: Arial,Verdana,sans-serif;font-size: 11px;" value="#{_itemSC.numeroAf} / #{_itemSC.complementoAf}" rendered="#{not mf:hasPermission(securityController,'consultarAF,visualizar')}"/>  
+                  <pe:tooltip for="numeroAFSC"  rendered="#{not mf:hasPermission(securityController,'consultarAF,visualizar')}" value="#{messages.LABEL_FORNECEDOR}: #{_itemSC.nomeFantasiaFornAf}" direction="bottom-right" styleClass="tooltip" layout="block"/>
+                  
+                </p:column> 
+                
+                <p:column sortBy="#{_itemSC.numeroAf}" style="display: none"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_AF}"/> 
+                  </f:facet>                  
+                  <h:outputText style="font-family: Arial,Verdana,sans-serif;font-size: 11px;" value="#{_itemSC.numeroAf} / #{_itemSC.complementoAf}"/>                    
+                </p:column> 
+                
+              </mec:serverDataTableMultipleSelection> 
+            </p:tab>  
+            <p:tab name="tabs-2" id="tabs-2" rendered="#{consultaSSPaginatorController.dataModel.pesquisaAtiva and  consultaSCSSPaginatorController.renderedSS}" title="#{messages.LABEL_CONSULTA_SC_SS_SS}"> 
+               <p:outputPanel id="imprimirSSPanel">
+		           <mec:commandButton id="bt_imprimirsolSS"
+		            rendered="#{mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar')}"
+		            action="#{consultaSSPaginatorController.imprimirItens}" name="bt_imprimirsolicitacaoSS" 
+		            disabled="#{fn:length(consultaSSPaginatorController.allChecked)==0}" value="#{messages.LABEL_IMPRIMIR}" profile="print">
+		                <f:setPropertyActionListener target="#{imprimirSolicitacaoDeServicoController.voltarParaUrl}" value="compras-consultaSCSSList" for="command"/> 
+			       </mec:commandButton> 
+		      </p:outputPanel> 
+		      <br/>
+              <mec:serverDataTableMultipleSelection dataModel="dataModel" value="#{consultaSSPaginatorController}" 
+              rendered="#{consultaSSPaginatorController.dataModel.pesquisaAtiva}" id="resultListSS" controller="#{consultaSSPaginatorController}"
+              draggableColumns="false"
+              selection="listaChecked"
+              updateCheckOnPage="atualizarAllChecked" 
+	          toggleSelectListener="marcarTodos" rowCheckListener="selecionarLinha" 
+	          rowUncheckListener="desmarcarLinha" 
+	          rowSelectListener="selecionarLinha"
+	          render="imprimirSSPanel"> 
+              
+                <c:set var="_itemSS" value="#{item}"/>  
+                  <p:column exportable="false" selectionMode="multiple"/>
+                <p:column sortBy="#{_itemSS.numero}" sortable="true" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_NUMERO}"/> 
+                  </f:facet>  
+                  <mec:commandLink rendered="#{mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar')}" action="#{consultaSCSSPaginatorController.redirecionarSolicitacaoServico}"> 
+                    <f:setPropertyActionListener target="#{solicitacaoServicoController.numero}" value="#{_itemSS.numero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{solicitacaoServicoController.voltarParaUrl}" value="compras-consultaSCSSList" for="command"/>  
+                    <h:outputText value="#{_itemSS.numero}"/> 
+                  </mec:commandLink>  
+                  <h:outputText value="#{_itemSS.numero}" rendered="#{not mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar')}"/>
+                  <mec:commandLink action="#{consultaSCSSPaginatorController.redirecionarAnexarDocumentoSolicitacaoCompra}" title="#{messages.TITLE_CONTEM_ARQUIVO_ANEXO}" rendered="#{_itemSS.qtdAnexo gt 0}" styleClass=" silk-attach silk-icon"> 
+                    <f:setPropertyActionListener target="#{anexarDocumentoController.telaOrigem}" value="compras-consultaSCSSList" for="command"/>  
+                    <f:setPropertyActionListener target="#{anexarDocumentoController.origemSolicitacao}" value="SS" for="command"/>  
+                    <f:setPropertyActionListener target="#{anexarDocumentoController.numeroSolicitacao}" value="#{_itemSS.numero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{anexarDocumentoController.modoEdit}" value="#{false}" for="command"/> 
+                  </mec:commandLink> 
+                </p:column> 
+                <p:column sortBy="#{_itemSS.numero}" style="display: none"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_NUMERO}"/> 
+                  </f:facet>                  
+                  <h:outputText value="#{_itemSS.numero}"/> 
+                </p:column>                  
+                 
+                <p:column sortBy="#{_itemSS.exclusao}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_EXCLUSAO}" title="#{messages.LABEL_CONSULTA_SC_SS_EXCLUSAO_HEADER}"/> 
+                  </f:facet>  
+                  <h:graphicImage id="pendenciasEliminarSS" value="/resources/img/icons/pendencias_eliminar.png" rendered="#{_itemSS.exclusao}"/>  
+                  <pe:tooltip for="pendenciasEliminarSS" rendered="#{_itemSS.exclusao}" value="#{_itemSS.hintDtExclusao}" direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.codigoMaterial}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_COD_SERV}" title="#{messages.LABEL_CONSULTA_SC_SS_COD_SERVICO_HEADER}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSS.codigoMaterial}"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.nomeMaterial}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_NOME_SERV}"/> 
+                  </f:facet>  
+                  <h:outputText id="nomeMaterialSS" value="#{consultaSCSSPaginatorController.truncarTexto(_itemSS.nomeMaterial)}"/>  
+                  <pe:tooltip direction="bottom-right" styleClass="tooltip" layout="block" style="width:300px;word-wrap: break-word;" for="nomeMaterialSS"> 
+                    <h:outputText value="#{messages.LABEL_NOME}: #{_itemSS.nomeMaterial}" rendered="#{_itemSS.nomeMaterial != null}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}: #{_itemSS.descricaoMaterial}" rendered="#{_itemSS.descricaoMaterial != null}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_DESCRICAO_SS} #{_itemSS.descricaoSc}" rendered="#{_itemSS.descricaoSc != null}"/> 
+                  </pe:tooltip> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.dtSolicitacao}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DT_SOLICITACAO_SOL_COMPRA}"/> 
+                  </f:facet>  
+                  <h:outputText id="dtSolicitacaoSS" value="#{_itemSS.dtSolicitacao}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText>  
+                  <pe:tooltip value="#{_itemSS.hintDtSolicitacao}" direction="bottom-right" styleClass="tooltip" layout="block" for="dtSolicitacaoSS"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.seqCcReq}" sortable="true" title="#{_itemSS.descricaoCcReq}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CCT_SOL_COMPR}" title="#{messages.LABEL_CCUSTO_SOL_COMPR}"/> 
+                  </f:facet>  
+                  <h:outputText id="seqCcReqSS" value="#{_itemSS.seqCcReq}"/>  
+                  <pe:tooltip value="#{_itemSS.descricaoCcReq}" direction="bottom-right" styleClass="tooltip" layout="block" for="seqCcReqSS"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.seqCcAplic}" sortable="true" title="#{_itemSS.descricaoCcAplic}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CCT_APL_SOL_COMPR}" title="#{messages.LABEL_CCUSTO_APL_SOL_COMPR}"/> 
+                  </f:facet>  
+                  <h:outputText id="seqCCAplicSS" value="#{_itemSS.seqCcAplic}"/>  
+                  <pe:tooltip value="#{_itemSS.descricaoCcAplic}" direction="bottom-right" styleClass="tooltip" layout="block" for="seqCCAplicSS"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.seqPontoParadaProxima}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_PONTO_PARADA}"/> 
+                  </f:facet>  
+                  <h:outputText  id="seqPPProximaSS" value="#{_itemSS.seqPontoParadaProxima}"/>  
+                  <pe:tooltip direction="bottom-right" styleClass="tooltip" layout="block" for="seqPPProximaSS"> 
+                    <h:outputText value="#{messages.LABEL_PONTO_PARADA_ATUAL}: #{_itemSS.descricaoPontoParadaProxima}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_PONTO_PARADA_ANTERIOR}: #{_itemSS.descricaoPPAnterior}"/>  
+                    <br clear="none"/> 
+                  </pe:tooltip> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.efetivada}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_EFETIVADA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSS.efetivada}"> 
+                    <f:converter converterId="simNaoConverter"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.qtdVinculadas}" sortable="true" title="#{messages.HINT_CONSULTA_SC_SS_VINC}" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_VINC}" title="#{messages.LABEL_CONSULTA_SC_SS_ASSOCIADAS}"/> 
+                  </f:facet>  
+                  <mec:commandLink rendered="#{mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar')}" action="#{consultaSCSSPaginatorController.redirecionarAssociarSolicitacaoServicoCompra}"> 
+                    <f:setPropertyActionListener target="#{solicitacaoServicoCompraController.numeroSolicitacaoServico}" value="#{_itemSS.numero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{solicitacaoServicoCompraController.voltarPara}" value="compras-consultaSCSSList" for="command"/>  
+                    <h:outputText value="#{_itemSS.qtdVinculadas}"/> 
+                  </mec:commandLink>  
+                  <h:outputText value="#{_itemSS.nroSolicitacoesVinculadas}" rendered="#{not mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar')}"/> 
+                </p:column>  
+                
+                <p:column sortBy="#{_itemSS.qtdVinculadas}"  style="display: none"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_VINC}" title="#{messages.LABEL_CONSULTA_SC_SS_ASSOCIADAS}"/> 
+                  </f:facet>
+                  <h:outputText value="#{_itemSS.qtdVinculadas}" rendered="#{mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar')}"/> 
+                  <h:outputText value="#{_itemSS.nroSolicitacoesVinculadas}" rendered="#{not mf:hasPermission(securityController,'consultarSolicitacaoServico,visualizar')}"/> 
+                </p:column>  
+                
+                <p:column sortBy="#{_itemSS.lctNumero}" sortable="true" title="#{_itemSS.descricaoModalidadeLicitacao} - #{_itemSS.descricaoModalidadePregao}" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_PAC}" title="#{messages.LABEL_CONSULTA_SC_SS_PROC_ADM_COMPRAS}" exportable="false"/> 
+                  </f:facet>  
+                  <mec:commandLink  rendered="#{mf:hasPermission(securityController,'consultarPAC,visualizar')}" action="#{consultaSCSSPaginatorController.redirecionarProcessoAdmCompra}"> 
+                    <f:setPropertyActionListener target="#{processoAdmComprasController.numeroPac}" value="#{_itemSS.lctNumero}" for="command"/>  
+                    <f:setPropertyActionListener target="#{processoAdmComprasController.voltarParaUrl}" value="compras-consultaSCSSList" for="command"/>  
+                    <h:outputText id="consultarPacSS" value="#{_itemSS.lctNumero}"/> 
+                    <pe:tooltip for="consultarPacSS" value="#{_itemSS.descricaoModalidadeLicitacao} - #{_itemSS.descricaoModalidadePregao}" direction="bottom-right" styleClass="tooltip" layout="block"/>  
+                  </mec:commandLink>  
+                 <h:outputText value="#{_itemSS.lctNumero}" rendered="#{not mf:hasPermission(securityController,'consultarPAC,visualizar')}"/> 
+                </p:column> 
+                
+                 <p:column sortBy="#{_itemSS.lctNumero}"  style="display: none" > 
+                   <f:facet name="header"> 
+                     <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_PAC}" title="#{messages.LABEL_CONSULTA_SC_SS_PROC_ADM_COMPRAS}"/> 
+                   </f:facet>                  
+                   <h:outputText value="#{_itemSS.lctNumero}"/> 
+                </p:column> 
+                
+                 
+                <p:column sortBy="#{_itemSS.itlNumero}" sortable="true"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_NR_ITEM_PAC}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_itemSS.itlNumero}"/> 
+                </p:column>  
+                <p:column sortBy="#{_itemSS.numeroAf}" sortable="true" exportable="false"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_AF}" title="#{messages.LABEL_CONSULTA_SC_SS_AUT_FOR}"/> 
+                  </f:facet>  
+                  <mec:commandLink id="lnkEditarAf" rendered="#{mf:hasPermission(securityController,'consultarAF,visualizar')}" action="#{consultaSCSSPaginatorController.redirecionarAutorizacaoFornecimento}"> 
+                    <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.voltarParaUrl}" value="compras-consultaSCSSList" for="command"/>  
+                    <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.numeroAf}" value="#{_itemSC.numeroAf}" for="command"/>  
+                    <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.numeroComplemento}" value="#{_itemSC.complementoAf}" for="command"/>  
+                    <h:outputText id="numComplAFSSLnk" value="#{_itemSS.numeroEComplementoAf}"/> 
+                    <pe:tooltip for="numComplAFSSLnk" rendered="#{_itemSS.nomeFantasiaFornAf != null}" value="#{messages.LABEL_FORNECEDOR}: #{_itemSS.nomeFantasiaFornAf}"  direction="bottom-right" styleClass="tooltip" layout="block"/> 
+                  </mec:commandLink>  
+                  <h:outputText id="numComplAFSS" style="font-family: Arial,Verdana,sans-serif;font-size: 11px;" value="#{_itemSS.numeroEComplementoAf}" rendered="#{not mf:hasPermission(securityController,'consultarAF,visualizar')}"/>  
+                  <pe:tooltip for="numComplAFSS" rendered="#{not mf:hasPermission(securityController,'consultarAF,visualizar') and _itemSS.nomeFantasiaFornAf != null}" value="#{messages.LABEL_FORNECEDOR}: #{_itemSS.nomeFantasiaFornAf}" direction="bottom-right" styleClass="tooltip" layout="block"/>
+                    </p:column> 
+                
+                <p:column sortBy="#{_itemSS.numeroAf}" style="display: none"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CONSULTA_SC_SS_AF}" title="#{messages.LABEL_CONSULTA_SC_SS_AUT_FOR}"/> 
+                  </f:facet>
+                  <h:outputText style="font-family: Arial,Verdana,sans-serif;font-size: 11px;" value="#{_itemSS.numeroEComplementoAf}"/>
+                </p:column> 
+                
+                
+             </mec:serverDataTableMultipleSelection>
+            </p:tab> 
+          </p:tabView>   
+          </p:outputPanel>     
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

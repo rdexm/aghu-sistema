@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions">
+	<p:outputPanel id="pacientesEmAtendimentoList" layout="inline">
+		<mec:serverDataTable id="resultListEmAtendimento"
+			list="#{pacientesEmergenciaAbaEmAtendimentoController.pacientesEmAtendimentoList}"
+			controller="#{pacientesEmergenciaAbaEmAtendimentoController}"
+			selection="pacienteSelecionado" 
+			scrollable="true" 
+	      	scrollHeight="auto">
+			<c:set var="itemLista" value="#{item}" />
+			<p:ajax event="rowSelect" update="@(#panelBotoesAcao)" listener="#{pacientesEmergenciaAbaEmAtendimentoController.selecionarPaciente()}" />
+			<p:column style="white-space:nowrap;width:38px;" styleClass="first-column auto-adjust" exportable="false">
+				<f:facet name="header">
+					<h:outputText value="#{messages.CASCA_LABEL_ACOES}" />
+				</f:facet>
+				<mec:commandLink id="atender_id"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.irRegistroPerinatal}"
+					rendered="#{listaPacientesEmergenciaPaginatorController.permAtenderPacienteCentroObstetrico and not listaPacientesEmergenciaPaginatorController.emergenciaCustom}"
+					title="#{messages.LABEL_ATENDER_PAC_EMERG_EM_ATENDIMENTO}"
+					styleClass="silk-gestacao silk-icon" ajax="true">
+					<f:setPropertyActionListener target="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado}" value="#{itemLista}" for="command" />
+					<f:setPropertyActionListener target="#{registrarGestacaoController.voltarPara}" value="emergencia-pacientesEmergenciaAbaEmAtendimento" for="command" />
+				</mec:commandLink>
+				
+				<mec:commandLink id="atender_custom_id"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.irRegistroEvolucao}"
+					rendered="#{listaPacientesEmergenciaPaginatorController.permAtenderPacienteCentroObstetrico and listaPacientesEmergenciaPaginatorController.emergenciaCustom}"
+					title="#{messages.LABEL_ATENDER_PAC_EMERG_EM_ATENDIMENTO}"
+					styleClass="silk-atendimentos silk-icon" ajax="true">
+					<f:setPropertyActionListener target="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado}" value="#{itemLista}" for="command" />
+				</mec:commandLink>
+				
+				<mec:commandLink id="atendido_id"
+					rendered="#{listaPacientesEmergenciaPaginatorController.emergenciaCustom}"
+					title="#{messages.LABEL_FINALIZAR_ATENDIMENTO_PAC_EMERG}"
+					onclick="PF('modalFinalizarAtendimentoWG').show()" 
+					styleClass="silk-checked silk-icon" ajax="true">
+					<f:setPropertyActionListener target="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionadoAtendimento}" value="#{itemLista}" for="command" />
+				</mec:commandLink>
+			</p:column>
+			<p:column sortBy="#{itemLista.pacNome}" sortable="true"
+				styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}"
+				style="width:200px;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_NOME_PAC_EMERG_EM_ATENDIMENTO}" />
+				</f:facet>
+				<h:outputText value="#{itemLista.pacNome}" />
+			</p:column>
+			<p:column sortBy="#{itemLista.idade}" sortable="true"
+				styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}"
+				style="width:42px;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_IDD_PAC_EMERG_EM_ATENDIMENTO}" />
+				</f:facet>
+				<h:outputText value="#{itemLista.idade}" />
+			</p:column>
+			<p:column sortBy="#{itemLista.prontuarioPac}" sortable="true"
+				styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}"
+				style="width:81px;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_PRONTUARIO_PAC_EMERG_EM_ATENDIMENTO}" />
+				</f:facet>
+				<h:outputText value="#{listaPacientesEmergenciaPaginatorController.obterProntuarioFormatado(itemLista.prontuarioPac)}" />
+				<mec:commandLink
+					title="Abrir prontuário de #{itemLista.pacNome} - #{listaPacientesEmergenciaPaginatorController.obterProntuarioFormatado(itemLista.prontuarioPac)}"
+					style="float:right;padding: 0px 4px;"
+					rendered="#{not empty itemLista.prontuarioPac and mf:hasPermission(securityController, '/paciente/prontuarioonline/arvorePOL.xhtml, render')}"
+					onclick="parent.addPOLProntuario(#{itemLista.prontuarioPac})"
+					styleClass="silk-icon silk-pol16 silk-icon" ajax="true" />
+			</p:column>
+			<p:column sortBy="#{itemLista.nomeResponsavel}" sortable="true"
+				styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}"
+				style="width:200px;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_RESPONSAVEL_PAC_EMERG_EM_ATENDIMENTO}" />
+				</f:facet>
+				<h:outputText value="#{itemLista.nomeResponsavel}" />
+			</p:column>
+			<p:column sortBy="#{itemLista.dtConsulta}" sortable="true"
+				styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}"
+				style="width:76px;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_CONSULTA_PAC_EMERG_EM_ATENDIMENTO}" />
+				</f:facet>
+				<h:outputText value="#{itemLista.dtConsulta}">
+					<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+				</h:outputText>
+			</p:column>
+			<p:column styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}"
+				style="width:71px;">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_SITUACAO_PAC_EMERG_EM_ATENDIMENTO}" />
+				</f:facet>
+				<h:outputText value="#{itemLista.segDescricao}" />
+			</p:column>
+			<!-- Col 10 -->
+			<p:column styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}"
+				headerClass="iconsWidth" style="width:19px;">
+				<div style="overflow: hidden; width: 19px; text-align: center">
+					<h:outputText styleClass="#{itemLista.silkColuna10} silk-icon" title="#{itemLista.labelColuna10}" />
+				</div>
+			</p:column>
+			<!-- Col 11 -->
+			<p:column styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}"
+				headerClass="iconsWidth" style="width:19px;">
+				<f:facet name="header">
+					<h:outputText title="#{itemLista.labelColuna11}" />
+				</f:facet>
+				<div style="overflow: hidden; width: 19px; text-align: center">
+					<h:outputText styleClass="#{itemLista.silkColuna11} silk-icon" title="#{itemLista.labelColuna11}" />
+				</div>
+			</p:column>
+			<!-- Col 12 -->
+			<p:column styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}" headerClass="iconsWidth" style="width:30px;">
+				<f:facet name="header">
+					<h:outputText value="#{itemLista.labelColuna12}" />
+				</f:facet>
+				<div style="overflow: hidden; width: 19px; text-align: center">
+					<h:outputText styleClass="#{itemLista.silkColuna12} silk-icon" />
+				</div>
+			</p:column>
+			<!-- Col 13 -->
+			<p:column styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}" headerClass="iconsWidth" style="width:30px;">
+				<f:facet name="header">
+					<h:outputText value=" " />
+				</f:facet>
+				<div style="overflow: hidden; width: 19px; text-align: center">
+					<h:outputText styleClass="#{itemLista.silkColuna13} silk-icon" />
+				</div>
+			</p:column>
+			<!-- Incluir Pacs-->
+			<p:column styleClass="#{itemLista.devePintar ? 'agd-realizada' : ''}" headerClass="iconsWidth" style="width:30px;">
+				<f:facet name="header">
+					<h:outputText value=" " />
+				</f:facet>
+				<div style="overflow: hidden; width: 19px; text-align: center">
+					<mec:commandLink id="incluirPacientes" keepTab="true"
+						styleClass="#{itemLista.silkColuna14} silk-icon"
+						action="#{pacientesEmergenciaAbaEmAtendimentoController.incluirPacientes}">
+						<f:setPropertyActionListener target="#{listarPendenciasAssinaturaPaginatorController.pacCodigo}" value="#{itemLista.pacCodigo}" for="command" />
+					</mec:commandLink>
+				</div>
+			</p:column>
+		</mec:serverDataTable>
+		<br clear="none" />
+		<p:outputPanel id="panelBotoesAcao" layout="inline">
+			<ui:param name="jsExecute" value="parent.tab.loadPage(window.name, '/aghu/pages/prescricaomedica/verificaprescricao/verificaPrescricaoMedica.xhtml?codPac=#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.getPacCodigo()};prontPac=#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.getProntuarioPac()};origemEmergencia=true;voltarPara=#{pacientesEmergenciaAbaEmAtendimentoController.getTelaOrigem()};abaOrigem=#{pacientesEmergenciaAbaEmAtendimentoController.getAbaOrigem()};param_cid=#{javax.enterprise.context.conversation.id};unfSeq=#{pacientesEmergenciaAbaEmAtendimentoController.getUnfSeq()};ateSeq=#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.getAtdSeq()};param_cid=#{javax.enterprise.context.conversation.id}')" />
+			<aghu:acao>
+				<!--  
+				<ui:param name="jsExecutaImpressao" value="parent.tab.loadPage(window.name, '/aghu/pages/paciente/prontuarioonline/relatorioAdmissaoObstetricaPdf.xhtml?pacCodigo=#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.pacCodigo};numeroConsulta=#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.conNumero};seqp=#{pacientesEmergenciaAbaEmAtendimentoController.seqpSelecionado};dthrMovimento=#{pacientesEmergenciaAbaEmAtendimentoController.dthrMovimento};matricula=#{pacientesEmergenciaAbaEmAtendimentoController.matricula};vinculo=#{pacientesEmergenciaAbaEmAtendimentoController.vinculo};voltarEmergencia=true;voltarPara=#{pacientesEmergenciaAbaEmAtendimentoController.getTelaOrigem()};abaOrigem=#{pacientesEmergenciaAbaEmAtendimentoController.getAbaOrigem()}')" />
+				-->
+				<mec:redirectCommandButton id="btReimprimir"
+					disabled="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null or pacientesEmergenciaAbaEmAtendimentoController.seqpSelecionado eq null}"
+					styleClass="bt_ok" keepTab="true"
+					value="#{messages.LABEL_REIMPRIMIR}"
+					params="pacCodigo=#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.pacCodigo};numeroConsulta=#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.conNumero};seqp=#{pacientesEmergenciaAbaEmAtendimentoController.seqpSelecionado};dthrMovimento=#{pacientesEmergenciaAbaEmAtendimentoController.dthrMovimento};matricula=#{pacientesEmergenciaAbaEmAtendimentoController.matricula};vinculo=#{pacientesEmergenciaAbaEmAtendimentoController.vinculo};voltarEmergencia=true;voltarPara=#{pacientesEmergenciaAbaEmAtendimentoController.getTelaOrigem()};abaOrigem=#{pacientesEmergenciaAbaEmAtendimentoController.getAbaOrigem()};paramCid=#{javax.enterprise.context.conversation.id}"
+					url="/aghu/pages/paciente/prontuarioonline/relatorioAdmissaoObstetricaPdf.xhtml"
+        			process="@this"
+        			ajax="true" />
+				<mec:commandButton id="btPrescrever"
+					value="#{messages.LABEL_PRESCREVER}"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.prescrever}"
+					disabled="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null or !pacientesEmergenciaAbaEmAtendimentoController.habilitaPrescricao()}"
+					reRender="Messages"
+					oncomplete="#{facesContext.isValidationFailed() ? jsExecute : ''}"
+					styleClass="bt_ok" />
+				<mec:commandButton id="btSolicitarExames"
+					value="#{messages.LABEL_SOLICITAR_EXAMES}"
+					reRender="panelModalAutenticacaoSolicitarExames, panelBotoesAcao"
+					oncomplete="PF('modalAutenticacaoSolicitarExamesAbaEmAtendimentoWG').show();"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.solicitarExames}"
+					disabled="#{!pacientesEmergenciaAbaEmAtendimentoController.habilitarSolicitarExames() and pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null}">
+					<f:setPropertyActionListener target="#{solicitacaoExameController.seqp}" value="#{itemLista.atdSeq}" for="command" />
+				</mec:commandButton>
+				<!-- Ação semelhante ao "Consultar Exames" #36882 -->
+				<mec:commandButton id="btConsultarExames"
+					disabled="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null}"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.consultarExames}"
+					type="button"
+					value="#{messages.LABEL_CONSULTAR_EXAMES_REGISTRAR_GESTACAO}"
+					onclick="parent.addPOLProntuario(#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.getProntuarioPac()})"
+					ajax="true" immediate="true" />
+				<!--Disabled do botão abaixo; "Evolução". Chama Estória #28134 disabled="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null}" -->
+				<mec:commandButton id="btEvolucao"
+					value="#{messages.LABEL_EVOLUCAO}"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.evolucao}"
+					disabled="true" reRender="panelBotoesAcao" />
+				<!-- Disabled do botão abaixo; "Placar". Chama Estória #25494 disabled="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null}" -->
+				<mec:commandButton id="btPlacar" 
+					value="#{messages.LABEL_PLACAR}"
+					disabled="true"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.placar}"
+					reRender="panelBotoesAcao" />
+				<mec:commandButton id="receitas"
+					disabled="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null}"
+					styleClass="bt_cinza" value="#{messages.LABEL_RECEITAS_PACIENTE}"
+					immediate="true" process="@this"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.redirecionaReceitas}">
+					<f:setPropertyActionListener
+						target="#{receitasPacienteController.consultaSelecionada}"
+						value="#{pacientesEmergenciaAbaEmAtendimentoController.consultaSelecionada}"
+						for="command" />
+					<f:setPropertyActionListener
+						target="#{receitasPacienteController.cameFrom}"
+						value="emergencia-pacientesEmergenciaAbaEmAtendimento" for="command" />
+				</mec:commandButton>
+				<mec:commandButton value="#{messages.LABEL_REG_CONS_CO_ATESTADOS}"
+					disabled="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null}"
+					immediate="true"
+					process="@this" styleClass="bt_cinza"
+					onclick="window.parent.tab.addTab('abaAtestadosAmbulatorio','Atestados','/aghu/pages/ambulatorio/atestados/cadastroComparecimentoAmbulatorio.xhtml?numeroConsulta=${pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.conNumero}' + '&amp;idadeFormatada=${pacientesEmergenciaAbaEmAtendimentoController.idadeFormatadaPaciente}' + '&amp;labelZona=${pacientesEmergenciaAbaEmAtendimentoController.labelZona}' + '&amp;atdSeq=${pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado.atdSeq}',null,null);" />
+				<mec:commandButton id="btVisualizarAcolhimento"
+					disabled="#{pacientesEmergenciaAbaEmAtendimentoController.pacienteSelecionado eq null}"
+					value="#{messages.LABEL_VER_ACOLHIMENTO}"
+					action="#{pacientesEmergenciaAbaEmAtendimentoController.prepararTelaAcolhimento}"
+					ajax="true" process="@this" />
+				</aghu:acao>
+		</p:outputPanel>
+	</p:outputPanel>
+	<p:dialog id="modalConfirmaFinalizarAtendimento" width="400" height="180" modal="true" resizable="false" widgetVar="modalFinalizarAtendimentoWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_FINALIZAR_ATENDIMENTO_PAC_EMERG}"/> 
+        </f:facet>
+        <br/>  
+        <br/> #{messages.LABEL_CONFIRMAR_FINALIZAR_ATENDIMENTO_PAC_EMERG} 
+        <br/>  
+        <br/>  
+        <aghu:acao> 
+           <mec:commandButton id="botao_confirmar" value="#{messages.LABEL_SIM}" onclick="PF('modalFinalizarAtendimentoWG').hide();" action="#{pacientesEmergenciaAbaEmAtendimentoController.finalizarAtendimento}" render="pacientesEmAtendimentoList" profile="ok-print" ajax="true"/>  
+           <mec:commandButton id="botao_cancelar" value="#{messages.LABEL_NAO}" onclick="PF('modalFinalizarAtendimentoWG').hide();" profile="cancel" ajax="true"/> 
+        </aghu:acao> 
+     </p:dialog>
+ </ui:composition>
+</html>

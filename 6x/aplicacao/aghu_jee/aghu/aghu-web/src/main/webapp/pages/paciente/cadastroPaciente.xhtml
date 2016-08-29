@@ -1,0 +1,821 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CADASTRAR_PACIENTE} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cadastrarPacienteController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig ignoreEnter="true" controller="#{cadastrarPacienteController}"/>  
+      <h:form prependId="false" id="cadastroPacienteForm"> 
+        <p:outputPanel id="panelTelasAssociadasEdicao" layout="inline"> 
+         <p:outputPanel id="telasAssociadasEdicao" rendered="#{cadastrarPacienteController.aipPaciente.codigo != null and (not mf:hasPermission(securityController, 'paciente,somenteLeitura')) and (not mf:hasPermission(securityController, 'prescricao,somenteLeitura')) }" layout="inline">  
+            <aghu:acao style="margin: 10px 0 20px;"> 
+              <mec:commandButton value="#{messages.LABEL_CONVENIOS}" action="#{cadastrarPacienteController.redirecionarConvenios}" immediate="true"> 
+                <f:setPropertyActionListener target="#{conveniosPacienteController.aipPacientesCodigo}" value="#{cadastrarPacienteController.aipPaciente.codigo}" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton value="#{messages.LABEL_BOLETIM}" rendered="#{not empty cadastrarPacienteController.aipPaciente.prontuario}" action="#{cadastrarPacienteController.imprimirBoletim}" immediate="true"> 
+                <f:setPropertyActionListener target="#{relatorioBoletimIdentificacaoPacienteController.prontuario}" value="#{cadastrarPacienteController.aipPaciente.prontuario}" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton value="#{messages.LABEL_VISUALIZAR_HISTORICO}" action="#{cadastrarPacienteController.redirecionarHistorico}" immediate="true"> 
+                <f:setPropertyActionListener target="#{historicoPacienteController.codigo}" value="#{cadastrarPacienteController.aipPaciente.codigo}" for="command"/>  
+                <f:setPropertyActionListener target="#{historicoPacienteController.permitirFiltrar}" value="false" for="command"/>  
+                <f:setPropertyActionListener target="#{historicoPacienteController.cameFrom}" value="cadastroPaciente" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton value="#{messages.LABEL_DADOS_ADICIONAIS}" action="#{cadastrarPacienteController.redirecionarDadosAdicionais}" immediate="true"> 
+                <f:setPropertyActionListener target="#{dadosAdicionaisPacienteController.aipPacientesCodigo}" value="#{cadastrarPacienteController.aipPaciente.codigo}" for="command"/> 
+              </mec:commandButton>  
+              <p:outputPanel id="panelBotoesAcaoExterna" layout="inline" 
+              rendered="#{(not mf:hasPermission(securityController, 'paciente,somenteLeitura'))}"> 
+              <mec:commandButton 
+                rendered="#{pesquisaPacienteController.renderLinkInternar(cadastrarPacienteController.aipPaciente) and 
+                mf:hasPermission(securityController,'/internacao/solicitacao/solicitacaoInternacao.xhtml,render') and 
+                cadastrarPacienteController.cameFrom != 'Internacao'}" 
+                value="#{messages.LABEL_INTERNAR}" 
+                action="#{pesquisaPacienteController.navegarInternacao(cadastrarPacienteController.aipPaciente)}" 
+                disabled="#{cadastrarPacienteController.cameFrom == 'Internacao'}" 
+                ajax="true" 
+                process="@this" 
+                render="modalConfirmacao,panelBotoesAcaoFinal,panelBotoesAcaoExterna"/>
+                
+                <mec:commandButton action="#{cadastrarPacienteController.redirecionaSolicitacaoInternacao}" value="#{messages.LABEL_SOLICITAR_INTERNACAO}" rendered="#{pesquisaPacienteController.renderLinkInternar(cadastrarPacienteController.aipPaciente) and mf:hasPermission(securityController,'/internacao/solicitacao/solicitacaoInternacao.xhtml,render') and cadastrarPacienteController.cameFrom != 'Internacao'}" disabled="#{cadastrarPacienteController.cameFrom == 'Internacao'}"> 
+                  <f:setPropertyActionListener target="#{solicitacaoInternacaoController.aipPacienteCodigo}" value="#{cadastrarPacienteController.aipPaciente.codigo}" for="command"/>  
+                  <f:setPropertyActionListener target="#{solicitacaoInternacaoController.origemChamada}" value="cadastroPaciente" for="command"/> 
+                </mec:commandButton>  
+                <mec:commandButton id="redAtdExtern" action="#{cadastrarPacienteController.redirecionarAtendimentoExterno}" immediate="true" rendered="#{mf:hasPermission(securityController, '/exames/atendimentoExternoCRUD.xhtml,render') and pesquisaPacienteController.moduloExamesAtivo and cadastrarPacienteController.cameFrom != 'Internacao'}" value="Atendimento Externo" disabled="#{cadastrarPacienteController.cameFrom == 'Internacao'}"> 
+                  <f:setPropertyActionListener target="#{atendimentoExternoController.paciente}" value="#{cadastrarPacienteController.aipPaciente}" for="command"/>  
+                  <f:setPropertyActionListener target="#{atendimentoExternoController.origemChamada}" value="cadastroPaciente" for="command"/> 
+                </mec:commandButton> 
+			              <mec:commandButton value="#{messages.LABEL_BT_PRONTUARIO_FAMILIARES}"
+			             	rendered="#{cadastrarPacienteController.prontuarioFamiliaVisivel}"
+              				action="#{cadastrarPacienteController.redirecionarAgrupamentoPacientes}"
+							immediate="true">
+							<f:setPropertyActionListener
+								target="#{agrupamentoFamiliarController.pacienteContexto}"
+								value="#{cadastrarPacienteController.aipPaciente}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{agrupamentoFamiliarController.cameFrom}"
+								value="paciente-cadastroPaciente"
+								for="command" />
+						</mec:commandButton>
+              </p:outputPanel> 
+            </aghu:acao> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <aghu:panelGeral id="ffdl_prontuario" legend="#{messages.LABEL_PRONTUARIO}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panel_prontuario" layout="inline">
+                <mec:field id="field_prontuario" label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO_CADASTRO_PACIENTE}" rendered="#{not cadastrarPacienteController.aipPaciente.insereProntuario}"> 
+                <p:inputText readonly="true"  value="#{cadastrarPacienteController.aipPaciente.prontuario}"
+				size="14" styleclass="suggestion_input" id="prontuario" />
+                </mec:field> 
+    			<mec:inputNumero label="#{messages.LABEL_PRONTUARIO}" value="#{cadastrarPacienteController.aipPaciente.prontuarioEditado}"
+                		rendered="#{cadastrarPacienteController.aipPaciente.insereProntuario}"
+                 		size="14" styleclass="suggestion_input" id="prontuario2" />
+                <h:outputText style="color: red"> 
+                <b>#{cadastrarPacienteController.verificarPacienteVip()}</b> 
+              </h:outputText>  
+              <mec:selectBooleanCheckbox size="10" maxlength="10" id="gera_prontuario" rendered="#{cadastrarPacienteController.permitirGerarProntuario()}" readonly="#{not mf:hasPermission(securityController, 'paciente,gerarProntuario') or cadastrarPacienteController.isGeraProntuarioDesabilitado}" value="#{cadastrarPacienteController.aipPaciente.gerarProntuario}" label="#{messages.LABEL_GERA_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO_GERADO_PAPEL}"> 
+                <p:ajax event="change" update="@(#nomePaiPanel) @(#corPanel) @(#estadoCivilPanel) @(#grauInstrucaoPanel) @(#nacionalidadePanel)" process="@this"/> 
+              </mec:selectBooleanCheckbox> 
+            </p:outputPanel>  
+            <mec:field id="field_codigo" label="#{messages.LABEL_CODIGO}" title="Campo desabilitado. O Sistema é quem preenche este campo">
+            	<p:inputText id="codigo" value="#{cadastrarPacienteController.aipPaciente.codigo}"  readonly="true" styleclass="suggestion_input" />
+			</mec:field> 
+            <p:outputPanel id="descricaoProntuario" layout="inline"> 
+              <mec:inputText rendered="#{not empty cadastrarPacienteController.aipPaciente.prontuario}" style="font-weight: bold" id="situacao" label="#{messages.LABEL_SITUACAO}" readonly="true" value="#{cadastrarPacienteController.descricaoTipoProntuario}"/> 
+				</p:outputPanel>					
+				<p:outputPanel id="prontuarioFamiliaPanel"
+						styleClass="alinha-direita" layout="inline">
+						<mec:inputNumero id="prontuarioFamilia" size="11" maxlength="8"
+							rendered="#{cadastrarPacienteController.prontuarioFamiliaVisivel}"  readonly="true"
+							label="#{messages.LABEL_PRONTUARIO_FAMILIA}"
+							title="#{messages.TITLE_PRONTUARIO_FAMILIA}"
+							value="#{cadastrarPacienteController.grupoFamiliar.agfSeq}" />
+				</p:outputPanel>
+			</aghu:linha>
+        </aghu:panelGeral>  
+        <aghu:panelGeral id="panelDadosPessoais" legend="#{messages.LABEL_DADOS_PESSOAIS}">
+	        <!-- Retirar numeros -->
+			<script language="JavaScript" type="text/javascript">
+				function soLetras(campo){                       
+	               campo.value = campo.value.replace(/\d/g,"");
+	             } 
+			</script> 
+          <aghu:linha>
+          	<p:focus context="panelDadosPessoais"/> 
+            <mec:inputText id="nome" maxlength="100" value="#{cadastrarPacienteController.aipPaciente.nome}" onkeyup="soLetras(this);" style="text-transform:uppercase" required="true" label="#{messages.LABEL_NOME}" title="#{messages.TITLE_NOME_PACIENTE}" size="100" styleclass="suggestion_input"/>  
+            <mec:inputText id="nomeSocial" maxlength="50" value="#{cadastrarPacienteController.aipPaciente.nomeSocial}" onkeyup="soLetras(this);" style="text-transform:uppercase" label="#{messages.LABEL_NOME_SOCIAL}" title="#{messages.TITLE_NOME_SOCIAL_PACIENTE}" size="50"/> 
+          </aghu:linha>  	
+          <aghu:linha> 
+            <mec:selectOneMenu enum="DominioSexo" label="#{messages.LABEL_SEXO}" id="sexo" title="#{messages.TITLE_SEXO_PACIENTE}" required="true" value="#{cadastrarPacienteController.aipPaciente.sexo}"/>  
+            <p:outputPanel id="corPanel" layout="inline"> 
+              <mec:selectOneMenu enum="DominioCor" label="#{messages.LABEL_COR}" id="cor" title="#{messages.TITLE_COR_PACIENTE}" required="#{cadastrarPacienteController.aipPaciente.gerarProntuario}" value="#{cadastrarPacienteController.aipPaciente.cor}"> 
+              </mec:selectOneMenu> 
+            </p:outputPanel>  
+            <p:outputPanel id="panelEtnia" layout="inline"> 
+              <mec:selectOneMenu label="#{messages.LABEL_ETNIA}" id="etnia" items="#{cadastrarPacienteController.etniasPaciente}" title="#{messages.TITLE_ETNIA}" value="#{cadastrarPacienteController.aipPaciente.etnia}"/> 
+            </p:outputPanel>  
+            <p:outputPanel id="estadoCivilPanel" layout="inline"> 
+              <mec:selectOneMenu id="estado_civil" enum="DominioEstadoCivil" label="#{messages.LABEL_ESTADO_CIVIL}" title="#{messages.TITLE_ESTADO_CIVIL_PACIENTE}" required="#{cadastrarPacienteController.aipPaciente.gerarProntuario}" value="#{cadastrarPacienteController.aipPaciente.estadoCivil}"> 
+			 	 <p:ajax event="change" process="@this"/> 
+			  </mec:selectOneMenu>
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextProntuario reRender="prontuarioMae, nome_mae" label="#{messages.LABEL_PRONTUARIO_MAE}" title="#{messages.TITLE_PRONTUARIO_MAE}" id="prontuarioMae" oncomplete="Document.getElementById('nome_mae').focus();" size="10" styleClass="add-bt-apagar" actionBean="#{cadastrarPacienteController}" maxlength="9" value="#{cadastrarPacienteController.prontuarioMae}"> 
+              <p:ajax event="blur" focus="input_nome_mae" update="@(#prontuarioMae) @(#nome_mae)" process="@this" listener="#{cadastrarPacienteController.atribuirMaePacientePorProntuario()}"/> 
+            </mec:inputTextProntuario>  
+            <mec:inputText label="#{messages.LABEL_NOME_MAE}" onkeyup="soLetras(this);" title="#{messages.TITLE_NOME_MAE_PACIENTE}" id="nome_mae" size="50" maxlength="100" required="true" readonly="#{not empty cadastrarPacienteController.aipPaciente.maePaciente}" style="text-transform:uppercase" value="#{cadastrarPacienteController.aipPaciente.nomeMae}"/>  
+            <p:outputPanel id="nomePaiPanel" layout="inline"> 
+              <mec:inputText size="50" maxlength="100" id="nome_pai" label="#{messages.LABEL_NOME_PAI}" onkeyup="soLetras(this);" title="#{messages.TITLE_NOME_PAI_PACIENTE}" required="#{cadastrarPacienteController.aipPaciente.gerarProntuario}" style="text-transform:uppercase" value="#{cadastrarPacienteController.aipPaciente.nomePai}"> 
+              	<p:ajax event="change" process="@this"/>
+              </mec:inputText>
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextData 
+            id="data_nasc"  
+            size="10" 
+            maxlength="10" 
+            label="#{messages.LABEL_DATA_NASCIMENTO}" 
+            title="#{messages.TITLE_DATA_NASCIMENTO_PACIENTE}" 
+            required="true" 
+            value="#{cadastrarPacienteController.aipPaciente.dtNascimento}" 
+            tipo="data">
+            <p:ajax event="dateSelect"  update="@(#idade)" />
+             <p:ajax event="change"  update="@(#idade)" />
+            
+            </mec:inputTextData>  
+            <mec:inputText id="idade" label="#{messages.LABEL_IDADE}" size="10" maxlength="10" readonly="true" value="#{cadastrarPacienteController.aipPaciente.idadeFormat}"/>  
+            <p:outputPanel id="nacionalidadePanel" layout="inline"> 
+              <mec:suggestionBox id="pais" label="#{messages.LABEL_NACIONALIDADE}" 
+              width="400" maxlength="30" title="#{messages.TITLE_NACIONALIDADE_PACIENTE}" 
+              descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarNacionalidades" 
+              posSelectionAction="selecionouNacionalidade" required="#{cadastrarPacienteController.aipPaciente.gerarProntuario}" 
+              controller="#{cadastrarPacienteController}" value="#{cadastrarPacienteController.aipPaciente.aipNacionalidades}" 
+              render="panelNacionalidadeEire,naturalidadePanel"> 
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <p:outputPanel id="naturalidadePanel" layout="inline"> 
+              <mec:suggestionBox id="naturalidade" label="#{messages.LABEL_NATURALIDADE}" width="400" maxlength="30"  
+              title="#{messages.TITLE_SUGGESTIONBOX_CIDADE}" descricaoInput="codigo" descricaoLabel="nome" 
+              suggestionAction="pesquisarCidadePorCodigoNome" required="#{cadastrarPacienteController.aipPaciente.aipNacionalidades.sigla eq 'BRA'}"
+               controller="#{cadastrarPacienteController}" value="#{cadastrarPacienteController.aipPaciente.aipCidades}" 
+               render="panelNacionalidadeEire,region_uf"> 
+                <p:column>#{item.nome}</p:column>  
+                <p:column>#{item.aipUf.sigla}</p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <div class="frm_obrigatorio"> 
+              <p:outputPanel id="region_uf" layout="inline"> 
+                <mec:inputText readonly="true" label="#{messages.LABEL_UF}" 
+                id="naturalidade_uf" title="#{messages.TITLE_UF_PACIENTE}" styleclass="suggestion_input" 
+                style="text-transform:uppercase" size="3" value="#{cadastrarPacienteController.descricaoUFSelecionada}"/> 
+              </p:outputPanel> 
+            </div> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="grauInstrucaoPanel" layout="inline"> 
+              <mec:selectOneMenu label="#{messages.LABEL_GRAU_INSTRUCAO}" id="grau_de_instrucao" value="#{cadastrarPacienteController.aipPaciente.grauInstrucao}" enum="DominioGrauInstrucao" required="#{cadastrarPacienteController.aipPaciente.gerarProntuario}" title="#{messages.TITLE_GRAU_INSTRUCAO_PACIENTE}"> 
+            	<p:ajax event="change" process="@this"/>
+              </mec:selectOneMenu>
+            </p:outputPanel>
+					<p:outputPanel id="region_ocupacao" layout="inline">
+						<mec:suggestionBox id="ocupacao" var="_ocupacao"
+							required="#{cadastrarPacienteController.requererCampoOcupacao()}"
+							itemValue="#{_ocupacao}" label="#{messages.LABEL_OCUPACAO}"
+							title="#{messages.TITLE_CODIGO_OCUPACAO_PACIENTE}" width="700"
+							descricaoInput="codigoOcupacao" descricaoLabel="descricao"
+							maxlength="30" size="15" suggestionAction="pesquisarProfissoes"
+							controller="#{cadastrarPacienteController}"
+							value="#{cadastrarPacienteController.profissaoVO}">
+							<p:column>#{_ocupacao.descricao}</p:column>
+							<p:column>#{_ocupacao.codigoOcupacao}</p:column>
+						</mec:suggestionBox>
+					</p:outputPanel>
+				</aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="panelDDDResidencial" layout="inline"> 
+              <mec:inputNumero size="4" id="ddd_fone_residencial" label="#{messages.LABEL_DDD}" title="#{messages.TITLE_DDD_PACIENTE}" maxlength="4" value="#{cadastrarPacienteController.aipPaciente.dddFoneResidencial}"/> 
+            </p:outputPanel>  
+            <mec:inputNumero size="12" id="fone_residencial" label="#{messages.LABEL_TELEFONE_RESIDENCIAL}" title="#{messages.TITLE_TELEFONE_RESIDENCIAL_PACIENTE}" maxlength="10" value="#{cadastrarPacienteController.aipPaciente.foneResidencial}"/>  
+            <p:outputPanel id="panelDDDRecado" layout="inline"> 
+              <mec:inputNumero size="4" maxlength="4" label="#{messages.LABEL_DDD}" id="ddd_fone_recado" title="#{messages.TITLE_DDD_RECADO_PACIENTE}" value="#{cadastrarPacienteController.aipPaciente.dddFoneRecado}"/> 
+            </p:outputPanel>  
+            <mec:inputText styleClass="numerico" size="12" label="#{messages.LABEL_TELEFONE_RECADO}" onkeyup="soNumeros(this);" id="fone_recado" title="#{messages.TITLE_TELEFONE_RECADO_PACIENTE}" maxlength="10" value="#{cadastrarPacienteController.aipPaciente.foneRecado}"/> 
+	          	<!-- Retirar letras da String -->
+				<script language="JavaScript" type="text/javascript">
+					function soNumeros(campo){                       
+	               		campo.value = campo.value.replace(/[^\d]+/g,'');
+	            	}
+				</script>
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral id="panelCadastradoEndereco" legend="#{messages.LABEL_ENDERECOS}"> 
+          <p:outputPanel id="panelLogradouroCadastrado" style="float:left" rendered="#{mf:hasPermission(securityController,'/paciente/cadastroEndereco.xhtml,render') and (cadastrarPacienteController.habilitaAdicionarEndereco or empty cadastrarPacienteController.enderecosPaciente or enderecoController.edicao)}" layout="inline"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelCep" layout="inline"> 
+               <mec:suggestionBox 
+                var="_cidade" 
+                itemValue="#{_cidade}" 
+                label="#{messages.LABEL_CIDADE}" 
+                requiredFake="true" 
+                title="#{messages.TITLE_SUGGESTIONBOX_CIDADE}" 
+                descricaoInput="codigo" descricaoLabel="nome" 
+                size="43" 
+                suggestionAction="pesquisarCidadePorNome" 
+                posSelectionAction="buscarCepUnico" 
+                posDeleteAction="limparCepSelecionado" 
+                width="400" 
+                id="cidade" 
+                controller="#{enderecoController}" 
+                value="#{enderecoController.cidadeEnderecoCadastrado}" 
+                render="panelCep, panelLogradouro, panelCidade, panelBairro"> 
+                  <p:column>#{_cidade.nome}</p:column>  
+                  <p:column>#{_cidade.aipUf.sigla}</p:column>  
+                  <p:column ><h:outputText value="Distrito de #{_cidade.aipCidadePertence.nome}" rendered="#{_cidade.aipCidadePertence != null}"/> </p:column> 
+                </mec:suggestionBox>  
+              </p:outputPanel>  
+              <p:outputPanel id="panelCidade" layout="inline"> 
+                <mec:suggestionBox var="_bairroCepLogradouro"
+							itemValue="#{_bairroCepLogradouro}"
+							label="#{messages.LABEL_CEP}"
+							requiredFake="true"
+							title="#{messages.TITLE_CEP_ENDERECO_PACIENTE}"
+							size="12" maxlength="8"
+							descricaoInput="cepFormatado"
+							descricaoLabel="nome"
+							suggestionAction="buscarEnderecosCep"
+							posSelectionAction="setarCepSelecionado"
+							posDeleteAction="limparCepSelecionado"
+							width="500" id="cep"
+							controller="#{enderecoController}"
+							value="#{enderecoController.cepCadastrado}"
+							render="panelCep, panelLogradouro, panelCidade, panelBairro"
+							rendered="#{!enderecoController.renderizaEndereco()}">  
+	                  <p:column> 
+	                    <h:outputText value="#{_bairroCepLogradouro.cepFormatado}"/>  
+	                    <h:outputText value=" - " rendered="#{not empty _bairroCepLogradouro.cidade}"/>  
+	                    <h:outputText value="#{_bairroCepLogradouro.cidade}"/>  
+	                    <h:outputText value=" - " rendered="#{not empty _bairroCepLogradouro.bairro}"/>  
+	                    <h:outputText value="#{_bairroCepLogradouro.bairro}"/>  
+	                    <h:outputText value=" - " rendered="#{not empty _bairroCepLogradouro.logradouro}"/>  
+	                    <h:outputText value="#{_bairroCepLogradouro.logradouro}"/> 
+	                  </p:column> 
+	                </mec:suggestionBox>
+	                
+	                <mec:inputNumero
+						rendered="#{enderecoController.renderizaEndereco()}"
+						label="#{messages.LABEL_CEP}" id="cepNaoCadastrado" size="10"
+						title="#{messages.TITLE_CEP_ENDERECO_PACIENTE}"
+						value="#{enderecoController.enderecoEdicao.cep}"
+						requiredFake="true"
+						maxlength="8">
+						<p:ajax event="change" process="@this"  />
+					</mec:inputNumero>
+					
+			        <mec:inputText label="#{messages.LABEL_UF}" size="10" value="#{enderecoController.cidadeEnderecoCadastrado.aipUf.sigla}" readonly="true" id="UF"/>  
+	                <mec:inputText label="#{messages.LABEL_IBGE}" size="10" value="#{enderecoController.cidadeEnderecoCadastrado.codIbge}" readonly="true" id="IBGE"/>
+					
+					 <!-- inicio checkbox Endereco nao Cadastrado -->
+	                
+					<mec:selectBooleanCheckbox id="liberaEnderecoNaoCadastrado"
+						size="10" maxlength="10"
+						title="#{messages.INFO_NAO_LOCALIZA_ENDERECO}"
+						label="#{messages.LABEL_NAO_LOCALIZA_ENDERECO}"
+						value="#{enderecoController.enderecoNaoLocalizado}"
+						onchange="if(#{enderecoController.enderecoNaoLocalizado} == false) PF('modalLiberaEnderecoWG').show();"
+						rendered="#{enderecoController.parametrizaEnderecoNaoCadastrado()}">
+						<p:ajax event="change" update="@(#panelCep) @(#panelLogradouro) @(#panelCidade) @(#panelBairro)"  />
+					</mec:selectBooleanCheckbox>	
+	        </p:outputPanel>       
+            </aghu:linha>  
+            <!-- Final Modal Endereço nao Cadastrado-->
+            <aghu:linha> 
+              <p:outputPanel id="panelLogradouro" layout="inline"> 
+                <mec:suggestionBox 
+                var="_logradouro" 
+                itemValue="#{_logradouro}" 
+                rendered="#{!enderecoController.habilitaCamposLogradouroLivre and !enderecoController.renderizaEndereco()}"  
+                label="#{messages.LABEL_LOGRADOURO}" requiredFake="true" 
+                title="#{messages.TITLE_LOGRADOURO_ENDERECO_PACIENTE}" 
+                size="45" maxlength="60" 
+                descricaoInput="logradouroSuggestion" 
+                suggestionAction="listarLogradourosPorTipoTituloNome" 
+                posDeleteAction="limparCepSelecionado" 
+                posSelectionAction="setarCepLogradouroSelecionado" 
+                width="950" 
+                id="logradouroCadastrado" 
+                controller="#{enderecoController}" 
+                value="#{enderecoController.cepLogradouro}" 
+                render="panelCep, panelLogradouro ,panelCidade, panelBairro"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CEP}</b> 
+                    </f:facet> #{_logradouro.cepFormatado}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_ENDERECO}</b> 
+                    </f:facet> #{_logradouro.logradouro}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME}</b> 
+                    </f:facet> #{_logradouro.nome}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.TITLE_NUMERO_INICIAL}</b> 
+                    </f:facet> #{_logradouro.numeroInicialLogradouro}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.TITLE_NUMERO_FINAL}</b> 
+                    </f:facet> #{_logradouro.numeroFinalLogradouro}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_LADO}</b> 
+                    </f:facet> #{_logradouro.ladoLogradouro}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_BAIRRO}</b> 
+                    </f:facet> #{_logradouro.bairro}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_TIPO}</b> 
+                    </f:facet> #{_logradouro.tipo}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:inputText rendered="#{enderecoController.habilitaCamposLogradouroLivre or enderecoController.renderizaEndereco()}" label="#{messages.LABEL_LOGRADOURO}" size="95" maxlength="120" requiredFake="true" value="#{enderecoController.enderecoEdicao.logradouro}" title="#{messages.TITLE_LOGRADOURO_NAO_ENCONTRADO_ENDER_PAC}" style="text-transform:uppercase" id="logradouroLivre">   
+                </mec:inputText> 
+              <mec:inputNumero maxlength="5" ajaxValidation="false" requiredFake="true" label="#{messages.LABEL_NUMERO}" title="#{messages.TITLE_NUMERO_REL_ENDERECO_PACIENTE}" value="#{enderecoController.enderecoEdicao.nroLogradouro}" id="numeroCadastrado" style="width:70px !important"/>  
+              <mec:inputText 
+              id="complementoCadastrado" 
+              maxlength="200" 
+              value="#{enderecoController.enderecoEdicao.complLogradouro}" 
+              label="#{messages.LABEL_COMPLEMENTO}" panelView="true"
+              title="#{messages.TITLE_COMPLEMENTO_REL_ENDERECO_PACIENTE}" 
+              style="text-transform:uppercase" emptyStringToNull="true"/>
+              </p:outputPanel>
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelBairro" layout="inline"> 
+                <mec:inputText rendered="#{!enderecoController.habilitaCamposLogradouroLivre and !enderecoController.renderizaEndereco()}" label="#{messages.LABEL_BAIRRO}" id="bairro" value="#{enderecoController.getValorBairroEnderecoCadastrado()}" readonly="true" size="45" style="text-transform:uppercase"/>  
+                <mec:inputText rendered="#{enderecoController.habilitaCamposLogradouroLivre or enderecoController.renderizaEndereco()}" label="#{messages.LABEL_BAIRRO}" requiredFake="true" id="bairroLivre" value="#{enderecoController.enderecoEdicao.bairro}" size="95" maxlength="100" title="#{messages.TITLE_BAIRRO_LIVRE}" style="text-transform:uppercase">  
+                </mec:inputText> 
+              </p:outputPanel>  
+              <mec:selectOneMenu id="tipoCadastrado" requiredFake="true" semSelecione="true" label="#{messages.LABEL_TIPO}" title="#{messages.TITLE_TIPO_ENDERECO_PACIENTE}" value="#{enderecoController.enderecoEdicao.tipoEndereco}" ajaxValidation="false" enum="DominioTipoEndereco" itemsType="enum"/>  
+              <mec:selectBooleanCheckbox id="correspondenciaCadastrado" label="#{messages.LABEL_CORRESPONDENCIA}" title="#{messages.TITLE_ENDERECO_CORRESPONDENCIA_PACIENTE}" value="#{enderecoController.enderecoEdicao.padrao}"/>  
+              <aghu:linha style="margin-top: 13px;margin-left: 5px"> 
+                <p:outputPanel id="panel_bt_ed_ad" layout="inline"> 
+                  <p:outputPanel id="panel_adicionar" rendered="#{!enderecoController.edicao}" layout="inline"> 
+                    <mec:commandButton id="bt_incluirCadastrado" value="#{messages.LABEL_ADICIONAR}" process="@this, bairroLivre, logradouroLivre, cep, cidade, logradouroCadastrado, bairro, numeroCadastrado, complementoCadastrado, tipoCadastrado, correspondenciaCadastrado, IBGE, UF" status="commonstatus" action="#{cadastrarPacienteController.confirmarEndereco}" style="margin-left: 2px !important;" profile="ok" ajax="true" render="panelCadastradoEndereco,panelLogradouroCadastrado,panelTabelaEnderecos, tabelaEnderecos, panel_bt_ed_ad"  oncomplete="PrimeFaces.focus('rg:rg:inputId');"/> 
+                  </p:outputPanel>  
+                  <p:outputPanel id="panel_editar" rendered="#{enderecoController.edicao}" layout="inline"> 
+                    <mec:commandButton id="bt_alterarCadastrado" value="#{messages.LABEL_ALTERAR}" process="@this, bairroLivre, logradouroLivre, cep, cidade, logradouroCadastrado, bairro, numeroCadastrado, complementoCadastrado, tipoCadastrado, correspondenciaCadastrado, IBGE, UF" status="commonstatus" action="#{cadastrarPacienteController.confirmarEndereco}" style="margin-left: 2px !important; float: left !important;" profile="ok" ajax="true" render="panelCadastradoEndereco,panelLogradouroCadastrado,panelTabelaEnderecos, tabelaEnderecos, panel_bt_ed_ad"  oncomplete="PrimeFaces.focus('rg:rg:inputId');"/>  
+                    <mec:commandButton style="float: left !important;" id="bt_cancelar_edicao" value="#{messages.LABEL_CANCELAR_EDICAO}" status="commonstatus" action="#{cadastrarPacienteController.limparEndereco}" profile="cancel" ajax="true" render="panelCadastradoEndereco,panelLogradouroCadastrado,panelTabelaEnderecos, tabelaEnderecos, panel_bt_ed_ad" process="@this"/> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelTabelaEnderecos" layout="inline"> 
+            <aghu:linha> 
+              <p:outputPanel id="enderecoObrigatorio" rendered="#{empty cadastrarPacienteController.enderecosPaciente}" layout="inline"> 
+                <h:outputText value="#{messages.NENHUM_ENDERECO_ENCONTRADO}"/>  
+                <a style="display: inline-block; border: 0pt none; background: none repeat scroll 0% 0% transparent;" class="ui-state-error" shape="rect"> 
+                  <span class="ui-icon ui-icon-star"/> 
+                </a> 
+              </p:outputPanel> 
+ 
+              <mec:serverDataTable id="tabelaEnderecos" draggableColumns="false" scrollHeight="#{fn:length(cadastrarPacienteController.enderecosPaciente) > 3 ? '100' : 'auto'}" rendered="#{not empty cadastrarPacienteController.enderecosPaciente}" list="#{cadastrarPacienteController.enderecosPaciente}" scrollable="true"> 
+                <c:set var="_endereco" value="#{item}"/>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink rendered="#{not _endereco.emEdicao}" title="#{messages.LABEL_EDITAR}" action="#{cadastrarPacienteController.prepararEdicaoEndereco(_endereco)}" profile="edit" ajax="true" render="panelCadastradoEndereco, panelLogradouroCadastrado,panelTabelaEnderecos,tabelaEnderecos,panel_bt_ed_ad" process="@this"/>  
+                  <mec:commandLink rendered="#{not _endereco.emEdicao}" title="#{messages.LABEL_EXCLUIR}" action="#{cadastrarPacienteController.removerEndereco(_endereco)}" profile="delete" ajax="true" render="panelCadastradoEndereco, panelLogradouroCadastrado, tabelaEnderecos, panelTabelaEnderecos" process="@this"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CEP}"/> 
+                  </f:facet>  
+                  <h:outputText rendered="#{ empty _endereco.aipBairrosCepLogradouro}" value="#{cadastrarPacienteController.getCEPFormatado(_endereco.cep)}"/>  
+                  <h:outputText rendered="#{not empty _endereco.aipBairrosCepLogradouro}" value="#{cadastrarPacienteController.getCEPFormatado(_endereco.aipBairrosCepLogradouro.id.cloCep)}"/>  
+                  <h:outputText rendered="#{not empty _endereco.vAipCep and not empty _endereco.vAipCep.nome}" value=" - #{_endereco.vAipCep.nome}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_LOGRADOURO}"/> 
+                  </f:facet>  
+                  <h:outputText rendered="#{ empty _endereco.aipBairrosCepLogradouro}" value="#{_endereco.logradouro}"/>  
+                  <h:outputText rendered="#{not empty _endereco.aipBairrosCepLogradouro}" value="#{cadastrarPacienteController.getDescricaoLogradouro(_endereco)}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NUMERO_LOGRADOURO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_endereco.nroLogradouro}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_COMPLEMENTO_LOGRADOURO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_endereco.complLogradouro}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_BAIRRO}"/> 
+                  </f:facet>  
+                  <h:outputText rendered="#{ empty _endereco.aipBairrosCepLogradouro}" value="#{_endereco.bairro}"/>  
+                  <h:outputText rendered="#{not empty _endereco.aipBairrosCepLogradouro}" value="#{_endereco.aipBairrosCepLogradouro.aipBairro.descricao}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CIDADE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{cadastrarPacienteController.getCidadeEndereco( _endereco)}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO_IBGE}"/> 
+                  </f:facet>  
+                  <h:outputText rendered="#{ empty _endereco.aipBairrosCepLogradouro}" value="#{_endereco.aipCidade.codIbge}"/>  
+                  <h:outputText rendered="#{not empty _endereco.aipBairrosCepLogradouro}" value="#{_endereco.aipBairrosCepLogradouro.cepLogradouro.logradouro.aipCidade.codIbge}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_UF}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{cadastrarPacienteController.getUfEndereco(_endereco)}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_TIPO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_endereco.tipoEndereco.descricao}"/> 
+                </p:column>  
+                <p:column style="#{_endereco.emEdicao ? 'background-color:#EEE8AA' : ''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CORRESPONDENCIA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_endereco.indPadrao.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha>  
+					<p:outputPanel id="panel_BotalAdicionarNovoEndereco"
+						layout="inline">
+						<mec:commandButton
+							rendered="#{mf:hasPermission(securityController,'/paciente/cadastroEndereco.xhtml,render') and !enderecoController.edicao and !cadastrarPacienteController.habilitaAdicionarEndereco and not empty cadastrarPacienteController.enderecosPaciente}"
+							id="bt_adicionarNovoEndereco"
+							value="#{messages.LABEL_NOVO_ENDERECO}"
+							style="margin-left: 2px !important;"
+							action="#{cadastrarPacienteController.habilitaInclusaoNovoEndereco}"
+							render="panelCadastradoEndereco, panelLogradouroCadastrado, panel_BotalAdicionarNovoEndereco"
+							profile="ok" ajax="true" process="@this"
+							disabled="#{mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}" />
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral id="panelDocumentos" legend="#{messages.LABEL_DOCUMENTOS}"> 
+          <aghu:linha> 
+            <mec:inputText id="rg" size="15" maxlength="20" label="#{messages.LABEL_RG}" title="#{messages.TITLE_RG_PACIENTE}" value="#{cadastrarPacienteController.aipPaciente.rg}"/>  
+              <mec:inputText name="orgao_emissor" size="10" id="orgao_emissor" maxlength="10" readonly="true" disabled="true" value="#{cadastrarPacienteController.aipPaciente.orgaoEmisRg}" style="text-transform:uppercase;margin-top:-1px;"/> 
+            <p:outputPanel id="camposRG" layout="inline"> 
+              <mec:suggestionBox id="orgao" 
+              label="#{messages.LABEL_ORGAO_EMISSOR}" 
+              title="#{messages.TITLE_CODIGO_ORGAO_EMISSOR_PACIENTE}" 
+              descricaoInput="codigo" size="7" 
+              descricaoLabel="descricao" 
+              suggestionAction="pesquisarOrgaoEmissorPorCodigoDescricao" 
+              controller="#{cadastrarPacienteController}" 
+              value="#{cadastrarPacienteController.aipPacienteDadosCns.aipOrgaosEmissor}"> 
+                <p:column>#{item.codigo} - #{item.descricao}</p:column> 
+              </mec:suggestionBox>  
+              <mec:suggestionBox id="uf_cartao_sus" label="#{messages.LABEL_UF}" 
+              title="#{messages.TITLE_UNIDADE_FEDERACAO_REGISTRO_PACIENTE}" 
+              descricaoInput="sigla" size="7" descricaoLabel="nome" suggestionAction="pesquisarPorSiglaNome" 
+              controller="#{cadastrarPacienteController}" value="#{cadastrarPacienteController.aipPacienteDadosCns.aipUf}"> 
+                <p:column>#{item.sigla} - #{item.nome}</p:column> 
+              </mec:suggestionBox>  
+              <mec:inputTextData id="dataEmissaoDocumento" label="#{messages.LABEL_DATA_EMISSAO_DOCUMENTO}" title="#{messages.TITLE_DATA_EMISSAO_DOCUMENTO_PACIENTE}" size="10" maxlength="10" value="#{cadastrarPacienteController.aipPacienteDadosCns.dataEmissaoDocto}" tipo="data"/> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextCPF id="cpf" value="#{cadastrarPacienteController.aipPaciente.cpf}" label="#{messages.LABEL_CPF}"  title="#{messages.TITLE_CPF_PACIENTE}"/>  
+            <mec:inputNumero size="11" maxlength="11" label="#{messages.LABEL_PIS_PASEP}" id="fld_pispasep" title="#{messages.TITLE_PIS_PASEP_PACIENTE}" value="#{cadastrarPacienteController.aipPaciente.numeroPis}"/> 
+          	<mec:inputNumero
+					id="fld_cnh" size="20" maxlength="11" 
+					label="#{messages.LABEL_CNH_PACIENTE}"
+					title="#{messages.TITLE_CNH_PACIENTE}"
+					value="#{cadastrarPacienteController.aipPaciente.numeroCNH}">
+				</mec:inputNumero>
+				<mec:inputTextData 
+					id="dataEmissaoDocumentoCnh" 
+					label="#{messages.LABEL_VALIDADE_CNH}"
+					title="#{messages.TITLE_VALIDADE_CNH}"
+					size="10" maxlength="10"  
+					value="#{cadastrarPacienteController.aipPaciente.dataValidadeCNH}">
+				</mec:inputTextData>
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_DOCUMENTOS_APRESENTADOS}" title="#{messages.TITLE_DOCUMENTOS_APRESENTADOS_PACIENTE}" size="10" id="documentos_apresentados" value="#{cadastrarPacienteController.aipPaciente.apresentarCadConfirmado}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.LABEL_CERTIDAO}"> 
+          <p:outputPanel id="panelCertidao" layout="inline"> 
+            <aghu:linha>
+                  <mec:inputText
+                          size="50"
+                          id="regnasc"
+                          maxlength="32"
+                          onkeyup="certidaoNascimento(this);"
+                          label="#{messages.LABEL_REG_NASCIMENTO}"
+                          title="#{messages.TITLE_REG_NASCIMENTO_PACIENTE}"
+                          value="#{cadastrarPacienteController.aipPaciente.regNascimento}">
+                           <script >
+						 		function certidaoNascimento(campo){						
+									campo.value = campo.value.replace(/\D/g,"");
+									} 
+						  </script>
+                          <p:ajax event="change" update="@(#tipoCertidao), @(#nomeCartorio), @(#livro), @(#folhas), @(#termo), @(#dataEmissao), @(#numeroDN)" process="@this, @(#tipoCertidao), @(#nomeCartorio), @(#livro), @(#folhas), @(#termo), @(#dataEmissao), @(#numeroDN)" listener="#{cadastrarPacienteController.changeCertidaoNascimento}"/>
+                  </mec:inputText>
+              <mec:selectOneMenu label="#{messages.TIPO_CERTIDAO}" id="tipoCertidao" enum="DominioTipoCertidao" title="#{messages.TITLE_TIPO_CERTIDAO_PACIENTE}" value="#{cadastrarPacienteController.aipPacienteDadosCns.tipoCertidao}"/>  
+              <mec:inputText label="#{messages.LABEL_NOME_CARTORIO}" id="nomeCartorio" title="#{messages.TITLE_NOME_CARTORIO_PACIENTE}" size="20" maxlength="20" style="text-transform:uppercase" value="#{cadastrarPacienteController.aipPacienteDadosCns.nomeCartorio}" readonly="#{cadastrarPacienteController.exibirDadosCompRegNascimento}"/>  
+              <mec:inputText label="#{messages.LABEL_LIVRO}" title="#{messages.TITLE_LIVRO_CERTIDAO_NASC_PACIENTE}" size="8" maxlength="8" id="livro" value="#{cadastrarPacienteController.aipPacienteDadosCns.livro}" readonly="#{cadastrarPacienteController.exibirDadosCompRegNascimento}"/>  
+              <mec:inputNumero label="#{messages.LABEL_FOLHAS}" title="#{messages.TITLE_FOLHAS_CERTIDAO_NASC_PACIENTE}" size="4" maxlength="4" id="folhas" value="#{cadastrarPacienteController.aipPacienteDadosCns.folhas}" readonly="#{cadastrarPacienteController.exibirDadosCompRegNascimento}"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputNumero label="#{messages.LABEL_TERMO}" title="#{messages.TITLE_NUMERO_TERMO_CERTIDAO_NASC_PACIENTE}" size="8" maxlength="8" id="termo" value="#{cadastrarPacienteController.aipPacienteDadosCns.termo}" readonly="#{cadastrarPacienteController.exibirDadosCompRegNascimento}"/>  
+	          <mec:inputTextData label="#{messages.LABEL_DATA_EMISSAO}" title="#{messages.TITLE_DATA_EMISSAO_CERTIDAO_NASC_PACIENTE}" size="10" maxlength="10" id="dataEmissao" value="#{cadastrarPacienteController.aipPacienteDadosCns.dataEmissao}" tipo="data"/>  
+	          <mec:inputNumero size="11" maxlength="11" label="#{messages.NUMERO_DN}" id="numeroDN" title="#{messages.TITLE_NUMERO_DN_PACIENTE}" value="#{cadastrarPacienteController.aipPacienteDadosCns.numeroDn}"/>  
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral id="panelCartaoSus" legend="#{messages.LABEL_CARTAO_SUS}"> 
+          <aghu:linha> 
+             <mec:inputText onkeyup="soNumeros(this);" size="16" maxlength="15" label="#{messages.LABEL_CARTAO_SAUDE}" required="#{cadastrarPacienteController.requererNumeroCartaoSUS()}" id="cartaosus" title="#{messages.TITLE_NUMERO_CARTAO_SUS_PACIENTE}" value="#{cadastrarPacienteController.aipPaciente.nroCartaoSaude}"/>  
+            <mec:selectOneMenu label="#{messages.MOTIVO_CADASTRO}" enum="DominioMotivoCadastro" id="motivoCadastro" title="#{messages.TITLE_MOTIVO_CADASTRO_CARTAO_SUS_PACIENTE}" value="#{cadastrarPacienteController.aipPacienteDadosCns.motivoCadastro}"/>  
+            <mec:selectOneMenu enum="DominioDocReferencia" label="#{messages.DOC_REFERENCIA}" title="#{messages.TITLE_DOCUMENTO_REFERENCIA_PACIENTE}" value="#{cadastrarPacienteController.aipPacienteDadosCns.docReferencia}" id="docReferencia"/>  
+            <mec:inputNumero size="15" id="cartaoNacionalSaudeMae" maxlength="15" value="#{cadastrarPacienteController.aipPacienteDadosCns.cartaoNacionalSaudeMae}" label="#{messages.LABEL_CARTAO_NACIONAL_SAUDE_MAE}" title="#{messages.TITLE_CARTAO_NACIONAL_SAUDAE_MAE_PACIENTE}"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <legend>#{messages.LABEL_SE_NATURALIZADO_BRASILEIRO}</legend>  
+            <mec:inputTextData id="data_entrada_brasil" label="#{messages.LABEL_DATA_ENTRADA_BRASIL}" title="#{messages.TITLE_DATA_ENTRADA_BRASIL_PACIENTE}" size="10" maxlength="10" value="#{cadastrarPacienteController.aipPacienteDadosCns.dataEntradaBr}" tipo="data"/>  
+            <mec:inputTextData id="data_naturalizacao" label="#{messages.LABEL_DATA_NATURALIZACAO}" title="#{messages.TITLE_DATA_NATURALIZACAO_PACIENTE}" size="10" maxlength="10" value="#{cadastrarPacienteController.aipPacienteDadosCns.dataNaturalizacao}" tipo="data"/>  
+            <mec:inputNumero label="#{messages.LABEL_PORTARIA}" id="portaria" title="#{messages.TITLE_NUMERO_PORTARIA_PACIENTE}" size="16" maxlength="16" value="#{cadastrarPacienteController.aipPacienteDadosCns.portariaNatural}"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:commandButton id="bt_imprimecad_buttonView" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" immediate="true" action="#{cadastrarPacienteController.redirecionarRelatorioCartaoSus}" profile="view" onclick="PF('loadDialogWG').show()" rendered="#{cadastrarPacienteController.aipPaciente.codigo != null}">
+            	<f:setPropertyActionListener target="#{relatorioCartaoSUSController.codigoPaciente}" value="#{cadastrarPacienteController.aipPaciente.codigo}" for="command" />  
+            </mec:commandButton>
+            <mec:commandButton id="bt_imprimecad_buttonPrint" value="#{messages.LABEL_IMPRIMIR}" immediate="true"  action="#{cadastrarPacienteController.imprimirRelatorioCartaoSus}" profile="print" onclick="PF('loadDialogWG').show()" rendered="#{cadastrarPacienteController.aipPaciente.codigo != null}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral id="ffdl_observacao" legend="#{messages.LABEL_OBSERVACAO}"> 
+          <aghu:linha> 
+            <mec:inputTextArea label="#{messages.LABEL_OBSERVACAO}" cols="50" rows="4" maxlength="240" id="observacao" value="#{cadastrarPacienteController.aipPaciente.observacao}" title="Digite alguma observação relativa ao paciente."/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <p:outputPanel id="panelBotoesAcaoFinal" layout="inline"> 
+            <mec:commandButton 
+						block="true"  id="bt_confirmar_internar"
+						rendered="#{cadastrarPacienteController.cameFrom != 'Internacao'}"
+						value="#{messages.LABEL_GRAVAR}"
+						disabled="#{not mf:hasPermission(securityController, 'paciente,alterar') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled') or mf:hasPermission(securityController, 'assistencial,somenteLeitura')}"
+						action="#{cadastrarPacienteController.verificarSePacienteTemGRM}"
+						render="cadastroPacienteForm"
+						ajax="true"
+						profile="ok" />
+					<mec:commandButton id="br_gravar_internar" block="true"
+            rendered="#{cadastrarPacienteController.cameFrom == 'Leito' or cadastrarPacienteController.cameFrom == 'Internacao' }" 
+            value="#{messages.LABEL_GRAVAR_INTERNAR}" 
+            disabled="#{not mf:hasPermission(securityController, 'paciente,alterar') or mf:hasPermission(securityController, 'assistencial,somenteLeitura') }" 
+            action="#{cadastrarPacienteController.verificarSePacienteTemGRM}" profile="ok"> 
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.ainLeitoId}" value="#{cadastrarPacienteController.idLeito}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.aipPacCodigo}" value="#{cadastrarPacienteController.aipPaciente.codigo}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.ainQuartoNumero}" value="#{cadastrarPacienteController.quartoNumero}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.aghUniFuncSeq}" value="#{cadastrarPacienteController.seqUnidadeFuncional}" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.cameFrom}" value="paciente-cadastroPaciente" for="command"/>  
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.ainAtendimentoUrgenciaSeq}" value="#{cadastrarPacienteController.seqAtendimentoUrgencia}" for="command"/> 
+            </mec:commandButton>  
+					<mec:commandButton value="#{messages.LABEL_CANCELAR}" id="bt_cancelar_cadastro" block="true"
+						action="#{cadastrarPacienteController.cancelar}" process="@(#bt_cancelar)"
+						rendered="#{pesquisaPacienteController.cameFrom ne 'pesquisaConsultasPaciente' and pesquisaPacienteController.cameFrom ne 'pesquisarPacientesAgendados' and pesquisaPacienteController.cameFrom ne 'listarConsultasPorGrade' and cadastrarPacienteController.cameFrom ne 'listarPacientesEmergencia'}"
+						immediate="true" profile="cancel" />
+					<mec:commandButton value="#{messages.LABEL_VOLTAR}"
+						action="#{cadastrarPacienteController.cancelar}"
+						rendered="#{pesquisaPacienteController.cameFrom eq 'pesquisaConsultasPaciente' or pesquisaPacienteController.cameFrom eq 'pesquisarPacientesAgendados'}"
+						immediate="true" styleClass=" alinha-direita bt_cinza"
+						profile="back" />
+					<mec:commandButton value="#{messages.LABEL_VOLTAR}"
+						action="#{cadastrarPacienteController.cancelar}"
+						rendered="#{pesquisaPacienteController.cameFrom eq 'listarConsultasPorGrade'}"
+						immediate="true" styleClass=" alinha-direita bt_cinza"
+						profile="back" />
+					<mec:redirectCommandButton id="voltarEmergencia" keepTab="true"
+						styleClass="bt_voltar"
+						rendered="#{cadastrarPacienteController.cameFrom eq 'listarPacientesEmergencia'}"
+						value="#{messages.LABEL_VOLTAR}"
+						params="cid=#{cadastrarPacienteController.cid}"
+						url="/emergencia/pages/emergencia/listaPacientesEmergencia.xhtml"
+						immediate="true" />
+          </p:outputPanel> 
+        </aghu:acao>  
+        <p:outputPanel id="panelConfirmarPacienteGRM" layout="inline"> 
+          <p:outputPanel rendered="#{!cadastrarPacienteController.ignorarModais and cadastrarPacienteController.pacienteTemGMR}" layout="inline"> 
+            <script>
+			            PF('modalPacienteGRMWG').show();
+				    </script> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelConfirmarAlteracaoEndereco" layout="inline"> 
+          <p:outputPanel rendered="#{!cadastrarPacienteController.ignorarModais and cadastrarPacienteController.validarTrocaMunicipio}" layout="inline"> 
+            <script>
+				            PF('modalAlteracaoEnderecoWG').show();
+				    </script> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:outputPanel id="panelNacionalidadeEire" layout="inline"> 
+        <p:outputPanel rendered="#{!cadastrarPacienteController.ignorarModais and cadastrarPacienteController.mostrarModalNacionalidade}" layout="inline"> 
+          <script>
+					PF('nacionalidadeEireWG').show();
+				</script> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+      <p:dialog id="nacionalidadeEire" width="350" height="150" modal="true" resizable="false" widgetVar="nacionalidadeEireWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_NACIONALIDADE_EIRE}"/> 
+        </f:facet> #{messages.MENSAGEM_NACIONALIDADE_EIRE} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <aghu:acao> 
+          <h:form id="form_botao_modal"> 
+            <mec:commandButton id="botao_OK" value="#{messages.LABEL_OK}" onclick="PF('nacionalidadeEireWG').hide();" action="#{cadastrarPacienteController.confirmarNacionalidadeEire}" profile="ok" ajax="true"/> 
+          </h:form> 
+        </aghu:acao> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{pesquisaPacienteController.tituloModal}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <p:outputPanel id="corpoModalConfirmacao" layout="inline">#{pesquisaPacienteController.getModalMessage()} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalConfirmacao"> 
+              <mec:commandButton 
+              id="bt_internar" 
+              rendered="#{pesquisaPacienteController.exibirBotaoModalInternar}" 
+              value="#{messages.LABEL_SIM}" action="internacao-cadastroInternacao" profile="ok">              
+              <f:setPropertyActionListener target="#{cadastroInternacaoController.aipPacCodigo}" 
+              value="#{cadastrarPacienteController.aipPaciente.codigo}" for="command"/> 
+              </mec:commandButton>  
+              
+              <mec:commandButton 
+              id="bt_internar_edicao" 
+              rendered="#{pesquisaPacienteController.exibirBotaoModalInternarEdicao}" 
+              value="#{messages.LABEL_SIM}" action="editarInternar" profile="ok"/>  
+              
+              <mec:commandButton 
+              id="bt_internar_at_urgencia" 
+              rendered="#{pesquisaPacienteController.exibirBotaoModalInternarAtendimentoUrgencia}" 
+              value="#{messages.LABEL_INTERNAR}" action="internarAtendimentoUrgencia" profile="ok"/>  
+             
+              <mec:commandButton 
+              id="bt_leitos" 
+              rendered="#{pesquisaPacienteController.exibirBotaoModalDispLeito}" 
+              value="#{messages.LABEL_DIS_LEITOS}" action="editar" profile="ok"/>  
+              
+              <mec:commandButton 
+              id="bt_continuar" 
+              rendered="#{pesquisaPacienteController.exibirBotaoModalContinuar}" 
+              value="#{messages.LABEL_CONTINUAR}" action="internarAtendimentoUrgencia" profile="ok"/>  
+             
+              <mec:commandButton 
+              id="bt_cancelarModal" 
+              rendered="#{pesquisaPacienteController.exibirBotaoModalCancelar}" 
+              value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoWG').hide();" profile="cancel" ajax="true"/>  
+             
+              <mec:commandButton 
+              id="bt_desistirModal" 
+              rendered="#{pesquisaPacienteController.exibirBotaoModalDesistir}" 
+              value="#{messages.LABEL_DESISTIR}" onclick="PF('modalConfirmacaoWG').hide();" profile="cancel" ajax="true"/>  
+              
+              <h:panelGroup layout="block" style="margin:0 auto; width:40px;" rendered="#{pesquisaPacienteController.exibirBotaoModalOk}"> 
+                <mec:commandButton 
+                id="bt_okModal" 
+                value="#{messages.LABEL_OK}" onclick="PF('modalConfirmacaoWG').hide();" ajax="true" styleClass="bt_cinza"/> 
+              </h:panelGroup> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:outputPanel> 
+      </p:dialog>
+
+
+		<p:dialog id="modalConfirmacaoImpressao" width="400" height="150"
+			modal="true" resizable="false"
+			widgetVar="modalConfirmacaoImpressaoWG">
+			<h:form id="formImprimir">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_CONFIRMACAO_IMPRESSAO}" />
+					</h:panelGroup>
+				</f:facet> #{messages.IMPRIMIR_BOLETIM_IDENTIFICACAO} 
+	            <br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+                <h:panelGroup id="modalImprimir"> 
+					<mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}"
+						action="#{cadastrarPacienteController.imprimirBoletim}"
+						profile="ok-print"
+						ajax="true">
+					</mec:commandButton> 
+					<mec:commandButton id="bt_nao_imprimir" name="bt_nao_imprimir" value="#{messages.LABEL_NAO}"
+						oncomplete="PF('modalConfirmacaoImpressaoWG').hide();"
+						profile="cancel" 
+						ajax="true">
+					</mec:commandButton>
+                </h:panelGroup> 
+			</h:form>
+		</p:dialog>
+
+		<p:dialog id="modalPacienteGRM" width="400" height="150" modal="true" resizable="false" widgetVar="modalPacienteGRMWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.MESSAGEM_LABEL_PACIENTE_GRM}"/> 
+        </f:facet> #{messages.MESSAGEM_PACIENTE_GRM} 
+        <br/>  
+        <br/>  
+        <br/>  
+        <aghu:acao> 
+          <h:form id="form_botao_modal_pacienteGRM"> 
+            <mec:commandButton id="botao_confirmar_pacienteGRM" value="#{messages.LABEL_SIM}" onclick="PF('modalPacienteGRMWG').hide();" action="#{cadastrarPacienteController.confirmar}" profile="ok" ajax="true"/>  
+            <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalPacienteGRMWG').hide();" action="#{cadastrarPacienteController.cancelarConfirmar}" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </aghu:acao> 
+      </p:dialog>  
+      <p:dialog id="modalAlteracaoEndereco" width="400" height="180" modal="true" resizable="false" widgetVar="modalAlteracaoEnderecoWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.MESSAGEM_ALTERACAO_ENDERECO}"/> 
+        </f:facet> #{messages.MESSAGEM_MODAL_ALTERACAO_ENDERECO_PACIENTE} 
+        <br/>  
+        <br/> #{messages.MESSAGEM_MODAL_CONFIRMAR_ALTERACAO_ENDERECO_PACIENTE} 
+        <br/>  
+        <br/>  
+        <aghu:acao> 
+          <h:form id="form_botao_modal_endereco"> 
+            <mec:commandButton id="botao_confirmar_modal_endereco" value="#{messages.LABEL_SIM}" onclick="PF('modalAlteracaoEnderecoWG').hide();" action="#{cadastrarPacienteController.redirecionaAlteracaoMunicipio}" render="panelCadastradoEndereco,panelLogradouroCadastrado,panelTabelaEnderecos,tabelaEnderecos,panel_bt_ed_ad" profile="ok" ajax="true"/>  
+            <mec:commandButton id="bt_nao_modal_endereco" value="#{messages.LABEL_NAO}" onclick="PF('modalAlteracaoEnderecoWG').hide();" action="#{cadastrarPacienteController.confirmar}" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </aghu:acao> 
+      </p:dialog>
+      
+      <!-- Modal Endereço nao Cadastrado -->
+		<p:dialog id="modalLiberaEndereco" width="400"
+			height="150" modal="true" resizable="false" closable="false" overlapEmbedObjects="true"
+			widgetVar="modalLiberaEnderecoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.TITLE_ATENCAO}" />
+				</h:panelGroup>
+			</f:facet>
+			#{messages.MENSAGEM_ATENCAO}	
+	       <br clear="none" />
+		   <br clear="none" />
+		   <br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalConfirmacaoEndereco">
+					<mec:commandButton  id="bt_prosseguir" value="#{messages.LABEL_PROSSEGUIR}"
+						status="commonstatus" render="panelCep, panelLogradouro, panelCidade, panelBairro"
+						onclick="PF('modalLiberaEnderecoWG').hide();" immediate="true" profile="ok"
+						/>
+					<mec:commandButton id="btRefazerPesquisa" value="#{messages.LABEL_REFAZER_PESQUISA}"
+						onclick="PF('modalLiberaEnderecoWG').hide();" 
+						render="panelCep, panelLogradouro, panelCidade, panelBairro" 
+						immediate="true" action="#{enderecoController.refazerPesquisaEndereco}" profile="cancel"/>
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+    </ui:define> 
+  </ui:composition> 
+</html>

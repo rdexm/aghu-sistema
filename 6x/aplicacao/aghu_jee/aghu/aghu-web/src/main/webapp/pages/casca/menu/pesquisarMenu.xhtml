@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisar menu :: CASCA - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{menucrudPaginator}"/>  
+      <h:form prependId="false" id="pesquisaMenuForm"> 
+        <aghu:panelGeral legend="Pesquisar menu"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.CASCA_LABEL_NOME_MENU}" removerCaratersEspeciais="false" value="#{menucrudPaginator.menuFiltro.nome}" title="#{messages.CASCA_TITULO_MENU}" style="text-transform:uppercase" id="nome"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.CASCA_LABEL_PAI}" title="#{messages.CASCA_TITULO_MENU_PAI}" descricaoInput="id" descricaoLabel="nome" suggestionAction="pesquisarMenuPorNome" id="menuPai" controller="#{menucrudPaginator}" value="#{menucrudPaginator.menuPai}"> 
+              <p:column> 
+                <h:outputText value="#{item.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <h:outputText value="#{item.id}"/> 
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.CASCA_LABEL_URL}" removerCaratersEspeciais="false" cols="50" rows="4" value="#{menucrudPaginator.menuFiltro.url}" title="#{messages.CASCA_TITULO_URL}" id="url"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.CASCA_LABEL_APLICACAO}" title="Selecione a aplicação." descricaoInput="id" descricaoLabel="nome" suggestionAction="pesquisarAplicacaoPorNome" id="aplicacao" controller="#{menucrudPaginator}" value="#{menucrudPaginator.aplicacao}"> 
+              <p:column> 
+                <h:outputText value="#{item.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <h:outputText value="#{item.id}"/> 
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.CASCA_LABEL_PESQUISAR}" action="#{menucrudPaginator.pesquisarMenu}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.CASCA_LABEL_LIMPAR_PESQUISA}" action="#{menucrudPaginator.limparPesquisa}" profile="clear"/>  
+          <p:outputPanel id="flagIncluirMenu" rendered="#{menucrudPaginator.exibirBotaoIncluirMenu}" layout="inline"> 
+            <mec:commandButton value="#{messages.CASCA_LABEL_CADASTRAR_NOVO}" action="#{menucrudPaginator.cadastrarNovo}" profile="add"/> 
+          </p:outputPanel> 
+        </aghu:acao>  
+        <mec:serverDataTable id="tabelaMenu" rendered="#{menucrudPaginator.dataModel.pesquisaAtiva}" dataModel="dataModel" controller="#{menucrudPaginator}"> 
+          <c:set var="menu" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaMenu_link_editar" profile="edit" title="editar" action="#{menucrudPaginator.editar}"> 
+              <f:setPropertyActionListener target="#{menucrudController.menu}" value="#{menu}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{menucrudPaginator.menuSelecionado}" value="#{menu}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaMenu_link_remover" profile="delete" title="excluir" action="#{menucrudPaginator.deletarMenu}"> 
+              <f:setPropertyActionListener for="command" target="#{menucrudPaginator.menuSelecionado}" value="#{menu}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{menu.nome}"> 
+            <h:outputText value="#{menu.nome}" title="Código: #{menu.id} Data Criação: #{item.dataCriacao}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_NOME}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{menu.menuPai.nome}"> 
+            <h:outputText value="#{menu.menuPai.nome}" title="Código: #{menu.menuPai.id}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_PAI}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{menu.aplicacao.nome}"> 
+            <h:outputText value="#{menu.aplicacao.nome}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_APLICACAO}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{menu.ordem}"> 
+            <h:outputText value="#{menu.ordem}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_ORDEM}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{menu.ativo}"> 
+            <h:outputText value="#{menu.ativo?messages.CASCA_LABEL_SIM:messages.CASCA_LABEL_NAO}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_ATIVO}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{menu.url}"> 
+            <h:outputText value="#{menu.url}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.CASCA_LABEL_URL}"/> 
+            </f:facet> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

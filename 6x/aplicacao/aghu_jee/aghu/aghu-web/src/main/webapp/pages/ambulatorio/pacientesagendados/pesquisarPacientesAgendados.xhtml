@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+	  <script type="text/javascript">
+					function chamaModal() {
+					document.getElementById('hiddenButton:button').click();
+                    }
+
+			function saveScrollPosition(){
+				$("#hdnScrollPos").val(document.body.scrollTop);
+			}
+			function setScrollPosition(pos){
+				$(document).ready(function(){
+					setTimeout(function() {
+						document.body.scrollTop = pos; 
+					}, 300);
+				});
+			}					
+	</script>
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisarPacientesAgendadosController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisarPacientesAgendadosController}" print="true" />  
+
+      <h:form prependId="false" id="formPesquisa"> 
+	  
+		<h:inputHidden id="hdnScrollPos" value="#{pesquisarPacientesAgendadosController.posicaoScroll}" />
+  
+        <aghu:panelGeral  legend="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS}"> 
+           
+           <aghu:linha>
+           <p:accordionPanel id="filtroToggle" prependId="false"   activeIndex="#{pesquisarPacientesAgendadosController.openToggle}"> 
+            
+            <p:ajax event="tabChange" update="@(#resultListAb1) @(#resultListAb2) @(#resultListAb3) @(#resultListAb4) @(#resultListAb5) @(#resultListAb6) @(#filtroToggle) @(#botoesAcao)" process="@this" listener="#{pesquisarPacientesAgendadosController.colapsePanel}"/>  
+            <p:ajax event="tabClose"  update="@(#resultListAb1) @(#resultListAb2) @(#resultListAb3) @(#resultListAb4) @(#resultListAb5) @(#resultListAb6) @(#filtroToggle) @(#botoesAcao)" process="@this" listener="#{pesquisarPacientesAgendadosController.colapsePanel}"/>  
+            
+            <p:tab   title="#{messages.TITLE_FILTROS_PESQUISA}#{pesquisarPacientesAgendadosController.descricaoFiltro}">
+            
+            <aghu:panelGeral>
+            <aghu:linha> 
+              <mec:inputTextData id="dtPesquisa" label="#{pesquisarPacientesAgendadosController.dataExtenso}" title="#{messages.TITLE_DT_INICIAL_CONSULTAS_GRADE_AGENDAMENTO}" required="true" value="#{pesquisarPacientesAgendadosController.dtPesquisa}" tipo="data"/>  
+              <mec:suggestionBox var="zona" itemValue="#{zona}" required="true" label="#{pesquisarPacientesAgendadosController.labelZona}" title="#{pesquisarPacientesAgendadosController.titleZona}" suggestionAction="obterZona" width="400" posSelectionAction="obterZonaSala" posDeleteAction="obterZonaSala" descricaoInput="sigla" descricaoLabel="descricao" id="zona" controller="#{pesquisarPacientesAgendadosController}" value="#{pesquisarPacientesAgendadosController.zona}" render="sala"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{pesquisarPacientesAgendadosController.labelZona}</b> 
+                  </f:facet> #{zona.sigla}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{zona.descricao}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:selectOneMenu id="sala" label="#{pesquisarPacientesAgendadosController.labelSala}" items="#{pesquisarPacientesAgendadosController.zonaSalaList}" itemLabel="id.sala" title="#{pesquisarPacientesAgendadosController.titleSala}" value="#{pesquisarPacientesAgendadosController.zonaSala}"/>  
+              <mec:selectOneMenu enum="DominioTurno" label="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_TURNO}" title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_TURNO}" value="#{pesquisarPacientesAgendadosController.turno}" id="turno"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox var="especialidade" itemValue="#{especialidade}" label="#{messages.LABEL_ESPECIALIDADE_AGENDA}" title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_ESPECIALIDADE_AGENDA}" descricaoInput="sigla" size="20" maxlength="30" width="400" descricaoLabel="nomeEspecialidade" suggestionAction="obterEspecialidade" id="especialidade" controller="#{pesquisarPacientesAgendadosController}" value="#{pesquisarPacientesAgendadosController.especialidade}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_SIGLA}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{especialidade.sigla}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_NOME_ESPECIALIDADE}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{especialidade.nomeEspecialidade}"/> 
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox  var="equipe" itemValue="#{equipe}" label="#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_EQUIPE}" title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_EQUIPE}" descricaoInput="seq" size="20" maxlength="30" width="400" descricaoLabel="nome" suggestionAction="obterEquipe" id="equipe" controller="#{pesquisarPacientesAgendadosController}" value="#{pesquisarPacientesAgendadosController.equipe}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_EQUIPE}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{equipe.seq}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_NOME}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{equipe.nome}"/> 
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox  var="profissional" itemValue="#{profissional}" label="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PROFISSIONAL}" title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_PROFISSIONAL}" descricaoInput="matriculaVinculo" size="20" maxlength="30" width="400" descricaoLabel="pessoaFisica.nome" suggestionAction="obterProfissionais" id="profissional" controller="#{pesquisarPacientesAgendadosController}" value="#{pesquisarPacientesAgendadosController.profissional}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_VINCULO}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{profissional.id.vinCodigo}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_MATRICULA}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{profissional.id.matricula}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_NOME}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{profissional.pessoaFisica.nome}"/> 
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisarPacientesAgendadosController.pesquisar}" profile="search">
+              		<f:setPropertyActionListener value="true" target="#{pesquisarPacientesAgendadosController.chamouPesquisar}" for="command"/>
+              </mec:commandButton>
+              <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{pesquisarPacientesAgendadosController.limparPesquisa}" ajax="true" render="resultTab,filtroToggle,botoesAcao" process="@this" styleClass="bt_cinza" profile="clear"/> 
+            </aghu:linha> 
+            </aghu:panelGeral>
+            </p:tab>
+          </p:accordionPanel>
+          </aghu:linha>
+          <aghu:linha id="resultTab"> 
+	          <p:tabView  dynamic="true" activeIndex="#{pesquisarPacientesAgendadosController.selectedTab}" prependId="false"> 
+	            <p:ajax event="tabChange" listener="#{pesquisarPacientesAgendadosController.prepararAbas}" update="@(#botoesAcao) @(#resultListAb1) @(#resultListAb4)"/>  
+	            <p:tab title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_AGENDADOS}"> 
+	              <ui:include src="/pages/ambulatorio/pacientesagendados/pesquisarPacientesAgendadosAba1.xhtml"/> 
+					</p:tab>
+					<p:tab style="width:100%;height:100%;"
+						title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_AGUARDANDO}">
+						<ui:include
+							src="/pages/ambulatorio/pacientesagendados/pesquisarPacientesAgendadosAba2.xhtml" />
+					</p:tab>
+					<p:tab style="width:100%;height:100%;"
+						title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_ATENDIMENTO}">
+						<ui:include
+							src="/pages/ambulatorio/pacientesagendados/pesquisarPacientesAgendadosAba3.xhtml" />
+					</p:tab>
+					<p:tab style="width:100%;height:100%;"
+						title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_ATENDIDOS}">
+						<ui:include
+							src="/pages/ambulatorio/pacientesagendados/pesquisarPacientesAgendadosAba4.xhtml" />
+					</p:tab>
+					<p:tab id="tab5" style="width:100%;height:100%;"
+						title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_PENDENTES}">
+						<ui:include src="/pages/ambulatorio/pacientesagendados/pesquisarPacientesAgendadosAba5.xhtml" />
+					</p:tab>
+					<p:tab id="tab6" style="width:100%;height:100%;"
+						title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_AUSENTES}">
+						<ui:include
+							src="/pages/ambulatorio/pacientesagendados/pesquisarPacientesAgendadosAba6.xhtml" />
+					</p:tab>
+	          </p:tabView> 
+          </aghu:linha> 
+          <aghu:linha id="botoesAcao" >
+              <mec:commandButton id="bt_marcarFaltaPacientes" value="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_MARCAR_FALTAS}" onclick="PF('modalConfirmacaoMarcarFaltaWG').show();" rendered="#{pesquisarPacientesAgendadosController.selectedTab eq 0 and pesquisarPacientesAgendadosController.pesquisaAtiva and mf:hasPermission(securityController,'marcarFaltasPacientes,marcaFaltasPacientes')}" disabled="#{mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}" ajax="true" process="@this" styleClass="bt_cinza"/>  
+              <mec:commandButton id="bt_repesquisar" value="#{messages.LABEL_PESQUISAR_PACIENTES_REFAZER_PESQUISA}" action="#{pesquisarPacientesAgendadosController.refazerPesquisa}" rendered="#{pesquisarPacientesAgendadosController.pesquisaAtiva}" ajax="true" render="filtroToggle,resultTab,botoesAcao" process="@this" styleClass="bt_cinza"/>
+              <mec:commandButton id="bt_imprimirDocumentos" 
+              					 value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_IMPRIMIR_DOCUMENTOS}" 
+              					 action="#{pesquisarPacientesAgendadosController.existeDocumentosImprimirPaciente()}"
+              					 render="@(#panelModal)"              					               					 	
+								 rendered="#{(pesquisarPacientesAgendadosController.selectedTab eq 0 and pesquisarPacientesAgendadosController.pesquisaAtiva) or (pesquisarPacientesAgendadosController.selectedTab eq 3 and pesquisarPacientesAgendadosController.pesquisaAtiva)}"
+              					 disabled="#{!pesquisarPacientesAgendadosController.verificaItemSelecionado}"
+								 ajax="true" process="@this, resultListAb1, resultListAb4" styleClass="bt_cinza" profile="print">								 
+              </mec:commandButton>
+             
+              <mec:commandButton id="bt_imprimirApac" 
+							value="#{messages.LABEL_IMPRIMIR_APAC}"
+							action="#{pesquisarPacientesAgendadosController.imprimirApac(true)}"
+							onclick="PF('modalImprimirLaudoAtendimentoApacWG').show();"
+							rendered="#{(pesquisarPacientesAgendadosController.pesquisaAtiva and pesquisarPacientesAgendadosController.verificarEspecialidade() and pesquisarPacientesAgendadosController.verificarEspecialidadeApac())}"
+							ajax="true" render="botoesAcao,@(#panelModal)" process="@this"
+							styleClass="bt_cinza" >  
+			  </mec:commandButton>
+			  
+              <mec:commandButton id="bt_atualizar" value="#{messages.LABEL_PESQUISAR_PACIENTES_ATUALIZAR_PESQUISA}" action="#{pesquisarPacientesAgendadosController.pesquisar}" rendered="#{pesquisarPacientesAgendadosController.pesquisaAtiva}" ajax="true" render="resultTab,botoesAcao" process="@this" icon="aghu-icon-refresh aghu-icons-16x16"/>  
+			  <mec:commandButton id="bt_controle_paciente" value="#{messages.LABEL_PESQUISAR_PACIENTES_CONTROLE_PACIENTE}" 
+				  	action="#{pesquisarPacientesAgendadosController.redirecionarControlePaciente}" rendered="#{pesquisarPacientesAgendadosController.pesquisaAtiva}" ajax="true"
+				  	disabled="#{pesquisarPacientesAgendadosController.obterConsultaSelecionadaAba() eq null}" process="@this" styleClass="bt_cinza" />
+			                  
+              <h:outputFormat value="#{messages.MSG_PACIENTES_ENCONTRADOS}" style="padding-left:15px;" rendered="#{pesquisarPacientesAgendadosController.pesquisaAtiva}"> 
+                <c:if test="#{pesquisarPacientesAgendadosController.selectedTab == 0}" >
+				     <f:param value="#{pesquisarPacientesAgendadosController.recuperarCount()}"/>
+				</c:if>
+                <f:param value="#{pesquisarPacientesAgendadosController.listSize}"/>  
+              </h:outputFormat> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        
+        <p:dialog id="modalConfirmacaoMarcarFalta" width="350" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoMarcarFaltaWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_MARCAR_FALTA_PACIENTES}"/> 
+          </f:facet> #{messages.LABEL_MARCAR_FALTA_PACIENTES_CONFIRMACAO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup>
+					<mec:commandButton id="bt_sim_mf" value="#{messages.LABEL_SIM}"
+						action="#{pesquisarPacientesAgendadosController.marcarFalta}"
+						oncomplete="PF('modalConfirmacaoMarcarFaltaWG').hide();"
+						profile="ok" ajax="true" render="resultTab" process="@this" />
+					<mec:commandButton id="bt_nao_mf" value="#{messages.LABEL_NAO}" oncomplete="PF('modalConfirmacaoMarcarFaltaWG').hide();" profile="cancel" ajax="true" process="@this"/> 
+          </h:panelGroup>
+        </p:dialog>
+         
+        <p:dialog id="modalDesmarcacao" width="500" height="200" modal="true" resizable="false" widgetVar="modalDesmarcacaoWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.TITLE_ALTERACAO_STATUS}"/> 
+          </f:facet>  
+          <p:outputPanel id="txtMsg" layout="inline"> 
+            <h:outputFormat value="#{messages.MSG_ALTERACAO_STATUS}"> 
+              <f:param value="#{pesquisarPacientesAgendadosController.consultaSelecionada.pacienteNome}"/> 
+            </h:outputFormat>
+          </p:outputPanel>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{pesquisarPacientesAgendadosController.chegou}" oncomplete="PF('modalDesmarcacaoWG').hide();" profile="ok" ajax="true" render="resultListAb1,resultListAb2" process="@this"/>  
+            <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" oncomplete="PF('modalDesmarcacaoWG').hide();" profile="cancel" ajax="true" process="@this" render="resultListAb1"> 
+              <f:setPropertyActionListener target="#{pesquisarPacientesAgendadosController.consultaSelecionada.chegou}" value="#{not pesquisarPacientesAgendadosController.consultaSelecionada.chegou}" for="command"/> 
+            </mec:commandButton> 
+          </h:panelGroup> 
+        </p:dialog>  
+        
+        <p:dialog id="modalConfirmacaoAtendimento" width="380" height="180" modal="true" resizable="false" widgetVar="modalConfirmacaoAtendimentoWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_CONFIRMA_ATENDIMENTO}"/> 
+          </f:facet>  
+          <h:panelGroup id="panelConfirmacaoAtendimento"> 
+            <h:outputFormat value="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_CONFIRMA_ATENDIMENTO_DESDE}"> 
+              <f:param value="#{pesquisarPacientesAgendadosController.controleDthrMovimento}"/>  
+              <f:param value="#{pesquisarPacientesAgendadosController.controleServidorNome}"/> 
+            </h:outputFormat>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/> 
+            <mec:commandButton id="bt_sim_ca" value="#{messages.LABEL_SIM}" action="#{pesquisarPacientesAgendadosController.atender}" oncomplete="PF('modalConfirmacaoAtendimentoWG').hide();" profile="ok" ajax="true" render="checkidp_Ab2,checkidp_Ab3,checkidp_Ab4" process="@this"/>  
+            <mec:commandButton id="bt_nao_ca" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoAtendimentoWG').hide();return false;" profile="cancel" ajax="true" process="@this"/> 
+          </h:panelGroup> 
+        </p:dialog> 
+        
+           <p:dialog id="modalConfirmacaoReabrirPendente" width="380" height="180" modal="true" resizable="false" widgetVar="modalConfirmacaoReabrirPendenteWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_CONFIRMA_ATENDIMENTO}"/> 
+          </f:facet>  
+          <h:panelGroup id="panelConfirmacaoReabrirPendente"> 
+            <h:outputFormat value="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_CONFIRMA_ATENDIMENTO_DESDE}"> 
+              <f:param value="#{pesquisarPacientesAgendadosController.controleDthrMovimentoPendente}"/>  
+              <f:param value="#{pesquisarPacientesAgendadosController.controleServidorNomePendente}"/> 
+            </h:outputFormat>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/> 
+            <mec:commandButton id="bt_sim_ca_reabrir" value="#{messages.LABEL_SIM}" action="#{pesquisarPacientesAgendadosController.reabrirPendente}" oncomplete="PF('modalConfirmacaoReabrirPendenteWG').hide();" profile="ok" ajax="true" render="checkidp_Ab2,checkidp_Ab3,checkidp_Ab4" process="@this"/>  
+            <mec:commandButton id="bt_nao_ca_reabrir" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoReabrirPendenteWG').hide();return false;" profile="cancel" ajax="true" process="@this"/> 
+          </h:panelGroup> 
+        </p:dialog> 
+        
+        
+      </h:form>  
+      
+		<p:dialog resizeable="false" id="modalConverterConsultas" zindex="2"
+			width="800" height="200" modal="true" resizable="false"
+			widgetVar="modalImprimirLaudoAtendimentoApacWG">
+			<p:ajax event="close" listener="#{pesquisarPacientesAgendadosController.imprimirApac(false)}" /> 
+
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.IMPRESSAO_APAC}" />
+				</h:panelGroup>
+			</f:facet>
+			<f:facet name="controls">
+				<h:panelGroup>
+					<h:graphicImage value="/resources/img/close.png" styleClass="hidelink"
+						id="hidelinkModalImprimirLaudoAtendimentoApac"></h:graphicImage>
+				</h:panelGroup>
+			</f:facet>
+		
+			<h:form id="formImpressaoRelatorio" prependId="false">
+				<aghu:panelGeral>
+					<p:outputPanel id="modalImprimirLaudo" layout="inline" >
+						<aghu:linha>
+							<p:selectBooleanCheckbox id="selectControleFrequencia" value="#{pesquisarPacientesAgendadosController.imprimirControleFrequencia}">
+								<p:ajax event="change" update="formImpressaoRelatorio" process="@this" ajax="true" />
+							</p:selectBooleanCheckbox>
+						<h:outputLabel value="#{messages.DIALOG_CONTROLE_FREQUENCIA}" style="padding-left:10px"/>
+						</aghu:linha> 
+						<aghu:linha style="margin-top:20px">
+							<p:selectBooleanCheckbox id="selectSolicitacao" value="#{pesquisarPacientesAgendadosController.imprimirAutorizacao}"> 
+								<p:ajax event="change" update="formImpressaoRelatorio" process="@this" ajax="true"/>
+							</p:selectBooleanCheckbox>	
+							<h:outputLabel value="#{messages.DIALOG_SOLICITACAO}" style="padding-left:10px"/>
+						</aghu:linha> 
+		
+					</p:outputPanel>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<mec:commandButton id="bt_imprimir"
+						value="#{messages.LABEL_IMPRIMIR}" block="true"
+						action="#{pesquisarPacientesAgendadosController.imprimir()}"
+						profile="print" 
+						rendered="#{pesquisarPacientesAgendadosController.verificarCaracteristicaApac()}"
+						styleClass="bt_cinza"/>
+				</aghu:acao>
+	    	</h:form>
+		</p:dialog>
+
+      <ui:decorate template="/pages/ambulatorio/pacientesagendados/modalAlterarRetornoConsulta.xhtml"/>  
+      
+      <p:outputPanel layout="inline"> 
+        <ui:decorate template="/pages/ambulatorio/pacientesagendados/modalProcedimentosConsulta.xhtml"/> 
+      </p:outputPanel>  
+      
+      <p:outputPanel id="panelModalInformarChaveSisreg" layout="inline">	
+       <p:dialog id="modalInformarChaveSisreg" width="390" height="180" modal="true" resizable="false" closable="false" widgetVar="modalInformarChaveSisregWG"> 
+         <f:facet name="header"> 
+           <h:outputText value="#{messages.MSG_INFORMAR_DADOS_SISREG} #{pesquisarPacientesAgendadosController.consulta.numero}"/> 
+         </f:facet>  
+         <h:form prependId="false" id="formModalSisreg"> 
+           <aghu:panelGeral legend="#{messages.TITLE_CODIGO_DA_CENTRAL}"> 
+					<mec:inputNumero 
+						name="codCentralSol"
+						title="#{messages.TITLE_CODIGO_CENTRAL_CONSULTA_SOLICITADA}"  
+						label="#{messages.LABEL_CODIGO_CENTRAL_SOLICITADA}" 
+						maxlength="12"
+						size="12"
+						value="#{pesquisarPacientesAgendadosController.consulta.codCentralSol}"				
+						readonly="true"/>
+				<p:outputPanel id="codCentralPainel" styleClass="alinha-direita" layout="inline">		
+	                 <mec:inputNumero 
+		             	title="#{messages.TITLE_CODIGO_CENTRAL_CONSULTA}" 
+		             	label="#{messages.LABEL_CODIGO_CENTRAL}" 
+		             	maxlength="12" size="12" 
+		             	required="#{pesquisarPacientesAgendadosController.flagCodigoCentral}"
+		             	value="#{pesquisarPacientesAgendadosController.consulta.codCentral}" 
+		             	id="codCentral"/> 
+            	</p:outputPanel> 
+           </aghu:panelGeral>  
+           <h:panelGroup> 
+             <mec:commandButton id="bt_gravar_sisreg" value="#{messages.LABEL_SIM}" action="#{pesquisarPacientesAgendadosController.gravarConsultaSisreg}" profile="ok"/>  
+             <mec:commandButton id="bt_cancelar_sisreg" value="#{messages.LABEL_NAO}" action="#{pesquisarPacientesAgendadosController.cancelarConsultaSisreg}" profile="cancel"/> 
+           </h:panelGroup> 
+         </h:form> 
+       </p:dialog> 
+       </p:outputPanel>
+	  	   
+	   <p:outputPanel id="panelModal" layout="inline">
+			<h:form prependId="false">
+				<p:outputPanel layout="inline">
+					<ui:decorate
+						template="/pages/ambulatorio/pacientesagendados/modalFinalizarAtendimento.xhtml" />
+				</p:outputPanel>
+			</h:form>
+		</p:outputPanel>
+     
+    </ui:define> 
+    <p:dialog id="modalImprimirLaudoAtendimentoApac" moveable="false"
+		zindex="2" closable="true"
+		showWhenRendered="true" 
+		width="800"
+		height="200" 
+		modal="true" resizable="false"
+		widgetVar="modalImprimirLaudoAtendimentoApacWG">
+		<f:facet name="header">
+			<h:panelGroup>
+				<h:outputText value="#{messages.IMPRESSAO_APAC}" />
+			</h:panelGroup>
+		</f:facet>
+		<f:facet name="controls">
+			<h:panelGroup>
+				<h:graphicImage value="/resources/img/close.png"
+					onclick="#{PF('modalImprimirLaudoAtendimentoApac')}.hide();" styleClass="hidelink"
+					id="hidelinkModalImprimirLaudoAtendimentoApac">
+				</h:graphicImage>
+			</h:panelGroup>
+		</f:facet>
+		<aghu:panelGeral style="padding: 10px;">
+			<p:outputPanel id="modalImprimirLaudo" layout="inline">
+				<aghu:linha>
+					<mec:selectBooleanCheckbox id="selectControleFrequencia" value="#{pesquisarPacientesAgendadosController.imprimirControleFrequencia}">
+						<p:ajax event="change" process="@this" />
+					</mec:selectBooleanCheckbox>
+
+					<h:panelGroup>
+						<h:outputText value="#{messages.DIALOG_CONTROLE_FREQUENCIA}" />
+					</h:panelGroup>
+				</aghu:linha> 
+			
+				<aghu:linha>
+					<mec:selectBooleanCheckbox id="selectSolicitacao" value="#{pesquisarPacientesAgendadosController.imprimirAutorizacao}"> 
+						<p:ajax event="change" process="@this" />
+					</mec:selectBooleanCheckbox>
+					
+					<h:panelGroup>
+						<h:outputText value="#{messages.DIALOG_SOLICITACAO}" />
+					</h:panelGroup>
+				</aghu:linha> 
+				<aghu:linha> 
+	              <mec:commandButton value="#{messages.LABEL_IMPRIMIR}" id="imprirmirApacModal"
+		              action="#{pesquisarPacientesAgendadosController.imprimir}" 
+		              profile="print"/> 
+	            </aghu:linha> 
+			</p:outputPanel>
+		</aghu:panelGeral>
+	</p:dialog>
+  </ui:composition> 
+</html>

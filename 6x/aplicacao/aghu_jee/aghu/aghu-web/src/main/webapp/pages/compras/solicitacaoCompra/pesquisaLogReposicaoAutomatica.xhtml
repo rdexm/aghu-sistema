@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_VISUALIZAR_LOG_REPOSICAO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{logReposicaoAutomaticaPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{logReposicaoAutomaticaPaginatorController}"/>  
+      <p:outputPanel id="panelCorpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formDadosCabecalho"> 
+          <aghu:panelGeral legend="#{messages.TITLE_VISUALIZAR_LOG_REPOSICAO}"> 
+            <aghu:linha> 
+              <mec:suggestionBox id="suggestionProcesso" label="#{messages.LABEL_FILTRO_SEQ_PROCESSO}" title="#{messages.TITLE_FILTRO_SEQ_PROCESSO}" suggestionAction="pesquisarProcessoGeracaoCodigoData" descricaoInput="seqProcesso" descricaoLabel="dtGeracaoFormatada" maxlength="60" required="false" controller="#{logReposicaoAutomaticaPaginatorController}" value="#{logReposicaoAutomaticaPaginatorController.processo}"> 
+                <p:column>#{item.seqProcesso}</p:column>  
+                <p:column>#{item.dtGeracaoFormatada}</p:column> 
+              </mec:suggestionBox>  
+              <p:outputPanel id="panelMaterial" layout="inline"> 
+                <mec:suggestionBox id="suggestionMaterial" label="#{messages.LABEL_FILTRO_MATERIAL}" title="#{messages.TITLE_FILTRO_MATERIAL}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarMaterialPorCodigoDescricao" controller="#{logReposicaoAutomaticaPaginatorController}" value="#{logReposicaoAutomaticaPaginatorController.material}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME}</b> 
+                    </f:facet>  
+                    <h:outputText value="#{(item.nome.length() > 40) ? fn:substring(item.nome,0,40) : item.nome}#{(item.nome.length() > 40) ? '...' : '' }" title="#{item.nome}" /> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet>  
+                    <h:outputText value="#{(item.descricao.length() > 40) ? fn:substring(item.descricao,0,40) : item.descricao}#{(item.descricao.length() > 40) ? '...' : '' }" title="#{item.getDescricaoSplited(70)}"/> 
+                  </p:column> 
+                </mec:suggestionBox>  
+                <p:tooltip  id="materialToolTip" for="panelMaterial" mode="ajax" disabled="#{empty logReposicaoAutomaticaPaginatorController.material}">  
+                  <h:outputText value="#{messages.LABEL_NOME}: #{logReposicaoAutomaticaPaginatorController.material.nome}"/>  
+                  <br clear="none"/>  
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}: #{logReposicaoAutomaticaPaginatorController.material.descricao}" rendered="#{not empty logReposicaoAutomaticaPaginatorController.material.descricao}"/> 
+                </p:tooltip> 
+              </p:outputPanel>  
+              <mec:selectOneMenu id="emContrato" enum="DominioSimNao" label="#{messages.LABEL_FILTRO_EM_CONTRATO}" title="#{messages.TITLE_FILTRO_EM_CONTRATO}" value="#{logReposicaoAutomaticaPaginatorController.indEmContrato}"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{logReposicaoAutomaticaPaginatorController.pesquisar}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{logReposicaoAutomaticaPaginatorController.limpar()}" styleClass="bt_cinza" profile="clear"/>  
+            <mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar" immediate="true" action="#{logReposicaoAutomaticaPaginatorController.voltar}" styleClass="bt_cinza" profile="back"/> 
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false" id="resultados">
+          <p:outputPanel id="panelResult" rendered="#{logReposicaoAutomaticaPaginatorController.dataModel.pesquisaAtiva}"> 
+	          <aghu:panelGeral legend="#{messages.LEGEND_GRID_LOG_REPOSICAO}"> 
+	            <mec:serverDataTable dataModel="dataModel" id="tabela_itens_licitacao" value="#{logReposicaoAutomaticaPaginatorController}" controller="#{logReposicaoAutomaticaPaginatorController}"> 
+	              <c:set var="_item" value="#{item}"/>  
+	              <p:column exportable="false" style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+	                </f:facet>  
+	                <mec:commandLink id="lnkEstatistica" rendered="#{mf:hasPermission(securityController,'consultaEstatiscaConsumo,consultar')}" title="#{messages.LABEL_ESTATISTICA_CONSUMO}" action="#{logReposicaoAutomaticaPaginatorController.redirecionarEstatisticaConsumo}" styleClass=" silk-chart-bar silk-icon"> 
+	                  <f:setPropertyActionListener target="#{estatisticaConsumoController.codigoMaterial}" value="#{_item.material.codigo}" for="command"/>  
+	                  <f:setPropertyActionListener target="#{estatisticaConsumoController.voltarPara}" value="compras-pesquisaLogReposicaoAutomatica" for="command"/> 
+	                </mec:commandLink> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}" sortBy="#{item[material.codigo]}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_MATERIAL}"/> 
+	                </f:facet> 
+	                <p:outputPanel id="panelMaterial"> 
+	                	<h:outputText value="#{_item.material.codigo}"/>
+	                </p:outputPanel>  
+	                <p:tooltip for="panelMaterial" style="width:300px; word-wrap: break-word;" styleClass="tooltip"> 
+	                  <h:outputText value="#{_item.material.nome}"/>  
+	                  <br clear="none"/>  
+	                  <h:outputText value="#{messages.LABEL_DESCRICAO}: #{_item.material.descricao}" rendered="#{not empty _item.material.descricao}"/> 
+	                </p:tooltip> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}" rendered="#{logReposicaoAutomaticaPaginatorController.processo == null}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_DATA_GERACAO_GRID}"/> 
+	                </f:facet>  
+	                <h:outputText value="#{_item.dtGeracao}"> 
+	                  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+	                </h:outputText>  
+	                <h:outputText value=" - #{_item.seqProcesso}"/> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_LOCAL_ESTOQUE}"/> 
+	                </f:facet>  
+	                <p:outputPanel id="panelAlm">
+	                	<h:outputText value="#{_item.almoxarifado.seq}"/>
+	                </p:outputPanel>  
+	                <p:tooltip for="panelAlm" style="width:300px; word-wrap: break-word;" styleClass="tooltip"> 
+	                  <h:outputText value="#{_item.almoxarifado.descricao}"/> 
+	                </p:tooltip> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_QTDE_DISP}"/> 
+	                </f:facet>  
+	                <h:outputText value="#{not empty _item.qtdeDisponivel ? _item.qtdeDisponivel : 0}"/> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_QTDE_BLOQUEADO}"/> 
+	                </f:facet>  
+	                <h:outputText value="#{not empty _item.qtdeBloqueada ? _item.qtdeBloqueada : 0}"/> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.MESSAGE_LABEL_QTDE_PONTO_PEDIDO}"/> 
+	                </f:facet>  
+	                <h:outputText id="tabela_grid_qtde_pp" value="#{not empty _item.qtdePontoPedido ? _item.qtdePontoPedido : 0}"/> 
+	              </p:column>  
+	              <p:column value="" style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}" sortBy="#{item[solicitacaoCompra.numero]}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_SC_CONTRATO}"/> 
+	                </f:facet>  
+	                <mec:commandLink id="lnkVisualizar" style="color:blue;" value="#{_item.solicitacaoCompra.numero}" title="#{messages.LABEL_VISUALIZAR_GRID_SC}" action="#{logReposicaoAutomaticaPaginatorController.redirecionarSolicitacaoCompra}" rendered="#{not mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar')  and                    not mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') and                not mf:hasPermission(securityController,'cadastrarSCComprador,gravar') and                not mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') and                 not mf:hasPermission(securityController,'cadastrarSCChefias,gravar')                and mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}"> 
+	                  <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{_item.solicitacaoCompra.numero}" for="command"/>  
+	                  <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-pesquisaLogReposicaoAutomatica" for="command"/> 
+	                </mec:commandLink>  
+	                <mec:commandLink id="lnkEditar" style="color:blue;" value="#{_item.solicitacaoCompra.numero}" title="#{messages.LABEL_EDITAR_GRID_SC}" action="#{logReposicaoAutomaticaPaginatorController.redirecionarSolicitacaoCompra}" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar')  or                    mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or                 mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or                 mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or                 mf:hasPermission(securityController,'cadastrarSCChefias,gravar')}"> 
+	                  <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{_item.solicitacaoCompra.numero}" for="command"/>  
+	                  <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-pesquisaLogReposicaoAutomatica" for="command"/> 
+	                </mec:commandLink> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_SC_NOVA}"/> 
+	                </f:facet>  
+	                <h:outputText value="#{logReposicaoAutomaticaPaginatorController.getScNova(_item)}"/> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header">
+	                  <h:outputText value="#{messages.MESSAGE_LABEL_QTDE_EM_SC}" title="#{messages.MESSAGE_HINT_QTDE_EM_SC}"/> 
+	                </f:facet>  
+	                <p:outputPanel id="panelQtd">
+	                	<h:outputText id="tabela_grid_qtde_sc" value="#{not empty _item.qtdeEmSc ? _item.qtdeEmSc : 0}"/>
+	                </p:outputPanel>  
+	                <p:tooltip for="panelQtd" styleClass="tooltip" rendered="#{not empty logReposicaoAutomaticaPaginatorController.getScsNaoAf(_item.material)}"> 
+	                  <h:outputText escape="false" value="#{logReposicaoAutomaticaPaginatorController.getScsNaoAf(_item.material)}"/> 
+	                </p:tooltip> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header">
+	                  <h:outputText value="#{messages.MESSAGE_LABEL_QTDE_EM_AF}" title="#{messages.MESSAGE_HINT_QTDE_EM_AF}"/> 
+	                </f:facet>  
+	                <h:outputText id="tabela_grid_qtde_af" value="#{not empty _item.qtdeEmAf ? _item.qtdeEmAf : 0}"/> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}"> 
+	                <f:facet name="header">
+	                  <h:outputText value="#{messages.MESSAGE_LABEL_QTDE_EM_FF}" title="#{messages.MESSAGE_HINT_QTDE_EM_FF}"/> 
+	                </f:facet>  
+	                <h:outputText id="tabela_grid_qtde_ff" value="#{not empty _item.qtdeEmFundoFixo ? _item.qtdeEmFundoFixo : 0}"/> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}" sortBy="#{item[qtdeAComprar]}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.MESSAGE_LABEL_QTDE_REPOSICAO}"/> 
+	                </f:facet>  
+	                <h:outputText value="#{empty _item.qtdeAComprar or _item.qtdeAComprar lt 0 ? 0 : _item.qtdeAComprar}"/> 
+	              </p:column>  
+	              <p:column style="#{_item.qtdeAComprar gt 0 ? 'background: #FFE773 !important' : ''}" sortBy="#{item[qtdeAComprar]}"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.MESSAGE_LABEL_QTDE_SALDO}"/> 
+	                </f:facet>  
+	                <h:outputText value="#{not empty _item.qtdeAComprar and _item.qtdeAComprar lt 0 ? _item.qtdeAComprar * -1 : 0}"/> 
+	              </p:column> 
+	            </mec:serverDataTable> 
+	          </aghu:panelGeral>
+          </p:outputPanel> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

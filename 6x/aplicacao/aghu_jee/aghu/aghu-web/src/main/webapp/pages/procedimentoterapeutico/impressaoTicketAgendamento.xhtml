@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.TITLE_IMPRISSAO_TICKET_AGENDAMENTO} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{imprimirTicketAgendamentoController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{imprimirTicketAgendamentoController}" />
+		<h:form prependId="false" id="formImprimirTicket">
+			<aghu:panelGeral
+				legend="#{messages.TITLE_DADOS_PACIENTE_AGENDAR_SESSAO}">
+				<aghu:linha>
+					<p:outputPanel id="pacienteDecorate" layout="inline">
+						<mec:pesquisaPaciente id="pesqPaciente"
+							valueChangeListener="#{imprimirTicketAgendamentoController.pesquisaPaciente}"
+							posDeleteAction="#{imprimirTicketAgendamentoController.limpar}"
+							value="#{imprimirTicketAgendamentoController.paciente}"
+							render="formImprimirTicket" readonly="#{!imprimirTicketAgendamentoController.reimpressao}" />						 
+						<aghu:acao newLine="false">  
+							<mec:commandButton id="pesqPacienteBt"
+								value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true"
+								rendered="#{imprimirTicketAgendamentoController.reimpressao}"
+								action="#{imprimirTicketAgendamentoController.redirecionarPesquisaFonetica()}"
+								styleClass="bt_cinza icon-pesquisa-fonetica" profile="search">
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.cameFrom}"
+									value="procedimentoterapeutico-impressaoTicketAgendamento" for="command" />
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.exibeBotaoEditar}"
+									value="false" for="command" />
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.paramExibeBotaoIncluir}"
+									value="false" for="command" />
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.exibirBotaoIncluirPacienteCirurgico}"
+									value="false" for="command" />
+								<f:param name="cid"
+									value="#{javax.enterprise.context.conversation.id}" />
+							</mec:commandButton>
+						</aghu:acao>
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:panelGeral legend="#{messages.TITLE_RESUMO_SESSOES_PACIENTE}">
+				<aghu:linha>
+					<p:outputPanel id="panelCiclo" rendered="#{imprimirTicketAgendamentoController.valorRadio eq 1}">
+						<mec:selectOneMenu id="ciclo"
+							rendered="#{imprimirTicketAgendamentoController.reimpressao}"
+							items="#{imprimirTicketAgendamentoController.listaCiclo}"
+							itemLabel="ptcDescricao"
+							itemValue="cloSeq"
+							label="#{messages.LABEL_CICLO_AGENDAR_SESSAO}"
+							value="#{imprimirTicketAgendamentoController.ciclo}">
+							<p:ajax event="change" process="@this" update="@(#panellistRegistroHorarios) @(#panelBotoes)" listener="#{imprimirTicketAgendamentoController.carregaRegistroHorariosfiltradosPorCiclo()}"/>
+						</mec:selectOneMenu>
+					</p:outputPanel>
+
+					<p:outputPanel id="panelCicloReservas" rendered="#{imprimirTicketAgendamentoController.valorRadio eq 2}">
+						<mec:selectOneMenu id="cicloReservas"
+							rendered="#{imprimirTicketAgendamentoController.reimpressao}"
+							items="#{imprimirTicketAgendamentoController.listaCicloReservas}"
+							itemLabel="descSessao"
+							itemValue="seq"
+							label="#{messages.LABEL_RESERVAS_AGENDAR_SESSAO}"
+							value="#{imprimirTicketAgendamentoController.seqAgendamento}">
+							<p:ajax event="change" process="@this" update="@(#panellistRegistroReservas) @(#panelBotoes)" listener="#{imprimirTicketAgendamentoController.carregaRegistroHorariosfiltradosPorCicloReservas()}"/>
+						</mec:selectOneMenu>
+					</p:outputPanel>
+					
+					<p:outputPanel id="panelradio" rendered="#{!imprimirTicketAgendamentoController.cameFrom}">
+					<mec:selectOneRadio id="radioAgendados" 
+						value="#{imprimirTicketAgendamentoController.valorRadio}" > 		                
+		                <f:selectItem id="radioAgendados" itemLabel="#{messages.LABEL_AGENDADOS}" itemValue="#{imprimirTicketAgendamentoController.valorAgendado}"/>
+		                <f:selectItem id="radioReservado" itemLabel="#{messages.LABEL_RESERVADOS}" itemValue="#{imprimirTicketAgendamentoController.valorReservado}"/>	
+		                <p:ajax event="change" process="@this, @(#formImprimirTicket)" 
+		                update="@(#formImprimirTicket)"  listener="#{imprimirTicketAgendamentoController.pesquisarRadio}" />		                	                  		              
+		           	</mec:selectOneRadio>
+		           	</p:outputPanel>
+					
+				</aghu:linha>
+				
+				<aghu:linha/>
+				<aghu:linha/>
+				
+				<aghu:linha>
+					<p:outputPanel id="panellistRegistroHorarios" 
+						rendered="#{imprimirTicketAgendamentoController.listRegistroHorariosSessao ne null}">
+						 
+							<mec:serverDataTable id="listRegistroHorarios" scrollHeight="100"
+								controller="#{imprimirTicketAgendamentoController}"
+								scrollable="true"  rowKeyVar="keyVar" selection="selecionado"
+								list="#{imprimirTicketAgendamentoController.listRegistroHorariosSessao}">
+								<c:set var="_item" value="#{item}" />
+
+								<p:column style="width:150px !important; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_CICLO_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="Ciclo " rendered="#{_item.cloCiclo ne null}"/>
+									<h:outputText value="#{item.cloCiclo}" rendered="#{!imprimirTicketAgendamentoController.cicloCombo}"/>
+								</p:column>
+
+								<p:column style="text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_PROTOCOLO_AGENDAR_SESSAO}" />
+									</f:facet>
+									<c:set var="_descricaoProtocolo" value="#{imprimirTicketAgendamentoController.obterProtocolo(_item.sesCloSeq)}" />
+									<h:outputText id="protocolo" value="#{_descricaoProtocolo.length() lt 90 ? _descricaoProtocolo : _descricaoProtocolo.substring(0, 87).concat('...')}" />
+									<p:tooltip for="protocolo" direction="bottom-right" styleClass="tooltip" layout="block"  rendered="#{_descricaoProtocolo.length() gt 90}">
+										<h:outputText value="#{_descricaoProtocolo}"/>
+									</p:tooltip>
+								</p:column>
+
+								<p:column style="width:35px !important; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DIA_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="D" rendered="#{_item.hrsDia ne null}"/>
+									<h:outputText value="#{_item.hrsDia}" />
+								</p:column>
+
+								<p:column style="width:100px !important; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DATA_HORA_INICIO}" />
+									</f:facet>
+									<h:outputText value="#{item.hrsDataInicio}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+									</h:outputText>
+								</p:column>
+
+								<p:column style="width:100px !important; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DATA_HORA_FIM}" />
+									</f:facet>
+									<h:outputText value="#{item.hrsDataFim}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+									</h:outputText>
+								</p:column>
+							</mec:serverDataTable>					
+						</p:outputPanel>
+						
+						<p:outputPanel id="panellistRegistroReservas" 
+						rendered="#{imprimirTicketAgendamentoController.listConsultaReservas ne null}">
+						 
+							<mec:serverDataTable id="listRegistroReservas" scrollHeight="100"
+								controller="#{imprimirTicketAgendamentoController}"
+								scrollable="true"  rowKeyVar="keyVar" selection="selecionadoreservas"
+								list="#{imprimirTicketAgendamentoController.listConsultaReservas}">
+								<c:set var="_item" value="#{item}" />
+
+								<p:column style="width:150px !important; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_CICLO_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="Ciclo " rendered="#{_item.ciclo ne null}"/>
+									<h:outputText value="#{item.ciclo}" rendered="#{!imprimirTicketAgendamentoController.cicloReservasCombo}"/>
+								</p:column>
+
+								<p:column style="text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_PROTOCOLO_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText id="protocoloReservas" value="#{item.titulo.length() lt 90 ? item.titulo : item.titulo.substring(0, 87).concat('...')}" />
+									<p:tooltip for="protocoloReservas" direction="bottom-right" styleClass="tooltip" layout="block"  rendered="#{item.titulo.length() gt 90}">
+										<h:outputText value="#{item.titulo}"/>
+									</p:tooltip>
+								</p:column>
+
+								<p:column style="width:35px !important; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DIA_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="D" rendered="#{_item.dia ne null}"/>
+									<h:outputText value="#{_item.dia}" />
+								</p:column>
+
+								<p:column style="width:100px !important; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DATA_HORA_INICIO}" />
+									</f:facet>
+									<h:outputText value="#{item.dataInicio}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+									</h:outputText>
+								</p:column>
+
+								<p:column style="width:100px !important; text-align: left !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DATA_HORA_FIM}" />
+									</f:facet>
+									<h:outputText value="#{item.dataFim}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+									</h:outputText>
+								</p:column>
+
+							</mec:serverDataTable>
+					
+						</p:outputPanel>
+						
+						
+						
+				</aghu:linha>
+			</aghu:panelGeral>
+			<p:outputPanel id="panelBotoes" layout="inline">
+				<aghu:acao>
+					<mec:commandButton id="bt_imprimir" 
+						value="#{messages.LABEL_IMPRIMIR}" block="true"
+						action="#{imprimirTicketAgendamentoController.imprimirTicket}" 
+						profile="print" />
+					<mec:backButton id="bt_cancelar" 
+						rendered="#{!imprimirTicketAgendamentoController.reimpressao}"
+						action="#{imprimirTicketAgendamentoController.cancelar}" immediate="true" />
+				</aghu:acao>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

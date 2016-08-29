@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_ENVIAR_INFORMACAO_PRESCRIBENTE}</title>
+	</ui:define>
+	<ui:define name="metadata">
+        <f:metadata>
+			<f:viewAction action="#{enviarInformacaoPrescribenteController.iniciar}" />
+        </f:metadata>
+    </ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{enviarInformacaoPrescribenteController}" />
+		<script type="text/javascript">
+	  
+			function validarCampos(){
+				
+				$('input[id^="sbReferenciaPrescricao"]:text').keydown(function(e){
+					if(validaNumerico(getDigito(e))){
+						formataData(this);
+						return true;
+					}
+					
+					if(validaTeclaApoio(e)){
+						return true;
+					}
+					return false
+						
+					});
+					
+				$('input[id^="sbReferenciaPrescricao"]:text').keyup(function(e){
+					formataData(this);
+				});
+			}
+			//<![CDATA[
+			
+			function validaNumerico(digito){
+				return !isNaN(parseInt(digito,10));
+			  }
+
+			  function getDigito(e){
+			   var code = null;
+					
+				if(e.which){
+					code = e.which;
+				}else{
+					code = e.keyCode;
+				}
+				return String.fromCharCode(code);
+			  }
+			  
+			  function formataData(campo){
+				if(campo.value.length == 2 || campo.value.length == 5){
+						campo.value +="/"; 
+					}
+			  }
+			  
+			  function validaTeclaApoio(e){
+				var code = null;
+				if(e.which){
+					code = e.which;
+				}else{
+					code = e.keyCode;
+				}
+				
+				if((code == 8) 
+					|| (code == 9)
+					|| (code > 36 && code < 41)
+					|| (code == 46)
+					|| (code > 95 && code < 106)){
+					character = String.fromCharCode(code);
+					if((character != '.') 
+						&& (character != '%') 
+						&& (character != '&') 
+						&& (character != '(') 
+						&& (character != '\'')) 
+					{
+					return true; 
+					}else{
+					return false;
+					} 
+					}
+			  }
+			  
+			  
+			
+				$('body').on('keydown', 'input, select, textarea', function(e) {
+				    var self = $(this)
+				      , form = self.parents('form:eq(0)')
+				      , focusable
+				      , next
+				      ;
+				    if (e.keyCode == 13) {
+				        focusable = form.find('input,a,select,button,textarea').filter(':visible');
+				        next = focusable.eq(focusable.index(this)+1);
+				        if (next.length) {
+				            next.focus();
+				        } else {
+				            form.submit();
+				        }
+				        return false;
+				    }
+				});	           
+			// ]]>
+		</script>
+		<h:form prependId="false" id="formFiltroConsulta">
+			<aghu:panelGeral
+				legend="#{messages.LABEL_ENVIAR_INFORMACAO_PRESCRIBENTE}">
+				<p:outputPanel id="corpoPagina" layout="inline">
+					<aghu:linha>
+						<p:outputPanel id="pacienteDecorate" layout="inline">
+							<mec:pesquisaPaciente id="pesqPaciente"
+								rendered="#{!enviarInformacaoPrescribenteController.modoEdicao}"
+								valueChangeListener="#{enviarInformacaoPrescribenteController.pesquisaPaciente}"
+								value="#{enviarInformacaoPrescribenteController.paciente}"
+								render="pacienteDecorate"/>
+								
+							<mec:inputNumero id="prontuario"
+								rendered="#{enviarInformacaoPrescribenteController.modoEdicao}"
+								label="#{messages.LABEL_PRONTUARIO}" size="11"
+								title="#{messages.TITLE_INFO_PRONTUARIO}" maxlength="11"
+								value="#{enviarInformacaoPrescribenteController.numeroProntuarioS}"
+								disabled="true" readonly="true" />
+
+							<mec:inputNumero id="codPaciente"
+								rendered="#{enviarInformacaoPrescribenteController.modoEdicao}"
+								label="#{messages.LABEL_CODIGO_PACIENTE_VISUALIZAR}" size="10"
+								title="#{messages.TITLE_INFO_COD_PACIENTE}" maxlength="10"
+								value="#{enviarInformacaoPrescribenteController.codigoPaciente}"
+								disabled="true" readonly="true" />
+
+							<mec:inputText id="nomePaciente"
+								rendered="#{enviarInformacaoPrescribenteController.modoEdicao}"
+								label="#{messages.LABEL_NOME_PACIENTE}" size="50"
+								title="#{messages.TITLE_INFO_COD_PACIENTE}" maxlength="50"
+								style="text-transform:uppercase" styleclass="suggestion_input"
+								readonly="true" disabled="true"
+								value="#{enviarInformacaoPrescribenteController.nomePaciente}" />
+
+							<mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}"
+								immediate="true"
+								disabled="#{enviarInformacaoPrescribenteController.modoEdicao}"
+								action="#{enviarInformacaoPrescribenteController.redirecionarPesquisaFonetica}"
+								style="margin-top: 15px !important"
+								styleClass="icon-pesquisa-fonetica bt_cinza">
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.cameFrom}"
+									value="farmacia-enviarInformacaoPrescribente" for="command" />
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.exibeBotaoEditar}"
+									value="false" for="command" />
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.paramExibeBotaoIncluir}"
+									value="false" for="command" />
+								<f:setPropertyActionListener
+									target="#{pesquisaPacienteController.obrigarLista}"
+									value="true" for="command" />
+							</mec:commandButton>
+						</p:outputPanel>
+					</aghu:linha>
+
+					<aghu:linha>
+						<mec:suggestionBox id="sbReferenciaPrescricao"
+							label="#{messages.LABEL_REF_PRESCRICAO}"
+							title="#{messages.TITLE_INFO_REF_PRESCRICAO}"
+							suggestionAction="obterDataReferenciaPrescricaoMedicaSB"
+							descricaoLimite="26" size="12" descricaoInput="seq"
+							descricaoLabel="dataReferenciaS" width="500px" maxlength="10"
+							minQueryLength="10" onkeydown="validarCampos()" onkeyup="validarCampos()"
+							controller="#{enviarInformacaoPrescribenteController}"
+							posDeleteAction="excluirCamposValidade"
+							render="validadeInicial, validadeFinal"
+							posSelectionAction="incluirCamposValidade" cache="false"
+							readonly="#{enviarInformacaoPrescribenteController.modoEdicao}" 
+							value="#{enviarInformacaoPrescribenteController.mpmPrescricaoMedica}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_REF_PRESCRICAO}</b>
+								</f:facet> #{item.dataReferenciaS}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_VALIDADE_INICIAL}</b>
+								</f:facet> #{item.dataInicioS}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_VALIDADE_Final}</b>
+								</f:facet> #{item.dataFimS}
+                			</p:column>
+						</mec:suggestionBox>
+
+						<mec:inputText id="validadeInicial"
+							label="#{messages.LABEL_VALIDADE_INICIAL}"
+							value="#{enviarInformacaoPrescribenteController.validadeInicial}"
+							tipo="data" size="18" readonly="true" />
+
+						<mec:inputText id="validadeFinal"
+							label="#{messages.LABEL_VALIDADE_Final}"
+							value="#{enviarInformacaoPrescribenteController.validadeFinal}"
+							tipo="data" size="19" readonly="true" />
+
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox id="sbUnidadeOrigem"
+							label="#{messages.LABEL_UNIDADE_ORIGEM}"
+							title="#{messages.TITLE_INFO_UNI_ORIGEM}"
+							suggestionAction="obterUnidadeFuncionalOrigemInformacaoPrescribenteSB"
+							descricaoLimite="26" size="12" descricaoInput="seq"
+							descricaoLabel="unfDescricao" width="500px" required="true"
+							controller="#{enviarInformacaoPrescribenteController}"
+							readonly="#{enviarInformacaoPrescribenteController.modoEdicao}"
+							value="#{enviarInformacaoPrescribenteController.vAghUnidFuncional}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{item.seq}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_ANDAR}</b>
+								</f:facet> #{item.andar}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_ALA}</b>
+								</f:facet> #{item.ala}
+                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_UNIDADE_FUNCIONAL}</b>
+								</f:facet> #{item.unfDescricao}
+                			</p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+
+					<aghu:linha>
+						<mec:inputTextArea id="unidadeOrigem"
+							label="#{messages.LABEL_INFO_PRESCRIBENTE}"
+							title="#{messages.TITLE_INFO_INFO_PRESCRIBENTE}" rows="5"
+							disabled="#{enviarInformacaoPrescribenteController.textoBloqueado}"
+							readonly="#{enviarInformacaoPrescribenteController.textoBloqueado}"
+							maxlenght="500" cols="82" required="true"
+							value="#{enviarInformacaoPrescribenteController.informacaoPrescribente}" />
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_gravar"
+					action="#{enviarInformacaoPrescribenteController.gravar}"
+					value="#{messages.LABEL_GRAVAR_ENVIAR}" profile="ok" ajax="true" />
+					
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{enviarInformacaoPrescribenteController.limpar}"
+					render="formFiltroConsulta" profile="clear" ajax="true" process="@this" />
+
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+					styleClass="bt_voltar alinha-direita icon-back bt_cinza"
+					profile="back"
+					action="#{enviarInformacaoPrescribenteController.voltar}"
+					rendered="#{enviarInformacaoPrescribenteController.transicaoTela}" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

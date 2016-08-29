@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_EFETIVAR_REQUISICAO_MATERIAL}</title>
+		<style type="" xml:space="preserve" />
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{efetivarRequisicaoMaterialController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{efetivarRequisicaoMaterialController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formRequisicaoMaterial"
+			name="formRequisicaoMaterial">
+			<aghu:panelGeral
+				legend="#{messages.LABEL_EFETIVAR_REQUISICAO_MATERIAL}">
+				<aghu:linha>
+					<mec:inputNumero label="#{messages.LABEL_NUMERO_RM}"
+						readonly="true"
+						value="#{efetivarRequisicaoMaterialController.vo.seq}" id="numRM" />
+					<mec:inputText label="#{messages.LABEL_SITUACAO}" readonly="true"
+						value="#{efetivarRequisicaoMaterialController.vo.indSituacao.descricao}"
+						id="situacao" />
+					<mec:inputText label="#{messages.LABEL_ESTORNADA}"
+						converter="simNaoConverter" readonly="true"
+						value="#{efetivarRequisicaoMaterialController.vo.estorno}"
+						id="estornada" >
+					</mec:inputText>
+					<mec:inputText label="#{messages.LABEL_IMPRESSAO}" readonly="true"
+						value="#{efetivarRequisicaoMaterialController.requisicaoMaterial != null ? efetivarRequisicaoMaterialController.vo.indImpresso.descricao : ''}"
+						id="impressao" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText label="#{messages.LABEL_ALMOXARIFADO}"
+						readonly="true"
+						value="#{efetivarRequisicaoMaterialController.vo.almoxarifado.seq} - #{efetivarRequisicaoMaterialController.vo.almoxarifado.descricao}"
+						size="55" id="almoxarifado" />
+					<mec:inputText label="#{messages.LABEL_GRP_MATERIAL}"
+						readonly="true"
+						value="#{efetivarRequisicaoMaterialController.vo.grupoMaterial.codigo} #{efetivarRequisicaoMaterialController.vo.grupoMaterial.codigo == null ? '' : ' - '} #{efetivarRequisicaoMaterialController.vo.grupoMaterial.descricao}"
+						size="55" id="grupo_material" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText label="#{messages.LABEL_CC_REQ}" readonly="true"
+						value="#{efetivarRequisicaoMaterialController.vo.centroCusto.codigo} - #{efetivarRequisicaoMaterialController.vo.centroCusto.descricao}"
+						size="55" id="cc_requisicao" />
+					<mec:inputText label="#{messages.LABEL_CC_APLICACAO}"
+						readonly="true"
+						value="#{efetivarRequisicaoMaterialController.vo.centroCustoAplica.codigo} - #{efetivarRequisicaoMaterialController.vo.centroCustoAplica.descricao}"
+						size="55" id="cc_aplicacao" />
+				</aghu:linha>
+			</aghu:panelGeral>
+		</h:form>
+		<h:form prependId="false" id="formRequisicaoMaterialTb">
+			<aghu:panelGeral legend="#{messages.LABEL_ITENS_REQUISICAO_MATERIAL}">
+				<aghu:linha>
+					<p:outputPanel id="tabelaItemRequisicaoMaterial" layout="inline">
+							<mec:serverDataTable id="sdTableItemRequisicaoMaterial"
+							    controller="#{efetivarRequisicaoMaterialController}"
+								selection="#{itemRequisicaoMaterialSelecionado}"
+								render="observacao"
+								onRowMouseOver="this.style.backgroundColor='#F1F1F1'"
+								onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'"
+								list="#{efetivarRequisicaoMaterialController.listaItensRequisicaoMaterial}"
+								scrollable="true">
+								<c:set var="_itemRequisicaoMaterial" value="#{item}" />
+								<p:column style="width: 10%">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_ACAO}" />
+									</f:facet>
+									<mec:commandLink
+										title="#{messages.TITLE_VISUALIZAR_SALDO_ESTOQUE}"
+										action="#{efetivarRequisicaoMaterialController.pesquisarEstoqueAlmoxarifado}"
+										styleClass=" silk-magnifier silk-icon">
+										<f:setPropertyActionListener
+											target="#{pesquisaEstoqueAlmoxPaginatorController.estoqueAlmox.seq}"
+											value="#{_itemRequisicaoMaterial.estoqueAlmoxarifado.seq}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{pesquisaEstoqueAlmoxPaginatorController.voltarPara}"
+											value="efetivarRequisicaoMaterial" for="command" />
+									</mec:commandLink>
+									<mec:commandLink
+										title="#{messages.TITLE_DESBLOQUEAR_SEM_PROBLEMA}"
+										action="#{efetivarRequisicaoMaterialController.materialBloqueioDesbloqueio}"
+										styleClass=" silk-lock-open silk-icon">
+										<f:setPropertyActionListener
+											target="#{materialBloqueioDesbloqueioController.estAlmoxSeq}"
+											value="#{_itemRequisicaoMaterial.estoqueAlmoxarifado.seq}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{materialBloqueioDesbloqueioController.acaoBloDesb}"
+											value="DESB" for="command" />
+										<f:setPropertyActionListener
+											target="#{materialBloqueioDesbloqueioController.voltarPara}"
+											value="estoque-efetivarRequisicaoMaterial" for="command" />
+									</mec:commandLink>
+									<mec:commandLink
+										title="#{messages.TITLE_DESBLOQUEAR_COM_PROBLEMA}"
+										action="#{efetivarRequisicaoMaterialController.pesquisarMaterialBloqueioDesbloqueioProblema}"
+										styleClass=" silk-lock-open silk-icon">
+										<f:setPropertyActionListener
+											target="#{pesquisarMaterialBloqueioDesbloqueioProblemaPaginatorController.almSeq}"
+											value="#{_itemRequisicaoMaterial.estoqueAlmoxarifado.almoxarifado.seq}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{pesquisarMaterialBloqueioDesbloqueioProblemaPaginatorController.codMaterial}"
+											value="#{_itemRequisicaoMaterial.estoqueAlmoxarifado.material.codigo}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{pesquisarMaterialBloqueioDesbloqueioProblemaPaginatorController.frnNumero}"
+											value="#{_itemRequisicaoMaterial.estoqueAlmoxarifado.fornecedor.numero}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{pesquisarMaterialBloqueioDesbloqueioProblemaPaginatorController.voltarPara}"
+											value="estoque-efetivarRequisicaoMaterial" for="command" />
+									</mec:commandLink>
+								</p:column>
+								<p:column style="width: 30%">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_MATERIAL}" />
+									</f:facet>
+									<h:outputText
+										value="#{_itemRequisicaoMaterial.estoqueAlmoxarifado.material.codigo} - #{_itemRequisicaoMaterial.estoqueAlmoxarifado.material.nome}" />
+								</p:column>
+								<p:column style="width: 30%">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_FORNECEDOR}" />
+									</f:facet>
+									<h:outputText
+										value="#{_itemRequisicaoMaterial.estoqueAlmoxarifado !=null and _itemRequisicaoMaterial.estoqueAlmoxarifado.fornecedor != null ? _itemRequisicaoMaterial.estoqueAlmoxarifado.fornecedor.codigoNomeFantasia : ''}" />
+								</p:column>
+								<p:column style="width: 10%">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_QUANTIDADE_REQUISITADA}" />
+									</f:facet>
+									<h:outputText
+										value="#{_itemRequisicaoMaterial.qtdeRequisitada}" />
+								</p:column>
+								<p:column style="width: 10%">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_QUANTIDADE_ENTREGUE}" />
+									</f:facet>
+									<h:inputText id="qtdeEntregue"
+										value="#{_itemRequisicaoMaterial.qtdeEntregue}" size="8"
+										maxlength="7" showLabel="false" styleclass="numerico" />
+								</p:column>
+								<p:column style="width: 10%">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_UNIDADE}" />
+									</f:facet>
+									<h:outputText
+										value="#{_itemRequisicaoMaterial.scoUnidadeMedida.codigo}" />
+								</p:column>
+								<p:column style="width: 10%">
+									<f:facet name="header" style="white-space:nowrap;">
+										<h:outputText value="#{messages.LABEL_COM_SALDO}" />
+									</f:facet>
+									<h:selectBooleanCheckbox id="indTemEstoque"
+										value="#{_itemRequisicaoMaterial.indTemEstoque}"
+										bypassUpdates="false" />
+								</p:column>
+							</mec:serverDataTable>
+					</p:outputPanel>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputTextArea label="#{messages.LABEL_OBSERVACAO}" cols="80"
+						rows="3"
+						value="#{efetivarRequisicaoMaterialController.itemRequisicaoMaterialSelecionado.observacao}"
+						id="observacao" maxlength="120" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_efetivar"
+					value="#{messages.LABEL_EFETIVAR}"
+					disabled="#{efetivarRequisicaoMaterialController.isRequisicaoMaterialEfetivada()}"
+					readonly="#{efetivarRequisicaoMaterialController.isRequisicaoMaterialEfetivada()}"
+					block="true"
+					action="#{efetivarRequisicaoMaterialController.efetivar}"
+					render="bt_gravar" profile="ok" />
+				<mec:commandButton id="bt_imprimir" disabled="true"
+					value="#{messages.LABEL_IMPRIMIR}"
+					action="#{efetivarRequisicaoMaterialController.imprimir}"
+					profile="print"
+					styleClass="bt_cinza" />
+				<mec:commandButton id="bt_voltar" formId="formRequisicaoMaterialTb"
+				    immediate="true"
+					profile="back"
+					value="#{messages.LABEL_VOLTAR}"
+					action="#{efetivarRequisicaoMaterialController.voltar}" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

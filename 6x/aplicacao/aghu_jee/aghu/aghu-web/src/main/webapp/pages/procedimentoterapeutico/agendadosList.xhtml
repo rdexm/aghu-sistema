@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+
+<h:form prependId="false" id="formAba1">
+	<p:outputPanel id="panelLista"
+		rendered="#{not empty listaTrabalhoSessaoTerapeuticaPaginatorController.listaPacientes}"
+		layout="inline">
+		<p:dataTable id="lista"
+			controller="#{listaTrabalhoSessaoTerapeuticaPaginatorController}"
+			var="item" 
+			rowKey="#{item.horarioSessaoSeq}"
+			value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.listaPacientes}"
+			styleClass="aghu-server-datatable transparent_background"
+			paginator="false" 
+			paginatorAlwaysVisible="false"
+			emptyMessage="Nenhum registro encontrado!"
+			scrollable="true"
+			scrollHeight="200"
+			selectionMode="single"
+			selection="#{listaTrabalhoSessaoTerapeuticaPaginatorController.selecionado}"
+			render="modalVisualizaAgendaPaciente modalExtratodaSessao">
+			
+			<p:ajax event="rowSelect" process="lista" update="@(#ctxAgendado)" />
+			<p:ajax event="contextMenu" update="@(#ctxAgendado)" oncomplete="showCtxMenu('ctxAgendadoWG');"/>			
+			
+			<p:column style="width:45px; background-color: #{item.colorLinha};">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_CHEGOU}" />
+				</f:facet>
+				<p:outputPanel id="panelE" layout="inline">
+					<center>
+						<p:outputPanel id="exibeEnabled"
+							rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.exibirColunaLM}">
+							<mec:commandLink id="linkCheckedVerde"
+								action="#{listaTrabalhoSessaoTerapeuticaPaginatorController.chegouPaciente(item)}"
+								rendered="#{item.situacaoSessao.toString().equals('SEA')}"
+								disabled="#{!mf:hasPermission(securityController, 'admAbaAgendados,pesquisar')}"
+								styleClass="silk-icon silk-checked" ajax="true"
+								title="#{messages.TITLE_REGISTRAR_SAIDA_PACIENTE}"
+								render="@(#formAba1), @(#lista)" process="@this" />
+							<mec:commandLink id="linkCheckedCinza"
+								action="#{listaTrabalhoSessaoTerapeuticaPaginatorController.chegouPaciente(item)}"
+								rendered="#{item.situacaoSessao.toString().equals('SSO')}"
+								disabled="#{!mf:hasPermission(securityController, 'admAbaAgendados,pesquisar')}"
+								ajax="true" title="#{messages.TITLE_REGISTRAR_CHEGADA_PACIENTE}"
+								styleClass="silk-icon silk-checked-off"
+								render="@(#formAba1), @(#lista)" process="@this" />
+						</p:outputPanel>
+						<p:outputPanel id="exibeDisabled"
+							rendered="#{!listaTrabalhoSessaoTerapeuticaPaginatorController.exibirColunaLM}">
+							<h:outputText id="linkDisabledVerde"
+								styleClass="silk-icon silk-checked"
+								title="#{messages.TITLE_SESSAO_SEM_LM}"
+								rendered="#{item.situacaoSessao.toString().equals('SEA')}" />
+							<h:outputText id="linkDisabledCinza"
+								styleClass="silk-icon silk-checked-off"
+								title="#{messages.TITLE_SESSAO_SEM_LM}"
+								rendered="#{item.situacaoSessao.toString().equals('SSO')}" />
+						</p:outputPanel>
+						<h:outputText styleClass="silk-icon silk-checked"
+							rendered="#{(!item.situacaoSessao.toString().equals('SEA') and !item.situacaoSessao.toString().equals('SSO'))}" />
+
+					</center>
+				</p:outputPanel>
+			</p:column>
+
+			<p:column
+				style="width:45px; background-color: #{item.colorColunaAmarelo == null ? item.colorLinha : item.colorColunaAmarelo};"
+				sortBy="#{item.hora}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_HORA}" />
+				</f:facet>
+				<h:outputText id="idHora" value="#{item.hora}">
+					<f:convertDateTime pattern="HH:mm" />
+				</h:outputText>
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idHora"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+				</p:tooltip>
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idHora"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintColuna(item.colorColunaAmarelo) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintColuna(item.colorColunaAmarelo)}" />
+				</p:tooltip>
+			</p:column>
+			<p:column style="width:90px; background-color: #{item.colorLinha};"
+				sortBy="#{item.paciente}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_PACIENTE}" />
+				</f:facet>
+				<h:outputText id="idPaciente"
+					value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHint(item.paciente, 20)}" />
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idPaciente" layout="block"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq null)}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+					<br />
+					<br />
+					<h:outputText value="#{item.paciente}" />
+				</p:tooltip>
+			</p:column>
+			<p:column style="width:45px; background-color: #{item.colorLinha};"
+				sortBy="#{item.dataNascimento}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_IDADE}" />
+				</f:facet>
+				<h:outputText id="idIdade"
+					value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.formatarIdade(item.dataNascimento)}" />
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idIdade"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+				</p:tooltip>
+			</p:column>
+			<p:column style="width:50px; background-color: #{item.colorLinha};"
+				sortBy="#{item.prontuario}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+				</f:facet>
+				<h:outputText id="idProntuario" value="#{item.prontuario}" />
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idProntuario"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+				</p:tooltip>
+			</p:column>
+			<p:column style="width:90px; background-color: #{item.colorLinha};"
+				sortBy="#{listaTrabalhoSessaoTerapeuticaPaginatorController.protocoloTruncado(item.listaProtocoloCiclo, 15)}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_PROTOCOLO}" />
+				</f:facet>
+				<h:outputText id="idProtocolo"
+					value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.protocoloTruncado(item.listaProtocoloCiclo, 15)}" />
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idProtocolo" layout="block"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq null)}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+					<br />
+					<br />
+					<h:outputText
+						value="#{!item.listaProtocoloCiclo.isEmpty() ? listaTrabalhoSessaoTerapeuticaPaginatorController.hintProtocolo(item.listaProtocoloCiclo) : ''}" />
+				</p:tooltip>
+			</p:column>
+			<p:column style="width:45px; background-color: #{item.colorLinha};"
+				sortBy="#{item.tempo}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_TEMPO}" />
+				</f:facet>
+				<h:outputText id="idTempo" value="#{item.tempo}">
+					<f:convertDateTime pattern="HH:mm" />
+				</h:outputText>
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idTempo"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+				</p:tooltip>
+			</p:column>
+			<p:column style="width:80px; background-color: #{item.colorLinha};"
+				sortBy="#{item.acomodacao}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_ACOMODACAO}" />
+				</f:facet>
+				<h:outputText id="idAcomodacao" value="#{item.acomodacao}" />
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idAcomodacao"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+				</p:tooltip>
+			</p:column>
+			<p:column style="width:45px; background-color: #{item.colorLinha};"
+				sortBy="#{item.chegada}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_CHEGADA}" />
+				</f:facet>
+				<h:outputText id="idChegada" value="#{item.chegada}">
+					<f:convertDateTime pattern="HH:mm" />
+				</h:outputText>
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idChegada"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+				</p:tooltip>
+			</p:column>
+			<p:column
+				style="width:55px; background-color: #{item.colorColunaVerde == null ? item.colorLinha : item.colorColunaVerde};"
+				sortBy="#{item.situacaoHorario.descricao}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_SITUACAO}" />
+				</f:facet>
+				<h:outputText id="idSituacaoHorario"
+					value="#{item.situacaoHorario.descricao}" />
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idSituacaoHorario"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintLinha(item.colorLinha)}" />
+				</p:tooltip>
+				<p:tooltip direction="bottom-right" styleClass="tooltip"
+					for="idSituacaoHorario"
+					rendered="#{!(listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintColuna(item.colorColunaVerde) eq '')}">
+					<h:outputText
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHintColuna(item.colorColunaVerde)}" />
+				</p:tooltip>
+			</p:column>
+			<p:column style="width:25px; background-color: #{item.colorLinha};"
+				rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.exibirColunaCF}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_CONTROLE_FREQUENCIA}"
+						title="#{messages.TITLE_CONTROLE_FREQUENCIA}" />
+				</f:facet>
+				
+				<mec:commandLink id="bt_imprimir_frequencia"
+					action="#{listaTrabalhoSessaoTerapeuticaPaginatorController.dadosModalRelatorio(item)}"
+					rendered="true" process="@this">
+					<center>
+						<p:graphicImage value="/resources/img/icons/bola_vermelha.png"
+							rendered="#{item.controleFreqSituacao == null and item.situacaoHorario == 'M' and item.codigo != null}"
+							title="#{item.mesToolTipRed}" />
+						<p:graphicImage value="/resources/img/icons/bola_verde.png"
+							rendered="#{item.controleFreqSituacao == 'CIA' and item.situacaoHorario == 'M' and item.codigo != null}"
+							title="#{item.mesToolTipGreen}" />
+						<p:graphicImage value="/resources/img/icons/bola_azul.png"
+							rendered="#{item.controleFreqSituacao == 'CIS' and item.situacaoHorario == 'M' and item.codigo != null}"
+							title="#{item.mesToolTipBlue}" />
+					</center>
+				</mec:commandLink>
+			</p:column>
+			<p:column style="width:25px; background-color: #{item.colorLinha};"
+				rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.exibirColunaLM}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_LIBERACAO_MEDICA}"
+						title="#{messages.TITLE_LIBERACAO_MEDICA}" />
+				</f:facet>
+				<center>
+					<p:graphicImage value="/resources/img/icons/bola_vermelha.png"
+						rendered="#{item.situacaoLm.descricao eq 'PAE'}"
+						title="#{messages.TITLE_LIBERACAO_MEDICA_PAE}" />
+					<p:graphicImage value="/resources/img/icons/bola_vermelha.png"
+						rendered="#{item.situacaoLm.descricao eq 'PAA'}"
+						title="#{messages.TITLE_LIBERACAO_MEDICA_PAA}" />
+					<p:graphicImage value="/resources/img/icons/bola_verde.png"
+						rendered="#{item.situacaoLm.descricao eq 'PLM'}"
+						title="#{messages.TITLE_LIBERACAO_MEDICA_PLM}" />
+					<p:graphicImage value="/resources/img/icons/bola_azul.png"
+						rendered="#{item.situacaoLm.descricao eq 'PLE'}"
+						title="#{messages.TITLE_LIBERACAO_MEDICA_PLE}" />
+				</center>
+			</p:column>
+			<p:column style="width:25px; background-color: #{item.colorLinha};"
+				rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.exibirColunaApac}">
+				<f:facet name="header">
+					<h:outputText value="#{messages.LABEL_APAC}" />
+				</f:facet>
+				<center>
+					<p:graphicImage value="/resources/img/icons/bola_vermelha.png"
+						rendered="#{item.apacSemaforo eq 'vermelho'}"
+						title="#{messages.TITLE_ICON_APAC_VERMELHO}" />
+					<p:graphicImage value="/resources/img/icons/bola_verde.png"
+						rendered="#{item.apacSemaforo eq 'verde'}"
+						title="#{messages.TITLE_ICON_APAC_VERDE}" />
+					<p:graphicImage value="/resources/img/icons/bola_azul.png"
+						rendered="#{item.apacSemaforo eq 'azul'}"
+						title="#{messages.TITLE_ICON_APAC_AZUL}" />
+				</center>
+			</p:column>
+		</p:dataTable>
+	</p:outputPanel>
+
+	<h:outputText
+		value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.listaPacientes.size()} #{messages.MENSAGEM_QTD_PACIENTE_AGENDADO}"
+		rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.countPaciente ne null}" />
+
+
+	<p:contextMenu id="ctxAgendado" widgetVar="ctxAgendadoWG" for="lista" style="min-width:200px"  beforeShow="dontShowContentBefore();">
+		<p:menuitem value="#{messages.LABEL_REGISTRAR_AUSENCIA}" 
+			rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.apresentarOpcaoRegistroAusencia()}" 
+			update="formAba1" 
+			actionListener="#{listaTrabalhoSessaoTerapeuticaPaginatorController.registrarAusencia()}" />
+		<p:menuitem value="#{messages.LABEL_EXTRATO_DA_SESSAO}"
+			oncomplete="PF('modalExtratodaSessaoWG').show()"
+			update="historicoPaciente,DadosPaciente"
+			actionListener="#{listaTrabalhoSessaoTerapeuticaPaginatorController.visualizarExtratoSessaoModal(listaTrabalhoSessaoTerapeuticaPaginatorController.selecionado.codPaciente)}"
+			ajax="true" />
+		<p:menuitem value="#{messages.LABEL_AGENDAMENTOS_PACIENTE}"
+			update="@(#gridAgendaPaciente),@(#agendaPaciente)"
+			actionListener="#{listaTrabalhoSessaoTerapeuticaPaginatorController.visualizarAgendaPacienteModal(listaTrabalhoSessaoTerapeuticaPaginatorController.selecionado.codPaciente)}"
+			ajax="true" />
+	</p:contextMenu>
+
+	<!-- #41717 -->
+	<p:dialog id="modalExtratodaSessao" resizeable="false" moveable="false"
+		domElementAttachment="parent" zindex="2" closable="true" width="960"
+		height="350" modal="true" resizable="false" scrollable="false" 
+		widgetVar="modalExtratodaSessaoWG">
+		<f:facet name="header">
+			<h:panelGroup>
+				<h:outputText value="#{messages.TITLE_EXTRATO_SESSAO}" />
+			</h:panelGroup>
+		</f:facet>
+		<f:facet name="controls">
+			<h:panelGroup>
+				<h:graphicImage value="/resources/img/close.png"
+					onclick="#{PF('modalExtratodaSessao')}.hide();"
+					styleClass="hidelink" id="hidelinkInterconsultaRetorno"></h:graphicImage>
+			</h:panelGroup>
+		</f:facet>
+		<aghu:panelGeral legend="#{messages.LABEL_PACIENTE_DADOS}">
+			<p:outputPanel id="DadosPaciente" layout="inline">
+				<aghu:linha>
+					<mec:inputText size="8" maxlength="8"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_PRONTUARIO}"
+						id="modal_prontuario_paciente"
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.selecionado.prontuario}" />
+					<mec:inputText size="8" maxlength="8"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_CODIGO}"
+						id="modal_codigo_paciente"
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.selecionado.codPaciente}" />
+					<mec:inputText size="60" maxlength="50"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_NOME}" id="modal_nome_paciente"
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.selecionado.paciente}" />
+				</aghu:linha>
+			</p:outputPanel>
+		</aghu:panelGeral>
+		<br />
+		<aghu:panelGeral legend="#{messages.TITLE_HISTORICO_SESSAO}">
+			<mec:serverDataTable id="historicoPaciente"
+				controller="#{listaTrabalhoSessaoTerapeuticaPaginatorController}"
+				rowKeyVar="row"
+				list="#{listaTrabalhoSessaoTerapeuticaPaginatorController.listaExtratoSessao}"
+				scrollable="true">
+				<c:set var="item" value="#{item}" />
+				<p:column style="width:55px; !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_EVENTO}" />
+					</f:facet>
+					<h:outputText value="#{item.indSituacao.getDescricao()}" />
+				</p:column>
+
+				<p:column style="width:40px;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_DATA_EVENTO}" />
+					</f:facet>
+					<h:outputText value="#{item.criadoEm}">
+						<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+					</h:outputText>
+				</p:column>
+
+				<p:column style="width:70px; !important">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_JUSTIFICATIVA}" />
+					</f:facet>
+					<h:outputText id="extratoSessaoJustificativa"
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.hintExtratoSessao(item.tipoJustificativaDescricao,item.descricaoJustificativa,23)}" />
+					<p:tooltip styleClass="tooltip" for="extratoSessaoJustificativa"
+						trackMouse="true">
+						<h:outputText value="#{item.justificativa}" />
+						<br />
+						<h:outputText
+							value="#{item.tipoJustificativaDescricao} - #{item.descricaoJustificativa}"
+							rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.showHint(item.tipoJustificativaDescricao,item.descricaoJustificativa,23)}" />
+					</p:tooltip>
+				</p:column>
+
+				<p:column style="width:150px;">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_SERVIDOR}" />
+					</f:facet>
+					<h:outputText id="extratoSessaoServidor"
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.obterHint(item.usuarioServidor,38)}" />
+					<p:tooltip styleClass="tooltip" for="extratoSessaoServidor"
+						trackMouse="true"
+						rendered="#{listaTrabalhoSessaoTerapeuticaPaginatorController.showHintServidor(item.usuarioServidor,38)}">
+						<h:outputText value="#{item.usuarioServidor}" />
+					</p:tooltip>
+				</p:column>
+
+			</mec:serverDataTable>
+		</aghu:panelGeral>
+	</p:dialog>
+	<!-- FIM #41717 -->
+	<!-- #41736-->
+	<p:dialog id="modalControleFrequencia" resizeable="false"
+		moveable="false" domElementAttachment="parent" zindex="2"
+		closable="true" width="750" height="170" modal="true"
+		scrollable="false" 
+		resizable="false" widgetVar="modalControleFrequenciaWG">
+		<f:facet name="header">
+			<h:panelGroup>
+				<h:outputText value="#{messages.TITLE_CONTROLE_FREQUENCIA}" />
+			</h:panelGroup>
+		</f:facet>
+		<f:facet name="controls">
+			<h:panelGroup>
+				<h:graphicImage value="/resources/img/close.png"
+					onclick="#{PF('modalControleFrequencia')}.hide();"
+					styleClass="hidelink" id="hidelinkControleFrequenciaRetorno"></h:graphicImage>
+			</h:panelGroup>
+		</f:facet>
+		<aghu:panelGeral legend="#{messages.LABEL_PACIENTE_DADOS_CF}">
+			<p:outputPanel id="DadosPacienteCF" layout="inline">
+				<aghu:linha>
+					<mec:inputText size="8" maxlength="8"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_PRONTUARIO_CF}"
+						id="modal_prontuario_pacienteCF"
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.dadoRelatorio.prontuario}" />
+
+					<mec:inputText size="8" maxlength="8"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_CODIGO_CF}"
+						id="modal_codigo_pacienteCF"
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.dadoRelatorio.codPaciente}" />
+
+					<mec:inputText size="60" maxlength="50"
+						style="text-transform:uppercase" readonly="true"
+						label="#{messages.LABEL_PACIENTE_NOME_CF}"
+						id="modal_nome_pacienteCF"
+						value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.dadoRelatorio.paciente}" />
+				</aghu:linha>
+			</p:outputPanel>
+		</aghu:panelGeral>
+		<aghu:panelGeral style="height: 50px !important;">
+			<center>
+				<br></br>
+				<h:outputText id="idtetexto_CF"
+					value="#{messages.LABEL_TEXTO_IMPRESSAO_CF}"
+					style="font-size:17px;" />
+				<h:outputText id="iddata_CF"
+					value="#{listaTrabalhoSessaoTerapeuticaPaginatorController.dadoRelatorio.hora}"
+					style="font-size:17px;">
+					<f:convertDateTime dateStyle="long" pattern="MMMM/yyyy" />
+				</h:outputText>
+			</center>
+		</aghu:panelGeral>
+		<aghu:acao>
+			<mec:commandButton
+				disabled="#{ !listaTrabalhoSessaoTerapeuticaPaginatorController.isBtAPAC() or not mf:hasPermission(securityController, 'ImprimirControleFrequencia,executar')}"
+				id="Apac" value="#{messages.LABEL_BT_APAC_CF}"
+				action="#{listaTrabalhoSessaoTerapeuticaPaginatorController.geraRelatorioApac}"
+				 />
+			<mec:commandButton
+				disabled="#{not mf:hasPermission(securityController, 'ImprimirControleFrequencia,executar')}"
+				id="Manual" value="#{messages.LABEL_BT_MANUAL_CF}"
+				action="#{listaTrabalhoSessaoTerapeuticaPaginatorController.geraRelatorioManual}" />
+			<mec:commandButton id="cancelar" immediate="true"
+				value="#{messages.LABEL_BT_CANCELAR_CF}"
+				onclick="#{modalControleFrequencia}.hide()" profile="cancel" />
+		</aghu:acao>
+	</p:dialog>
+	<!-- FIM Modal Imprimir Controel de Frequencia #41736 -->
+</h:form>
+</html>

@@ -1,0 +1,1239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_REGISTRO_CIRURGIA_REALIZADA_NOTA_CONSUMO}</title>
+		<style xml:space="preserve">
+.rich-panel {
+	border: none !important;
+}
+
+.rich-panel-body {
+	padding: 0 !important;
+}
+
+.ui-widget-content {
+	margin: 10px 7px 1px !important;
+}
+</style>
+	<mec:pageConfig controller="#{registroCirurgiaRealizadaController}"	ignoreEnter="true" />
+	</ui:define>
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{registroCirurgiaRealizadaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define> 	
+	<ui:define name="body">
+		<p:outputPanel id="panelTodos" layout="inline">
+			<h:form prependId="false" id="formPrincipal">
+				<p:accordionPanel id="togglePanelCirurgia" prependId="false">
+					<p:tab title="#{messages.LABEL_CIRURGIA}">
+						<p:outputPanel id="panelCirurgia">
+							<aghu:panelGeral legend="#{messages.LABEL_CIRURGIA}">
+								<aghu:linha>
+									<mec:inputText id="unidadeCirurgica"
+										label="#{messages.LABEL_UNIDADE_CIRURGICA}" size="40"
+										maxlength="39" readonly="true"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.unidadeFuncional.getSeqEDescricao()}" />
+									<mec:inputTextData id="dataCirurgia"
+										label="#{messages.LABEL_DATA_CIRURGIA}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.data}"
+										datePattern="dd/MM/yyyy" size="11" maxlength="10"
+										onkeypress="formatar( this , '99/99/9999' , event )"
+										readonly="true" tipo="data" />
+									<mec:inputNumero id="numeroAgenda"
+										label="#{messages.LABEL_AGENDA_AGENDAMENTO}" size="5"
+										maxlength="3" readonly="true"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.numeroAgenda}" />
+									<mec:inputText id="digitacaoNS" style="width:120px;"
+										label="#{messages.LABEL_CONFIRMA_DIGITACAO_NC}" size="4"
+										readonly="true"
+										value="#{registroCirurgiaRealizadaController.digitacaoConfirmada ? 'Sim' : 'Não'}" />
+									<mec:commandButton id="bt_gravarDigitacaoNS"
+										style="margin-top:10px;"
+										value="#{messages.LABEL_CONFIRMAR_DIGITACAO_NC}" block="true"
+										requestDelay="2000"
+										disabled="#{registroCirurgiaRealizadaController.confirmarDigitacaoNota or registroCirurgiaRealizadaController.habilitarBotaoConfirmar()}"
+										rendered="#{not registroCirurgiaRealizadaController.digitacaoConfirmada and mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										action="#{registroCirurgiaRealizadaController.verificarColisaoDigitacaoNS()}"
+										render="panelCirurgia,panelProcedimentos,panelProfissionais,panelAnestesias,panelAcao, 
+												tabelaProcedimentosCirurgia, tabelaProfissionaisCirurgia, tabelaAnestesiaCirurgia"
+										styleClass="bt_cinza" />
+								</aghu:linha>
+								
+								<aghu:linha>
+									<mec:suggestionBox id="especialidade"
+										label="#{messages.LABEL_ESPECIALIDADE}"
+										title="#{messages.TITLE_ESPECIALIDADE_CIRURGICA}"
+										descricaoInput="sigla" descricaoLabel="nomeEspecialidade"
+										suggestionAction="getPesquisarEspecialidades" required="true"
+										maxlength="20" width="300"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.especialidade}">
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_SIGLA}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.sigla}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ESPECIALIDADE}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.nomeEspecialidade}
+                                        </p:column>
+									</mec:suggestionBox>
+									<mec:suggestionBox id="sala"
+										label="#{messages.LABEL_SALA_CIRURGIA_CIRURGIA_REALIZADA_NOTA_CONSUMO}"
+										title="#{messages.TITLE_SALA_UNIDADE_CIRURGICA}"
+										descricaoInput="id.seqp" descricaoLabel="nome"
+										suggestionAction="getPesquisarSalasCirurgicas" width="250"
+										size="4" maxlength="3" required="true" numeric="true"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.salaCirurgica}">
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_SALA_CIRURGIA}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.id.seqp}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_SITUACAO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.situacao.descricao}
+                                        </p:column>
+									</mec:suggestionBox>
+									<mec:selectOneMenu id="origemPaciente" semSelecione="true"
+										enum="DominioOrigemPacienteCirurgia"
+										label="#{messages.LABEL_ORIGEM_PACIENTE_CIRURGIA_AGENDAMENTO}"
+										title="#{messages.TITLE_ORIGEM_PACIENTE_POSSUI_CIRURGIA}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.origemPacienteCirurgia}"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar') or registroCirurgiaRealizadaController.procedimentoFaturado}">
+										<p:ajax event="change" bypassUpdates="false"
+											update="@(#panelAcao)" process="@this"
+											listener="#{registroCirurgiaRealizadaController.validaOrigemComPlano()}" />
+									</mec:selectOneMenu>
+									<mec:inputText id="situacao" label="#{messages.LABEL_SITUACAO}"
+										size="30" maxlength="39" readonly="true"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.situacao.getDescricao()}" />
+									<mec:selectBooleanCheckbox id="contaminada"
+										label="#{messages.LABEL_CONTAMINADA}"
+										title="#{messages.TITLE_CONTAMINADA}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.contaminacao}"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+										<p:ajax event="change" bypassUpdates="false" process="@this" />
+									</mec:selectBooleanCheckbox>
+								</aghu:linha>
+								<aghu:linha>
+									<mec:inputText id="motivoCancelamento"
+										label="#{messages.LABEL_MOTIVO_CANCELAMENTO}" size="100"
+										maxlength="99" readonly="true"
+										value="#{registroCirurgiaRealizadaController.vo.getDescricaoMotivoCancelamento()}" />
+								</aghu:linha>
+								
+								<aghu:linha>
+									<p:outputPanel id="modalConvenioPanel" layout="inline">
+										<mec:inputNumero id="codigoConvenio"
+											label="#{messages.CODIGO_CONVENIO}"
+											title="#{messages.TITLE_CODIGO_CONVENIO_PACIENTE}" size="3"
+											maxlength="3"
+											value="#{registroCirurgiaRealizadaController.convenioId}"
+											readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar') or not empty registroCirurgiaRealizadaController.plano or registroCirurgiaRealizadaController.procedimentoFaturado}">
+											<p:ajax event="blur" bypassUpdates="false" process="@this" />
+										</mec:inputNumero>
+										<mec:field id="codigoPlano_field"
+											label="#{messages.CODIGO_PLANO}"
+											title="#{messages.TITLE_INFORME_CONVENIO_PLANO}">
+											<h:inputText name="codigoPlano" id="codigoPlano" size="2"
+												converter="#{javax.faces.Byte}" styleClass="numerico"
+												readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar') or not empty registroCirurgiaRealizadaController.plano or registroCirurgiaRealizadaController.procedimentoFaturado}"
+												disabled="#{not empty registroCirurgiaRealizadaController.plano}"
+												maxlength="2"
+												value="#{registroCirurgiaRealizadaController.planoId}">
+												<p:ajax event="change" bypassUpdates="false"
+													update="@(#modalConvenioPanel)" process="@this"
+													listener="#{registroCirurgiaRealizadaController.selecionarPlanoConvenio()}" />
+											</h:inputText>
+										</mec:field>
+										
+										<p:outputPanel id="panelPlanoConvenio" layout="inline">
+											<mec:suggestionBox id="planoConvenio"
+												label="#{messages.LABEL_CONVENIO_PLANO}"
+												title="#{messages.TITLE_CONVENIO_PLANO_SAUDE_PACIENTE}"
+												width="600" maxlength="20" descricaoInput="descricao"
+												descricaoLabel="descricaoPlanoConvenio"
+												suggestionAction="getPesquisarConvenioSaudePlanos"
+												posSelectionAction="atribuirPlano"
+												posDeleteAction="atribuirPlano" required="true"
+												readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar') or registroCirurgiaRealizadaController.procedimentoFaturado}"
+												controller="#{registroCirurgiaRealizadaController}"
+												value="#{registroCirurgiaRealizadaController.plano}"
+												render="modalConvenioPanel">
+												<p:column>
+													<f:facet name="header">
+														<b>#{messages.LABEL_CONVENIO}</b>
+													</f:facet> #{item.id.cnvCodigo}
+                                                </p:column>
+												<p:column>
+													<f:facet name="header">
+														<b>#{messages.LABEL_PLANO}</b>
+													</f:facet> #{item.id.seq}
+                                                </p:column>
+												<p:column>
+													<f:facet name="header">
+														<b>#{messages.LABEL_DESCRICAO}</b>
+													</f:facet> #{item.convenioSaude.descricao} - #{item.descricao}
+                                                </p:column>
+											</mec:suggestionBox>
+										</p:outputPanel>
+										
+										</p:outputPanel>
+										
+										<mec:suggestionBox id="atendimento"
+										label="#{messages.LABEL_ATENDIMENTO}"
+										title="#{messages.TITLE_ATENDIMENTO_PACIENTE}"
+										descricaoInput="seq" descricaoLabel="origem.descricao"
+										suggestionAction="getPesquisarAtendimentos" maxlength="20"
+										width="350"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.atendimento}"
+										render="dataInicioAtendimento,smmInternacao,local">
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CODIGO}"
+													style="font-weight: bold; float:left; padding:0; margin-right:15px;" />
+											</f:facet> #{item.seq}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_DTH_INICIO}"
+													style="font-weight: bold; float:left; padding:0; margin-right:15px;" />
+											</f:facet>
+											<h:outputText value="#{item.dthrInicio}"
+												style="float:left; padding:0; margin-right:15px;">
+												<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+											</h:outputText>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_DTH_FIM}"
+													style="font-weight: bold; float:left; padding:0; margin-right:15px;" />
+											</f:facet>
+											<h:outputText value="#{item.dthrFim}"
+												style="float:left; padding:0; margin-right:15px;">
+												<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+											</h:outputText>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.NRO_INTERNACAO}"
+													style="font-weight: bold; float:left; padding:0; margin-right:15px;" />
+											</f:facet> #{item.internacao.seq}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.DT_ALTA_MEDICA}"
+													style="font-weight: bold; float:left; padding:0; margin-right:15px;" />
+											</f:facet>
+											<h:outputText value="#{item.internacao.dthrAltaMedica}"
+												style="float:left; padding:0; margin-right:15px;">
+												<f:convertDateTime pattern="dd/MM/yy HH:mm" />
+											</h:outputText>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.SSM_INTERNACAO}"
+													style="font-weight: bold; float:left; padding:0; margin-right:15px;" />
+											</f:facet> #{item.internacao.itemProcedimentoHospitalar.codTabela}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ORIGEM}"
+													style="font-weight: bold; float:left; padding:0; margin-right:15px;" />
+											</f:facet> #{item.origem.descricao}
+                                        </p:column>
+									</mec:suggestionBox>
+									
+									<mec:inputTextData id="dataInicioAtendimento"
+										label="#{messages.LABEL_DATA_INICIO_ATENDIMENTO}" size="16"
+										maxlength="16" readonly="true"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.atendimento != null? registroCirurgiaRealizadaController.vo.cirurgia.atendimento.dthrInicio : null}"
+										tipo="datahora" />
+										
+								</aghu:linha>
+								<aghu:linha>
+									<mec:suggestionBox id="destinoPaciente"
+										label="#{messages.LABEL_DESTINO_PACIENTE}"
+										title="#{messages.TITLE_DESTINO_PACIENTE}"
+										descricaoInput="seq" descricaoLabel="descricao"
+										suggestionAction="getPesquisarDestinoPaciente" maxlength="20"
+										width="500"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.destinoPaciente}"
+										render="dataInicioAtendimento">
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CODIGO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.seq}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_DESCRICAO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.descricao}
+                                        </p:column>
+									</mec:suggestionBox>
+									
+									<mec:inputText id="smmInternacao"
+										label="#{messages.LABEL_SMM_INTERNACAO}" size="8"
+										maxlength="7" readonly="true"
+										value="#{registroCirurgiaRealizadaController.getSmmInternacao()}" />
+									
+									<mec:inputText id="local" label="#{messages.LABEL_LOCAL}"
+										size="17" maxlength="16" readonly="true"
+										value="#{registroCirurgiaRealizadaController.getLocal()}" />
+									
+								</aghu:linha>
+
+								<aghu:linha>
+									<p:outputPanel id="pesquisaPacienteProntuario">
+										<mec:inputNumero id="prontuario" 
+							          		label="#{messages.LABEL_PRONTUARIO}" 
+							          		readonly="#{not empty registroCirurgiaRealizadaController.prontuario}" 
+							          		title="#{messages.MBCEQUIPAMENTO_UTIL_CIRG_TITLE_PRONTUARIO}" 
+							          		size="8" maxlength="10" 
+							          		value="#{registroCirurgiaRealizadaController.prontuario}">
+												<p:ajax event="change" 
+													update="@(#pesquisaPacienteCodigo) @(#pesquisaPacienteNome) @(#pesquisaPacienteProntuario) @(#bt_pesquisa_fonetica)"
+													process="@this" 
+													listener="#{registroCirurgiaRealizadaController.processarBuscaPacientePorProntuario()}" />			
+										</mec:inputNumero>
+									</p:outputPanel>
+									<p:outputPanel id="pesquisaPacienteCodigo">			
+										<mec:inputNumero id="pacCodigo" 
+											size="8" maxlength="12"
+											readonly="#{not empty registroCirurgiaRealizadaController.prontuario}"
+											value="#{registroCirurgiaRealizadaController.codigoPaciente}" 
+											label="#{messages.LABEL_CODIGO_PACIENTE}" 
+											title="#{messages.TITLE_CODIGO_PACIENTE}">
+												<p:ajax event="change" 
+													update="@(#pesquisaPacienteProntuario) @(#pesquisaPacienteNome) @(#bt_pesquisa_fonetica)" 
+													process="@this" 
+													listener="#{registroCirurgiaRealizadaController.processarBuscaPacientePorCodigo()}" />
+										</mec:inputNumero>
+									</p:outputPanel>
+									<p:outputPanel id="pesquisaPacienteNome">
+										<mec:inputText id="pacNome"
+											label="#{messages.LABEL_PORTAL_PESQUISA_NOME_PACIENTE}"  
+											maxlength="50" size="30" 
+											value="#{registroCirurgiaRealizadaController.nomePaciente}" 
+											style="text-transform:uppercase" 
+											styleclass="suggestion_input" 
+											readonly="true" />
+									</p:outputPanel>
+									<p:outputPanel id="bt_pesquisa_fonetica">
+									<aghu:acao newLine="false">
+										<mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" 
+														   immediate="true" 
+														   action="#{registroCirurgiaRealizadaController.redirecionarPesquisaFonetica}" 
+														   styleClass="bt_cinza icon-pesquisa-fonetica"
+														   disabled="#{not empty registroCirurgiaRealizadaController.prontuario}">
+										    <f:setPropertyActionListener 
+										    	target="#{pesquisaPacienteController.cameFrom}" 
+										    	value="blococirurgico-registroCirurgiaRealizada"
+										    	for="command" />
+											<f:setPropertyActionListener 
+												target="#{pesquisaPacienteController.exibeBotaoEditar}" 
+												value="true" 
+												for="command" />
+											<f:setPropertyActionListener 
+												target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" 
+												value="true" 
+												for="command" />
+										</mec:commandButton>
+									</aghu:acao>
+									</p:outputPanel>
+									
+									<mec:inputText id="asa" label="#{messages.LABEL_ASA}" size="5"
+										readonly="true"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.asa != null ? registroCirurgiaRealizadaController.vo.cirurgia.asa.getCodigo() : null}" />
+								</aghu:linha>
+								
+								<aghu:linha>
+									<div style="float: left; padding-right: 25px">
+										<aghu:panelGeral style="width:200px;"
+											legend="#{messages.LABEL_USO_SALA}">
+											<aghu:linha>
+												<mec:inputTextData label="#{messages.LABEL_ENTRADA}"
+													title="#{messages.TITLE_USO_SALA_ENTRADA}"
+													id="usoSalaEntrada" size="16" maxlength="16"
+													value="#{registroCirurgiaRealizadaController.vo.cirurgia.dataEntradaSala}"
+													readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+													tipo="datahora">
+													<p:ajax event="dateSelect" />
+												</mec:inputTextData>
+											</aghu:linha>
+											<aghu:linha>
+												<mec:inputTextData label="#{messages.LABEL_SAIDA}"
+													title="#{messages.TITLE_USO_SALA_SAIDA}" id="usoSalaSaida"
+													size="16" maxlength="16"
+													value="#{registroCirurgiaRealizadaController.vo.cirurgia.dataSaidaSala}"
+													readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+													tipo="datahora">
+													<p:ajax event="dateSelect" />
+												</mec:inputTextData>
+											</aghu:linha>
+											</aghu:panelGeral>
+									</div>
+									<div style="float: left; padding-right: 25px">
+										<aghu:panelGeral style="width:200px;"
+											legend="#{messages.LABEL_ANESTESIA}">
+											<aghu:linha>
+												<mec:inputTextData label="#{messages.LABEL_INICIO}"
+													title="#{messages.TITLE_ANESTESIA_INICIO}"
+													id="anestesiaInicio" size="16" maxlength="16"
+													value="#{registroCirurgiaRealizadaController.vo.cirurgia.dataInicioAnestesia}"
+													readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+													tipo="datahora">
+													<p:ajax event="dateSelect" />
+												</mec:inputTextData>
+											</aghu:linha>
+											<aghu:linha>
+												<mec:inputTextData label="#{messages.LABEL_FIM}"
+													title="#{messages.TITLE_ANESTESIA_FIM}" id="anestesiaFim"
+													size="16" maxlength="16"
+													value="#{registroCirurgiaRealizadaController.vo.cirurgia.dataFimAnestesia}"
+													readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+													tipo="datahora">
+													<p:ajax event="dateSelect" />
+												</mec:inputTextData>
+											</aghu:linha>
+										</aghu:panelGeral>
+									</div>
+									<div style="float: left;">
+										<aghu:panelGeral style="width:200px;"
+											legend="#{messages.TITLE_CIRURGIA}">
+											<aghu:linha>
+												<mec:inputTextData label="#{messages.LABEL_INICIO}"
+													title="#{messages.TITLE_CIRURGIA_INICIO}"
+													id="cirurgiaInicio" size="16" maxlength="16"
+													value="#{registroCirurgiaRealizadaController.vo.cirurgia.dataInicioCirurgia}"
+													readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+													tipo="datahora">
+													<p:ajax event="dateSelect" />
+												</mec:inputTextData>
+											</aghu:linha>
+											<aghu:linha>
+												<mec:inputTextData label="#{messages.LABEL_FIM}"
+													title="#{messages.TITLE_CIRURGIA_FIM}" id="cirurgiaFim"
+													size="16" maxlength="16"
+													value="#{registroCirurgiaRealizadaController.vo.cirurgia.dataFimCirurgia}"
+													readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+													tipo="datahora">
+													<p:ajax event="dateSelect" />
+												</mec:inputTextData>
+											</aghu:linha>
+										</aghu:panelGeral>
+									</div>
+									</aghu:linha>
+									<aghu:linha>
+									<mec:selectBooleanCheckbox id="utilizouO2"
+										label="#{messages.LABEL_UTILIZOU_O2}"
+										title="#{messages.TITLE_UTILIZOU_O2}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.utilizaO2}"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+										<p:ajax event="change" bypassUpdates="false" process="@this" />
+									</mec:selectBooleanCheckbox>
+									<mec:selectBooleanCheckbox id="utilizouProtoxidoAzoto"
+										label="#{messages.LABEL_UTILIZOU_PROTOXIDO_AZOTO}"
+										title="#{messages.TITLE_UTILIZOU_PROTOXIDO_AZOTO}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.utilizaProAzot}"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+										<p:ajax event="change" bypassUpdates="false" process="@this" />
+									</mec:selectBooleanCheckbox>
+									<mec:selectBooleanCheckbox id="aplicaListaVerifCirurgiaSegura"
+										label="#{messages.LABEL_APLICA_LISTA_VERIF_CIRURGIA_SEGURA}"
+										title="#{messages.TITLE_APLICA_LISTA_VERIF_CIRURGIA_SEGURA}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.aplicaListaCirurgiaSegura}"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+										<p:ajax event="change" bypassUpdates="false" process="@this" />
+									</mec:selectBooleanCheckbox>
+									
+									<mec:selectBooleanCheckbox id="paradaCardiorrespiratoria"
+										label="#{messages.LABEL_PARADA_CARDIORRESPIRATORIA}"
+										title="#{messages.TITLE_PARADA_CARDIORRESPIRATORIA}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.indPrc}"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+										<p:ajax event="change" bypassUpdates="false" process="@this" />
+									</mec:selectBooleanCheckbox>
+								</aghu:linha>
+								<aghu:linha>
+									<mec:selectBooleanCheckbox id="antibioticoProfilatico"
+										label="#{messages.LABEL_ANTIBIOTICO_PROFILATICO}"
+										title="#{messages.TITLE_ANTIBIOTICO_PROFILATICO_OBRIGATORIO}"
+										value="#{registroCirurgiaRealizadaController.vo.cirurgia.atbProf}"
+										readonly="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+										<p:ajax event="change" bypassUpdates="false" process="@this" update="@(#hora)"/>
+									</mec:selectBooleanCheckbox>
+									<p:outputPanel id="hora">
+										<mec:inputTextData id="horaAtbProf" label="#{messages.LABEL_HORA_ANTIBIOTICO_PROFILATICO}" rendered="#{registroCirurgiaRealizadaController.vo.cirurgia.atbProf}" 
+					                   		value="#{registroCirurgiaRealizadaController.vo.cirurgia.dtHrAtbProf}" tipo="hora" required="true">
+						                   	<p:ajax event="dateSelect" bypassUpdates="false" process="@this" ajax="true"/>
+						                   	<p:ajax event="blur" action="#{agendaProcedimentosController.vo.cirurgia.dtHrAtbProf}" />
+					                   </mec:inputTextData>
+								   </p:outputPanel>
+								</aghu:linha>
+							</aghu:panelGeral>
+						</p:outputPanel>
+						
+					</p:tab>
+				</p:accordionPanel>			
+							
+				<p:accordionPanel id="togglePanelProcedimentos" prependId="false">
+					<p:tab title="#{messages.LABEL_PROCEDIMENTOS}">
+						<aghu:panelGeral legend="#{messages.LABEL_PROCEDIMENTOS}">
+							<aghu:linha>
+								<p:outputPanel id="panelProcedimentos"
+									rendered="#{registroCirurgiaRealizadaController.digitacaoConfirmada and mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+									layout="inline">
+								  <aghu:linha>	
+									<mec:suggestionBox id="sbEspecialidadeProcedimento"
+										label="#{messages.LABEL_ESPECIALIDADE}"
+										title="#{messages.TITLE_INFORME_ESPECIALIDADE_CIRURGICA_VINCULADA_PROCEDIMENTO}"
+										requiredFake="true" descricaoInput="sigla"
+										descricaoLabel="nomeEspecialidade"
+										suggestionAction="pesquisarEspecialidadesProcedimentos"
+										posDeleteAction="posRemoverEspecialidadesProcedimento"
+										width="300"
+										readonly="#{registroCirurgiaRealizadaController.procedimentoAddEmEdicao or registroCirurgiaRealizadaController.procedimentoFaturado}"
+										rendered="#{mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.especialidadeProcedimentoAdd}"
+										render="panelProcedimentos">
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_SIGLA}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.sigla}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ESPECIALIDADE}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.nomeEspecialidade}
+                                        </p:column>
+									</mec:suggestionBox>
+								</aghu:linha>
+								<aghu:linha>	
+									<mec:suggestionBox id="sbProcedimento"
+										label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_ADICIONADO}"
+										title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_ADICIONADO}"
+										suggestionAction="pesquisarProcedimentoCirurgicos"
+										posSelectionAction="popularCadastroSUS"
+										posDeleteAction="posRemoverProcedimentoEspecialidade"
+										descricaoInput="id.pciSeq" descricaoLabel="descricao"
+										width="500" maxlength="60" requiredFake="true"
+										readonly="#{empty registroCirurgiaRealizadaController.especialidadeProcedimentoAdd or registroCirurgiaRealizadaController.procedimentoAddEmEdicao or registroCirurgiaRealizadaController.procedimentoFaturado}"
+										rendered="#{mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.procedimentoAdd}"
+										render="panelProcedimentos, sbCid">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_CODIGO}</b>
+											</f:facet> #{item.id.pciSeq}
+                                       </p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_DESCRICAO}</b>
+											</f:facet> #{item.descricao}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_PROCEDIMENTO_CIRURGICO_TEMPO_MINIMO}</b>
+											</f:facet> #{item.tempoMinimo}
+                                        </p:column>
+									</mec:suggestionBox>
+									
+								<mec:suggestionBox id="sbProcedimentoSUS" name="sbProcedimentoSUS"
+									label="#{messages.LABEL_CODIGO_SUS}"
+									title="#{messages.TITLE_CODIGO_SUS_ADICIONADO}"
+									controller="#{registroCirurgiaRealizadaController}"
+     								suggestionAction="listarProcedimentoSus"
+									render="panelProcedimentos, sbCid"
+    								value="#{registroCirurgiaRealizadaController.codigoProcedimentoVO}" 
+    								descricaoInput="codTabela" descricaoLabel="iphDescricao" 
+     								width="500" maxlength="80" 
+    								readonly="#{empty registroCirurgiaRealizadaController.procedimentoAdd}"
+    								requiredFake="#{registroCirurgiaRealizadaController.verificarExisteCodigoSus()}"
+    								rendered="#{mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_CODIGO}</b>
+										</f:facet>
+										 #{item.phiSeq}
+									</p:column>
+	
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_DESCRICAO}</b>
+										</f:facet>
+											 #{item.iphDescricao}
+									</p:column>
+	
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_CADASTRO_SUS_MODAL_SIGTAP}</b>
+										</f:facet>
+											 #{item.codTabela}
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_VALOR_CADASTRAL_SIGTAP}</b>
+										</f:facet>
+											 #{item.valorTotal}
+									</p:column>
+	
+									<p:column>
+										<f:facet name="header">
+											<b>#{messages.LABEL_VALOR_PERM}</b>
+										</f:facet>
+											 #{item.valorPerm}
+									</p:column>
+								</mec:suggestionBox>
+							
+								</aghu:linha>
+								<aghu:linha>
+									<mec:suggestionBox id="sbCid" label="#{messages.LABEL_CID}"
+										title="#{messages.TITLE_CID_FATURAMENTO_SUS}"
+										suggestionAction="getPesquisarAghCid" descricaoInput="codigo"
+										descricaoLabel="descricao" width="500" maxlength="60"
+										rendered="#{mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.cidAdd}"
+										readonly="#{empty registroCirurgiaRealizadaController.codigoProcedimentoVO}"
+										requiredFake="#{registroCirurgiaRealizadaController.verificarExisteCidProcedimento()}">
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_CODIGO}</b>
+											</f:facet> #{item.codigo}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<b>#{messages.LABEL_DESCRICAO}</b>
+											</f:facet> #{item.descricao}
+                                        </p:column>
+									</mec:suggestionBox>
+									
+									<mec:inputNumero id="quantidade" requiredFake="true"
+										value="#{registroCirurgiaRealizadaController.quantidadeProcedimentoAdd}"
+										size="3" maxlength="2"
+										label="#{messages.LABEL_QTDE_OCORRENCIA_AGENDAMENTO}"
+										title="#{messages.TITLE_QUANTIDADE_VEZES_OCORREU_PROC_MESMA_CIRURGIA}"
+										readonly="#{empty registroCirurgiaRealizadaController.especialidadeProcedimentoAdd or registroCirurgiaRealizadaController.procedimentoFaturado}"
+										rendered="#{mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+										<p:ajax event="change" bypassUpdates="false" process="@this" />
+									</mec:inputNumero>
+									
+									<mec:selectBooleanCheckbox id="procedimentoAtivo"
+										label="#{messages.LABEL_ATIVO}"
+										title="#{messages.TITLE_MARQUE_PROCEDIMENTO_CIRURGICO_ATIVO}"
+										value="#{registroCirurgiaRealizadaController.situacaoProcedimentoAdd}"
+										readonly="#{registroCirurgiaRealizadaController.procedimentoFaturado}"
+										rendered="#{mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+										<p:ajax event="change" bypassUpdates="false" process="@this" />
+									</mec:selectBooleanCheckbox>
+									
+								
+									<aghu:acao newLine="false">
+										<mec:commandButton id="bt_adicionar_proc"
+											value="#{registroCirurgiaRealizadaController.procedimentoAddEmEdicao ? messages.LABEL_ALTERAR : messages.LABEL_ADICIONAR}"
+											rendered="#{not registroCirurgiaRealizadaController.procedimentoFaturado}"
+											action="#{registroCirurgiaRealizadaController.adicionarProcedimento()}"
+											profile="ok"
+											process="@this, @(#sbProcedimentoSUS), @(#sbCid), @(#quantidade) , @(#procedimentoAtivo)"
+											render="panelProcedimentos,tabelaProcedimentosCirurgia,panelAdicionarProcedimento" />
+										<mec:commandButton id="bt_cancelar_plano"
+											value="#{messages.LABEL_CANCELAR_EDICAO}"
+											action="#{registroCirurgiaRealizadaController.cancelarProcedimento()}"
+											rendered="#{registroCirurgiaRealizadaController.procedimentoAddEmEdicao}"
+											profile="cancel"
+											ajax="true" process="@this"
+											render="panelProcedimentos, panelAdicionarProcedimento" />
+									</aghu:acao>
+								</aghu:linha>	
+								</p:outputPanel>
+							</aghu:linha>
+							<aghu:linha>
+							<div id="divtabelaProcedimentosCirurgia" style="width: 100%; max-height: 150px; overflow:auto;">
+								<p:dataTable id="tabelaProcedimentosCirurgias"
+										rowKeyVar="_indice" var="_procedimentoVO"
+										value="#{registroCirurgiaRealizadaController.listaProcedimentos}">
+										<p:column style="width:50px"
+											rendered="#{registroCirurgiaRealizadaController.digitacaoConfirmada and mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ACAO}" />
+											</f:facet>
+											<mec:commandLink id="editarProcedimento"
+												rendered="#{not registroCirurgiaRealizadaController.procedimentoFaturado}"
+												action="#{registroCirurgiaRealizadaController.editarProcedimento(_procedimentoVO)}"
+												title="#{messages.LABEL_EDITAR}" profile="edit" ajax="true"
+												render="panelProcedimentos,bt_adicionar_proc,panelAdicionarProcedimento"
+												process="@this" />
+											<mec:commandLink id="removerProcedimento"
+												rendered="#{_procedimentoVO.excluir and not registroCirurgiaRealizadaController.procedimentoFaturado}"
+												action="#{registroCirurgiaRealizadaController.removerProcedimento}"
+												title="#{messages.LABEL_EXCLUIR}" profile="delete"
+												ajax="true" process="@this" 
+												render="tabelaProcedimentosCirurgia">
+												<f:setPropertyActionListener for="command" target="#{registroCirurgiaRealizadaController.procedimentoRemove}" value="#{_procedimentoVO}" />
+											</mec:commandLink>		
+											
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:45px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_PRINCIPAL}" />
+											</f:facet>
+											<p:selectBooleanCheckbox id="procPrincipal" 
+							        			value="#{_procedimentoVO.indPrincipal}"
+												readonly="#{not registroCirurgiaRealizadaController.digitacaoConfirmada or registroCirurgiaRealizadaController.procedimentoFaturado}"
+												disabled="#{not registroCirurgiaRealizadaController.digitacaoConfirmada or registroCirurgiaRealizadaController.procedimentoFaturado}">
+												<p:ajax event="change" bypassUpdates="false"
+													update="@(#tabelaProcedimentosCirurgia)"
+													listener="#{registroCirurgiaRealizadaController.setProcedimentoPrincipal(_procedimentoVO.hashCode)}" />
+											</p:selectBooleanCheckbox>
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:40px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CODIGO}" />
+											</f:facet>
+											<h:outputText
+												value="#{_procedimentoVO.mbcEspecialidadeProcCirgs.mbcProcedimentoCirurgicos.seq}" />
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:40px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ESP_AGENDAMENTO}" />
+											</f:facet>
+											<h:outputText
+												value="#{_procedimentoVO.mbcEspecialidadeProcCirgs.especialidade.sigla}" />
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:120px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+											</f:facet>
+											<h:outputText
+												value="#{_procedimentoVO.mbcEspecialidadeProcCirgs.mbcProcedimentoCirurgicos.descricao}" />
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:30px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CIRURGIA_TEMPO}" />
+											</f:facet>
+											<h:outputText
+												value="#{_procedimentoVO.mbcEspecialidadeProcCirgs.mbcProcedimentoCirurgicos.tempoMinimo}" />
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:20px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_QTDE_AGENDAMENTO}" />
+											</f:facet>
+											<h:outputText value="#{_procedimentoVO.qtd}" />
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:40px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_SITUACAO}" />
+											</f:facet>
+											<h:outputText value="#{_procedimentoVO.situacao.descricao}" />
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:65px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CADASTRO_SUS}" />
+											</f:facet>
+											<h:outputText value="#{_procedimentoVO.cgnbtEprPciseq}" />
+										</p:column>
+										<p:column
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:50px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_VALOR_CADASTRAL}" />
+											</f:facet>
+											<h:outputText value="#{_procedimentoVO.cgnbtEprPciSeq2}"
+												styleClass="mascara(decimal)}">
+												<f:converter converterId="currencyConverter" />
+											</h:outputText>
+										</p:column>
+										<p:column 
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:30px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_PERM}" />
+											</f:facet>
+											<h:outputText value="#{_procedimentoVO.cgnbtEprPciseq3}"
+												styleClass="mascara(decimal)}">
+												<f:converter converterId="currencyConverter" />
+											</h:outputText>
+										</p:column>
+										<p:column 
+											style="#{not _procedimentoVO.situacao.isAtivo() ? 'background-color:red;' : ''} width:35px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CID}" />
+											</f:facet>
+											<h:outputText value="#{_procedimentoVO.cid.codigo}" />
+										</p:column>
+								</p:dataTable>
+							</div>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</p:tab>
+				</p:accordionPanel>
+							
+				<p:outputPanel rendered="true" layout="inline">
+					<ui:decorate
+						template="/pages/blococirurgico/modalSelecionarCodigoProcedimento.xhtml" />
+				</p:outputPanel>
+				<p:accordionPanel id="togglePanelProfissionais" prependId="false">
+					<p:tab title="#{messages.LABEL_PROFISSIONAIS_CIRURGIA_AGENDAMENTO}">
+						<aghu:panelGeral
+							legend="#{messages.LABEL_PROFISSIONAIS_CIRURGIA_AGENDAMENTO}">
+							<aghu:linha>
+								<p:outputPanel id="panelProfissionais"
+									rendered="#{registroCirurgiaRealizadaController.digitacaoConfirmada and mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+									layout="inline">
+									<script xml:space="preserve">
+										//<![CDATA[
+										setTimeout(function(){setFocusSuggestionBoxProfissional()}, 150);
+										// ]]>
+									</script>
+									<mec:suggestionBox id="sbProfissional"
+										label="#{messages.LABEL_PROFISSIONAL}"
+										title="#{messages.TITLE_INFORME_PROFISSIONAL_ADICIONADO_CIRURGIA}"
+										suggestionAction="getPesquisarProfissionais"
+										posSelectionAction="adicionarProfissional"
+										maxResults="#{registroCirurgiaRealizadaController.retornaPesquisarProfissionaisCount()}"
+										descricaoInput="matricula" descricaoLabel="nome" width="800"
+										maxlength="60" requiredFake="true"
+										readonly="#{registroCirurgiaRealizadaController.vo.cirurgia.unidadeFuncional == null}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.profissionalAdd}"
+										render="panelProfissionais,tabelaProfissionaisCirurgia">
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_VINCULO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.vinCodigo}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_MATRICULA}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.matricula}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CONSELHO_AGENDAMENTO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.cprSigla}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.LABEL_NRO_REG_CONSELHO_AGENDAMENTO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.nroRegConselho}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_NOME}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.nome}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_FUNCAO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.funcao.getDescricao()}
+                                        </p:column>
+                                        <p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ESPECIALIDADE_AGENDAMENTO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.especialidade}
+                                        </p:column>
+									</mec:suggestionBox>
+								</p:outputPanel>
+							</aghu:linha>
+							<aghu:linha>
+							<div id="divtabelaProfissionaisCirurgia" style="width: 100%; max-height: 150px; overflow:auto;">
+								<p:dataTable id="tabelaProfissionaisCirurgia" rowKeyVar="_indice"
+										var="_profissionalVO" value="#{registroCirurgiaRealizadaController.listaProfissionais}">
+										<p:column style="width:80px"
+											rendered="#{registroCirurgiaRealizadaController.digitacaoConfirmada and mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ACAO}" />
+											</f:facet>
+											<mec:commandLink id="link_remover_prof"
+												action="#{registroCirurgiaRealizadaController.removerProfissionais}"
+												title="#{messages.LABEL_EXCLUIR}" profile="delete"
+												ajax="true" process="@this"
+												render="tabelaProfissionaisCirurgia">
+												<f:setPropertyActionListener for="command" target="#{registroCirurgiaRealizadaController.profissionalRemove}" value="#{_profissionalVO}" />												
+											</mec:commandLink>
+										</p:column>
+										<p:column style="width:80px" >
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_RESPONSAVEL}" />
+											</f:facet>
+											<p:selectBooleanCheckbox id="profRespons" 
+							        			value="#{_profissionalVO.indResponsavel}"
+												readonly="#{not registroCirurgiaRealizadaController.digitacaoConfirmada}"
+												disabled="#{not registroCirurgiaRealizadaController.digitacaoConfirmada}">
+												<p:ajax event="change" bypassUpdates="false"
+													update="@(#tabelaProfissionaisCirurgia)"
+													listener="#{registroCirurgiaRealizadaController.setProfissionalResponsavel(_profissionalVO.hashCode)}" />
+											</p:selectBooleanCheckbox>
+										</p:column>
+										<p:column style="width:120px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_REALIZOU_CIRURGIA}" />
+											</f:facet>
+											<p:selectBooleanCheckbox id="profRealiza" 
+							        			value="#{_profissionalVO.indRealizou}"
+												readonly="#{not registroCirurgiaRealizadaController.digitacaoConfirmada}"
+												disabled="#{not registroCirurgiaRealizadaController.digitacaoConfirmada}">
+												<p:ajax event="change" bypassUpdates="false"
+													update="@(#tabelaProfissionaisCirurgia)"
+													listener="#{registroCirurgiaRealizadaController.setProfissionalRealizaCirurgia(_profissionalVO.hashCode)}" />
+											</p:selectBooleanCheckbox>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_FUNCAO}" />
+											</f:facet>
+											<h:outputText
+												value="#{_profissionalVO.funcaoProfissional} - #{_profissionalVO.funcaoProfissional.descricao}" />
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.LABEL_VINCULO_MATRICULA_PROFISSIONAL}" />
+											</f:facet>
+											<h:outputText
+												value="#{_profissionalVO.servidorPuc.id.vinCodigo} #{_profissionalVO.servidorPuc.id.matricula} - #{_profissionalVO.servidorConselho.nome}" />
+										</p:column>
+										<p:column style="width:80px">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CONSELHO_AGENDAMENTO}" />
+											</f:facet>
+											<h:outputText
+												value="#{_profissionalVO.servidorConselho.sigla}" />
+										</p:column>
+										<p:column style="width:80px">
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.LABEL_NRO_REG_CONSELHO_AGENDAMENTO}" />
+											</f:facet>
+											<h:outputText
+												value="#{_profissionalVO.servidorConselho.nroRegConselho}" />
+										</p:column>
+								</p:dataTable>
+							</div>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</p:tab>
+				</p:accordionPanel>
+				
+				<p:accordionPanel id="togglePanelAnestesias" prependId="false">
+					<p:tab title="#{messages.LABEL_ANESTESIAS}">
+						<aghu:panelGeral legend="#{messages.LABEL_ANESTESIAS}">
+							<aghu:linha>
+								<p:outputPanel id="panelAnestesias"
+									rendered="#{registroCirurgiaRealizadaController.digitacaoConfirmada and mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+									layout="inline">
+									<mec:suggestionBox id="sbAnestesia"
+										label="#{messages.LABEL_ANESTESIA}"
+										title="#{messages.TITLE_TIPO_ANESTESIA_UTILIZADO_CIRURGIA}"
+										suggestionAction="pesquisarAnestesias"
+										posSelectionAction="adicionarAnestesia" descricaoInput="seq"
+										descricaoLabel="descricao" width="400" maxlength="60"
+										requiredFake="true"
+										rendered="#{registroCirurgiaRealizadaController.digitacaoConfirmada and mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+										controller="#{registroCirurgiaRealizadaController}"
+										value="#{registroCirurgiaRealizadaController.tipoAnestesiaAdd}"
+										render="panelAnestesias,tabelaAnestesiaCirurgia, bt_cancelar, bt_cancelarAnestesia, panelAcao">
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_CODIGO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.seq}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_DESCRICAO}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.descricao}
+                                        </p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_NECESSITA_ANESTESIA}"
+													style="font-weight: bold;" />
+											</f:facet> #{item.indNessAnest ? 'Sim':'Não'}
+                                        </p:column>
+									</mec:suggestionBox>
+								</p:outputPanel>
+							</aghu:linha>
+							<aghu:linha>
+							<div id="divtabelaAnestesiaCirurgia" style="width: 100%; max-height: 150px; overflow:auto;">
+								<p:dataTable id="tabelaAnestesiaCirurgia" var="_anestesiaVO"
+									rowKeyVar="_indice" value="#{registroCirurgiaRealizadaController.listaAnestesias}">
+										<p:column style="width:80px"
+											rendered="#{registroCirurgiaRealizadaController.digitacaoConfirmada and mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}">
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ACAO}" />
+											</f:facet>
+											<mec:commandLink id="link_remover_anes"
+												action="#{registroCirurgiaRealizadaController.removerAnestesia}"
+												title="#{messages.LABEL_EXCLUIR}" 
+												process="@this" styleClass="silk-icon silk-delete" ajax="true"
+												render="tabelaAnestesiaCirurgia, bt_cancelar, bt_cancelarAnestesia, panelAcao">
+												<f:setPropertyActionListener for="command" target="#{registroCirurgiaRealizadaController.anestesiaRemove}" value="#{_anestesiaVO}" />												
+											</mec:commandLink>
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText value="#{messages.LABEL_ANESTESIA}" />
+											</f:facet>
+											<h:outputText
+												value="#{_anestesiaVO.mbcTipoAnestesias.seq} - #{_anestesiaVO.mbcTipoAnestesias.descricao}" />
+										</p:column>
+										<p:column>
+											<f:facet name="header">
+												<h:outputText
+													value="#{messages.LABEL_NECESSITA_ANESTESISTA}" />
+											</f:facet>
+											<h:outputText
+												value="#{_anestesiaVO.mbcTipoAnestesias.indNessAnest}">
+												<f:converter converterId="simNaoConverter" />
+											</h:outputText>
+										</p:column>
+								</p:dataTable>
+							</div>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</p:tab>
+				</p:accordionPanel>
+						
+				<p:outputPanel id="panelAcao">
+					<aghu:acao>
+						<mec:commandButton id="bt_salvar"
+							value="#{messages.LABEL_GRAVAR}" block="true" requestDelay="2000"
+							disabled="#{not mf:hasPermission(securityController,'registroCirurgiaRealizada,executar')}"
+							action="#{registroCirurgiaRealizadaController.gravar}"
+							render="panelCirurgia,panelProcedimentos,panelProfissionais,panelAnestesias,panelAcao"
+							profile="ok" style="width:180px;" />
+							
+						<mec:commandButton id="bt_equipamentos"
+							value="#{messages.LABEL_EQUIPAMENTOS}"
+							immediate="true" block="true"
+							disabled="#{not registroCirurgiaRealizadaController.digitacaoConfirmada}"
+							action="#{registroCirurgiaRealizadaController.getEquipamentos}"
+							icon="" styleClass="bt_cinza" style="width:180px;" >
+							<f:setPropertyActionListener
+								target="#{manterEquipamentoUtilCirgController.crgSeq}"
+								value="#{registroCirurgiaRealizadaController.crgSeq}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{manterEquipamentoUtilCirgController.voltarPara}"
+								value="blococirurgico-registroCirurgiaRealizada" for="command" />
+						</mec:commandButton>
+						
+						<mec:commandButton id="bt_solicitacoesEspeciais"
+							value="#{messages.LABEL_SOLICITACOES_ESPECIAIS}"
+							immediate="true" block="true"
+							disabled="#{not registroCirurgiaRealizadaController.digitacaoConfirmada}"
+							action="#{registroCirurgiaRealizadaController.getSolicitacoesEspeciais}"
+							icon="" styleClass="bt_cinza" style="width:180px;" >
+							<f:setPropertyActionListener
+								target="#{cadastroSolicitacoesEspeciaisController.mbcCirurgiaCodigo}"
+								value="#{registroCirurgiaRealizadaController.crgSeq}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{cadastroSolicitacoesEspeciaisController.voltarPara}"
+								value="blococirurgico-registroCirurgiaRealizada" for="command" />
+						</mec:commandButton>
+						
+						<mec:commandButton id="bt_cadastroProntuario" value="#{messages.LABEL_CADASTRO_PRONTUARIO}"
+							immediate="true" block="true"
+							action="#{registroCirurgiaRealizadaController.getCadastroProntuario}"
+							icon="" styleClass="bt_cinza" style="width:195px;" />
+							
+						
+						<mec:backButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR}"
+							action="#{registroCirurgiaRealizadaController.getCancelar}" 
+							rendered="#{not registroCirurgiaRealizadaController.alterouAnestesia}"
+						/>
+						<mec:commandButton id="bt_cancelarAnestesia" value="#{messages.LABEL_CANCELAR}" 
+							profile="cancel" immediate="true" ajax="true"
+							onclick="PF('modalConfirmacaoAnestesiaWG').show();"
+							rendered="#{registroCirurgiaRealizadaController.alterouAnestesia}"
+						/>
+							
+					</aghu:acao>
+					<aghu:acao>
+						<mec:commandButton id="bt_materiaisConsumidos"
+							value="#{messages.LABEL_MATERIAIS_CONSUMIDOS}"
+							immediate="true" block="true"
+							action="#{registroCirurgiaRealizadaController.getMateriaisConsumidos}"
+							icon="" styleClass="bt_cinza" style="width:180px;">
+							<f:setPropertyActionListener
+								target="#{materialPorCirurgiaController.mbcCirurgiaCodigo}"
+								value="#{registroCirurgiaRealizadaController.crgSeq}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{materialPorCirurgiaController.voltarPara}"
+								value="blococirurgico-registroCirurgiaRealizada" for="command" />
+						</mec:commandButton>
+						
+						<mec:commandButton id="bt_descricaoCirurgica"
+							icon="" styleClass="bt_cinza" style="width:180px;"
+							value="#{messages.LABEL_DESCRICAO_CIRURGICA}"
+							ajax="true" process="@this"
+							disabled="#{not registroCirurgiaRealizadaController.isHabilitarDescricaoCirurgica()}"
+							action="#{registroCirurgiaRealizadaController.acionarDescricaoCirurgica}"
+							/>								
+									
+						<mec:commandButton id="bt_faturamentoInternacao"
+							value="#{messages.LABEL_FATURAMENTO_INTERNACAO}" immediate="true"
+							block="true"
+							disabled="#{not registroCirurgiaRealizadaController.isDigitaNotaSalaOrigemForaAmbulatorio()}"
+							action="#{registroCirurgiaRealizadaController.getFaturamentoInternacao}"
+							icon="" styleClass="bt_cinza" style="width:180px;" />
+							
+						<mec:commandButton id="bt_faturamentoAmbulatorial"
+							value="#{messages.LABEL_FATURAMENTO_AMBULATORIAL}"
+							immediate="true" block="true"
+							disabled="#{not registroCirurgiaRealizadaController.isDigitaNotaSalaOrigemAmbulatorio()}"
+							action="#{registroCirurgiaRealizadaController.getFaturamentoAmbulatorial}"
+							icon="" styleClass="bt_cinza" style="width:195px;" />
+					</aghu:acao>	
+					
+				</p:outputPanel>
+		</h:form>
+		</p:outputPanel>
+		
+		
+		
+		
+		
+		<p:outputPanel id="panelModalAlertaBotaoGravar" layout="inline">
+			<p:dialog id="modalAlertaBotaoGravar" width="400" height="150"
+				showWhenRendered="#{registroCirurgiaRealizadaController.exibirModalAlertaGravar}"
+				modal="true" resizable="false" widgetVar="modalAlertaBotaoGravarWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText
+							value="#{registroCirurgiaRealizadaController.alertaVO.titulo}" />
+					</h:panelGroup>
+				</f:facet> #{registroCirurgiaRealizadaController.alertaVO.alerta} 
+          		<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalAlertaBotaoGravar">
+						<mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}"
+							oncomplete="PF('modalAlertaBotaoGravarWG').hide();" block="true"
+							requestDelay="2000"
+							action="#{registroCirurgiaRealizadaController.getPressionarBotaoSimModal}"
+							render="panelCirurgia,panelIntegracoes" profile="search" />
+						<mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}"
+							oncomplete="PF('modalAlertaBotaoGravarWG').hide();" block="true"
+							requestDelay="2000"
+							action="#{registroCirurgiaRealizadaController.getPressionarBotaoNaoModal}"
+							render="panelCirurgia,panelIntegracoes" profile="cancel" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+		</p:outputPanel>
+		
+		<p:outputPanel id="panelConfirmacaoAnestesia" width="400" height="150" overlapEmbedObjects="true">
+			<p:dialog id="modalConfirmacaoAnestesia" width="400" height="150"
+				modal="true" resizable="false" widgetVar="modalConfirmacaoAnestesiaWG">			
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"></h:outputText>
+					</h:panelGroup>
+				</f:facet>
+	
+				#{messages.MENSAGEM_PENDENCIAS_ALTERACAO}
+	
+			   	<br />
+				<br />
+				<br />
+	
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalAnestesia">
+						<mec:commandButton profile="ok"
+							value="#{messages.LABEL_SIM}"
+							action="#{registroCirurgiaRealizadaController.getCancelar}"
+							oncomplete="PF('modalConfirmacaoAnestesiaWG').hide();" >
+						</mec:commandButton>
+						<mec:commandButton profile="cancel"
+							value="#{messages.LABEL_NAO}"
+							onclick="PF('modalConfirmacaoAnestesiaWG').hide();">
+						</mec:commandButton>
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+		</p:outputPanel>
+		
+		<script xml:space="preserve">
+			//<![CDATA[
+			window.onload = function() {
+				setTimeout(function(){setFocusInit()}, 150);	
+			}
+			
+			function setFocusInit() {
+				setFocusSuggestionBox('destinoPaciente');
+			}
+			
+			function setFocusSuggestionBoxProfissional() {
+				setFocusSuggestionBox('sbProfissional');
+			}
+			
+			function setFocusSuggestionBox(idSuggestionbox) {
+				var suggestionDestinoPaciente = PF(idSuggestionbox+'WG');
+				//alert('obj: ' + suggestionDestinoPaciente + ' cond:' + (suggestionDestinoPaciente != null));
+				setFocus(suggestionDestinoPaciente.input);
+			}
+			
+			function jsExecutaBotaoDescricaoCirurgica() {
+				<!--  esta funcao serah chamada pela controller, caso necessario -->
+				window.parent.tab.addTab('relatorioDescricaoCirurgica','#{messages.LABEL_RELATORIO_CIRURGIA_PDT}', '#{registroCirurgiaRealizadaController.urlRelatorioCirurgia}', 'silk-icon silk-printer', '1');
+				return true;
+			}
+			// ]]>
+		</script>		
+			
+	</ui:define>
+</ui:composition>
+</html>

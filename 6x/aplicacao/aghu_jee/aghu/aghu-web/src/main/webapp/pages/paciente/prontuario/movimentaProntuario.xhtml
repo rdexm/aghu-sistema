@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_MOVIMENTACAO_PRONTUARIO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{movimentarProntuarioPaginatorController.iniciar}"/> 
+      </f:metadata>  
+    </ui:define>     
+    <ui:define name="body"> 
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISA_MOVIMENTACAO_PRONTUARIO}"> 
+          <aghu:linha> 
+            <p:outputPanel id="pacienteDecorate" layout="inline"> 
+              <mec:pesquisaPaciente id="pesqPaciente" valueChangeListener="#{movimentarProntuarioPaginatorController.pesquisaPaciente}" 
+              	value="#{movimentarProntuarioPaginatorController.paciente}"/>  
+              <br clear="none"/>  
+              <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" action="#{movimentarProntuarioPaginatorController.redirecionarPesquisaFonetica}" styleClass="bt_cinza icon-pesquisa-fonetica" profile="search"> 
+                <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="paciente-movimentaProntuario" for="command"/>  
+                <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="false" for="command"/>  
+                <f:setPropertyActionListener target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" value="false" for="command"/> 
+              </mec:commandButton> 
+            </p:outputPanel>  
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextData name="dataMovimentacao" label="#{messages.LABEL_DATA_MOVIMENTACAO}" title="#{messages.TITLE_DATA_MOVIMENTACAO}" immediate="true" value="#{movimentarProntuarioPaginatorController.dataMovimentacao}" maxlength="19"/>  
+            <mec:selectOneMenu id="situacao" label="#{messages.LABEL_SITUACAO}" enum="DominioSituacaoMovimentoProntuario" value="#{movimentarProntuarioPaginatorController.situacaoMovimentoProntuario}" title="#{messages.TITLE_SITUACAO_MOVIMENTACAO}" />
+          </aghu:linha>  
+          <aghu:linha> 
+            <!-- SUGGESTION BOX PARA BUSCA POR ORIGEM DO PRONTUÁRIO -->  
+            <mec:suggestionBox id="origemProntuarios" label="#{messages.LABEL_ORIGEM_PRONTUARIO}" title="#{messages.TITLE_ORIGEM_PRONTUARIO}" 
+            	controller="#{movimentarProntuarioPaginatorController}" suggestionAction="pesquisaOrigemProntuarioPorCodigoOuDescricao"
+            	value="#{movimentarProntuarioPaginatorController.origemProntuariosPesquisa}" descricaoInput="codigo" descricaoLabel="descricao"> 
+              <p:column>#{item.codigo}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <!-- SUGGESTION BOX PARA BUSCA POR UNIDADE SOLICITANTE (DESTINO "PARA ONDE TEM QUE IR O PRONTUÁRIO NA PRIMEIRA MOVIMENTAÇÃO") -->  
+            <mec:suggestionBox id="unidadeSolicitante" label="#{messages.LABEL_UNIDADE_SOLICITANTE_DESTINO}" title="#{messages.TITLE_UNIDADE_SOLICITANTE_DESTINO}" 
+            controller="#{movimentarProntuarioPaginatorController}" value="#{movimentarProntuarioPaginatorController.unidadeSolicitantePesquisa}" 
+            descricaoInput="unidadesFuncionais.seq" descricaoLabel="unidadesFuncionais.descricao" suggestionAction="pesquisarUnidadesSolicitantesPorCodigoOuSigla"> 
+              <p:column>#{item.unidadesFuncionais.seq}</p:column>  
+              <p:column>#{item.unidadesFuncionais.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{movimentarProntuarioPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" action="#{movimentarProntuarioPaginatorController.limparPesquisa()}" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelResultados" layout="inline">
+      	<h:form prependId="false"> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaMovimentaProntuarios" controller="#{movimentarProntuarioPaginatorController}" > 
+              <c:set var="_movimentaProntuarioVO" value="#{item}"/>
+              <p:column width="50px"> 
+                <f:facet name="header"> 
+					 <h:selectBooleanCheckbox id="checkall" value="#{movimentarProntuarioPaginatorController.allChecked}"> 
+                      <p:ajax event="click" update="@(#panelResultados)" process="@this" listener="#{movimentarProntuarioPaginatorController.checkAll()}"/> 
+                    </h:selectBooleanCheckbox>              		  
+            	</f:facet>  
+				<h:selectBooleanCheckbox id="checkbox_#{_item.seq}" value="#{_movimentaProntuarioVO.selecionado}" > 
+                   <p:ajax event="click"  update="@(#panelResultados)"  process="@this" listener="#{movimentarProntuarioPaginatorController.addSeqMovimentacao(_movimentaProntuarioVO)}"> 
+                     <f:setPropertyActionListener target="#{movimentarProntuarioPaginatorController.movimentacaoSelecionada}" value="#{_movimentaProntuarioVO.seq}" for="command"/> 
+                   </p:ajax> 
+                </h:selectBooleanCheckbox>            	
+              </p:column>  
+              <p:column>
+              	<f:facet name="header"> 
+             		 <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+            	</f:facet> 
+                <h:outputText value="#{_movimentaProntuarioVO.prontuario}"/> 
+              </p:column>  
+              <p:column>
+              	<f:facet name="header"> 
+             		 <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            	</f:facet>  
+                <h:outputText value="#{_movimentaProntuarioVO.pacCodigo}"/> 
+              </p:column>  
+              <p:column> 
+              	<f:facet name="header"> 
+             		 <h:outputText value="#{messages.LABEL_NOME}"/> 
+            	</f:facet>
+                <h:outputText value="#{_movimentaProntuarioVO.nomePaciente}"/> 
+              </p:column>  
+              <p:column>
+              	<f:facet name="header"> 
+             		 <h:outputText value="#{messages.LABEL_DATA_MOVIMENTACAO}"/> 
+            	</f:facet> 
+                <h:outputText value="#{_movimentaProntuarioVO.dataMovimentacaoFormatada}"/> 
+              </p:column>  
+              <p:column> 
+              	<f:facet name="header"> 
+             		 <h:outputText value="#{messages.LABEL_UNIDADE_SOLICITANTE_DESTINO}"/> 
+            	</f:facet>
+                <h:outputText value="#{_movimentaProntuarioVO.localPrimeiraMovimentacao}"/> 
+              </p:column>  
+              <p:column>
+              	<f:facet name="header"> 
+             		 <h:outputText value="#{messages.LABEL_ORIGEM_PRONTUARIO}"/> 
+            	</f:facet> 
+                <h:outputText value="#{_movimentaProntuarioVO.origemProntuario}"/> 
+              </p:column>  
+              <p:column>
+              	 <f:facet name="header"> 
+             		 <h:outputText value="#{messages.LABEL_LOCALIZACAO_ATUAL}"/> 
+            	 </f:facet> 
+                <h:outputText value="#{_movimentaProntuarioVO.localAtual}"/> 
+              </p:column>  
+              <p:column>
+              	<f:facet name="header"> 
+             		 <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            	</f:facet>  
+                <h:outputText value="#{_movimentaProntuarioVO.situacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+        	<aghu:acao> 
+          	<p:outputPanel id="tabelaAcaoMovimentacao" layout="inline"> 
+            	<mec:commandButton id="bt_origem" value="#{messages.TITLE_ALTERA_ORIGEM_PRONTUARIO}" controller="#{movimentarProntuarioPaginatorController}" 
+            		rendered="#{movimentarProntuarioPaginatorController.habilitaBotoes}" action="#{movimentarProntuarioPaginatorController.habilitarAlteracaoOrigemProntuario}" profile="ok"/>  
+            	<mec:commandButton id="bt_movimentar" value="#{messages.TITLE_MOVIMENTAR_PRONTUARIOS}" action="#{movimentarProntuarioPaginatorController.validaMovimentacao}" rendered="#{movimentarProntuarioPaginatorController.habilitaBotoes}" ajax="true" render="totalItensSelecionados" process="@this">  
+              	</mec:commandButton>  
+            	<mec:commandButton id="bt_devolucao" styleClass="bt_ok" value="#{messages.TITLE_DEVOLVER_PRONTUARIO}" action="#{movimentarProntuarioPaginatorController.devolverProntuario}" rendered="#{movimentarProntuarioPaginatorController.habilitaBotoes}" render="@(#panelResultados)"></mec:commandButton> 
+          	</p:outputPanel>
+        	</aghu:acao>  
+        	<!-- SUGGESTION BOX PARA ORIGEM DO PRONTUÁRIO -->  
+        	
+        	<p:outputPanel id="panelAlteraOrigem" layout="block" rendered="#{movimentarProntuarioPaginatorController.habilitaAlteracaoOrigemProntuario}"> 
+          		<aghu:panelGeral legend="#{messages.TITLE_ALTERACAO_ORIGEM_PRONTUARIO}"> 
+            		<aghu:linha> 
+              			<mec:suggestionBox id="origemProntuarioAlteracao" label="#{messages.LABEL_ORIGEM_PRONTUARIO}" title="#{messages.TITLE_ORIGEM_PRONTUARIO}" 
+              			controller="#{movimentarProntuarioPaginatorController}" value="#{movimentarProntuarioPaginatorController.origemProntuarioAlteracao}" 
+              			descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisaOrigemProntuarioPorCodigoOuDescricao"> 
+                			<p:column>#{item.codigo}</p:column>  
+                			<p:column>#{item.descricao}</p:column> 
+              			</mec:suggestionBox> 
+            		</aghu:linha>  
+            		<aghu:acao> 
+              			<mec:commandButton id="bt_confirmar" value="#{messages.LABEL_GRAVAR}" action="#{movimentarProntuarioPaginatorController.alterarOrigemProntuario}" profile="ok"/>  
+              			<mec:commandButton value="#{messages.LABEL_CANCELAR}" action="#{movimentarProntuarioPaginatorController.cancelar}" profile="cancel"/> 
+            		</aghu:acao> 
+          		</aghu:panelGeral> 
+        	</p:outputPanel> 
+      	</h:form>  
+      </p:outputPanel>
+      <!-- Modal para movimentação de prontuário -->  
+      <p:dialog resizeable="false" id="modalMovimentarProntuario" domElementAttachment="parent" zindex="2" width="600" height="260" 
+      	modal="true" resizable="false" widgetVar="modalMovimentarProntuarioWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_MOVIMENTAR_PRONTUARIOS}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:form prependId="false" id="formMovimentarProntuario"> 
+          <aghu:panelGeral style="padding: 10px;" legend="#{messages.TITLE_MOVIMENTAR_PRONTUARIOS}"> 
+            <p:outputPanel id="modalMovimentarProntuarioPanel" layout="inline"> 
+              <aghu:linha> 
+                <h:outputFormat id="totalItensSelecionados" value="#{messages.LABEL_MOVIMENTAR_PRONTUARIO_TOTAL_ITENS_SELECIONADOS}"> 
+                  <f:param value="#{movimentarProntuarioPaginatorController.movimentacoesSelecionadasCheckbox.size()}"/> 
+                </h:outputFormat> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <!-- SUGGESTION BOX PARA UNIDADE FUNCIONAL -->  
+                <mec:suggestionBox id="movimentacaoModal" label="#{messages.LABEL_MOVIMENTAR_PRONTUARIO_UNIDADE_SOLICITANTE}" 
+                	title="#{messages.TITLE_SELECAO_MOVIMENTACAO_PRONTUARIO}" 
+                	value="#{movimentarProntuarioPaginatorController.unidadeSolicitanteAlteracao}" descricaoInput="unidadesFuncionais.seq" descricaoLabel="unidadesFuncionais.descricao" 
+					suggestionAction="verificaLocalParaMovimentacao" controller="#{movimentarProntuarioPaginatorController}" > 
+                  <h:column>#{item.unidadesFuncionais.seq}</h:column>  
+                  <h:column>#{item.unidadesFuncionais.descricao}</h:column> 
+                </mec:suggestionBox> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton value="#{messages.LABEL_GRAVAR}" action="#{movimentarProntuarioPaginatorController.movimentarProntuario}" oncomplete="PF('modalMovimentarProntuarioWG').hide();" profile="ok" ajax="true" render="modalMovimentarProntuarioPanel, tabelaMovimentaProntuariosPanel, @(#panelResultados)" process="@this"> </mec:commandButton>  
+            <mec:commandButton value="#{messages.LABEL_FECHAR}" immediate="true" onclick="PF('modalMovimentarProntuarioWG').hide();" styleClass="bt_fechar silk-application-form-delete" ajax="true" process="@this"> </mec:commandButton> 
+          </aghu:acao> 
+        </h:form> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition>
+</html>

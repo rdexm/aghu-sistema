@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+      xmlns:p="http://primefaces.org/ui">
+
+	<f:view>
+    
+		<ui:insert name="metadata" />
+    
+	    <h:head>  
+	        <meta name="viewport" content="width=device-width"/>
+	        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+			<ui:insert name="head" />
+	        
+			<h:outputStylesheet library="css-#{cascaController.cssDefault}" name="aghu-primefaces.css"/>
+			<h:outputStylesheet library="css-#{cascaController.cssDefault}" name="aghu-default.css"/>
+			<h:outputStylesheet library="css-#{cascaController.cssDefault}" name="aghu-silk.css"/>
+			<h:outputStylesheet library="css-#{cascaController.cssDefault}" name="aghu-components.css"/>	
+			<h:outputStylesheet library="css-#{cascaController.cssDefault}" name="aghu-layout.css"/>
+			<h:outputStylesheet library="css-#{cascaController.cssDefault}" name="aghu-casca-theme.css"/>
+
+			<h:outputScript name="jquery/jquery.js" library="primefaces" target="head" />
+			<h:outputScript name="jquery.countdown.min.js"  library="plugin"  />
+			<h:outputScript name="jquery.price_format.2.0.js" library="plugin"  />
+			<h:outputScript name="aghu-form.js"  library="js" target="head" />
+			<h:outputScript name="aghu-core.js"  library="js"  />
+            <h:outputScript name="aghu.js" library="js"  />
+			
+			<style>
+				<ui:insert name="style" />
+			</style>
+		</h:head>
+
+
+	    <h:body>
+	    
+			<ui:param name="dominioPath" value="br.gov.mec.aghu.dominio" />			
+			
+	     	<ui:insert name="body" />
+	     	
+			<p:focus />
+			
+			<p:dialog id="form_processing" header="Processando" widgetVar="waitDialogWG" minHeight="150" closable="false" resizable="false">
+	    		<div style="margin:2px 6px 10px;color:gray">Aguarde...</div>
+	        	<p:graphicImage library="img" name="/components/ajaxloadingbar.gif" style="float:left;"/>
+			</p:dialog>	
+			
+			<p:dialog header="Carregando" widgetVar="loadDialogWG" minHeight="160" closable="false" resizable="false" modal="true">
+	    		<div style="margin:2px 6px 10px;color:gray">Aguarde...</div>
+	        	<p:graphicImage library="img" name="/components/ajaxloadingbar.gif" style="float:left;"/>
+			</p:dialog>				
+			
+			<p:dialog id="msgDialog" widgetVar="messageDialogWG" header="Mensagens do Sistema" styleClass="aghu-messages-dialog"
+				visible="#{not empty facesContext.messageList}" resizable="false" maximizable="true" 
+				position="right top" style="z-index:10000" onHide="core.clearDialogMsg(PF('messageDialogWG'));">
+				<p:messages id="messagesInDialog" autoUpdate="true" styleClass="aghu-messages"  />
+			</p:dialog>				
+	     	
+		    <p:confirmDialog global="true" showEffect="bounce" closable="true" width="350" height="80">
+		    	<h:form id="formModalGlobal">
+			        <p:commandButton id="buttonModalGlobalSim" value="Sim" type="button" style="margin: 10px" icon="aghu-icons-16x16 aghu-icon-check-aghu" styleClass="ui-confirmdialog-yes" />
+			        <p:commandButton id="buttonModalGlobalNao" value="Não" type="button" style="margin: 10px;float:right;" icon="aghu-icons-16x16-red aghu-icon-cancel" styleClass="ui-confirmdialog-no button-acao bt_vermelho"/>
+		        </h:form>
+		    </p:confirmDialog>
+		    
+			<p:ajaxStatus id="basicStatus" 
+				onstart="PF('messageDialogWG').hide();PF('waitDialogWG').show();" 
+				oncomplete="core.ajaxLoad(#{session.maxInactiveInterval});PF('waitDialogWG').hide();core.executeDialogMsg(PF('messageDialogWG'));"  />
+								
+			<h:outputScript>
+				<ui:insert name="script" />
+			    jQuery(document).ready(function() {
+			    
+					if(#{not empty facesContext.messageList}){
+					  core.executeDialogMsg(PF('messageDialogWG'));
+					}
+					core.load(#{session.maxInactiveInterval}, #{facesContext.validationFailed});
+					<ui:insert name="jsReady" />
+			    });							
+			</h:outputScript>
+			
+			<h:form prependId="false">
+				<h:commandLink  id="downloadLink" target="print_download_frame" styleClass="downloadLink" action="#{sistemaImpressao.download}" 
+					rendered="#{sistemaImpressao.verificarDownloadRelatorio()}" immediate="true" style="display:none;" />
+					
+				<h:commandLink  id="downloadLinkAjax" target="print_download_frame" styleClass="downloadLinkAjax" action="#{sistemaImpressao.download}" immediate="true" style="display:none;" />				
+			</h:form>				
+			
+    	</h:body>
+    </f:view>
+	 
+</html>

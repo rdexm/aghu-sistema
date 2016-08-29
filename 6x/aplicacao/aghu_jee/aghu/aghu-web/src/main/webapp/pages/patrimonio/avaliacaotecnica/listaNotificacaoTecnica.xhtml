@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_LISTAR_NOTIFICACAO_TECNICA} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{listaNotificacaoTecnicaController}" />
+		<h:form prependId="false" id="form_pesquisa">
+			<aghu:panelGeral legend="#{messages.LABEL_LISTAGEM_ACEITE_TECNICO}">
+				<aghu:linha>
+					<mec:inputText id="recebItem" readonly="true" style="width: 135px;" label="#{messages.LABEL_RECEB_ITEM_LISTAGEM}" title="#{messages.TITLE_RECEB_ITEM_LISTAGEM}" size="10" value="#{listaNotificacaoTecnicaController.recebItem}" />
+					<mec:inputText id="esl" readonly="true" style="width: 135px;" label="#{messages.LABEL_ESL}" title="#{messages.TITLE_RECEB_ITEM_LISTAGEM}" size="10" value="#{listaNotificacaoTecnicaController.esl}" />
+					<mec:inputText id="notaFiscal" readonly="true" style="width: 135px;" label="#{messages.LABEL_NOTA_FISCAL}" title="#{messages.TITLE_RECEB_ITEM_LISTAGEM}" size="10" value="#{listaNotificacaoTecnicaController.notaFiscal}" />
+					<mec:inputText id="afComplemento" readonly="true" style="width: 135px;" label="#{messages.LABEL_AF_COMPLEMENTO}" title="#{messages.TITLE_RECEB_ITEM_LISTAGEM}" size="10" value="#{listaNotificacaoTecnicaController.afComplemento}" />
+					<mec:inputText id="sc" readonly="true" style="width: 135px;" label="#{messages.LABEL_PATRIMONIO_SC}" title="#{messages.TITLE_RECEB_ITEM_LISTAGEM}" size="10" value="#{listaNotificacaoTecnicaController.sc}" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText id="codMaterial" readonly="true" style="width: 450px;" label="#{messages.LABEL_PATRIMONIO_COD_MATERIAL}" title="#{messages.TITLE_RECEB_ITEM_LISTAGEM}" size="10" value="#{listaNotificacaoTecnicaController.codMaterial}" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:panelGeral legend="#{messages.LABEL_LISTAGEM_NOTIFICACAO_TECNICA}">
+				<mec:serverDataTable id="tabelaNotificacaoTecnica" list="#{listaNotificacaoTecnicaController.listaNotificacoesTecnicas}" rendered="true" scrollable="true"> 
+                  <c:set var="b" value="#{item}"/> 
+                  <p:column style="text-align:left; width: 45px; white-space:nowrap;" headerText="#{messages.LABEL_ACAO_GRID}" exportable="false">
+                  		<mec:commandLink id="detalhar_notificacao" title="#{messages.TITLE_DETALHAR_NOTIFICACAO}"
+                  			action="#{listaNotificacaoTecnicaController.detalharNotificacaoTecnica()}" ajax="true" >
+                  			<f:setPropertyActionListener target="#{listaNotificacaoTecnicaController.itemDetalhado}" value="#{item}" for="command" />							
+							<h:graphicImage id="consultarNotificacoesTecnicas" value="/resources/img/icons/magnifier.png" styleClass="hidelink"/>
+						</mec:commandLink>                                                                                
+                  		<mec:commandLink id="visualizar_impressao" 
+                  			title="#{messages.TITLE_VISUALIZAR_IMPRESSAO}"
+                  			action="#{listaNotificacaoTecnicaController.visualizarImpressao}" 
+                  			ajax="true" styleClass="silk-icon silk-printer"
+                  			disabled="#{!mf:hasPermission(securityController,'imprimirNotTecItemRecebimento,executar')}">
+                  			<f:setPropertyActionListener for="command"
+                  				target="#{relatorioNotificacaoTecnicaController.pntSeq}" 
+                  				value="#{b.seq}" />							
+                  			<f:setPropertyActionListener for="command" 
+                  				target="#{relatorioNotificacaoTecnicaController.voltarPara}" 
+                  				value="patrimonio-listaNotificacaoTecnica" />	
+						</mec:commandLink>                                                                                
+                  </p:column>
+                  
+                  <p:column style="text-align:left; width: 150px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_TIPO}"/> 
+                    </f:facet>     
+                    <h:outputText value="#{listaNotificacaoTecnicaController.pesquisarDominio(b.status)}"/>               
+                  </p:column>
+                  
+                  <p:column style="text-align:left; width: 100px"> 
+                    <f:facet name="header"> 
+                      <h:outputText id="lbl_data" value="#{messages.LABEL_DATA_CRIACAO}"/>
+                      <p:tooltip for="lbl_data" direction="bottom-right" styleClass="tooltip" layout="block" rendered="true">
+                      	<h:outputText value="#{messages.HINT_DATA_CRIACAO}" />
+					  </p:tooltip>                       
+                    </f:facet>                            
+                    <h:outputText value="#{b.data}">
+                    	<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>                    	
+                    </h:outputText>                                             
+                  </p:column>
+                  
+                  <p:column style="text-align:left"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_LISTAGEM_NOTIFICACAO_TECNICA}"/> 
+                    </f:facet>       
+                    <h:outputText id="descricao" value="#{b.descricao.length() lt 60 ? b.descricao : b.descricao.substring(0,60).concat('...')}"/>
+                    <p:tooltip for="descricao" direction="bottom-right" escape="false"
+										rendered="#{b.descricao.length() > 60}"
+										styleClass="tooltip" layout="block">
+										<h:outputText id="txt_status" 
+											value="#{b.descricao}" />
+					</p:tooltip>                    					                         
+                  </p:column>                                                     
+                </mec:serverDataTable>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_Voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{listaNotificacaoTecnicaController.voltar}" styleClass="bt_voltar bt_cinza" profile="back"/>
+			</aghu:acao>
+		</h:form>	
+	</ui:define>
+</ui:composition>
+</html>

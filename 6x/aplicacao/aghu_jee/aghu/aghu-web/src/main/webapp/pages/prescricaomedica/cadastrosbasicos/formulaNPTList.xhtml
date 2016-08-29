@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_FORMULA_NPT}</title>
+		<style xml:space="preserve">
+			.checked {
+				background-image: url('../../../resources/img/icons/checked.png') !important;
+				background-repeat: no-repeat !important;
+				background-position: center;
+			}
+			.ui-state-default{
+				background-image: none !important;
+			}
+		</style> 
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{pesquisarFormulaNPTController.init}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<ui:param name="stopEnter" value="false" />
+		<mec:pageConfig
+			controller="#{pesquisarFormulaNPTController}" />
+		<h:form prependId="false" id="formPesquisa">
+			<pe:remoteCommand name="selecionarComposicoes"
+				update="@(#formResultado2), @(#formResultado3)"
+				actionListener="#{pesquisarFormulaNPTController.pesquisarListaComposicao}">
+				<pe:assignableParam name="param1"
+					assignTo="#{pesquisarFormulaNPTController.afaComposicaoNptPadraoVO.formulaSeq}" />
+				<pe:assignableParam name="param2"
+					assignTo="#{pesquisarFormulaNPTController.afaComposicaoNptPadraoVOTemp}" />
+			</pe:remoteCommand>
+			
+			<aghu:panelGeral id="panelGeral1" legend="#{messages.LABEL_PESQUISAR_FORMULA_NPT}">
+				<aghu:linha>
+
+					<mec:inputNumero
+						value="#{pesquisarFormulaNPTController.codigo}"
+						label="#{messages.LABEL_CODIGO_NPT}" maxlength="6" size="0"
+						title="#{messages.TITLE_CODIGO_NPT}"
+						id="codigo" />
+				
+					<mec:selectOneMenu id="situacao" enum="DominioSituacao"
+						label="#{messages.LABEL_SITUACAO_NPT}"
+						title="#{messages.TITLE_SITUACAO_NPT}"
+						value="#{pesquisarFormulaNPTController.situacao}">
+					</mec:selectOneMenu>
+					
+					<mec:selectOneMenu id="pediatrico" enum="DominioSimNao"
+						label="#{messages.LABEL_PEDIATRICO_NPT}"
+						title="#{messages.TITLE_PEDIATRICO_NPT}"
+						value="#{pesquisarFormulaNPTController.pediatrico}">
+					</mec:selectOneMenu>
+					
+					<mec:selectOneMenu id="padrao" enum="DominioSimNao"
+						label="#{messages.LABEL_PADRAO_NPT}"
+						title="#{messages.TITLE_PADRAO_NPT}"
+						value="#{pesquisarFormulaNPTController.padrao}">
+					</mec:selectOneMenu>
+					
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText
+						value="#{pesquisarFormulaNPTController.descricao}"
+						label="#{messages.LABEL_DESCRICAO_NPT}" maxlength="60" size="60"
+						title="#{messages.TITLE_DESCRICAO_NPT}"
+						id="descricao"/>
+						
+					<mec:inputText
+						value="#{pesquisarFormulaNPTController.observacao}"
+						label="#{messages.LABEL_OBSERVACAO_NPT}" maxlength="500" size="60"
+						title="#{messages.TITLE_OBSERVACAO_NPT}"
+						id="observacao" />
+
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton value="#{messages.LABEL_PESQUISAR_FORMULA_NPT}"
+					id="bt_pesquisar"
+					action="#{pesquisarFormulaNPTController.pesquisar}"
+					profile="search" />
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					action="#{pesquisarFormulaNPTController.limpar}"
+					immediate="true"
+					profile="clear" />
+				<mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}"
+					disabled="#{!pesquisarFormulaNPTController.pesquisaAtiva}"
+					rendered="#{pesquisarFormulaNPTController.permissao}"
+					action="#{pesquisarFormulaNPTController.novaFormulaNpt}"
+					profile="add" />
+				<mec:commandButton id="bt_componente" value="#{messages.LABEL_COMPONENTE}"
+					disabled="#{!pesquisarFormulaNPTController.pesquisaAtiva}"
+					action="#{pesquisarFormulaNPTController.redirectComponente}"/>
+				<mec:commandButton id="bt_grupo" value="#{messages.LABEL_GRUPO}"
+					disabled="#{!pesquisarFormulaNPTController.pesquisaAtiva}"
+					action="#{pesquisarFormulaNPTController.redirectGrupo}"/>
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formResultado1">
+			<p:outputPanel autoUpdate="false" layout="block"
+				rendered="#{pesquisarFormulaNPTController.pesquisaAtiva}"
+				id="panelLista">
+				<aghu:panelGeral id="panelGeral2" legend="#{messages.RESULT_GRUPO_FORMULAS_NPT}">
+					<mec:serverDataTable
+							id="tabelaFormula"
+							controller="#{pesquisarFormulaNPTController}"
+							list="#{pesquisarFormulaNPTController.lista}"
+							
+							scrollable="true" height="scrollHeight" style="margin-top:-12px !important;">
+							<c:set var="_item" value="#{item}" />
+							<p:ajax event="rowSelect" listener="#{pesquisarFormulaNPTController.onRowSelect}" update=":formResultado1" />
+							<p:column style="width:80px;" styleClass="first-column"> 
+								  <f:facet name="header"> 
+									<h:outputText id="acaoDataTable1" value="#{messages.LABEL_ACOES}"/> 
+								  </f:facet>  
+								  
+								  <p:outputPanel id="panelRadioComposicao" 
+										layout="inline">
+										<input type="radio" id="#{_item.seq}"
+											
+											name="group2" class="serverDataTable"
+											onchange="selecionarComposicoes(#{_item.seq})" />
+								  </p:outputPanel>
+								 
+								   <mec:commandLink id="editarFormula" title="#{messages.LABEL_EDITAR}"  
+									   action="#{pesquisarFormulaNPTController.novaFormulaNpt()}"
+									   profile="edit" ajax="true" 
+									   rendered="#{mf:hasPermission(securityController,'manterCadastrosNPT,executar') or formulaNPTCrudController.seq != null}">
+									   <f:setPropertyActionListener target="#{formulaNPTCrudController.seq}" value="#{_item.seq}" for="command"/>  
+								   </mec:commandLink>
+								  <mec:commandLink id="excluirFormula"  title="#{messages.LABEL_EXCLUIR}"
+								  		rendered="#{pesquisarFormulaNPTController.permissao or formulaNPTCrudController.formulaNptPadraoExcluir != null}" 
+								    	onclick="PF('modalConfirmacaoExclusaoFormulaNPT').show();" 
+								    	styleClass="silk-icon silk-delete" ajax="true" >	
+								    	<f:setPropertyActionListener target="#{pesquisarFormulaNPTController.formulaNptPadraoExcluir}" value="#{_item}" for="command"/>
+								  </mec:commandLink>
+							</p:column> 
+							<p:column id="codTabelaFormula" style="width:60px;">
+								<f:facet name="header">
+									<h:outputText id="codOutputFormula" value="#{messages.LABEL_CODIGO_FORMULAS_NPT}" />
+								</f:facet>
+								<h:outputText id="formulaFormulaNPT" value="#{_item.seq}" />
+								<p:tooltip for="formulaFormulaNPT" direction="bottom-right"
+									styleClass="tooltip" layout="block">
+									<h:outputText value="#{messages.LABEL_CRIADO_POR}: " />
+									<h:outputText value="#{item.rapServidoresByAfaFnpSerFk1.pessoaFisica.nome}"/>
+									<br clear="none" />
+									<h:outputText value="#{messages.LABEL_CRIADO_EM}: " />
+									<h:outputText value="#{item.criadoEm}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputText>
+								</p:tooltip>
+							 </p:column>
+
+							<p:column id="descTabelaFormula" style="width:300px !important;white-space:nowrap !important;">
+								<f:facet name="header">
+									<h:outputText id="descFormula" value="#{messages.LABEL_DESCRICAO_NPT}" />
+								</f:facet>
+								<h:outputText id = "descFormulaNPT" value="#{pesquisarFormulaNPTController.truncaDescricao(_item.descricao)}" />
+								<p:overlayPanel id="hintDescricao" for="descFormulaNPT"
+									showEvent="mouseover" hideEvent="mouseout"
+									rendered="#{_item.descricao.length() > 40}">
+									<h:outputText value="#{_item.descricao}" />
+								</p:overlayPanel>
+							</p:column>
+							
+							<p:column id="volTabelaFormula" style="white-space:nowrap !important; width:140px">
+								<f:facet name="header">
+									<h:outputText id="volFormula" value="#{messages.LABEL_VOLUME_NPT}" />
+								</f:facet>
+								<h:outputText value="#{_item.volumeTotalMlDia}" />
+							</p:column>
+							
+							<p:column id="pedTabelaFormula" style="white-space:nowrap !important; text-align:center; width:80px">
+								<f:facet name="header">
+									<h:outputText id="pedFormula" value="#{messages.LABEL_PEDIATRICO_NPT}" />
+								</f:facet>
+								<h:outputText id="checkedPedFormula" styleClass="silk-icon silk-checked" rendered="#{_item.indFormulaPediatrica.equals('S')}" />
+								<h:outputText id="checkedOffPedFormula" styleClass="silk-icon silk-checked-off" rendered="#{_item.indFormulaPediatrica.equals('N')}" />
+							</p:column>
+							
+							<p:column id="padTabelaFormula" style="white-space:nowrap !important; text-align:center; width:80px">
+								<f:facet name="header">
+									<h:outputText id="padFormula" value="#{messages.LABEL_PADRAO_NPT}" />
+								</f:facet>
+								<h:outputText id="checkedPadFormula" styleClass="silk-icon silk-checked" rendered="#{_item.indPadrao.equals('S')}" />
+								<h:outputText id="checkedOffPadFormula" styleClass="silk-icon silk-checked-off" rendered="#{_item.indPadrao.equals('N')}" />
+							</p:column>
+							
+							<p:column id="sitTabelaFormula" style="white-space:nowrap !important; text-align:center; width:80px">
+								<f:facet name="header">
+									<h:outputText id="sitFormula" value="#{messages.LABEL_SITUACAO_NPT}" />
+								</f:facet>
+								<h:outputText id="checkedSitFormula" styleClass="silk-icon silk-checked" rendered="#{_item.indSituacao.equals('A')}" />
+								<h:outputText id="checkedOffSitFormula" styleClass="silk-icon silk-checked-off" rendered="#{_item.indSituacao.equals('I')}" />
+							</p:column>
+							
+							
+
+					</mec:serverDataTable>
+					<br clear="none" />
+				</aghu:panelGeral>
+			</p:outputPanel>
+			<p:dialog id="modalConfirmacaoExclusaoFormulaNPT" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoFormulaNPT"> 
+		        <f:facet name="header"> 
+		          <h:outputText id="modalExclusaoFormula" value="#{messages.TITLE_EXCLUSAO_FORMULA_NPT}"/> 
+		        </f:facet> #{messages.LABEL_EXCLUSAO_FORMULA_NPT} 
+		        <br clear="none"/>  
+		        <br clear="none"/>  
+		        <br clear="none"/>  
+		        <h:panelGroup> 
+		          <h:form prependId="false" id="formModalExclusaoFormulaNPT"> 
+		            <aghu:linha> 
+		              <mec:commandButton value="#{messages.LABEL_SIM}" immediate="true" id="bt_excluirteste" action="#{pesquisarFormulaNPTController.exluiFormulaNptPadrao}" profile="ok" render="formResultado1"/>  
+		              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoFormulaNPT').hide();;return false;" id="bt_cancelarExcluir" profile="cancel" ajax="true"/> 
+		            </aghu:linha> 
+		          </h:form> 
+		        </h:panelGroup> 
+	        </p:dialog>
+		</h:form>
+				
+		<h:form prependId="false" id="formResultado2">
+			<pe:remoteCommand name="selecionarComponentes" update="@(#formResultado3)"
+				actionListener="#{pesquisarFormulaNPTController.pesquisarListaComponentes}">
+				<pe:assignableParam name="param3"
+					assignTo="#{pesquisarFormulaNPTController.seqComposicaoParametroComponente}" />
+				<pe:assignableParam name="param4"
+					assignTo="#{pesquisarFormulaNPTController.fnpSeqComposicao}" />
+				<pe:assignableParam name="param5"
+					assignTo="#{pesquisarFormulaNPTController.seqPComposicao}" />	
+			</pe:remoteCommand>
+			<p:outputPanel autoUpdate="false" layout="block"
+			rendered="#{pesquisarFormulaNPTController.pesquisaAtiva2}"
+			id="panelLista2">
+				<aghu:panelGeral id="panelComposicao" legend="#{messages.LABEL_COMPOS_NPT}" >
+					<aghu:linha>
+						<mec:suggestionBox  
+							label="#{messages.LABEL_COMPOSICAO_NPT}"
+							requiredFake="true"
+							title="#{messages.TITLE_COMPOSICAO_HINT_NPT}" descricaoInput="seq"
+							descricaoLabel="descricao" suggestionAction="getlistarAfaTipoComposicoes"
+							width="300px" id="material"
+							descricaoLimite="30"
+							controller="#{pesquisarFormulaNPTController}"
+							value="#{pesquisarFormulaNPTController.afaTipoComposicoes}"
+							>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> 
+								#{item.seq}
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet>
+								<h:outputText value="#{item.descricao}" />
+							</p:column>
+						</mec:suggestionBox>
+						
+						
+													  
+						<mec:inputNumero
+						  requiredFake="true"
+						  value="#{pesquisarFormulaNPTController.velocidadeAdministracao}"
+						  label="#{messages.LABEL_VEL_ADM_NPT}" 
+						  title="#{messages.TITLE_VEL_ADM_NPT}"
+						  id="velAdm" 
+						  />
+						  
+						
+						<mec:suggestionBox label="#{messages.LABEL_VELOCIDADE_ADM_NPT}"
+							requiredFake="true"
+							title="#{messages.TITLE_COMPOSICAO_VELOC_ADMINISTRACAO_HINT_NPT}" descricaoInput="seq"
+							descricaoLabel="descricao" suggestionAction="getlistarAfaTipoVelocAdministracoesAtivos"
+							width="300px" id="velAdministracao"
+							descricaoLimite="30"
+							controller="#{pesquisarFormulaNPTController}"
+							value="#{pesquisarFormulaNPTController.afaTipoVelocAdministracoes}"
+							>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> 
+								#{item.seq}
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet>
+								<h:outputText value="#{item.descricao}" />
+							</p:column>
+						</mec:suggestionBox>
+						
+						<aghu:acao newLine="false">
+							<mec:commandButton id="bt_adicionar_Comp" value="#{messages.LABEL_ADICIONAR}" 
+								  rendered="#{!pesquisarFormulaNPTController.modoEdicao and pesquisarFormulaNPTController.permissao}" 
+								  action="#{pesquisarFormulaNPTController.adicionarComposicao}" process="@this"
+								  profile="add"/>
+								  
+						    <mec:commandButton id="bt_editar_Comp" value="#{messages.LABEL_EDITAR_COMPONENTE}" 
+								  rendered="#{pesquisarFormulaNPTController.modoEdicao and pesquisarFormulaNPTController.permissao}" 
+								  action="#{pesquisarFormulaNPTController.adicionarComposicao}" process="@this"
+								  profile="ok"/>
+								  
+							<mec:commandButton id="bt_cancelar_Comp" value="#{messages.LABEL_CANCELAR_COMPONENTE}" 
+								  rendered="#{pesquisarFormulaNPTController.modoEdicao and pesquisarFormulaNPTController.permissao}" 
+								  action="#{pesquisarFormulaNPTController.cancelarComposicao}" process="@this"
+								  profile="cancel"/>
+						</aghu:acao>
+					</aghu:linha>
+					
+					
+					<aghu:linha>
+						<mec:serverDataTable
+								id="tabelaComposicao"
+								controller="#{pesquisarFormulaNPTController}"
+								list="#{pesquisarFormulaNPTController.lista2}"
+								scrollable="true" height="scrollHeight" style="margin-top:-12px !important;">
+								<c:set var="itemComposicao" value="#{item}" />
+								<p:ajax event="rowSelect" listener="#{pesquisarFormulaNPTController.onRowSelect}" update=":formResultado1, :formResultado2" />
+								<p:column id="tabAcoesComposicao" style="width:60px;" styleClass="first-column"> 
+									  <f:facet name="header"> 
+										<h:outputText value="#{messages.LABEL_ACOES}"/> 
+									  </f:facet>
+									  <p:outputPanel id="panelRadioComposicao2" layout="inline">
+										<input type="radio" id="#{itemComposicao.seqComposicao}"
+											name="group3" class="serverDataTable"
+											onchange="selecionarComponentes(#{itemComposicao.seqComposicao}, #{itemComposicao.idComposicaoFnpSeq}, #{itemComposicao.idComposicaoSeqP})" />
+								 	   </p:outputPanel>
+									   
+									  
+									   <mec:commandLink id="commandEditarComposicao" title="#{messages.LABEL_EDITAR}"  
+									   action="#{pesquisarFormulaNPTController.editarComposicao(itemComposicao)}"   
+									   profile="edit" ajax="true"  process="@this" render="formResultado2"
+									   rendered="#{pesquisarFormulaNPTController.permissao}"/>  
+									 
+									  <mec:commandLink id="excluirComposicao" title="#{messages.LABEL_EXCLUIR}"
+										onclick="PF('modalConfirmacaoExclusaoComposicaoNPT').show();" 
+										styleClass="silk-icon silk-delete" ajax="true">
+										<f:setPropertyActionListener target="#{pesquisarFormulaNPTController.afaComposicaoNptPadraoVOExcluir}" 
+											value="#{itemComposicao}" for="command"/>
+									  </mec:commandLink>
+								</p:column> 
+								<p:column id="columnCodComposicao" style="width:30px;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_CODIGO_COMPOSICAO_NPT}" />
+									</f:facet>
+									<h:outputText id="codComposicaoNPT2" value="#{itemComposicao.seqComposicao}" />
+									<p:tooltip for="codComposicaoNPT2" direction="bottom-right"
+										styleClass="tooltip" layout="block">
+										<h:outputText value="#{messages.LABEL_CRIADO_POR}: " />
+										<h:outputText value="#{itemComposicao.criadoPor}"/>
+										<br clear="none" />
+										<h:outputText value="#{messages.LABEL_CRIADO_EM}: " />
+										<h:outputText value="#{itemComposicao.criadoEm}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:tooltip>
+								</p:column>
+								
+								<p:column id="columnDescComposicao" style="width:300px !important;white-space:nowrap !important;">
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_COMPOSICAO_NPT}" />
+									</f:facet>
+									<h:outputText id="descComposicaoNPT" value="#{pesquisarFormulaNPTController.truncaDescricao(itemComposicao.descricao)}" />
+									<p:overlayPanel id="hintDescricao" for="descComposicaoNPT"
+										showEvent="mouseover" hideEvent="mouseout"
+										rendered="#{itemComposicao.descricao.length() > 40}">
+										<h:outputText value="#{itemComposicao.descricao}" />
+									</p:overlayPanel>
+								</p:column>
+								
+								<p:column id="columnVelAdmComposicao" style="white-space:nowrap !important; width:80px">
+									<f:facet name="header">
+										<h:outputText id="outVelAdmComposicao" value="#{messages.LABEL_VEL_ADM_COMPOSICAO_NPT}" />
+									</f:facet>
+									<h:outputText id="outVelAdministracaoComposicao" value="#{itemComposicao.velocidadeAdministracao}" />
+								</p:column>
+								
+								<p:column id="colSeqVelAdmComposicao" style="white-space:nowrap !important; width:80px">
+									<f:facet name="header">
+										<h:outputText id="outSeqVelAdmComposicao" value="#{messages.LABEL_TIPO_COMPOSICAO_NPT}" />
+									</f:facet>
+									<h:outputText id="outSeqVelAdministracaoComposicao" value="#{itemComposicao.seqVelAdministracao}" />
+								</p:column>
+								
+								<p:column id="colDescVelAdmComposicao" style="white-space:nowrap !important; width:148px !important">
+									<f:facet name="header">
+										<h:outputText id="outDescVelAdmComposicao" value="#{messages.LABEL_VELADMINISTRACAO_COMPOSICAO_NPT}" />
+									</f:facet>
+									<h:outputText id="outDescVelAdmComposicao2" value="#{itemComposicao.descricaovelAdministracao}" />
+								</p:column>
+									
+						</mec:serverDataTable>
+					
+					</aghu:linha>
+					
+					
+					
+					
+				</aghu:panelGeral>
+			</p:outputPanel>
+			<p:dialog id="modalConfirmacaoExclusaoComposicaoNPT" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoComposicaoNPT"> 
+		        <f:facet name="header"> 
+		          <h:outputText id="outExclusaoComposicao" value="#{messages.TITLE_EXCLUSAO_COMPOSICAO_NPT}"/> 
+		        </f:facet> #{messages.LABEL_EXCLUSAO_COMPOSICAO_NPT} 
+		        <br clear="none"/>  
+		        <br clear="none"/>  
+		        <br clear="none"/>  
+		        <h:panelGroup> 
+		          <h:form prependId="false" id="formModalExclusaoComposicaoNPT"> 
+		            <aghu:linha> 
+		              <mec:commandButton value="#{messages.LABEL_SIM}" immediate="true" id="bt_excluirComposicao" action="#{pesquisarFormulaNPTController.exluiComposicaoNptPadrao}" profile="ok" render="formResultado2"/>  
+		              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoComposicaoNPT').hide();;return false;" id="bt_cancelarExcluirComposicao" profile="cancel" ajax="true"/> 
+		            </aghu:linha> 
+		          </h:form> 
+		        </h:panelGroup> 
+	        </p:dialog>
+		</h:form>
+					
+		<h:form prependId="false" id="formResultado3">
+			<p:outputPanel autoUpdate="false" layout="block"
+			rendered="#{pesquisarFormulaNPTController.pesquisaAtiva3 and not empty pesquisarFormulaNPTController.lista3 }"
+			id="panelLista3" style="margin-top:20px !important;">
+				<aghu:panelGeral id="paneldescComponente" legend="#{messages.LABEL_COMPONENTE_DESCRICAO_NPT}" >
+					<aghu:linha>
+						 <mec:suggestionBox 
+						 	label="#{messages.LABEL_COMPONENTE_DESCRICAO_NPT}"
+							requiredFake="true"
+							render="forma2"
+							title="#{messages.TITLE_COMPONENTE_HINT_NPT}" descricaoInput="metMatCodigo"
+							descricaoLabel="descricao" suggestionAction="getlistarTipoComposicaoComposicaoComponenteVMpmDosagemVO"
+							width="300px" id="forma"
+							descricaoLimite="30"
+							controller="#{pesquisarFormulaNPTController}"
+							value="#{pesquisarFormulaNPTController.tipoComposicaoComponenteVMpmDosagemVO}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> 
+								#{item.metMatCodigo}
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet>
+								<h:outputText value="#{item.descricao}" />
+							</p:column>
+						</mec:suggestionBox>
+						
+						<mec:inputNumero
+						requiredFake="true"
+						value="#{pesquisarFormulaNPTController.qtdeComponente}"
+						label="#{messages.LABEL_QTD_COMPONENTE}" maxlength="10"
+						title="#{messages.TITLE_QTD_COMPONENTE}"
+						id="qtdeComponente" />
+						
+						<mec:suggestionBox  
+						 	label="#{messages.LABEL_COMPONENTE_DOSAGEM_SEQ_UNIDADE}"
+							requiredFake="true"
+							readonly="#{empty pesquisarFormulaNPTController.tipoComposicaoComponenteVMpmDosagemVO and pesquisarFormulaNPTController.vMpmDosagem == null}"
+							title="#{messages.TITLE_COMPONENTE_FORMA_HINT_NPT}" descricaoInput="seqDosagem"
+							descricaoLabel="seqUnidade" suggestionAction="getlistarVMpmDosagem"
+							width="300px" id="forma2"
+							descricaoLimite="30"
+							controller="#{pesquisarFormulaNPTController}"
+							value="#{pesquisarFormulaNPTController.vMpmDosagem}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> 
+								#{item.seqDosagem}
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet>
+								<h:outputText value="#{item.seqUnidade}" />
+							</p:column>
+						</mec:suggestionBox> 
+						
+						<aghu:acao newLine="false">
+							<mec:commandButton id="bt_adicionar_Componente" value="#{messages.LABEL_ADICIONAR}"
+							   rendered="#{!pesquisarFormulaNPTController.modoEdicao2 and pesquisarFormulaNPTController.permissao}"	 
+							   action="#{pesquisarFormulaNPTController.adicionarComponente}" process="@this"
+							   profile="add" styleClass="bt_verde"
+							   render="tabelaItens3"/> 
+							<mec:commandButton id="bt_editar_Componente" value="#{messages.LABEL_EDITAR_COMPONENTE}" 
+								  rendered="#{pesquisarFormulaNPTController.modoEdicao2 and pesquisarFormulaNPTController.permissao}" 
+								  action="#{pesquisarFormulaNPTController.adicionarComponente}" process="@this"
+								  profile="ok"/>
+								  
+							<mec:commandButton id="bt_cancelar_Componente" value="#{messages.LABEL_CANCELAR_COMPONENTE}" 
+								  rendered="#{pesquisarFormulaNPTController.modoEdicao2 and pesquisarFormulaNPTController.permissao}" 
+								  action="#{pesquisarFormulaNPTController.cancelarComponente}" process="@this"
+								  profile="cancel"/>
+						</aghu:acao>			
+					</aghu:linha>
+					<aghu:linha>
+						<mec:serverDataTable
+						id="tabelaItens3"
+						controller="#{pesquisarComponentesNPTController}"
+						list="#{pesquisarFormulaNPTController.lista3}"
+						scrollable="true" height="scrollHeight" >
+						<c:set var="_item" value="#{item}" />
+						
+							<p:column id="colAcaoComponente" style="width:80px;" styleClass="first-column"> 
+								  <f:facet name="header"> 
+									<h:outputText value="#{messages.LABEL_ACOES}"/> 
+								  </f:facet>  
+								 
+								  <mec:commandLink id="commanddescComponente" title="#{messages.LABEL_EDITAR}" 
+								  action="#{pesquisarFormulaNPTController.editarComponente(_item)}"   
+								  profile="edit" ajax="true"  process="@this" render="formResultado3"
+								  />  
+								  
+								  <mec:commandLink id="componente_link_remover2" title="#{messages.LABEL_EXCLUIR}"
+									onclick="PF('modalConfirmacaoExclusaoComponenteNPT').show();" 
+									styleClass="silk-icon silk-delete" ajax="true">
+									<f:setPropertyActionListener target="#{pesquisarFormulaNPTController.afaItemNptPadraoVOExcluir}" 
+										value="#{_item}" for="command"/>
+								  </mec:commandLink>
+								  
+							</p:column> 
+							
+							<p:column id="colCodComponente" style="width:60px;">
+								<f:facet name="header">
+									<h:outputText id="outCodComponente" value="#{messages.LABEL_COMPONENTE_CODIGO_NPT}" />
+								</f:facet>
+								<h:outputText id="composicaoNPT" value="#{_item.medMatCodigoComponenteNpts}" />
+								<p:tooltip for="composicaoNPT" direction="bottom-right"
+										styleClass="tooltip" layout="block">
+										<h:outputText value="#{messages.LABEL_CRIADO_POR}: " />
+										<h:outputText value="#{_item.criadoPor}"/>
+										<br clear="none" />
+										<h:outputText value="#{messages.LABEL_CRIADO_EM}: " />
+										<h:outputText value="#{_item.criadoEm}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:tooltip>	
+							</p:column>
+							
+							<p:column id="colDescComponente" style="white-space:nowrap !important;">
+								<f:facet name="header">
+									<h:outputText id="outDescComponente" value="#{messages.LABEL_COMPONENTE_DESCRICAO_NPT}" />
+								</f:facet>
+								<h:outputText id="cdU5" value="#{_item.descricaoComponenteNpts}" />
+							</p:column>
+							
+							<p:column id="colQtdComponente" style="white-space:nowrap !important;">
+								<f:facet name="header">
+									<h:outputText id="outQtdComponente" value="#{messages.LABEL_COMPONENTE_QUANTIDADE_NPT}" />
+								</f:facet>
+								<h:outputText id="cdU2" value="#{_item.qtdItemNpt}" />
+							</p:column>
+							
+							<p:column id="colSeqDosagemComponente" style="white-space:nowrap !important;">
+								<f:facet name="header">
+									<h:outputText id="outSeqDosagemComponente" value="#{messages.LABEL_COMPONENTE_DOSAGEM_SEQ_UNIDADE}" />
+								</f:facet>
+								<h:outputText id="cdU3" value="#{_item.seqUnidadeVMpmDosagem}" />
+							</p:column>
+							
+						</mec:serverDataTable>	
+					</aghu:linha>
+					
+					<p:dialog id="modalConfirmacaoExclusaoComponenteNPT" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoComponenteNPT"> 
+				        <f:facet name="header"> 
+				          <h:outputText id="colExclusaoComponente" value="#{messages.TITLE_EXCLUSAO_COMPONENTE_NPT}"/> 
+				        </f:facet> #{messages.LABEL_EXCLUSAO_COMPONENTE_NPT} 
+				        <br clear="none"/>  
+				        <br clear="none"/>  
+				        <br clear="none"/>  
+				        <h:panelGroup> 
+				          <h:form prependId="false" id="formModalExclusaoComponenteNPT"> 
+				            <aghu:linha> 
+				              <mec:commandButton value="#{messages.LABEL_SIM}" immediate="true" id="bt_excluirComponente" action="#{pesquisarFormulaNPTController.exluirComponenteNptPadrao}" profile="ok" render="formResultado3"/>  
+				              <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoComponenteNPT').hide();;return false;" id="bt_cancelarExcluirComponente" profile="cancel" ajax="true"/> 
+				            </aghu:linha> 
+				          </h:form> 
+				        </h:panelGroup> 
+			        </p:dialog>
+					
+				</aghu:panelGeral>	
+			</p:outputPanel>
+		</h:form>
+			
+	</ui:define>
+</ui:composition>
+</html>

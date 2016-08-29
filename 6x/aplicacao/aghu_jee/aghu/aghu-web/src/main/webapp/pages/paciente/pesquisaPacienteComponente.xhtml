@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_PACIENTES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaPacienteController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaPacienteController}"/>  
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formPesquisa"> 
+          <aghu:panelGeral legend="#{messages.TITLE_DADOS_ESPECIFICOS}"> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO_PACIENTE}" size="9" value="#{pesquisaPacienteController.aipPaciente.prontuario}" id="prontuario"/>  
+              <mec:inputNumero label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO}" size="9" maxlength="8" value="#{pesquisaPacienteController.aipPaciente.codigo}" id="codigo"/> 
+            </aghu:linha>  
+            <aghu:acao> 
+              <mec:commandButton id="btnPesquisa" block="true" 
+              		value="#{messages.LABEL_PESQUISAR}" 
+              		disabled="#{not mf:hasPermission(securityController, 'paciente,pesquisar')}" 
+              		action="#{pesquisaPacienteController.pesquisar}" profile="search"/>  
+              <mec:commandButton value="#{messages.LABEL_LIMPAR}" immediate="true" action="#{pesquisaPacienteController.limparCampos}" 
+              		profile="clear" ajax="true" render="prontuario,codigo,tabelaPacientes,panelAcaoPesquisas,formPesqFonetica"/> 
+            </aghu:acao> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <h:form prependId="false" id="formPesqFonetica"> 
+          <aghu:panelGeral legend="#{messages.LABEL_PESQ_FONETICA}"> 
+            <aghu:linha> 
+              <mec:inputText size="40" maxlength="50" label="#{messages.LABEL_NOME}" title="#{messages.TITLE_NOME}" value="#{pesquisaPacienteController.aipPaciente.nome}" style="text-transform:uppercase" id="nome"/>  
+              <mec:inputMesAno title="#{messages.TITLE_DATA_NASCIMENTO}" label="#{messages.LABEL_DATA_NASCIMENTO}" required="false" value="#{pesquisaPacienteController.aipPaciente.dtNascimento}" id="dataNascimento"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText size="40" maxlength="50" label="#{messages.LABEL_NOME_MAE}" title="#{messages.TITLE_NOME_MAE}" value="#{pesquisaPacienteController.aipPaciente.nomeMae}" style="text-transform:uppercase" id="nomeMae"/>  
+              <mec:selectBooleanCheckbox label="#{messages.LABEL_RESPEITAR_ORDEM}" title="#{messages.TITLE_RESPEITAR_ORDEM}" value="#{pesquisaPacienteController.respeitarOrdem}" id="respeitarOrdem"/> 
+            </aghu:linha>
+            <aghu:linha>
+            	<mec:inputText 
+						name="nomeSocial" size="40" maxlength="50"
+						label="#{messages.LABEL_NOME_SOCIAL}" 
+						title="#{messages.TITLE_NOME_SOCIAL_PACIENTE}"			 
+						value="#{pesquisaPacienteController.aipPaciente.nomeSocial}"
+						style="text-transform:uppercase" />
+            </aghu:linha>              
+            <aghu:acao> 
+              <mec:commandButton block="true" id="bt_pesqFonetica" 
+              		value="#{messages.LABEL_PESQUISA_FONETICA}" 
+              		action="#{pesquisaPacienteController.pesquisarFoneticaComponente}" 
+              		styleClass=" icon-pesquisa-fonetica bt_cinza"/>  
+              <mec:commandButton id="bt_limpar" 
+              		value="#{messages.LABEL_LIMPAR}" 
+              		immediate="true" 
+              		action="#{pesquisaPacienteController.limparCampos}" 
+              		profile="clear" ajax="true" 
+              		render="prontuario,codigo,tabelaPacientes,panelAcaoPesquisas,formPesqFonetica" /> 
+            </aghu:acao> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <h:form prependId="false" id="formPacientesEncontrados"> 
+          <mec:serverDataTable blockstatus="true" dataModel="dataModel" id="tabelaPacientes" controller="#{pesquisaPacienteController}"> 
+            <c:set var="p" value="#{item}"/>  
+            <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false">
+             
+              <mec:commandLink 	
+              			id="selecionar"
+              			title="#{messages.LABEL_SELECIONAR}" 
+              			action="#{pesquisaPacienteController.selecionarPaciente(p.codigo)}" 
+              			styleClass=" silk-accept silk-icon" 
+              			ajax="true" 
+              			process="@this">
+              			 
+                <f:param value="#{p.codigo}" name="pacCodigoFonetica"/>  
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/>
+                 
+              </mec:commandLink>
+                
+              <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{pesquisaPacienteController.detalharComponente(p)}" rendered="#{pesquisaPacienteController.exibeBotaoEditar and !(mf:hasPermission(securityController,'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}" profile="edit" ajax="true" process="@this"/> 
+               
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+              </f:facet>  
+              <h:outputText value="#{p.prontuario}" style="#{pesquisaPacienteController.buscarEstiloCampoProntuario(p.prontuario)}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{p.dtObito != null or p.tipoDataObito != null}"> 
+                <h:outputText value="#{pesquisaPacienteController.buscaDescricaoObito(p)}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+              </f:facet>  
+              <h:outputText value="#{p.codigo}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{p.dtObito != null or p.tipoDataObito != null}"> 
+                <h:outputText value="#{pesquisaPacienteController.buscaDescricaoObito(p)}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_NOME}"/> 
+              </f:facet>  
+              <h:outputText value="#{p.nome}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{p.dtObito != null or p.tipoDataObito != null}"> 
+                <h:outputText value="#{pesquisaPacienteController.buscaDescricaoObito(p)}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_NOME_MAE}"/> 
+              </f:facet>  
+              <h:outputText value="#{p.nomeMae}"/>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{p.dtObito != null or p.tipoDataObito != null}"> 
+                <h:outputText value="#{pesquisaPacienteController.buscaDescricaoObito(p)}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DATA_NASCIMENTO}"/> 
+              </f:facet>  
+              <h:outputText value="#{p.dtNascimento}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText>  
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{p.dtObito != null or p.tipoDataObito != null}"> 
+                <h:outputText value="#{pesquisaPacienteController.buscaDescricaoObito(p)}"/> 
+              </p:tooltip> 
+            </p:column> 
+          </mec:serverDataTable>  
+        </h:form> 
+      </p:outputPanel>  
+      <aghu:acao> 
+        <p:outputPanel id="panelAcaoPesquisas" layout="inline"> 
+          <h:form prependId="false" id="formAcao"> 
+            <mec:commandButton id="bt_incluirPaciente" 
+            	value="#{messages.LABEL_INCLUIR_PACIENTE}" 
+            	rendered="#{pesquisaPacienteController.exibirBotaoIncluir and mf:hasPermission(securityController, 'paciente,alterar') and pesquisaPacienteController.paramExibeBotaoIncluir or mf:hasPermission(securityController,'permissaoDesabilitar,disabled') and pesquisaPacienteController.exibirBotaoIncluir and mf:hasPermission(securityController, 'paciente,alterar')}" 
+            	immediate="true" action="#{pesquisaPacienteController.redirecionarIncluirPaciente}" profile="add" ajax="true"
+            	disabled="#{mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}">
+            </mec:commandButton>  
+            <mec:commandButton id="bt_incluirPacienteCirurgico" 
+            	value="#{messages.LABEL_INCLUIR_PACIENTE_CIRURGICO}"
+            	rendered="#{pesquisaPacienteController.exibirBotaoIncluir and pesquisaPacienteController.exibirBotaoIncluirPacienteCirurgico and mf:hasPermission(securityController, 'manterPacienteCirurgico,executar') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled') and pesquisaPacienteController.exibirBotaoIncluir and mf:hasPermission(securityController, 'manterPacienteCirurgico,executar')}" 
+            	onclick="PF('modalIncluirPacienteCirurgicoWG').show();return false;" profile="ok" ajax="true" render="modalIncluirPacienteCirurgicoPanel" process="@this"
+				disabled="#{mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}">
+            </mec:commandButton>  
+            <mec:commandButton id="cancelar" value="#{messages.LABEL_VOLTAR}" 
+            	immediate="true" action="#{pesquisaPacienteController.retornar(true)}" 
+            	styleClass=" icon-back bt_cinza" ajax="true" profile="back">
+            </mec:commandButton> 
+          </h:form> 
+        </p:outputPanel> 
+      </aghu:acao> 
+      
+       <p:outputPanel rendered="#{pesquisaPacienteController.exibirBotaoIncluirPacienteCirurgico and mf:hasPermission(securityController, 'manterPacienteCirurgico,executar')}" layout="inline"> 
+         <ui:decorate template="/pages/paciente/modalIncluirPacienteCirurgico.xhtml"/> 
+       </p:outputPanel> 
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

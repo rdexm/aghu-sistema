@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">
+    <ui:define name="head">
+      <style xml:space="preserve">
+		.hide-column-names thead {
+			display: none;
+		}
+		
+		.hide-column-names table tr td {
+			margin: 0 !important;
+			padding: 0 !important;
+		}
+
+		.hide-column-names div {
+			background-color: transparent;
+			margin: 0 !important;
+			padding: 0 !important;
+		}
+
+		.transparent_background, .transparent_background div table tbody,
+			.transparent_background div table tbody tr, .transparent_background div table tbody tr td {
+			background: transparent;
+		}
+
+		.tbLegenda tr td {
+			background: url('../../../resources/img/icons/bg_legenda.png') no-repeat left center;
+			height: 21px;
+			padding: 0 1px 0 22px !important;
+		}
+
+		.spaces tr td {
+			padding-right: 10px !important;
+		}
+		
+		td.agd-ocupada {
+			background-color: #666 !important;
+		}
+		
+		td.agd-bloqueada {
+			background-color: #dc1f1f !important;
+		}
+		
+		td.agd-overbooking {
+			background-color: #ffac2f !important;
+		}
+		
+		td.agd-indisponivel {
+			background-color: #fffa6b !important;
+		}
+		
+		td.agd-cedencia {
+			background-color: #67CBFF !important;
+		}
+		
+		td.agd-reservada {
+			background-color: #cacaca !important;
+		}
+		
+		td.agd-planejada {
+			background-color: #949494 !important;
+		}
+		
+		td.agd-cedencia {
+			background-color: #AAE1FF !important;
+		}
+		
+		td.agd-escala {
+			background-color: #2dff90 !important;
+		}
+		
+		td.agd-realizada {
+			background-color: #5cfff5 !important;
+		}
+		
+		td.agd-cancelada {
+			background-color: #bf6031 !important;
+		}
+		
+		div.ui-progressbar {
+			background: transparent;
+			border-radius: 0px !important;
+			margin: 0px;
+		}
+		
+		div.ui-progressbar-value {
+			background: transparent;
+			background-image: none !important;
+			background-color: #666;
+			color: #fff;
+			font: 10px arial;
+			border-radius: 0px !important;
+			margin: 0px;
+		}
+		
+		div.ui-progressbar-label {
+			background: transparent !important;
+		}
+		
+		.ui-progressbar-label div {
+			background-color: transparent !important;
+		}
+		
+		.agenda-bloqueada {
+			background-color: #dc1f1f !important;
+		}
+		
+		.agenda-bloqueada div.ui-progressbar-value {
+			background-color: #db6a6a !important;
+		}
+		
+		.agenda-indisponivel {
+			background-color: #FFFA6B !important;
+			color: #FFFA6B !important;
+		}
+		
+		.agenda-indisponivel div.ui-progressbar-value {
+			background-color: #FFFA6B !important;
+		}
+		
+		.agenda-overbooking {
+			background-color: #ffac2f !important;
+		}
+		
+		/* .agenda-overbooking div.ui-progressbar-value { */
+		/* 	background-color: #ffac2f !important */
+		/* } */
+		.agenda-overbooking div.ui-progressbar-label {
+			background-color: #ffac2f !important;
+		}
+		
+		.agenda-cedencia {
+			background-color: #67CBFF !important;
+		}
+		
+		.agenda-cedencia div.ui-progressbar-value {
+			background-color: #AAE1FF !important
+		}
+		
+		.ui-fieldset {
+			margin:  0.1px 0.1px!important;
+			padding: 0.1em 0.1em!important;
+		}
+	</style>
+	<title>#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_TITULO}</title>
+	  <script xml:space="preserve">
+	  		function removeEmptyRows(tableId) {
+				var rows = jQuery(
+						'table#' + tableId + ' tr.rich-table-row td:empty')
+						.each(function() {
+							var row = jQuery(this);
+							if (!row.hasClass('agd-vazio')) {
+								if (!row.hasClass('agd-indisponivel')) {
+									if (!row.hasClass('agd-bloqueada')) {
+										row.remove();
+									}
+								}
+							}
+						});
+			}
+		</script>
+	</ui:define>
+	<ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{detalhamentoPortalAgendamentoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define> 
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{detalhamentoPortalAgendamentoController}" />
+		<h:form prependId="false" id="formDadosDetalhamento">
+			<pe:remoteCommand name="selecionaItemReserva" update="botoesAcao"
+				actionListener="#{detalhamentoPortalAgendamentoController.selecionaItemReserva()}"
+				process="@this">
+				<pe:assignableParam name="seqpVO"
+					assignTo="#{detalhamentoPortalAgendamentoController.seqpVO}" />
+			</pe:remoteCommand>
+			<pe:remoteCommand name="selecionaItemAgenda" update="botoesAcao"
+				actionListener="#{detalhamentoPortalAgendamentoController.selecionaItemAgenda()}"
+				process="@this">
+				<pe:assignableParam name="seqAgenda"
+					assignTo="#{detalhamentoPortalAgendamentoController.seqAgenda}" />
+			</pe:remoteCommand>
+			<aghu:panelGeral
+				legend="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_TITULO}">
+				<p:outputPanel id="selectSalaPanel" layout="inline">
+					<aghu:linha>
+
+						<!-- Combo da Sala -->
+						<mec:selectOneMenu id="salasSelect"
+							label="#{messages.LABEL_PORTAL_PLANEJAMENTO_DETALHAMENTO_SALA}"
+							title="#{messages.TITLE_PORTAL_PLANEJAMENTO_DETALHAMENTO_SALA}"
+							items="#{detalhamentoPortalAgendamentoController.salasCirurgicas}"
+							value="#{detalhamentoPortalAgendamentoController.salaCirurgica}"
+							itemLabel="nomeId" 
+							noSelectionOption="false">
+							<f:selectItem itemValue="#{detalhamentoPortalAgendamentoController.salaNaoInformada}" itemLabel="SALA NÃO INFORMADA"/>
+							<p:ajax event="change" oncomplete="removeEmptyRows('listTurnos')"
+								update="@(#salasSelect) @(#painelDetalhamento) @(#dataAgendamento) @(#detalhamentoEncontrado) @(#botoesAcao)"
+								listener="#{detalhamentoPortalAgendamentoController.mudarSalaCirurgica}"
+								process="@this" />
+						</mec:selectOneMenu>
+
+						<aghu:acao newLine="false">
+
+							<!-- Botão Anterior -->
+							<mec:commandButton id="anterior" immediate="true"
+								action="#{detalhamentoPortalAgendamentoController.retroceder}"
+								render="painelDetalhamento,dataAgendamento,detalhamentoEncontrado,botoesAcao"
+								style="float: left;background-image:url('../../../resources/img/icons/pag-anterior.png') !important; background-size: contain !important;"
+								styleClass="silk-pag silk-pag-anterior bt_cinza" block="true" />
+
+							<!-- Data do planejamento -->
+							<div style="float: left; margin: 8px 7px 8px 2px">
+								<h:outputText
+									value="#{messages.LABEL_PORTAL_PLANEJAMENTO_DETALHAMENTO_DATA} " />
+								<h:outputText id="dataAgendamento"
+									value="#{detalhamentoPortalAgendamentoController.dataInicio}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</div>
+
+							<!-- Botão Posterior -->
+							<mec:commandButton id="posterior" immediate="true"
+								style="background-image:url('../../../resources/img/icons/pag-proxima.png') !important; background-size: contain !important;"
+								action="#{detalhamentoPortalAgendamentoController.avancar}"
+								render="painelDetalhamento,dataAgendamento,detalhamentoEncontrado,botoesAcao"
+								styleClass="silk-pag silk-pag-proxima bt_cinza" block="true" />
+
+						</aghu:acao>
+					</aghu:linha>
+				</p:outputPanel>
+				<aghu:linha>
+
+					<p:outputPanel id="painelDetalhamento" layout="inline">
+
+						<!-- Tabela principal -->
+						<table width="100%" height="100%">
+							<tr valign="top">
+
+								<!-- Coluna com a tabela de Agendamentos -->
+								<td width="90%" height="100%">
+									<!-- LISTA AGENDAMENTOS -->
+									<div style="width: 100%; height: 454px; overflow: auto;">
+
+										<!-- Panel Principal do Detalhamento -->
+										<p:outputPanel id="detalhamentoEncontrado">
+										
+								
+										
+
+											<!-- Tabela Principal -->
+											<p:dataTable rowKey="#{_tur}" paginatorAlwaysVisible="false"
+												style="border-collapse: collapse; margin-top: 5px"
+												emptyMessage="#{messages.MENSAGEM_NENHUM_REGISTRO_ENCONTRADO}"
+												styleClass="hide-column-names"
+												value="#{detalhamentoPortalAgendamentoController.detalhamento.listaSalas[0].listaTurnos2}"
+												var="_tur">
+
+												<!-- Coluna com turnos -->
+												<p:column
+													style=" width: 70px; margin: 0px; text-align: center; height:50px;">
+													<h:outputText value="#{_tur.descricaoTurno}" />
+													<br clear="none" />
+													<h:outputText value="(" />
+													<h:outputText value="#{_tur.horarioInicialTurno}">
+														<f:convertDateTime pattern="HH:mm" />
+													</h:outputText>
+													<h:outputText value="-" />
+													<h:outputText value="#{_tur.horarioFinalTurno}">
+														<f:convertDateTime pattern="HH:mm" />
+													</h:outputText>
+													<h:outputText value=")" />
+												</p:column>
+
+												<!-- Coluna agenda indisponível -->
+												<p:column styleClass="agd-indisponivel"
+													rendered="#{_tur.indisponivel}" />
+
+												<!-- Coluna agenda vazia -->
+												<p:column styleClass="agd-vazio"
+													rendered="#{not _tur.indisponivel and empty _tur.listaReservas and empty _tur.listaAgendas and not _tur.bloqueado}" />
+
+												<!-- Coluna reservas e agendas -->
+												<p:column
+													rendered="#{not _tur.indisponivel and (not empty _tur.listaReservas or not empty _tur.listaAgendas)}">
+
+													<!-- Panel/Tabela lista reservas -->
+
+
+													<p:dataTable id="panelListaReservas" var="_reserv"
+														value="#{_tur.listaReservas}"
+														rendered="#{not _tur.indisponivel and not empty _tur.listaReservas}"
+														paginatorAlwaysVisible="false" paginator="false"
+														styleClass="hide-column-names">
+
+														<p:column
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_reserv)}"
+															style="width: 4%;margin: 0px; height:50px;">
+															<p:outputPanel
+																rendered="#{_reserv.seqpVO.equals(detalhamentoPortalAgendamentoController.seqpVO) and ! _reserv.bloqueio}"
+																layout="inline">
+																<input type="radio" id="res#{_reserv.seqpVO}"
+																	name="group1"
+																	onchange="selecionaItemReserva(#{_reserv.seqpVO})"
+																	checked="checked" />
+															</p:outputPanel>
+															<p:outputPanel
+																rendered="#{!_reserv.seqpVO.equals(detalhamentoPortalAgendamentoController.seqpVO) and ! _reserv.bloqueio}"
+																layout="inline">
+																<input type="radio" id="res#{_reserv.seqpVO}"
+																	onchange="selecionaItemReserva(#{_reserv.seqpVO})"
+																	name="group1" />
+															</p:outputPanel>
+														</p:column>
+
+
+														<p:column style="width: 33px;margin: 0px;"
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_reserv)}">
+															<h:outputText value="#{_reserv.horaInicial}">
+																<f:convertDateTime pattern="HH:mm" />
+															</h:outputText>
+														</p:column>
+														<p:column style="width: 33px;margin: 0px;"
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_reserv)}">
+															<h:outputText value="#{_reserv.horaFinal}">
+																<f:convertDateTime pattern="HH:mm" />
+															</h:outputText>
+														</p:column>
+														<p:column style="width: auto;margin: 0px;"
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_reserv)}">
+															<p:outputPanel rendered="#{not empty _reserv.equipe}"
+																layout="inline">
+																<h:outputText value="Equipe: #{_reserv.equipe}" />
+																<br clear="none" />
+															</p:outputPanel>
+															<p:outputPanel
+																rendered="#{not empty _reserv.especialidade}"
+																layout="inline">
+																<h:outputText
+																	value="Especialidade: #{_reserv.especialidade}" />
+																<br clear="none" />
+															</p:outputPanel>
+														</p:column>
+														<p:column
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_reserv)}"
+															style="width:200px; font-weight: bold; margin: 0px;">
+															<h:outputText id="textoAnotacao"
+																rendered="#{mf:hasPermission(securityController,'exibirAnotacaoEquipe,consultar')}"
+																value="#{detalhamentoPortalAgendamentoController.getAbreviar(_reserv.anotacao,40)}" />
+															<p:tooltip for="textoAnotacao"
+																rendered="#{_reserv.anotacao ne null and _reserv.anotacao.length() gt 40 and mf:hasPermission(securityController,'exibirAnotacaoEquipe,consultar')}">
+																<h:outputText
+																	value="#{detalhamentoPortalAgendamentoController.getTooltip(_reserv.anotacao, 115)}"
+																	escape="false" />
+															</p:tooltip>
+														</p:column>
+													</p:dataTable>
+
+													<!-- Panel/Tabela lista agendas -->
+
+													<p:dataTable id="panelListaAgendas" var="_agd"
+														value="#{_tur.listaAgendas}"
+														rendered="#{not _tur.indisponivel and not empty _tur.listaAgendas}"
+														paginatorAlwaysVisible="false" paginator="false"
+														styleClass="hide-column-names">
+
+														<p:column
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_agd)}"
+															style="width: 4%;margin: 0px; height:50px;">
+															<p:outputPanel
+																rendered="#{_agd.seqAgenda.equals(detalhamentoPortalAgendamentoController.seqAgenda)}"
+																layout="inline">
+																<input type="radio" id="agd#{_agd.seqAgenda}"
+																	name="group1"
+																	onchange="selecionaItemAgenda(#{_agd.seqAgenda})"
+																	checked="checked" />
+															</p:outputPanel>
+															<p:outputPanel
+																rendered="#{!_agd.seqAgenda.equals(detalhamentoPortalAgendamentoController.seqAgenda) }"
+																layout="inline">
+																<input type="radio" id="agd#{_agd.seqAgenda}"
+																	onchange="selecionaItemAgenda(#{_agd.seqAgenda})"
+																	name="group1" />
+															</p:outputPanel>
+														</p:column>
+
+
+														<p:column
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_agd)}"
+															style="width: 33px;margin: 0px;">
+															<h:outputText value="#{_agd.horaInicial}">
+																<f:convertDateTime pattern="HH:mm" />
+															</h:outputText>
+														</p:column>
+														<p:column
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_agd)}"
+															style="width: 33px;margin: 0px;">
+															<h:outputText value="#{_agd.horaFinal}">
+																<f:convertDateTime pattern="HH:mm" />
+															</h:outputText>
+														</p:column>
+														<p:column
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_agd)}"
+															style="width: auto;margin: 0px;">
+															<p:outputPanel rendered="#{not empty _agd.paciente}"
+																layout="inline">
+																<h:outputText value="#{_agd.paciente}" />
+																<br clear="none" />
+															</p:outputPanel>
+															<p:outputPanel rendered="#{not empty _agd.procedimento}"
+																layout="inline">
+																<h:outputText value="#{_agd.procedimento}" />
+																<br clear="none" />
+															</p:outputPanel>
+															<p:outputPanel rendered="#{not empty _agd.equipe}"
+																layout="inline">
+																<h:outputText value="Equipe: #{_agd.equipe}" />
+																<br clear="none" />
+															</p:outputPanel>
+															<p:outputPanel rendered="#{not empty _agd.especialidade}"
+																layout="inline">
+																<h:outputText
+																	value="Especialidade: #{_agd.especialidade}" />
+																<br clear="none" />
+															</p:outputPanel>
+															<p:outputPanel rendered="#{not empty _agd.criadoPor}"
+																layout="inline">
+																<h:outputText value="Criado por: #{_agd.criadoPor}" />
+																<br clear="none" />
+															</p:outputPanel>
+															<p:outputPanel rendered="#{not empty _agd.criadoEm}"
+																layout="inline">
+																<h:outputText value="Criado em: " />
+																<h:outputText value="#{_agd.criadoEm}">
+																	<f:convertDateTime pattern="dd/MM/yyyy HH:mm"
+																		timeZone="GMT-03:00" />
+																</h:outputText>
+																<br clear="none" />
+															</p:outputPanel>
+														</p:column>
+														<p:column
+															styleClass="#{detalhamentoPortalAgendamentoController.colorirTabela(_agd)}"
+															style="width:200px;margin: 0px;" />
+													</p:dataTable>
+
+
+												</p:column>
+												<!-- FIM Coluna reservas e agendas -->
+											</p:dataTable>
+											<!-- FIM Tabela Principal -->
+										</p:outputPanel>
+										<!-- FIM Panel Principal do Detalhamento -->
+
+									</div>
+								</td>
+
+								<!-- Coluna separadora -->
+								<td width="1%" rowspan="1" colspan="1"> </td>
+
+								<!-- Coluna botões de Agenda -->
+								<td width="200px"><p:outputPanel id="botoesAcao"
+										layout="inline">
+
+										<!-- Painel com os botões de Agenda -->
+										<aghu:panelGeral
+											legend="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_AGENDA}">
+
+											<mec:commandButton id="bt_incluir_paciente_agenda"
+												style="width: 140px;align:center"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_INCLUIR_PACIENTE}"
+												action="#{detalhamentoPortalAgendamentoController.incluirPaciente()}"
+												disabled="#{detalhamentoPortalAgendamentoController.readOnlyIncluir or not (detalhamentoPortalAgendamentoController.getPermissaoMedico() or detalhamentoPortalAgendamentoController.getPermissaoAdm())}"
+												styleClass="bt_cinza" block="true" />
+
+											<mec:commandButton id="bt_anotar_agenda" style="width: 140px"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_ANOTAR}"
+												action="#{incluirAnotacaoEquipeController.inicio(detalhamentoPortalAgendamentoController.dataInicio, 
+												detalhamentoPortalAgendamentoController.matriculaEquipe, 
+												detalhamentoPortalAgendamentoController.vinCodigoEquipe, 
+												detalhamentoPortalAgendamentoController.unfSeqEquipe, 
+												detalhamentoPortalAgendamentoController.funcaoProf)}"
+												oncomplete="PF('modalIncluirAnotacaoEquipeWG').show();"
+												disabled="#{detalhamentoPortalAgendamentoController.readOnlyAnotar or not mf:hasPermission(securityController,'manterAnotacaoEquipe,persistir')}"
+												ajax="true" render="modalIncluirAnotacaoEquipe"
+												styleClass="bt_cinza" block="true" />
+
+											<mec:commandButton id="bt_relatorio_agenda"
+												style="width: 140px"
+												action="#{detalhamentoPortalAgendamentoController.inicializarModalRelatorioPlanjCirg}"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_VISUALIZAR}"
+												oncomplete="PF('modalVisualizarWG').show();;"
+												disabled="#{not mf:hasPermission(securityController,'/blococirurgico/portalplanejamento/relatorioPortalPlanejamentoCirurgiasPdf.xhtml,render') or !detalhamentoPortalAgendamentoController.habilitaBtVisualizar}"
+												ajax="true" render="modalVisualizar" styleClass="bt_cinza"
+												block="true" />
+											<mec:commandButton id="bt_atualizar_escalas_agenda"
+												style="width: 140px"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_ATUALIZAR_ESCALA}"
+												action="#{detalhamentoPortalAgendamentoController.getAtualizarEscala}"
+												disabled="#{detalhamentoPortalAgendamentoController.readOnlyAtualizarEscala or not mf:hasPermission(securityController,
+												'detalhamentoPortalAgendamentoBotaoAtualizarEscala,detalhamentoPortalAgendamentoBotaoAtualizarEscala')}"
+												styleClass="bt_cinza" block="true" />
+											<mec:commandButton id="bt_pesquisar_minhas_agendas"
+												style="width: 140px"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_MINHAS_AGENDAS}"
+												action="#{detalhamentoPortalAgendamentoController.pesquisarAgendas}"
+												disabled="#{not mf:hasPermission(securityController,'visualizarMinhasCirurgiasEmEsperaECanceladas,visualizar')}"
+												styleClass="bt_cinza" block="true" />
+
+											<mec:commandButton id="bt_ajuste_horarios"
+												style="width: 140px"
+												value="#{messages.LABEL_AJUSTAR_HORARIOS_AGENDAMENTOS}"
+												action="#{detalhamentoPortalAgendamentoController.ajustarHorariosAgendamentos}"
+												disabled="#{not mf:hasPermission(securityController,'ajustarHorariosAgenda,executar') or detalhamentoPortalAgendamentoController.readOnlyAjustar}"
+												styleClass="bt_cinza" block="true" />
+
+										</aghu:panelGeral>
+
+										<br />
+										<!-- Painel com os botões de Paciente -->
+										<aghu:panelGeral
+											legend="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_PACIENTE}">
+
+											<mec:commandButton id="bt_editar_paciente"
+												style="width: 140px"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_EDITAR}"
+												action="#{detalhamentoPortalAgendamentoController.editarPaciente()}"
+												disabled="#{detalhamentoPortalAgendamentoController.readOnlyEditar}"
+												styleClass="bt_cinza" block="true" />
+
+											<mec:commandButton id="bt_remarcar_paciente"
+												style="width: 140px"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_REMARCAR}"
+												action="#{remarcarPacienteAgendaController.inicio}"
+												oncomplete="PF('remarcarPacienteAgendaModalWG').show();;"
+												disabled="#{detalhamentoPortalAgendamentoController.readOnlyRemarcar or not mf:hasPermission(securityController,'remarcarAgendamentoPaciente,remarcar')}"
+												ajax="true" render="remarcarPacienteAgendaModal"
+												styleClass="bt_cinza" block="true">
+
+												<f:setPropertyActionListener
+													value="#{detalhamentoPortalAgendamentoController.agendaSelecionado.seqAgenda}"
+													target="#{remarcarPacienteAgendaController.agdSeq}"
+													for="command" />
+												<f:setPropertyActionListener value="cameFromDetalhamento"
+													target="#{remarcarPacienteAgendaController.cameFrom}"
+													for="command" />
+											</mec:commandButton>
+
+											<mec:commandButton id="bt_tranferir_paciente"
+												style="width: 140px"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_TRANSFERIR}"
+												oncomplete="PF('modalJustificativaTransferirAgendamentoWG').show();"
+												action="#{detalhamentoPortalAgendamentoController.habilitarTransferirAgendamento()}"
+												disabled="#{detalhamentoPortalAgendamentoController.readOnlyTransferir or !mf:hasPermission(securityController,'transferirAgendamentoPacienteListaEspera,transferir')}"
+												ajax="true" render="modalJustificativaTransferirAgendamento"
+												styleClass="bt_cinza" block="true" />
+
+											<mec:commandButton id="bt_alterar_especialidade"
+												style="width: 140px"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_ALTERAR_ESPECIALIDADE}"
+												action="#{detalhamentoPortalAgendamentoController.redirectTrocarLocalEspEquipeListaEspera}"
+												disabled="#{detalhamentoPortalAgendamentoController.readOnlyAlterarEsp or !mf:hasPermission(securityController,'permitirTrocarLocalEspecialidadeEquipe,executar')}"
+												styleClass="bt_cinza" ajax="true" block="true">
+
+												<f:setPropertyActionListener
+													value="blococirurgico-detalhamentoPortalAgendamento"
+													target="#{trocarLocalEspEquipeListaEsperaController.cameFrom}"
+													for="command" />
+												<f:setPropertyActionListener
+													value="#{detalhamentoPortalAgendamentoController.agendaSelecionado.seqAgenda}"
+													target="#{trocarLocalEspEquipeListaEsperaController.agdSeq}"
+													for="command" />
+											</mec:commandButton>
+
+											<mec:commandButton id="bt_excluir_paciente"
+												style="width: 140px"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_EXCLUIR}"
+												oncomplete="PF('excluirPacienteAgendaModalWG').show();"
+												action="#{excluirPacienteAgendaController.inicio(detalhamentoPortalAgendamentoController.agendaSelecionado.seqAgenda,'detalhamentoPortalAgendamento')}"
+												disabled="#{!mf:hasPermission(securityController,'excluirAgendamentoPaciente,excluir') or (detalhamentoPortalAgendamentoController.readOnlyExclusao)}"
+												ajax="true" render="excluirPacienteAgendaModal"
+												styleClass="bt_cinza" block="true">
+
+												<f:setPropertyActionListener value="#{null}"
+													target="#{excluirPacienteAgendaController.justificativa}"
+													for="command" />
+												<f:setPropertyActionListener
+													value="detalhamentoPortalAgendamento"
+													target="#{excluirPacienteAgendaController.comeFrom}"
+													for="command" />
+												<f:setPropertyActionListener
+													value="#{detalhamentoPortalAgendamentoController.agendaSelecionado.seqAgenda}"
+													target="#{excluirPacienteAgendaController.agdSeq}"
+													for="command" />
+											</mec:commandButton>
+
+											<mec:commandButton
+												id="LegendaDetalhamento"
+												value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_LEGENDA}"
+												onclick="PF('modalLegendaDetalhamentoWG').show();return false;"
+												style="width: 140px" styleClass="bt_cinza" block="true" />
+
+										</aghu:panelGeral>
+									</p:outputPanel></td>
+							</tr>
+						</table>
+					</p:outputPanel>
+
+				</aghu:linha>
+			</aghu:panelGeral>
+
+			<aghu:acao>
+				<mec:commandButton id="btVoltar" value="#{messages.LABEL_VOLTAR}"
+					action="#{detalhamentoPortalAgendamentoController.voltar}"
+					styleClass="bt_voltar bt_cinza" profile="back" block="true" />
+			</aghu:acao>
+
+		</h:form>
+
+		<p:dialog resizeable="false" id="modalVisualizar" width="450"
+			height="230" moveable="true" trimOverlayedElements="false"
+			style="overflow: visible;" modal="true" resizable="false"
+			widgetVar="modalVisualizarWG" closable="true">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText id="outputTitulo"
+						value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_VISUALIZAR}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form prependId="false" id="formDatas">
+				<p:outputPanel id="panelDatas" layout="inline">
+					<aghu:panelGeral
+						legend="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_PERIODO_VISUALIZACAO}">
+						<aghu:linha>
+							<h:outputText id="msgErro" name="msgErro"
+								rendered="#{relatorioPortalPlanejamentoCirurgiasController.apresentaMsgModal}"
+								value="#{relatorioPortalPlanejamentoCirurgiasController.msgModal}"
+								style="color:red;" />
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputTextData label="#{messages.LABEL_INICIO}" id="dtInicio"
+								title="#{messages.TITLE_DATA_INICIO}" requiredFake="true"
+								value="#{relatorioPortalPlanejamentoCirurgiasController.pDtIni}"
+								tipo="data" />
+							<mec:inputTextData label="#{messages.LABEL_FIM}" id="dtFim"
+								title="#{messages.TITLE_DATA_FIM}" requiredFake="true"
+								value="#{relatorioPortalPlanejamentoCirurgiasController.pDtFim}"
+								tipo="data" />
+						</aghu:linha>
+					</aghu:panelGeral>
+				</p:outputPanel>
+				<aghu:acao>
+					<mec:commandButton id="bt_visualiza_relatorio_agenda"
+						value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+						action="#{relatorioPortalPlanejamentoCirurgiasController.visualizarRelatorioAgenda}"
+						oncomplete="if(#{relatorioPortalPlanejamentoCirurgiasController.apresentaMsgModal}){ PF('modalVisualizarWG').show();}else{ PF('modalVisualizarWG').show();}"
+						process="formDatas"
+						disabled="#{not mf:hasPermission(securityController,'imprimirRelatorioDoPortalDePlanejamentodeCirurgias,visualizar')}"
+						profile="view" ajax="true"
+						render="modalVisualizar, painelDetalhamento, botoesAcao">
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.seqUnidFuncionalCirugica}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pUnfSeq}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.seqEspecialidade}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pEspSeq}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.equipeSelecionada}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pEquipe}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.matriculaEquipe}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pPucSerMatricula}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.vinCodigoEquipe}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pPucSerVinCodigo}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.unfSeqEquipe}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pPucUnfSeq}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.indFuncaoProfEquipe}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pPucIndFuncaoProf}" />
+						<f:setPropertyActionListener for="command"
+							value="blococirurgico-detalhamentoPortalAgendamento"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.voltarPara}" />
+					</mec:commandButton>
+					<mec:commandButton id="bt_imprime_agenda"
+						value="#{messages.LABEL_IMPRIMIR}"
+						action="#{relatorioPortalPlanejamentoCirurgiasController.imprimirRelatorioAgenda}"
+						oncomplete="if(#{relatorioPortalPlanejamentoCirurgiasController.apresentaMsgModal}){ PF('modalVisualizarWG').show();}else{ PF('modalVisualizarWG').show();}"
+						process="formDatas"
+						disabled="#{not mf:hasPermission(securityController,'imprimirRelatorioDoPortalDePlanejamentodeCirurgias,imprimir')}"
+						profile="print" ajax="true"
+						render="modalVisualizar, painelDetalhamento, botoesAcao">
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.seqUnidFuncionalCirugica}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pUnfSeq}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.seqEspecialidade}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pEspSeq}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.equipeSelecionada}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pEquipe}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.matriculaEquipe}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pPucSerMatricula}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.vinCodigoEquipe}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pPucSerVinCodigo}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.unfSeqEquipe}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pPucUnfSeq}" />
+						<f:setPropertyActionListener for="command"
+							value="#{detalhamentoPortalAgendamentoController.parametrosPlanejamentoPaciente.indFuncaoProfEquipe}"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.pPucIndFuncaoProf}" />
+						<f:setPropertyActionListener for="command"
+							value="blococirurgico-detalhamentoPortalAgendamento"
+							target="#{relatorioPortalPlanejamentoCirurgiasController.voltarPara}" />
+					</mec:commandButton>
+				</aghu:acao>
+			</h:form>
+		</p:dialog>
+		<ui:include
+			src="/pages/blococirurgico/portalplanejamento/excluirPacienteAgendaModal.xhtml" />
+		<ui:include
+			src="/pages/blococirurgico/portalplanejamento/modalJustificativaTransferirAgendamento.xhtml" />
+		<ui:include
+			src="/pages/blococirurgico/portalplanejamento/incluirAnotacaoEquipeModal.xhtml" />
+		<ui:include
+			src="/pages/blococirurgico/portalplanejamento/remarcarPacienteAgendaModal.xhtml" />
+		<p:outputPanel layout="block" ajaxRendered="true"
+			rendered="#{not empty detalhamentoPortalAgendamentoController.detalhamento.listaSalas[0].listaTurnos2}">
+		</p:outputPanel>
+		<p:dialog id="modalLegendaDetalhamento" style="text-align:center;"
+			height="270" width="336" autosized="true" modal="true"
+			resizable="false" widgetVar="modalLegendaDetalhamentoWG"
+			closable="true">
+			<f:facet name="header">
+				<h:outputText
+					value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_LEGENDA}" />
+			</f:facet>
+			<aghu:linha>
+				<div style="text-align: -moz-center; margin: 15px auto 10px">
+					<aghu:panelGeral>
+						<table class="tbLegenda spaces" width="100%">
+							<tr>
+								<td class="agd-reservada" rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_RESERVADA}" />
+								</td>
+							</tr>
+							<tr>
+								<td class="agd-planejada" rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_PLANEJADA}" />
+								</td>
+							</tr>
+							<tr>
+								<td class="agd-escala" rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_ESCALA}" />
+								</td>
+							</tr>
+							<tr>
+								<td class="agd-realizada" rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_REALIZADA}" />
+								</td>
+							</tr>
+							<tr>
+								<td class="agd-bloqueada" rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_BLOQUEADA}" />
+								</td>
+							</tr>
+							<tr>
+								<td class="agd-overbooking" rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_OVERBOOKING}" />
+								</td>
+							</tr>
+							<tr>
+								<td class="agd-indisponivel" rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_INDISPONIVEL}" />
+								</td>
+							</tr>
+							<tr>
+								<td class="agd-cedencia" rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_PORTAL_PLANEJAMENTO_CIRG_CEDIDO}" /></td>
+							</tr>
+							<tr>
+								<td rowspan="1" colspan="1"><h:outputText
+										value="#{messages.LABEL_DETALHAMENTO_PORTAL_AGENDAMENTO_DISPONIVEL_ADM}" />
+								</td>
+							</tr>
+						</table>
+					</aghu:panelGeral>
+				</div>
+			</aghu:linha>
+			<br clear="none" />
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

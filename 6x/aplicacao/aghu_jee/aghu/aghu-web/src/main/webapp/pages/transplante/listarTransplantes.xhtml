@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISAR_PACIENTES_LISTA_TRANSPLANTES_TMO}</title>
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{listarTransplantesController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="form_1"> 
+        <p:outputPanel id="panelPesquisarPacientes" layout="inline"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_PACIENTES_LISTA_TRANSPLANTES_TMO}" > 
+            <aghu:linha> 
+              <mec:inputNumero id="codigoPaciente" 
+              	label="#{messages.LABEL_CODIGO}" 
+              	title="#{messages.TITLE_CODIGO_PACIENTE_TMO}" 
+              	value="#{listarTransplantesController.filtro.codigoPaciente}"
+              	maxlength="8" size="10"
+              	style="padding-right:5px;">
+					<p:ajax event="change" process="@this"/> 
+			  </mec:inputNumero>  
+              <mec:inputTextProntuario id="prontuarioPaciente" 
+              	label="#{messages.LABEL_PRONTUARIO}" 
+              	value="#{listarTransplantesController.filtro.prontuarioPaciente}" 
+              	maxlength="8"
+              	style="font-weight:bold;padding-right:10px;">
+					<p:ajax event="change" process="@this"/> 
+				</mec:inputTextProntuario>
+              <mec:inputText id="nomePaciente" 
+              	label="#{messages.LABEL_NOME}" 
+              	value="#{listarTransplantesController.filtro.nomePaciente}"
+              	maxlength="50" size="40"
+              	style="padding-right:5px; text-transform:uppercase">  
+					<p:ajax event="change" process="@this"/> 
+				</mec:inputText> 
+             </aghu:linha>
+             <aghu:linha>
+               <p:outputPanel id="panelCombo" layout="inline">
+                <mec:selectOneMenu id="comboTipo"
+              	  label="#{messages.LABEL_TIPO}" 
+              	  title="#{messages.TITLE_TIPO_TRANSPLANTE_TMO}"  
+                  value="#{listarTransplantesController.filtro.transplanteTipoTmo}"
+                  enum="DominioSituacaoTmo"
+                  requiredFake="true">
+                  <p:ajax event="change" 
+                    listener="#{listarTransplantesController.changeTipoTransplante}" 
+              	    process="@this"
+              	  update="@(#panelCombo)"/> 
+                </mec:selectOneMenu>
+                <mec:selectOneMenu id="comboTipoAlogenico"
+               	  readonly="#{!listarTransplantesController.ativarCombo}"
+              	  label="#{messages.LABEL_TIPO_ALOGENICO}" 
+              	  value="#{listarTransplantesController.filtro.transplanteTipoAlogenico}"
+                  enum="DominioTipoAlogenico">
+					<p:ajax event="change" process="@this"/> 
+                </mec:selectOneMenu>
+              </p:outputPanel> 
+              <mec:inputTextData id="dataInclusao"
+				label="#{messages.LABEL_DATA_INCLUSAO_TMO}"
+				title="#{messages.TITLE_DATA_INCLUSAO_TMO}"
+				value="#{listarTransplantesController.filtro.dataInclusao}"
+				size="10" maxlength="10"
+				tipo="data">
+					<p:ajax event="change" process="@this"/> 
+					<p:ajax event="dateSelect" process="@this"/> 
+			  </mec:inputTextData>
+              <mec:inputTextData id="dataTransplante"
+				label="#{messages.LABEL_DATA_TRANSPLANTE}"
+				title="#{messages.TITLE_DATA_TRANSPLANTE}"
+				value="#{listarTransplantesController.filtro.dataTransplante}"
+				readonly="#{!listarTransplantesController.ativarDataTransplante}"
+				size="10" maxlength="10"
+				tipo="data">
+					<p:ajax event="change" process="@this"/> 
+					<p:ajax event="dateSelect" process="@this"/> 
+			  </mec:inputTextData>
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao id="panelButtons"> 
+             <mec:commandButton id="bt_pesquisar" 
+             	value="#{messages.LABEL_PESQUISAR}" 
+             	action="#{listarTransplantesController.pesquisar}"
+             	block="true" ajax="true" render="panelPesquisarPacientes, panelAbas, botoesGridP"
+             	process="@this" 
+				profile="search"  />
+             <mec:commandButton id="bt_limpar" 
+             	value="#{messages.LABEL_LIMPAR}"  
+             	action="#{listarTransplantesController.limpar}"
+             	ajax="true" process="@this"
+             	profile="clear"
+             	render="panelPesquisarPacientes, panelAbas, botoesGridP"/>
+          </aghu:acao> 
+        </p:outputPanel>
+		<h:panelGroup>
+		<aghu:linha>
+		<aghu:column type="colunaAbas" style="width:87%" >
+			<p:outputPanel id="panelAbas" layout="inline" >
+			  <p:tabView id="pacientesTransplanteTab" immediate="true" dynamic="false" activeIndex="#{listarTransplantesController.selectedTab}" prependId="false" 
+			  	rendered="#{listarTransplantesController.realizouPesquisa}"> 
+				<p:ajax event="tabChange"  listener="#{listarTransplantesController.mudarAba()}"  update="@(#panelAbas) @(#panelPesquisarPacientes) @(#botoesGridP)"/>
+				<p:tab name="aba1" title="#{messages.TITLE_PACIENTES_TRANSPLANTES_ABA1}" disabled="#{! listarTransplantesController.ativarAba1}"> 
+				  	<ui:include src="/pages/transplante/listarTransplantesAba1.xhtml"/>
+				  	<p:outputPanel id="panelLegendaAba1" styleClass="ui-fieldset" rendered="#{listarTransplantesAba1PaginatorController.dataModel.pesquisaAtiva}">
+					    <aghu:linha>
+		                    <p:outputLabel value=""  styleClass="silk-icon lista-transplantes gmr" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_GRM}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes dibete" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_DIABETES}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hiv" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HIV}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-b" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEB}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>         
+		
+		                     <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-c" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEC}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                </aghu:linha> 
+	                </p:outputPanel>
+				</p:tab>  
+				<p:tab name="aba2" title="#{messages.TITLE_PACIENTES_TRANSPLANTES_ABA2}"> 
+				  <ui:include src="/pages/transplante/listarTransplantesAba2.xhtml"/> 
+				  <p:outputPanel id="panelLegendaAba2" styleClass="ui-fieldset" rendered="#{listarTransplantesAba2PaginatorController.dataModel2.pesquisaAtiva}">
+					    <aghu:linha> 
+		                    <p:outputLabel value=""  styleClass="silk-icon lista-transplantes gmr" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_GRM}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes dibete" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_DIABETES}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hiv" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HIV}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-b" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEB}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>         
+		
+		                     <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-c" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEC}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                </aghu:linha> 
+	                </p:outputPanel>
+				</p:tab>  
+				<p:tab name="aba3" title="#{messages.TITLE_PACIENTES_TRANSPLANTES_ABA3}"> 
+				  	<ui:include src="/pages/transplante/listarTransplantesAba3.xhtml"/>
+				  	<p:outputPanel id="panelLegendaAba3" styleClass="ui-fieldset" rendered="#{listarTransplantesAba3PaginatorController.dataModel3.pesquisaAtiva}">
+					    <aghu:linha> 
+		                    <p:outputLabel value=""  styleClass="silk-icon lista-transplantes gmr" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_GRM}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes dibete" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_DIABETES}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hiv" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HIV}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-b" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEB}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>         
+		
+		                     <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-c" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEC}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                </aghu:linha> 
+	                </p:outputPanel> 
+				</p:tab>  
+				<p:tab name="aba4" title="#{messages.TITLE_PACIENTES_TRANSPLANTES_ABA4}"> 
+	              <ui:include src="/pages/transplante/listarTransplantesAba4.xhtml"/> 
+				  	<p:outputPanel id="panelLegendaAba4" styleClass="ui-fieldset" rendered="#{listarTransplantesAba4PaginatorController.dataModel4.pesquisaAtiva}">
+					    <aghu:linha> 
+		                    <p:outputLabel value=""  styleClass="silk-icon lista-transplantes gmr" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_GRM}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes dibete" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_DIABETES}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hiv" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HIV}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-b" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEB}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>         
+		
+		                     <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-c" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEC}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                </aghu:linha> 
+	                </p:outputPanel> 
+				</p:tab>  
+				<p:tab name="aba5" title="#{messages.TITLE_PACIENTES_TRANSPLANTES_ABA5}">
+					<ui:include src="/pages/transplante/listarTransplantesAba5.xhtml"/> 
+				  	<p:outputPanel id="panelLegendaAba5" styleClass="ui-fieldset" rendered="#{listarTransplantesAba5PaginatorController.dataModel5.pesquisaAtiva}">
+					    <aghu:linha> 
+		                    <p:outputLabel value=""  styleClass="silk-icon lista-transplantes gmr" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_GRM}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes dibete" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_DIABETES}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hiv" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HIV}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                                                    
+		                    <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-b" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEB}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>         
+		
+		                     <p:outputLabel value="" styleClass="silk-icon lista-transplantes hepatite-c" style="margin-right:5px;"/>
+		                    <h:outputText value="#{messages.LEGENDA_HEPATITEC}" style="vertical-align:top; margin-right:5px; font-size: smaller !important;"/>
+		                </aghu:linha> 
+	                </p:outputPanel>  
+				</p:tab>
+			  </p:tabView>
+			</p:outputPanel> 
+		</aghu:column>
+		<aghu:column type="colunaBotoes" style="width:12%" >
+			<p:outputPanel id="botoesGridP" >
+			<mec:commandButton id="botaoCadPacienteP"
+				value="#{messages.LABEL_CAD_PACIENTE}"
+				disabled="#{listarTransplantesController.itemSelecionado eq null}"
+				process="@this"
+				block="true"
+				action="#{listarTransplantesController.botaoCadPaciente()}"
+				style="font-size: smaller !important; width:115px !important; text-align:center !important;"
+				rendered="#{listarTransplantesController.realizouPesquisa}">
+			</mec:commandButton>
+			<mec:commandButton id="botaoComorbidadesP"
+				value="#{messages.LABEL_COMORBIDADES_TMO}"
+				disabled="#{listarTransplantesController.itemSelecionado eq null}"
+				style="font-size: smaller !important; width:116px !important; text-align:center !important;"
+				rendered="#{listarTransplantesController.realizouPesquisa}" action="#{listarTransplantesController.carregarTelaIncluirComorbidadePaciente()}">
+			</mec:commandButton>
+			<mec:commandButton id="botaoExamesP"
+				value="#{messages.LABEL_EXAMES}"
+				disabled="#{listarTransplantesController.itemSelecionado eq null}"
+				action="#{listarTransplantesController.botaoExames()}"
+				style="font-size: smaller !important; width:115px !important; text-align:center !important;"
+				rendered="#{listarTransplantesController.realizouPesquisa}">
+			</mec:commandButton>
+			<mec:commandButton id="botaoConsultasP"
+				value="#{messages.LABEL_CONSULTAS}"
+				action="#{listarTransplantesController.botaoConsultas()}"
+				disabled="#{listarTransplantesController.itemSelecionado eq null}"
+				style="font-size: smaller !important; width:115px !important; text-align:center !important;"
+				rendered="#{listarTransplantesController.realizouPesquisa}">
+				<f:setPropertyActionListener target="#{consultaPacientePaginatorController.voltarPara}" value="transplante-listarTransplante" for="command"/> 
+			</mec:commandButton>
+			<mec:commandButton id="botaoLaudoAIHP"
+				value="#{messages.LABEL_LAUDO_AIH}"
+				disabled="#{listarTransplantesController.itemSelecionado eq null}"
+				action="#{listarTransplantesController.botaoLaudoAIH()}"
+				style="font-size: smaller !important; width:115px !important; text-align:center !important;"
+				rendered="#{listarTransplantesController.realizouPesquisa}">
+			</mec:commandButton>
+			<mec:commandButton id="botaoExtratoTransplanteP"
+				value="#{messages.LABEL_EXTRATO_TRANSPLANTE}"
+				disabled="#{listarTransplantesController.itemSelecionado eq null}"
+				action="#{listarTransplantesController.iniciarModal()}"
+				render="panelModal" ajax="true" process="@this"
+				style="font-size: smaller !important; width:115px !important; text-align:center !important;"
+				rendered="#{listarTransplantesController.realizouPesquisa}">
+			</mec:commandButton>
+			</p:outputPanel>
+		</aghu:column>
+		</aghu:linha>
+		</h:panelGroup>
+      </h:form>
+      <p:outputPanel id="panelModal" layout="inline">
+		<h:form prependId="false"> 
+			<p:outputPanel layout="inline"> 
+				<ui:decorate template="/pages/transplante/modalGerarExtratoAlteracoesListaTransplantes.xhtml"/> 
+			</p:outputPanel> 
+		</h:form>
+	</p:outputPanel>   
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_AGENDAMENTO_PROCESSO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{jobDetailPaginatorController}"/>  
+      <h:form prependId="false" id="formJobDetailPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISA_AGENDAMENTO_PROCESSO}"> 
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_AGENDAMENTO_PROCESSO_NUMERO}" title="#{messages.TITLE_AGENDAMENTO_PROCESSO_NUMERO}" size="10" maxlength="8" value="#{jobDetailPaginatorController.numero}" id="numero"/>  
+            <mec:inputText removerCaratersEspeciais="false" caixaAlta="false" label="#{messages.LABEL_AGENDAMENTO_PROCESSO_NOME}" title="#{messages.TITLE_AGENDAMENTO_PROCESSO_NOME}" size="100" maxlength="100" value="#{jobDetailPaginatorController.nomeProcesso}" id="processo"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_AGENDAMENTO_PROCESSO_SITUACAO}" title="#{messages.TITLE_AGENDAMENTO_PROCESSO_SITUACAO}" enum="DominioSituacaoJobDetail" value="#{jobDetailPaginatorController.situacao}" id="situacao"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_AGENDAMENTO_PROCESSO_DATAINICIO}" title="#{messages.TITLE_AGENDAMENTO_PROCESSO_DATAINICIO}" id="dataInicio" value="#{jobDetailPaginatorController.dataInicial}" tipo="data"/>  
+            <mec:inputTextData label="#{messages.LABEL_AGENDAMENTO_PROCESSO_DATAFINAL}" title="#{messages.TITLE_AGENDAMENTO_PROCESSO_DATAFINAL}" id="dataFinal" value="#{jobDetailPaginatorController.dataFinal}" tipo="data"/>  
+            <mec:selectBooleanCheckbox label="Apresentar lista de agendamentos" title="Busca os agendamentos que o Jboss esta gerenciando no momento." value="#{jobDetailPaginatorController.apresentarAgendamentoEmMemoria}" id="apresentarAgendamentoEmMemoria"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{jobDetailPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{jobDetailPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_BTN_ROTINA_AUTOMATICA}" id="bt_rotina_automatica" action="#{jobDetailPaginatorController.iniciarRotinaAutomatica}" disabled="#{not mf:hasPermission(securityController, 'jobDetail,rotinaAutomatica')}" profile="ok"/> 
+        </aghu:acao>  
+        <p:outputPanel rendered="#{jobDetailPaginatorController.apresentarAgendamentoEmMemoria}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="Rotinas Quartz Gerenciadas"> 
+            <p:outputPanel rendered="#{empty jobDetailPaginatorController.listQuartzJob}" layout="inline">Não encontrada tarefas agendadas.</p:outputPanel>  
+            <p:outputPanel rendered="#{not empty jobDetailPaginatorController.listQuartzJob}" layout="inline"> 
+              <aghu:linha> 
+                <mec:serverDataTable id="tblistaJobs" list="#{jobDetailPaginatorController.listQuartzJob}" scrollable="true"> 
+                  <c:set var="_job" value="#{item}"/>  
+                  <p:column width="45px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="Ações"/> 
+                    </f:facet>  
+                    <mec:commandLink immediate="true" title="#{messages.LABEL_EXCLUIR}" action="#{jobDetailPaginatorController.excluirJob(_job)}" profile="delete"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="Seq"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_job.seq}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="Nome"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_job.nomeCompleto}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="Agendado"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_job.proximoAgendamento}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="Função"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_job.jobDataMapAsync}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="Qt gatilhos"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_job.quantTriggers}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha>  
+              <aghu:acao> 
+                <mec:commandButton id="bt_pesquisar_quartzjob" value="#{messages.LABEL_PESQUISAR}" action="#{jobDetailPaginatorController.pesquisarTodosQuartzJobs}" profile="search"/> 
+              </aghu:acao> 
+            </p:outputPanel> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+        <mec:serverDataTable id="tabelaJobDetail" dataModel="dataModel" controller="#{jobDetailPaginatorController}"> 
+          <c:set var="_jobDetail" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink action="#{jobDetailPaginatorController.editar()}" title="#{messages.LABEL_VISUALIZAR}" styleClass=" silk-zoom silk-icon"> 
+              <f:setPropertyActionListener target="#{jobDetailController.seq}" value="#{_jobDetail.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaJobDetail_link_remover" profile="delete" title="excluir" action="#{jobDetailPaginatorController.excluir}" permission="jobDetail,removerTarefa"> 
+              <f:setPropertyActionListener for="command" target="#{jobDetailPaginatorController.jobDetailSelecionado}" value="#{_jobDetail}"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{jobDetailPaginatorController.reAgendar()}" title="#{messages.LABEL_EDITAR}" rendered="#{mf:hasPermission(securityController, 'jobDetail,reAgendar')}" profile="edit"> 
+              <f:setPropertyActionListener target="#{reagendamentoJobDetailController.jobDetail}" value="#{_jobDetail}" for="command"/> 
+            </mec:commandLink>  
+          </p:column>  
+          <p:column style="width:50px;"> 
+            <h:outputText value="#{_jobDetail.seq}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NUMERO}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column> 
+            <h:outputText value="#{_jobDetail.nomeProcesso}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_AGENDAMENTO_PROCESSO_NOME}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column> 
+            <h:outputText value="#{_jobDetail.agendado}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+            </h:outputText>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_AGENDAMENTO_EM}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column> 
+            <h:outputText value="#{_jobDetail.dataProximaExecucao}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+            </h:outputText>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_AGENDAMENTO_PROXIMA_EXECUCAO}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column> 
+            <h:outputText value="#{_jobDetail.servidor.usuario}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_USUARIO}"/> 
+            </f:facet> 
+          </p:column>  
+          <p:column> 
+            <h:outputText value="#{_jobDetail.indSituacao.getDescricao()}"/>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

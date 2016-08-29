@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.TITLE_TIPOS_SESSOES_TERAPEUTICAS} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{pesquisaTiposSessaoPaginatorController}" />
+		<h:form prependId="false" id="formPesquisar">
+			<aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_TIPOS_SESSAO}">
+				<aghu:linha>
+					<mec:inputText id="descricao"
+						label="#{messages.LABEL_DESCRICAO_TIPOS_SESSAO}"
+						title="#{messages.TITLE_DESCRICAO_TIPOS_SESSAO}"
+						value="#{pesquisaTiposSessaoPaginatorController.descricao}"
+						maxlength="60" size="65" style="text-transform:uppercase" />
+
+					<mec:suggestionBox var="row" itemValue="#{row}"
+						id="sbUnidadeFuncional"
+						label="#{messages.LABEL_UNIDADE_FUNCIONAL_TIPOS_SESSAO}"
+						title="#{messages.TITLE_UNIDADE_FUNCIONAL_TIPOS_SESSAO}"
+						suggestionAction="listarUnidadesFuncionaisPorCaracteristica"
+						descricaoInput="seq" descricaoLabel="descricao"
+						maxlength="50" width="500"
+						controller="#{pesquisaTiposSessaoPaginatorController}"
+						value="#{pesquisaTiposSessaoPaginatorController.unidadeFuncional}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{row.seq}
+		        </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_ANDAR_ALA_DESCRICAO_TIPOS_SESSAO}</b>
+							</f:facet> #{row.andarAlaDescricao}
+		        </p:column>
+					</mec:suggestionBox>
+					
+					<mec:selectOneMenu id="situacao"
+						label="#{messages.LABEL_SITUACAO_TIPOS_SESSAO}"
+						enum="DominioSituacao" style="width:85px;"
+						value="#{pesquisaTiposSessaoPaginatorController.situacao}" />
+				</aghu:linha>
+			</aghu:panelGeral>
+
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					disabled="#{not mf:hasPermission(securityController, 'pesquisarSessoesTerapeuticas,pesquisar')}"
+					action="#{pesquisaTiposSessaoPaginatorController.pesquisar}"
+					profile="search"/>
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}"
+					action="#{pesquisaTiposSessaoPaginatorController.limparCampos}"
+					ajax="true"
+					process="@this"
+					render="formPesquisar, formResultado"
+					profile="clear" />
+
+				<mec:commandButton id="bt_iniciarInclusao"
+					value="#{messages.LABEL_NOVO}"
+					disabled="#{not mf:hasPermission(securityController, 'manterSessoesTerapeuticas,executar')}"
+					rendered="#{pesquisaTiposSessaoPaginatorController.dataModel.pesquisaAtiva}"
+					action="#{pesquisaTiposSessaoPaginatorController.inserir}"
+					profile="add" ajax="true" />
+			</aghu:acao>
+		</h:form>
+		
+		<h:form prependId="false" id="formResultado">
+			<p:outputPanel rendered="#{pesquisaTiposSessaoPaginatorController.dataModel.pesquisaAtiva}" layout="inline">
+				<aghu:panelGeral legend="#{messages.LABEL_TIPOS_SESSAO}">
+					<mec:serverDataTable id="tabelaTiposSessao" dataModel="dataModel"
+						controller="#{pesquisaTiposSessaoPaginatorController}">
+						<c:set var="item" value="#{item}" />
+						
+						<p:column headerText="#{messages.LABEL_ACOES_TIPOS_SESSAO}"
+							styleClass="first-column auto-adjust"
+							exportable="false">
+							<mec:commandLink id="tabelaTiposSessao_link_editar"
+								profile="edit" title="Editar"
+								rendered="#{mf:hasPermission(securityController, 'manterSessoesTerapeuticas,executar')}"
+								action="#{pesquisaTiposSessaoPaginatorController.editar}">
+								<f:setPropertyActionListener
+									target="#{cadastraTiposSessaoController.mptTipoSessao}"
+									value="#{item}" for="command" />
+							</mec:commandLink>
+							
+							<mec:commandLink id="tabelaTiposSessao_link_remover"
+								profile="delete" title="Excluir"
+								rendered="#{mf:hasPermission(securityController, 'manterSessoesTerapeuticas,executar')}"
+								action="#{pesquisaTiposSessaoPaginatorController.excluir}">
+								<f:setPropertyActionListener for="command"
+									target="#{pesquisaTiposSessaoPaginatorController.itemSelecionado}"
+									value="#{item}" />
+							</mec:commandLink>
+							<mec:commandLink id="tabelaSala_link_historico"
+								title="#{messages.LABEL_HISTORICO}"
+								styleClass="silk-historico-cirurgias silk-icon"
+								action="#{pesquisaTiposSessaoPaginatorController.historicoSessao}">
+								<f:setPropertyActionListener
+									target="#{visualizaHistoricoTipoSessaoPaginatorController.sessaoSeq}"
+									value="#{item.seq}" for="command" />
+							</mec:commandLink>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+							</f:facet>
+							<h:outputText id="descricao" value="#{pesquisaTiposSessaoPaginatorController.obterDescricaoTruncada(item.descricao)}" />
+							<p:tooltip for="descricao" direction="bottom-right" styleClass="tooltip"
+								layout="block"
+								rendered="#{item.descricao.length() gt 30}">
+								<h:outputText value="#{item.descricao}" />
+							</p:tooltip>
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_UNIDADE_FUNCIONAL_TIPOS_SESSAO}" />
+							</f:facet>
+							<h:outputText id="unidadeFuncional" value="#{pesquisaTiposSessaoPaginatorController.obterUnidadeTruncada(item.unidadeFuncional)}" />
+							<p:tooltip for="unidadeFuncional" direction="bottom-right" styleClass="tooltip"
+								layout="block"
+								rendered="#{item.unidadeFuncional.unidadeDescricao.length() gt 30}">
+								<h:outputText value="#{item.unidadeFuncional.unidadeDescricao}" />
+							</p:tooltip>
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_TIPO_AGENDA_TIPOS_SESSAO}" />
+							</f:facet>
+							<h:outputText value="#{item.tipoAgenda.descricao}" />
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_SITUACAO_TIPOS_SESSAO}" />
+							</f:facet>
+							<h:outputText value="#{item.indSituacao.descricao}" />
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:panelGeral>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

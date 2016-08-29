@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/templatePrescricaoEnfermagem.xhtml">
+	<ui:define name="head">
+		<title>Manter Prescrição de Enfermagem :: AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{manutencaoPrescricaoEnfermagemController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="bodyPrescricao">
+		<mec:pageConfig
+			controller="#{manutencaoPrescricaoEnfermagemController}"
+			ignoreEnter="true" />  
+      <p:outputPanel id="panelCorpoPagina" layout="inline">
+			<h:form prependId="false" id="formDadosCabecalho">
+				<aghu:panelGeral style="padding: 0px 5px 5px 5px;"
+					legend="Manter Prescrição de Enfermagem">
+						<aghu:column type="table">
+								<p:outputPanel layout="block" style="width: 100%;">
+										<mec:serverDataTable id="tabelaPrescricaoEnfermagem" title=""
+											list="#{manutencaoPrescricaoEnfermagemController.prescricaoEnfermagemVO.listaCuidadoVO}"
+											scrollable="true">
+											<c:set var="cuidadoVO" value="#{item}" />
+											<p:column style="width:95px;" headerText="#{messages.LABEL_ACAO}">
+												<mec:commandLink 
+													title="#{messages.LABEL_EDITAR}" rendered="false"
+													action="#{manutencaoPrescricaoEnfermagemController.manterCuidadoEnfermagem}"
+													profile="edit">
+													<f:setPropertyActionListener target="mpm_elab_pme_atd_seq"
+														value="#{manutencaoPrescricaoEnfermagemController.prescricaoEnfermagemVO.id.atdSeq}"
+														for="command" />
+													<f:setPropertyActionListener target="mpm_elab_pme_seq"
+														value="#{manutencaoPrescricaoEnfermagemController.prescricaoEnfermagemVO.id.seq}"
+														for="command" />
+													<f:setPropertyActionListener target="mpm_vis_scn_seq"
+														value="#{cuidadoVO.itemSeq}" for="command" />
+													<f:setPropertyActionListener target="idConversacaoAnterior"
+														value="#{conversation.id}" for="command" />
+													<f:setPropertyActionListener
+														target="mpm_esc_mdb_subst_cons" value="" for="command" />
+												</mec:commandLink>
+												<h:selectBooleanCheckbox name="marcador" id="marcador"
+													value="#{cuidadoVO.excluir}" title="Excluir">
+													<p:ajax event="click" 
+														update="@(#tabelaPrescricaoEnfermagem), @(#bt_excluir_selecionados), @(#panelBtns)"
+														process="@this,@(#bt_excluir_selecionados)"
+														 />
+												</h:selectBooleanCheckbox>
+											</p:column>
+											<p:column title="#{cuidadoVO.tipoPrescricaoCuidado.titulo}"
+												style="#{manutencaoPrescricaoEnfermagemController.obterEstiloColuna(cuidadoVO)};width:18px">
+												<div
+													class="silk-icon #{cuidadoVO.tipoPrescricaoCuidado.sufixoIcone}"
+													style="cursor: default !important;"
+													title="#{cuidadoVO.tipoPrescricaoCuidado.titulo}" />
+											</p:column>
+											<p:column title="#{cuidadoVO.tipoPrescricaoCuidado.titulo}"
+												style="#{manutencaoPrescricaoEnfermagemController.obterEstiloColuna(cuidadoVO)}"
+												headerText="#{messages.LABEL_DESCRICAO}">
+												<h:outputText
+													value="#{cuidadoVO.descricaoPrescricaoCuidadoFormatada}"
+													escape="false" />
+											</p:column>
+										</mec:serverDataTable>
+								</p:outputPanel>
+								<p:outputPanel layout="block"
+									rendered="#{manutencaoPrescricaoEnfermagemController.prescMedicaVO ne null}">
+									<p:outputPanel layout="block" style="width: 100%; ">
+										<mec:serverDataTable id="tabelaPrescricaoMedica"
+											list="#{manutencaoPrescricaoEnfermagemController.prescMedicaVO.itens}"
+											scrollable="true" scrollHeight="150">
+											<c:set var="itemPrescricaoMedicaVO" value="#{item}" />
+											<f:facet name="header">
+												<h:outputText value="#{manutencaoPrescricaoEnfermagemController.cabecalhoPrescricaoMedica}"/>
+											</f:facet>
+											<p:column width="5%" />
+											<p:column width="15%">
+												<p:outputPanel class="silk-icon icon-nutricaoparenteraltotal"
+													rendered="#{itemPrescricaoMedicaVO.tipo == 'NUTRICAO_PARENTAL'}"
+														style="
+													cursor:
+													default !important;"
+														title="#{itemPrescricaoMedicaVO.tipo.titulo}" />
+
+												<p:outputPanel
+													class="silk-icon icon-#{itemPrescricaoMedicaVO.tipo.toString().toLowerCase()}"
+													rendered="#{itemPrescricaoMedicaVO.tipo != 'NUTRICAO_PARENTAL'}"
+														style="
+													cursor:
+													default !important;"
+														title="#{itemPrescricaoMedicaVO.tipo.titulo}" />
+												
+											</p:column>
+											<p:column width="80%" >
+												<h:outputText
+													value="#{' '}#{itemPrescricaoMedicaVO.descricao}"
+													escape="false" />
+											</p:column>
+										</mec:serverDataTable>
+									</p:outputPanel>
+								</p:outputPanel>
+							</aghu:column>
+							
+							<aghu:column type="button">
+									<mec:commandButton 
+										value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_BOTAO_POR_SINAL_E_SINTOMA}"
+										rendered="#{mf:hasPermission(securityController,'sinaisSintomasPrescricaoEnfermagem,prescrever')}"
+										action="#{manutencaoPrescricaoEnfermagemController.informarSinaisSintomas}"
+										>
+										<f:setPropertyActionListener
+											target="#{sinalSintomaController.atdSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{sinalSintomaController.seq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+											for="command" />
+									</mec:commandButton>
+									<mec:commandButton propagation="begin"
+										value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_BOTAO_POR_DIAGNOSTICO}"
+										rendered="#{mf:hasPermission(securityController,'diagnosticoPrescricaoEnfermagem,prescrever')}"
+										action="#{manutencaoPrescricaoEnfermagemController.selecionarDiagnosticos}"
+										styleClass="bt_cinza">
+										<f:setPropertyActionListener
+											target="#{diagnosticoController.atdSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{diagnosticoController.seq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+											for="command" />
+									</mec:commandButton>
+									<mec:commandButton 
+										value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_BOTAO_CUID_ROTINA}"
+										disabled="#{empty manutencaoPrescricaoEnfermagemController.prescricaoEnfermagemVO.listaCuidadoVO}"
+										rendered="#{mf:hasPermission(securityController,'diagnosticoPrescricaoEnfermagem,prescrever')}"
+										action="#{manutencaoPrescricaoEnfermagemController.selecionarCuidadosRotina}"
+										styleClass="bt_cinza">
+										<f:setPropertyActionListener
+											target="#{cuidadosRotinaController.atdSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{cuidadosRotinaController.seq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+											for="command" />
+									</mec:commandButton>
+									<mec:commandButton propagation="begin"
+										disabled="#{!manutencaoPrescricaoEnfermagemController.existeCuidadosPrescritos}"
+										value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_BOTAO_ALTERAR_PRESCRICAO}"
+										rendered="#{mf:hasPermission(securityController,'alterarPrescricaoEnfermagem,alterar')}"
+										action="#{manutencaoPrescricaoEnfermagemController.manterPrescricaoCuidado}"
+										styleClass="bt_cinza">
+										<f:setPropertyActionListener
+											target="#{manutencaoPrescricaoCuidadoController.cameFrom}"
+											value="prescricaoenfermagem-manterPrescricaoEnfermagem"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{manutencaoPrescricaoCuidadoController.penSeqAtendimento}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{manutencaoPrescricaoCuidadoController.penSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+											for="command" />
+									</mec:commandButton>
+									<mec:commandButton propagation="begin"
+										value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_BOTAO_CONSULTAR_PRESCRICAO_ENFERMAGEM}"
+										action="#{manutencaoPrescricaoEnfermagemController.selecionarPrescricaoEnfermagem}"
+										styleClass="bt_cinza">
+										<f:setPropertyActionListener
+											target="#{selecionarPrescricaoEnfermagemController.prontuario}"
+											value="#{manutencaoPrescricaoEnfermagemController.prescricaoEnfermagemVO.prontuario}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{selecionarPrescricaoEnfermagemController.cameFrom}"
+											value="prescricaoenfermagem-manterPrescricaoEnfermagem"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{selecionarPrescricaoEnfermagemController.penAtdSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{selecionarPrescricaoEnfermagemController.penSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+											for="command" />
+									</mec:commandButton>
+									<mec:commandButton propagation="begin"
+										value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_BOTAO_CONSULTAR_PRESCRICAO_MEDICA}"
+										rendered="#{mf:hasPermission(securityController,'consultarPrescricaoEnfermagem,consultar')}"
+										action="#{manutencaoPrescricaoEnfermagemController.selecionarPrescricaoConsultar}"
+										styleClass="bt_cinza">
+										<f:setPropertyActionListener
+											target="#{selecionarPrescricaoConsultarController.prontuario}"
+											value="#{manutencaoPrescricaoEnfermagemController.prescricaoEnfermagemVO.prontuario}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{selecionarPrescricaoConsultarController.voltarPara}"
+											value="prescricaoenfermagem-manterPrescricaoEnfermagem"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{selecionarPrescricaoConsultarController.penAtdSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{selecionarPrescricaoConsultarController.penSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+											for="command" />
+									</mec:commandButton>
+									<mec:commandButton propagation="begin"
+										value="#{messages.LABEL_PRESCRICAO_ENFERMAGEM_BOTAO_EXCLUIR_DIAGNOSTICO}"
+										rendered="#{mf:hasPermission(securityController,'diagnosticoPrescricaoEnfermagem,excluir')}"
+										action="#{manutencaoPrescricaoEnfermagemController.encerrarDiagnosticos}"
+										styleClass="bt_cinza">
+										<f:setPropertyActionListener
+											target="#{encerramentoDiagnosticoController.cameFrom}"
+											value="prescricaoenfermagem-manterPrescricaoEnfermagem"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{encerramentoDiagnosticoController.penAtdSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+											for="command" />
+										<f:setPropertyActionListener
+											target="#{encerramentoDiagnosticoController.penSeq}"
+											value="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+											for="command" />
+									</mec:commandButton>
+								</aghu:column>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<p:outputPanel id="panelBtns">
+						<mec:commandButton
+							value="#{messages.LABEL_CONFIRMAR_COM_IMPRESSAO}"
+							disabled="#{not mf:hasPermission(securityController,'confirmarPrescricaoEnfermagem,confirmar')}"
+							action="#{manutencaoPrescricaoEnfermagemController.confirmarPrescricaoEnfermagemComImpressao}"
+							profile="ok">
+							<f:setPropertyActionListener
+								target="#{elaboracaoPrescricaoEnfermagemController.atdSeq}"
+								value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+								for="command" />
+						</mec:commandButton>
+						<mec:commandButton
+							value="#{messages.LABEL_CONFIRMAR_SEM_IMPRESSAO}"
+							disabled="#{not mf:hasPermission(securityController,'confirmarPrescricaoEnfermagem,confirmar')}"
+							action="#{manutencaoPrescricaoEnfermagemController.confirmarPrescricaoEnfermagemSemImpressao}"
+							profile="ok">
+							<f:setPropertyActionListener
+								target="#{elaboracaoPrescricaoEnfermagemController.atdSeq}"
+								value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+								for="command" />
+						</mec:commandButton>
+						<mec:commandButton id="bt_prescricao_pendente"
+							value="#{messages.LABEL_DEIXAR_PENDENTE}"
+							hint="Deixar a prescrição atual pendente"
+							disabled="#{not mf:hasPermission(securityController,'pendentePrescricaoEnfermagem,pendente')}"
+							action="#{manutencaoPrescricaoEnfermagemController.deixarPrescricaoPendente}"
+							styleClass="bt_cinza">
+							<f:setPropertyActionListener
+								target="#{elaboracaoPrescricaoEnfermagemController.atdSeq}"
+								value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+								for="command" />
+						</mec:commandButton>
+						<mec:commandButton id="bt_excluir_selecionados"
+							value="#{messages.LABEL_EXCLUIR}"
+							disabled="#{manutencaoPrescricaoEnfermagemController.desabilitaBotaoRemoverCuidados}"
+							action="#{manutencaoPrescricaoEnfermagemController.removerCuidadosSelecionados}"
+							profile="clear"/>
+						<mec:commandButton id="bt_cancelar_prescricao"
+							value="#{messages.LABEL_CANCELAR}"
+							disabled="#{not mf:hasPermission(securityController,'cancelarPrescricaoEnfermagem,cancelar')}"
+							action="#{manutencaoPrescricaoEnfermagemController.solicitarConfirmacao}"
+							profile="cancel" />
+					</p:outputPanel>
+				</aghu:acao>
+			</h:form>
+			<p:outputPanel id="panelConfirmar" layout="inline">
+				<p:dialog id="modalConfirmacao" width="400" height="150"
+					rendered="#{manutencaoPrescricaoEnfermagemController.exibirConfirmacao}"
+					modal="true" resizable="false" widgetVar="modalConfirmacaoWG">
+					<f:facet name="header">
+						<h:panelGroup>
+							<h:outputText
+								value="#{messages.LABEL_CONFIRMAR_CANCELAR_PRESCRICAO}" />
+						</h:panelGroup>
+					</f:facet>
+					<p:outputPanel layout="inline">#{messages.MENSAGEM_CONFIRMACAO_CANCELAR_PRESCRICAO} 
+              <br clear="none" />
+						<br clear="none" />
+						<br clear="none" />
+						<h:panelGroup>
+							<h:form prependId="false" id="formModalConfirmacao">
+								<mec:commandButton block="true" id="bt_confirmar"
+									value="#{messages.LABEL_SIM}"
+									onclick="PF('modalConfirmacaoWG').hide();"
+									action="#{manutencaoPrescricaoEnfermagemController.cancelarPrescricao}"
+									profile="ok">
+									<f:setPropertyActionListener
+										target="#{elaboracaoPrescricaoEnfermagemController.atdSeq}"
+										value="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+										for="command" />
+									<f:setPropertyActionListener
+										target="#{elaboracaoPrescricaoEnfermagemController.exibirMensagemCancelamento}"
+										value="#{true}" for="command" />
+								</mec:commandButton>
+								<mec:commandButton block="true" id="bt_cancelarModal"
+									value="#{messages.LABEL_NAO}"
+									onclick="PF('modalConfirmacaoWG').hide();"
+									action="#{manutencaoPrescricaoEnfermagemController.cancelarModal}"
+									profile="cancel" ajax="true" />
+							</h:form>
+						</h:panelGroup>
+					</p:outputPanel>
+				</p:dialog>
+			</p:outputPanel>
+			<p:outputPanel id="exibirModal"
+				rendered="#{manutencaoPrescricaoEnfermagemController.exibirConfirmacao}"
+				layout="inline">
+				<h:form>
+					<script xml:space="preserve">
+					PF('modalConfirmacaoWG').show();;
+				</script>
+				</h:form>
+			</p:outputPanel>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

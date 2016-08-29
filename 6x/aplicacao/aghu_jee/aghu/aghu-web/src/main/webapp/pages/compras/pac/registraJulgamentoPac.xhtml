@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_REGISTRAR_JULGAMENTO_PAC}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{registraJulgamentoPacController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{registraJulgamentoPacController}"/>  
+      <h:form prependId="false" id="formDadosCabecalho"> 
+        <aghu:panelGeral legend="#{messages.TITLE_REGISTRAR_JULGAMENTO_PAC}"> 
+          <p:outputPanel id="panelCabecalhoPac"> 
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_JULGAMENTO_DESCRICAO_PAC}" id="descricaoPac" size="80" readonly="true" value="#{registraJulgamentoPacController.descricaoPac}" required="false"/>  
+              <mec:inputText label="#{messages.LABEL_JULGAMENTO_MODALIDADE_PAC}" id="modalidadePac" size="20" readonly="true" value="#{registraJulgamentoPacController.modalidadePac.getDescricao()}" required="false"/>  
+              <mec:inputTextData label="#{messages.LABEL_JULGAMENTO_DATA_PUBLICACAO}" title="" id="dtPublicacao" readonly="true" value="#{registraJulgamentoPacController.dataPublicacao}" tipo="data"/> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelCabecalhoItemPac"> 
+          <aghu:linha> 
+            <aghu:panelGeral legend="#{messages.LEGEND_JULGAMENTO_ITEM_PAC}"> 
+              <mec:suggestionBox label="#{messages.LABEL_SUGGESTION_ITEM_LICITACAO}" title="#{messages.TITLE_SUGGESTION_ITEM_LICITACAO}" suggestionAction="pesquisarItemLicitacao" descricaoInput="numeroItemPac" descricaoLabel="descricaoSolicitacao" posSelectionAction="atualizarDadosCabecalhoItem" posDeleteAction="atualizarDadosCabecalhoItem" width="700" maxlength="20" required="true" id="suggestionFase" controller="#{registraJulgamentoPacController}" value="#{registraJulgamentoPacController.faseSolicitacao}" render="bt_gravar,undItem,pendentePor,canceladoPor,panelListaItensProposta,panelEdicaoJulgamento"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_ITEM_FASE}</b> 
+                  </f:facet> #{item.numeroItemPac}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_ITEM_CODIGO}</b> 
+                  </f:facet> #{(item.getSolicitacaoCompra() != null ? item.getSolicitacaoCompra().getMaterial().getCodigo() : item.getSolicitacaoServico().getServico().getCodigo())}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_ITEM_NOME}</b> 
+                  </f:facet> #{item.descricaoSolicitacao}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_ITEM_UNIDADE}</b> 
+                  </f:facet> #{(item.getSolicitacaoCompra() != null ? item.getSolicitacaoCompra().getUnidadeMedida().getCodigo() : messages.LABEL_COD_UNIDADE_ABREV)}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_ITEM_PROPOSTA_ESCOLHIDA}</b> 
+                  </f:facet> #{((item.getItemLicitacao() != null and item.getItemLicitacao().getPropostaEscolhida()) and item.getItemLicitacao().getMotivoCancel() == null ? messages.LABEL_SIM : messages.LABEL_NAO)}
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:inputText label="#{messages.LABEL_UNID_ITEM_PROPOSTA}" id="undItem" size="10" readonly="true" value="#{registraJulgamentoPacController.unidadeSolicitacao.getCodigo()}"/>  
+              <mec:selectOneMenu id="canceladoPor" enum="DominioMotivoCancelamentoComissaoLicitacao" label="#{messages.LABEL_CANCELADO_POR}" title="#{messages.TITLE_CANCELADO_POR}" readonly="#{registraJulgamentoPacController.faseSolicitacao == null}" value="#{registraJulgamentoPacController.motivoCancelamento}"> 
+                <p:ajax event="change" eventsQueue="changeQueue" update="@(#motivoDesclass) @(#pendentePor) @(#criterioEscolha)" process="@this" listener="#{registraJulgamentoPacController.atualizarCombos(0)}"/> 
+              </mec:selectOneMenu>  
+              <mec:selectOneMenu id="pendentePor" enum="DominioSituacaoJulgamento" label="#{messages.LABEL_PENDENTE_POR}" title="#{messages.TITLE_PENDENTE_POR}" readonly="#{registraJulgamentoPacController.faseSolicitacao == null}" value="#{registraJulgamentoPacController.pendentePor}"> 
+                <p:ajax event="change" eventsQueue="changeQueue" update="@(#motivoDesclass) @(#canceladoPor) @(#criterioEscolha)" process="@this" listener="#{registraJulgamentoPacController.atualizarCombos(1)}"/> 
+              </mec:selectOneMenu> 
+            </aghu:panelGeral> 
+            </aghu:linha>
+          </p:outputPanel>  
+          <p:outputPanel id="panelEdicaoJulgamento"> 
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_RAZAO_SOCIAL_FORNECEDOR}" id="razaoSocial" size="80" readonly="true" value="#{registraJulgamentoPacController.razaoSocial}"/>  
+              <mec:inputText label="#{messages.LABEL_JULG_MARCA_COMERCIAL}" id="marcaComercial" size="30" readonly="true" value="#{registraJulgamentoPacController.marcaComercial.getDescricao()}"/>  
+              <mec:selectOneMenu id="motivoDesclass" enum="DominioMotivoDesclassificacaoItemProposta" label="#{messages.LABEL_MOTIVO_DESCLASS}" title="#{messages.TITLE_MOTIVO_DESCLASS}" readonly="#{registraJulgamentoPacController.itemEmEdicao == null}" value="#{registraJulgamentoPacController.motivoDesclassificacao}"> 
+                <p:ajax event="change" eventsQueue="changeQueue" update="@(#pendentePor) @(#canceladoPor) @(#criterioEscolha)" process="@this" listener="#{registraJulgamentoPacController.atualizarCombos(3)}"/> 
+              </mec:selectOneMenu> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_JULGAMENTO_DATA_ESCOLHA}" value="#{registraJulgamentoPacController.dataEscolha}" id="dtEscolha" datePattern="dd/MM/yyyy" size="10" readonly="true"/>  
+              <mec:selectOneMenu id="criterioEscolha" style="width: 200px" items="#{registraJulgamentoPacController.listarCriterioEscolhaProposta()}" itemLabel="descricao" itemsType="entity" label="#{messages.LABEL_JULGAMENTO_CRITERIO_ESCOLHA}" title="#{messages.TITLE_JULGAMENTO_CRITERIO_ESCOLHA}" required="false" value="#{registraJulgamentoPacController.criterioEscolha}" readonly="#{registraJulgamentoPacController.itemEmEdicao == null}"> 
+                <p:ajax event="change" eventsQueue="changeQueue" update="@(#motivoDesclass) @(#canceladoPor) @(#pendentePor)" process="@this" listener="#{registraJulgamentoPacController.atualizarCombos(2)}"/> 
+              </mec:selectOneMenu>  
+              <mec:field label="#{messages.LABEL_JULGAMENTO_CONDICAO_PAGAMENTO}" id="condicaoPagamento_field"> 
+                <h:inputText name="condicaoPagamento" id="condicaoPagamento" required="true" size="30" readonly="true" style="margin-top: -2px;" value="#{registraJulgamentoPacController.condicaoPagamento.getFormaPagamento().getDescricao()}"/>  
+                <mec:commandLink id="lnkCondPagto" immediate="true" rendered="#{registraJulgamentoPacController.itemEmEdicao != null}" style="padding-left:5px;vertical-align: middle" title="#{messages.TITLE_BOTAO_CONDPAG}" action="#{registraJulgamentoPacController.escolheCondicaoPagamentoJulgamentoPac}" styleClass=" silk-money-dollar silk-icon"> 
+                  <f:setPropertyActionListener target="#{escolheCondicaoPagamentoJulgamentoPacController.numeroPac}" value="#{registraJulgamentoPacController.numeroPac}" for="command"/>  
+                  <f:setPropertyActionListener target="#{escolheCondicaoPagamentoJulgamentoPacController.numeroFornecedor}" value="#{registraJulgamentoPacController.numeroFornecedor}" for="command"/>  
+                  <f:setPropertyActionListener target="#{escolheCondicaoPagamentoJulgamentoPacController.numeroItemProposta}" value="#{registraJulgamentoPacController.numeroItemProposta}" for="command"/>  
+                  <f:setPropertyActionListener target="#{escolheCondicaoPagamentoJulgamentoPacController.numeroItemPac}" value="#{registraJulgamentoPacController.numeroItemPac}" for="command"/>  
+                  <f:setPropertyActionListener target="#{escolheCondicaoPagamentoJulgamentoPacController.voltarParaUrl}" value="registraJulgamentoPac" for="command"/> 
+                </mec:commandLink> 
+              </mec:field>  
+              <mec:inputNumero label="#{messages.LABEL_JULGAMENTO_QTDE_PARCELAS}" id="qtdeParcelas" size="30" readonly="true" required="true" value="#{registraJulgamentoPacController.qtdeParcelas}"/>  
+              <mec:inputNumero id="acrescimo" value="#{registraJulgamentoPacController.percAcrescimo}" label="#{messages.LABEL_JULGAMENTO_ACRESCIMO}" required="false" inteiros="11" decimais="2" styleClass="mascara(decimal)" actionBean="#{registraJulgamentoPacController}" style="text-align:right;" readonly="true}"/>  
+              <mec:inputNumero id="decrescimo" value="#{registraJulgamentoPacController.percDesconto}" label="#{messages.LABEL_JULGAMENTO_DECRESCIMO}" required="false" inteiros="11" decimais="2" styleClass="mascara(decimal)" actionBean="#{registraJulgamentoPacController}" style="text-align:right;" readonly="true}"/> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelListaItensProposta"> 
+            <aghu:linha>
+                <mec:serverDataTable id="tabela_itens_proposta" name="tabela_itens_proposta" rendered="#{not empty registraJulgamentoPacController.listaItensProposta}" list="#{registraJulgamentoPacController.listaItensProposta}" scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column style="width:30px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink id="editLink" action="#{registraJulgamentoPacController.editarItemProposta(_item)}" title="#{messages.TITLE_JULGAMENTO_EDITAR_ITEM_PROPOSTA}" rendered="#{((not registraJulgamentoPacController.itemPacPossuiPropostaEscolhida) or (registraJulgamentoPacController.itemPacPossuiPropostaEscolhida and (_item.getIndEscolhido()))) and (not registraJulgamentoPacController.itemEmEdicao.equals(_item))}" immediate="true" profile="edit" ajax="true" render="panelEdicaoJulgamento,lnkCondPagto,dtEscolha,panelListaItensProposta" process="@this"/> 
+                  </p:column>  
+                  <p:column style="width:200px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULGAMENTO_GRID_RAZAO_SOCIAL}"/> 
+                    </f:facet>  
+                    <h:outputText id="fornecedor" value="#{registraJulgamentoPacController.obterStringTruncada(_item.getPropostaFornecedor().getFornecedor().getRazaoSocial(),30)}"/>  
+                    <p:tooltip for="fornecedor" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_CNPJ_CPF_FORNEC}: #{registraJulgamentoPacController.obterDocFormatado(_item.getPropostaFornecedor().getFornecedor())}"/>  
+                      <br clear="none"/>  
+                      <h:outputText value="#{_item.getPropostaFornecedor().getFornecedor().getRazaoSocial()}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULG_MARCA_COMERCIAL}"/> 
+                    </f:facet>  
+                    <h:outputText id="marca" value="#{registraJulgamentoPacController.obterStringTruncada(_item.getMarcaComercial().getDescricao(),30)}"/>  
+                    <p:tooltip for="marca" layout="block"> 
+                      <h:outputText value="#{messages.LABEL_JULG_MARCA_COMERCIAL}: #{_item.getMarcaComercial().getDescricao()}"/>  
+                      <br clear="none"/>  
+                      <h:outputText value="#{messages.LABEL_JULG_GRID_MODELO}: #{_item.getModeloComercial().getDescricao()}"/> 
+                    </p:tooltip> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULG_GRID_PARECER}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{registraJulgamentoPacController.obterParecerTecnicoItemProposta(_item)}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VALOR_UNIT}"/> 
+                    </f:facet>  
+                    <h:outputText style="float:right; " value="#{_item.valorUnitario}"> 
+                      <f:convertNumber minFractionDigits="4" maxFractionDigits="4" maxIntegerDigits="11" type="currency" currencySymbol=""/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column style="width:100px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULGAMENTO_CRITERIO_ESCOLHA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{(_item.getCriterioEscolhaProposta() != null and _item.getIndEscolhido()) ? _item.getCriterioEscolhaProposta().getDescricao() : ''}"/> 
+                  </p:column>  
+                  <p:column style="width:50px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULGAMENTO_GRID_DATA_ESCOLHA}" title="#{messages.TITLE_JULGAMENTO_GRID_DATA_ESCOLHA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.getDtEscolha()}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULGAMENTO_GRID_CONDPAG}" title="#{messages.TITLE_JULGAMENTO_GRID_CONDPAG}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{(_item.getCondicaoPagamentoPropos() != null and _item.getCondicaoPagamentoPropos().getFormaPagamento() != null) ? _item.getCondicaoPagamentoPropos().getFormaPagamento().getDescricao() : ''}"/> 
+                  </p:column>  
+                  <p:column style="width:45px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULGAMENTO_GRID_QTDE_PARCELAS}" title="#{messages.TITLE_JULGAMENTO_GRID_QTDE_PARCELAS}"/> 
+                    </f:facet>  
+                    <h:outputText style="float:right; " value="#{registraJulgamentoPacController.obterQtdeParcelas(_item)}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULGAMENTO_GRID_ACRESCIMO}" title="#{messages.TITLE_JULGAMENTO_GRID_ACRESCIMO}"/> 
+                    </f:facet>  
+                    <h:outputText style="float:right; " value="#{_item.condicaoPagamentoPropos != null ? registraJulgamentoPacController.getDefaultPercentual(_item.condicaoPagamentoPropos.percAcrescimo, BigDecimal.ZERO) : ''}"> 
+                      <f:convertNumber minFractionDigits="2" maxFractionDigits="2" maxIntegerDigits="11" type="currency" currencySymbol=""/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_JULGAMENTO_GRID_DECRESCIMO}" title="#{messages.TITLE_JULGAMENTO_GRID_DECRESCIMO}"/> 
+                    </f:facet>  
+                    <h:outputText style="float:right; " value="#{_item.condicaoPagamentoPropos != null ? registraJulgamentoPacController.getDefaultPercentual(_item.condicaoPagamentoPropos.percDesconto, BigDecimal.ZERO) : ''}"> 
+                      <f:convertNumber minFractionDigits="2" maxFractionDigits="2" maxIntegerDigits="11" type="currency" currencySymbol=""/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column style="width:50px"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_GRID_DESCLASS}"/> 
+                    </f:facet>  
+                    <h:outputText id="motDesclassif" value="#{(_item.motDesclassif != null) ? messages.LABEL_SIM : messages.LABEL_NAO}"/>  
+                    <p:tooltip for="motDesclassif" layout="block"> 
+                      <h:outputText value="#{_item.getMotDesclassif() != null ? _item.getMotDesclassif().getDescricao() : ''}"/> 
+                    </p:tooltip> 
+                  </p:column> 
+                </mec:serverDataTable>               
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" action="#{registraJulgamentoPacController.gravar(false)}" profile="ok" ajax="true" render="#{registraJulgamentoPacController.modalConfirmacao ? 'panelModalConfirmacao' : 'panelListaItensProposta,panelEdicaoJulgamento,canceladoPor,pendentePor'}"/>  
+          <mec:commandButton value="#{messages.LABEL_ACESSAR_JULG_LOTE}" id="bt_acessar_julg_lote" immediate="true" action="#{registraJulgamentoPacController.acessarJulgamentoLote}" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{registraJulgamentoPacLoteController.numeroPac}" value="#{registraJulgamentoPacController.numeroPac}" for="command"/>  
+            <f:setPropertyActionListener target="#{registraJulgamentoPacLoteController.voltarParaUrl}" value="consultarEncaminharPacAguardoJulgamento" for="command"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="bt_voltar" immediate="true" action="#{registraJulgamentoPacController.voltar()}" value="#{messages.LABEL_VOLTAR}" ajax="true" styleClass="bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelModalConfirmacao"> 
+        <p:dialog id="modalConfirmacao" width="400" height="150" rendered="#{registraJulgamentoPacController.modalConfirmacao}" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CONFIRMACAO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ITEM_DESCLASSIFICADO_JULGADO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formConfModal"> 
+              <mec:commandButton id="bt_yes" value="#{messages.LABEL_SIM}" action="#{registraJulgamentoPacController.gravar(true)}" oncomplete="PF('modalConfirmacaoWG').hide();" profile="search" ajax="true" render="panelModalConfirmacao,panelListaItensProposta,panelEdicaoJulgamento,canceladoPor,pendentePor"/>  
+              <mec:commandButton id="bt_ednaovolta_ipg" value="#{messages.LABEL_NAO}" action="#{registraJulgamentoPacController.setModalConfirmacao(false)}" oncomplete="PF('modalConfirmacaoWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <h:form rendered="#{registraJulgamentoPacController.modalConfirmacao}"> 
+          <script xml:space="preserve">
+					PF('modalConfirmacaoWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

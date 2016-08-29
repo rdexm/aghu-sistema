@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+
+		<title>Pesquisa de Especialidades para Profissionais :: AGHU - MEC</title>
+
+	</ui:define>
+
+	<ui:define name="metadata">
+
+		<f:metadata>
+
+			<f:viewAction
+
+				action="#{profEspecialidadesPaginatorController.iniciar}" />
+
+		</f:metadata>
+
+	</ui:define>
+
+	<ui:define name="body">
+
+		<mec:pageConfig controller="#{profEspecialidadesPaginatorController}"
+
+			ignoreEnter="false" />
+
+		<h:form prependId="false" id="formPesquisa">
+
+			<aghu:panelGeral legend="Pesquisar Especialidades para Profissionais">
+
+				<aghu:linha>
+
+					<mec:inputNumero label="#{messages.LABEL_CODIGO_VINCULO}" size="3"
+
+						maxlength="3"
+
+						title="#{messages.TITLE_LIST_CODIGO_VINCULO_PROFESPECIALIDADE}"
+
+						value="#{profEspecialidadesPaginatorController.codigoVinculoPesquisaProfEspecialidades}"
+
+						id="vinculo" />
+
+					<mec:inputNumero
+
+						value="#{profEspecialidadesPaginatorController.matriculaPesquisaProfEspecialidades}"
+
+						label="#{messages.LABEL_MATRICULA}"
+
+						title="#{messages.TITLE_LIST_MATRICULA_PROFESPECIALIDADE}"
+
+						maxlength="7" size="7" id="matricula" />
+
+					<mec:inputText label="#{messages.LABEL_NOME}" size="75"
+
+						title="#{messages.TITLE_LIST_NOME_PROFESPECIALIDADE}"
+
+						value="#{profEspecialidadesPaginatorController.nomePesquisaProfEspecialidades}"
+
+						style="text-transform:uppercase" id="nome" />
+
+				</aghu:linha>
+
+			</aghu:panelGeral>
+
+			<aghu:acao>
+
+				<mec:commandButton value="#{messages.LABEL_PESQUISAR}"
+
+					id="bt_pesquisar"
+
+					action="#{profEspecialidadesPaginatorController.pesquisar}"
+
+					profile="search" />
+
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar"
+
+					action="#{profEspecialidadesPaginatorController.limparPesquisa}"
+
+					styleClass="bt_cinza" profile="clear" />
+
+			</aghu:acao>
+
+		</h:form>
+
+		<h:form prependId="false" id="formProfEspecialidades">
+
+			<aghu:linha>
+
+				<mec:serverDataTable dataModel="dataModel"
+
+					id="tabelaProfEspecialidades"
+
+					controller="#{profEspecialidadesPaginatorController}">
+
+					<c:set var="item" value="#{item}" />
+
+					<p:column headerText="Ações" width="40" styleClass="first-column auto-adjust"
+
+						exportable="false">
+
+						<mec:commandLink id="tabelaProfEspecialidades_link_editar"
+							profile="edit" title="editar"
+							disabled="#{!mf:hasPermission(securityController,'especialidadeParaProfissional,alterar') and profEspecialidadesPaginatorController.voltarPara != null}"
+							action="#{profEspecialidadesPaginatorController.editar}">
+
+							<f:setPropertyActionListener
+								target="#{profEspecialidadesController.servidorVO}"
+								value="#{item}" for="command" />
+
+							<f:setPropertyActionListener for="command"
+								target="#{profEspecialidadesPaginatorController.servidorSelecionado}"
+								value="#{item}" />
+
+						</mec:commandLink>
+
+					</p:column>
+
+					<p:column width="170">
+
+						<f:facet name="header">
+
+							<h:outputText value="#{messages.LABEL_CODIGO_VINCULO}" />
+
+						</f:facet>
+
+						<h:outputText value="#{item.vinCodigo}" />
+
+					</p:column>
+
+					<p:column width="170">
+
+						<f:facet name="header">
+
+							<h:outputText value="#{messages.LABEL_MATRICULA}" />
+
+						</f:facet>
+
+						<h:outputText value="#{item.matricula}" />
+
+					</p:column>
+
+					<p:column sortBy="#{item.nome}" sortable="true">
+
+						<f:facet name="header">
+
+							<h:outputText value="#{messages.LABEL_NOME}" />
+
+						</f:facet>
+
+						<h:outputText value="#{item.nome}" />
+
+					</p:column>
+
+					<p:column width="150">
+
+						<f:facet name="header">
+
+							<h:outputText value="#{messages.LABEL_QTDE_ESPECIALIDES}" />
+
+						</f:facet>
+
+						<h:outputText value="#{item.countProfEspecialidades}"
+
+							rendered="#{item.countProfEspecialidades eq 0}" />
+
+						<mec:commandLink
+
+							action="#{profEspecialidadesPaginatorController.carregarProfissional(item)}"
+
+							oncomplete="PF('modalProfEspecialidadesWG').show();;"
+
+							rendered="#{item.countProfEspecialidades gt 0}" ajax="true"
+
+							render="modalProfEspecialidades">
+
+							<h:outputText value="#{item.countProfEspecialidades}" />
+
+						</mec:commandLink>
+
+					</p:column>
+
+				</mec:serverDataTable>
+
+			</aghu:linha>
+
+			<aghu:acao>
+
+				<mec:commandButton id="btVoltar" value="#{messages.LABEL_VOLTAR}"
+
+					rendered="#{profEspecialidadesPaginatorController.voltarPara != null}"
+
+					immediate="true"
+
+					action="#{profEspecialidadesPaginatorController.voltar}"
+
+					styleClass="bt_voltar bt_cinza" profile="back" />
+
+			</aghu:acao>
+
+		</h:form>
+
+		<p:dialog id="modalProfEspecialidades" width="890" height="350"
+
+			resizeable="false" modal="true" resizable="false"
+
+			widgetVar="modalProfEspecialidadesWG" closable="true">
+
+			<f:facet name="header">
+
+				<h:panelGroup>
+
+					<h:outputText value="#{messages.LABEL_ESPECIALIDADES}" />
+
+				</h:panelGroup>
+
+			</f:facet>
+
+			<aghu:panelGeral legend="#{messages.LABEL_PROFISSIONAL}">
+
+				<aghu:linha>
+
+					<h:form prependId="false" id="formModalProfEspecialidades">
+
+						<mec:inputNumero label="#{messages.LABEL_CODIGO_VINCULO}" size="3"
+
+							maxlength="3" readonly="true"
+
+							value="#{profEspecialidadesPaginatorController.rapServidores.id.vinCodigo}"
+
+							id="vinculo_modal" />
+
+						<mec:inputNumero
+
+							value="#{profEspecialidadesPaginatorController.rapServidores.id.matricula}"
+
+							label="#{messages.LABEL_MATRICULA}" readonly="true" maxlength="7"
+
+							size="7" id="matricula_modal" />
+
+						<mec:inputText label="#{messages.LABEL_NOME}" size="75"
+
+							value="#{profEspecialidadesPaginatorController.rapServidores.pessoaFisica.nome}"
+
+							readonly="true" style="text-transform:uppercase" id="nome_modal" />
+
+					</h:form>
+
+				</aghu:linha>
+
+			</aghu:panelGeral>
+
+			<aghu:panelGeral id="ffdl_informacoes"
+
+				legend="#{messages.LABEL_ESPECIALIDADES_PARA_PROFISSIONAL}">
+
+				<aghu:linha>
+
+					<mec:serverDataTable
+
+						list="#{profEspecialidadesPaginatorController.listaAghProfEspecialidades}"
+
+						scrollable="true" scrollHeight="175">
+
+						<c:set var="_profEspecialidades" value="#{item}" />
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_SIGLA}" />
+
+							</f:facet>
+
+							<h:outputText
+
+								value="#{_profEspecialidades.aghEspecialidade.sigla}" />
+
+						</p:column>
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_INTERNA}" />
+
+							</f:facet>
+
+							<h:outputText value="#{_profEspecialidades.descricaoInterna}" />
+
+						</p:column>
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_AMBULATORIO}" />
+
+							</f:facet>
+
+							<h:outputText value="#{_profEspecialidades.descricaoAmbulatorio}" />
+
+						</p:column>
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_INTERNACAO}" />
+
+							</f:facet>
+
+							<h:outputText value="#{_profEspecialidades.descricaoInternacao}" />
+
+						</p:column>
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_CIRURGIAO}" />
+
+							</f:facet>
+
+							<h:outputText value="#{_profEspecialidades.descricaoCirurgiao}" />
+
+						</p:column>
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_CONSULTORIA}" />
+
+							</f:facet>
+
+							<h:outputText value="#{_profEspecialidades.descricaoConsultoria}" />
+
+						</p:column>
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_REFERENCIAL}" />
+
+							</f:facet>
+
+							<h:outputText value="#{_profEspecialidades.capacReferencial}" />
+
+						</p:column>
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_INTERNACOES}" />
+
+							</f:facet>
+
+							<h:outputText value="#{_profEspecialidades.quantPacInternados}" />
+
+						</p:column>
+
+						<p:column>
+
+							<f:facet name="header">
+
+								<h:outputText value="#{messages.LABEL_INFORMADO_POR}" />
+
+							</f:facet>
+
+							<h:outputText
+
+								value="#{_profEspecialidades.servidorDigitador.pessoaFisica.nome}" />
+
+						</p:column>
+
+					</mec:serverDataTable>
+
+				</aghu:linha>
+
+			</aghu:panelGeral>
+
+		</p:dialog>
+
+	</ui:define>
+
+</ui:composition>
+
+</html>

@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component">
+	
+	<ui:composition>  
+  
+		<h:form>
+			<pe:remoteCommand name="excluirFavorito" actionListener="#{menuController.removeFavorito}" update="@(#panelBoard)" process="@this">
+				<pe:assignableParam name="menuFavoritoId" assignTo="#{menuController.menuFavoritoId}"/> 
+			</pe:remoteCommand>
+		</h:form>
+		
+		
+		<!-- TOPO - Pesquisa de funcionalidade -->
+		<p:outputPanel id="panelPesqFunc">
+			<h:form id="casca_search_pesqfunc_form" prependId="false">
+			<div id="i_pesquisa">
+				<div class="icon-pesquisa">
+					<i class="icon-search2"></i>
+				</div>
+				<div class="titulo-pesquisa">
+					<h:outputText id="i_pesqfunc_title" value="Pesquisa de Funcionalidade" />
+				</div>
+				<div class="campo-pesquisa"> <!-- casca-menu-top casca-menu-pesquisa" -->             
+			        <p:autoComplete id="pesquisaMenus" completeMethod="#{menuController.autocompletePesquisaMenu}" 
+			        	size="30" var="item" widgetVar="pesquisaMenuWG" queryDelay="600" 
+			        	onkeydown="if(event.keyCode== 13 || event.which==13){PF('pesquisaMenuWG').search(PF('pesquisaMenuWG').input.val());return false;}"
+			        	panelStyle="casca-pesquisa-menu" emptyMessage="Nenhum item encontrado na pesquisa" 
+			        	maxResults="100" forceSelection="true" cache="false"
+			        	itemValue="#{item}" minQueryLength="2" styleClass="casca-pesquisa-input"
+			        	converter="suggestionConverter" value="#{menuController.menuPesquisa}"> 
+			          <p:ajax event="itemSelect" listener="#{menuController.openTabMenu}" oncomplete="PF('pesquisaMenuWG').hide();"/>  
+			          <p:ajax event="query" oncomplete="PF('waitDialogCasca').hide();" onstart="PF('waitDialogCasca').show()"/>  
+			          <p:column headerText="Item Menu">#{item.nome}</p:column>  
+			          <p:column headerText="Grupo">#{item.menuPai.nome}</p:column>  
+			          <p:column headerText="Aplicação">#{item.aplicacao.nome}</p:column> 
+			        </p:autoComplete>  
+			        <p:watermark for="pesquisaMenus" value="Digite mais de 3 caracteres para pesquisar funcionalidades do AGHU." id="watermark"/>
+	        	</div>
+        	</div>
+        	</h:form>
+		</p:outputPanel>
+		
+		
+		<!-- Painel do Favoritos -->
+		<p:outputPanel id="panelBoard" styleClass="casca-home-center" >
+			<div class="bloco">
+				<div class="casca-home-title">
+					<h:outputText id="i_fav_title" value="Favoritos" />				
+				</div>
+				
+				<p:dashboard id="board" class="bloco-conteudo" model="#{menuController.dashModel}"> 
+				  <p:ajax event="reorder" listener="#{menuController.dsHandleReorder}" />
+				
+					<p:panel id="centraldependencias" styleClass="casca-dash-icone">
+						<f:facet name="header">
+							<p:graphicImage styleClass="casca-dash-link silk-pendencias-menu" onclick="PF('centralpendenciasWG').show();" />
+							<div id="listra_vertical_centraldependencias" class="casca-canto-card"/>
+						</f:facet>									
+						<h:outputText value="Central de Pendências" />
+					</p:panel>			
+
+					<p:panel id="informacoesuso" styleClass="casca-dash-icone">
+						<f:facet name="header">
+							<p:graphicImage styleClass="casca-dash-link silk-informacao-balao" onclick="PF('informacoesusoWG').show();" />
+							<div id="listra_vertical_informacoesuso" class="casca-canto-card"/>
+						</f:facet>									
+						<h:outputText value="Informações de Uso" />
+					</p:panel>			
+
+					<c:forEach var="menu" items="#{menuController.menusFavoritos}">	          
+					  <p:panel id="panel_#{menu.id}" styleClass="casca-dash-icone">
+						<p:ajax event="close" listener="#{menuController.onClose}" update="panelBoard" />
+						<f:facet name="header">
+							<p:graphicImage styleClass="casca-dash-link #{menu.styleClass}" onclick="#{menu.url}" />
+							<div id="listra_vertical_#{menu.id}" class="casca-canto-card">
+								<div id="icone_fechar_#{menu.id}" class="casca-fechar-card"/>
+							</div>
+
+						</f:facet>
+						<h:outputText value="#{fn:substring(menu.nome, 0, 35)}" />
+					  </p:panel>
+					</c:forEach>				
+				</p:dashboard>  
+				<c:forEach var="menu" items="#{menuController.menusFavoritos}">	          
+					<script>
+						jQuery('#listra_vertical_#{menu.id}').parent().closest('div').append(jQuery('#listra_vertical_#{menu.id}').detach());
+						jQuery('#icone_fechar_#{menu.id}').parent().closest('div').append(jQuery('#icone_fechar_#{menu.id}').detach());
+						jQuery('#panel_#{menu.id}').hover(
+							function () {
+								jQuery(this).find('.casca-fechar-card').addClass('casca-visivel');
+							},
+							function () {
+								jQuery(this).find('.casca-fechar-card').removeClass('casca-visivel');
+						});
+						jQuery('#icone_fechar_#{menu.id}').click(
+							function() { excluirFavorito(#{menu.id});}
+						);
+					</script>
+				</c:forEach>
+				<script>
+					jQuery('#listra_vertical_centraldependencias').parent().closest('div').append(jQuery('#listra_vertical_centraldependencias').detach());
+					jQuery('#listra_vertical_informacoesuso').parent().closest('div').append(jQuery('#listra_vertical_informacoesuso').detach());
+					dash.init();
+				</script>
+			</div>
+		</p:outputPanel>
+	    
+	    
+	    <!-- Painel da Colmeia -->
+		<p:outputPanel styleClass="casca-home-right">
+			<div class="bloco">
+				<div class="casca-home-title">
+					<h:outputText id="i_colmeia_title" value="Documentação do Modelo de Gestão" />				
+				</div>
+				
+				<div class="bloco-conteudo honeycombs">
+					<div class="comb verdeoliva">
+						<div class="front-content">
+						  <i class="icon-user"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Paciente-DOC', '#{menuController.baseUrlDocumentacao}/paciente/paciente.html', '1', true)">Pacientes</a></p>
+						</div>
+					</div>
+					<div class="comb verdeoliva">
+						<div class="front-content">
+							<i class="icon-users"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Colaborador-DOC', '#{menuController.baseUrlDocumentacao}/registrocolaborador/registrocolaborador.html', '1', true)">Colaborador</a></p>
+						</div>
+					</div>
+					<div class="comb verdeoliva">
+						<div class="front-content">
+							<i class="icon-line-chart"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Indicadores-DOC', '#{menuController.baseUrlDocumentacao}/indicadores/indicadores-hospitalares.html', '1', true)">Indicadores</a></p>
+						</div>
+					</div>
+					<div class="comb verdeoliva">
+						<div class="front-content">
+							<i class="icon-gears"></i>
+						</div>
+						<div class="back-content">
+							<p>Configurações</p>
+						</div>
+					</div>								        
+					<div class="comb">
+						<div class="front-content">
+							<i class="icon-stethoscope"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Prescrição de Enfermagem-DOC', '#{menuController.baseUrlDocumentacao}/prescricaoenfermagem/prescricaoenfermagem.html', '1', true)">Prescrição de Enfermagem</a></p>
+						</div>
+					</div>
+					<div class="comb">
+						<div class="front-content">
+							<i class="icon-list-alt"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Controle-DOC', '#{menuController.baseUrlDocumentacao}/controles/controles.html', '1', true)">Controles do Paciente</a></p>
+						</div>
+					</div>
+					<div class="comb">
+						<div class="front-content">
+							<i class="icon-heartbeat"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Cirurgias-DOC', '#{menuController.baseUrlDocumentacao}/centrocirurgico/centrocirurgico.html', '1', true)">Cirurgias</a></p>
+						</div>
+					</div>
+					<div class="comb">
+						<div class="front-content">
+							<i class="icon-file-text-o"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Prescrição-DOC', '#{menuController.baseUrlDocumentacao}/prescricao/prescricao.html', '1', true)">Prescrição Médica</a></p>
+						</div>
+					</div>
+					<div class="comb">
+						<div class="front-content">
+							<i class="icon-flask"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Exames-DOC', '#{menuController.baseUrlDocumentacao}/exames/exames.html', '1', true)">Exames</a></p>
+						</div>
+					</div>
+					<div class="comb laranja">
+						<div class="front-content">
+							<i class="icon-bed"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Internação-DOC', '#{menuController.baseUrlDocumentacao}/internacao/internacao.html', '1', true)">Internação</a></p>
+						</div>
+					</div>
+					<div class="comb laranja">
+						<div class="front-content">
+							<i class="icon-clipboard"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Ambulatório-DOC', '#{menuController.baseUrlDocumentacao}/ambulatorio/ambulatorio.html', '1', true)">Ambulatório Adm.</a></p>
+						</div>
+					</div>
+					<div class="comb laranja">
+						<div class="front-content">
+							<i class="icon-user-md"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Ambulatório-DOC', '#{menuController.baseUrlDocumentacao}/ambulatorio/ambulatorio.html', '1', true)">Ambulatório Assist.</a></p>
+						</div>
+					</div>
+					<div class="comb vermelho">
+						<div class="front-content">
+							<i class="icon-folder-open"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Prontuário On-line-DOC', '#{menuController.baseUrlDocumentacao}/prontuarioonline/prontuarioonline.html', '1', true)">Prontuário on-line</a></p>
+						</div>
+					</div>
+					<div class="comb azul">
+						<div class="front-content">
+							<i class="icon-plus-square"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Farmácia-DOC', '#{menuController.baseUrlDocumentacao}/farmacia/farmacia.html', '1', true)">Farmácia</a></p>
+						</div>
+					</div>
+					<div class="comb azul">
+						<div class="front-content">
+							<i class="icon-archive"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Cadeia de Suprimentos-Estoque-DOC', '#{menuController.baseUrlDocumentacao}/suprimentos/suprimentos.html', '1', true)">Estoque</a></p>
+						</div>
+					</div>
+					<div class="comb azul">
+						<div class="front-content">
+							<i class="icon-cart-plus"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Cadeia de Suprimentos-Compras-DOC', '#{menuController.baseUrlDocumentacao}/suprimentos/suprimentos.html', '1', true)">Compras</a></p>
+						</div>
+					</div>
+					<div class="comb cinza">
+						<div class="front-content">
+							<i class="icon-medkit"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Quimioterapia-DOC', '#{menuController.baseUrlDocumentacao}/quimioterapia/quimioterapia.html', '1', true)">Quimioterapia</a></p>
+						</div>
+					</div>
+					<div class="comb cinza">
+						<div class="front-content">
+							<i class="icon-money"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Financeiro-DOC', '#{menuController.baseUrlDocumentacao}/faturamento/faturamento.html', '1', true)">Financeiro</a></p>
+						</div>
+					</div>
+					<div class="comb cinza">
+						<div class="front-content">
+							<i class="icon-cutlery"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Nutrição-DOC', '#{menuController.baseUrlDocumentacao}/nutricao/nutricao.html', '1', true)">Nutrição</a></p>
+						</div>
+					</div>
+					<div class="comb cinza">
+						<div class="front-content">
+							<i class="icon-ambulance"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Emergência-DOC', '#{menuController.baseUrlDocumentacao}/emergencia/emergencia.html', '1', true)">Emergência</a></p>
+						</div>
+					</div>
+					<div class="comb cinza">
+						<div class="front-content">
+							<i class="icon-eyedropper"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'GPPG-DOC', '#{menuController.baseUrlDocumentacao}/projetospesquisa/projetospesquisa.html', '1', true)">GPPG</a></p>
+						</div>
+					</div>
+					<div class="comb cinza">
+						<div class="front-content">
+							<i class="icon-dollar"></i>
+						</div>
+						<div class="back-content">
+							<p>Custos</p>
+						</div>
+					</div>
+					<div class="comb cinza">
+						<div class="front-content">
+							<i class="icon-tint"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Banco de Sangue-DOC', '#{menuController.baseUrlDocumentacao}/bancosangue/bancosangue.html', '1', true)">Banco de Sangue</a></p>
+						</div>
+					</div>
+					<div class="comb cinza">
+						<div class="front-content">
+							<i class="icon-medkit"></i>
+						</div>
+						<div class="back-content">
+							<p><a onclick="tab.addTab('doc1', 'Perinatologia-DOC', '#{menuController.baseUrlDocumentacao}/centroobstetrico/centroobstetrico.html', '1', true)">Perinatologia</a></p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</p:outputPanel>
+		
+	    <p:outputPanel styleClass="casca-home-left">
+			<!-- Painel da Documentacao -->
+			<div id="bloco-manuais" class="bloco">
+				<div class="casca-home-title">
+					<h:outputText id="i_manuais_title" value="Manuais de Uso" />				
+				</div>
+				<div class="bloco-conteudo">
+					<a href="http://www.ebserh.gov.br/web/aghu/" class="icone-manual" target="_blank">
+						<i class="icon-book" title="Manuais de uso"></i>
+					</a>
+					<div class="manuais-txt">Acesse o Portal do AGHU e leia os manuais.</div>
+				</div>
+	  		</div>
+	  		
+	  		<!-- Notícias do portal Interno -->
+			<div id="bloco-informes" class="bloco">
+				<div class="casca-home-title">
+					<h:outputText id="i_informes_title" value="Informes" />				
+				</div>
+				<div class="bloco-conteudo">
+		  			<ui:include src="/portalRssInterno.xhtml">
+						<ui:param name="tamanho" value="2" />
+					</ui:include>
+	  			</div>		
+			</div>
+
+		</p:outputPanel>
+	    
+	    
+  </ui:composition> 
+</html>

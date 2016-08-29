@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_ATUALIZAR_CONSULTA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{atualizarConsultaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{atualizarConsultaController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formConsulta"> 
+        <aghu:panelGeral id="ffdl_consultas" legend="#{messages.TITLE_PESQUISAR_CONSULTA}"> 
+          <aghu:linha> 
+            <p:outputPanel id="nroConsul_panel" layout="inline"> 
+              <mec:inputNumero required="true" value="#{atualizarConsultaController.nroConsulta}" label="#{messages.LABEL_CONSULTA}" title="#{messages.TITLE_CONSULTA_ATUALIZAR}" maxlength="8" size="10" id="nroConsulta"/> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{atualizarConsultaController.pesquisar}" block="true" profile="search" render="nroConsul_panel, panel_atualizar, detalhes_consulta"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{atualizarConsultaController.limpar}" ajax="true" render="nroConsul_panel, detalhes_consulta, panel_atualizar" process="@this" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao>  
+      </h:form>  
+      <h:form prependId="false" id="formResultados"> 
+        <p:outputPanel id="detalhes_consulta" layout="inline">
+        	<aghu:panelGeral rendered="#{atualizarConsultaController.pesquisou and atualizarConsultaController.consulta == null}">
+	        <p:outputPanel id="panel_msgNaoEncontrado" layout="block" style="text-align: center; font-weight: bold;" >  
+	            <h:outputText value="#{messages.REGISTRO_NAO_LOCALIZADO}"/> 
+	        </p:outputPanel>  
+	        </aghu:panelGeral>
+          <p:outputPanel id="detalhes_consulta_interior" rendered="#{atualizarConsultaController.consulta != null or (mf:hasPermission(securityController,'ambulatorio,somenteLeitura'))}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral id="ffdl_consulta" legend="#{messages.TITLE_CONSULTA_DETALHES}"> 
+              <aghu:linha> 
+                <mec:inputNumero id="numero" value="#{atualizarConsultaController.consulta.numero}" label="#{messages.LABEL_CONSULTA}" maxlength="8" size="10" readonly="true"/>  
+                <mec:inputTextData label="#{messages.LABEL_DATA}" id="data" readonly="true" value="#{atualizarConsultaController.consulta.dtConsulta}" tipo="datahora"/>  
+                <mec:inputNumero label="#{messages.LABEL_GRADE}" id="grade" size="7" readonly="true" value="#{atualizarConsultaController.consulta.gradeAgendamenConsulta.seq}"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputText size="75" label="#{messages.LABEL_ESPECIALIDADE_AGENDA}" value="#{atualizarConsultaController.consulta.gradeAgendamenConsulta.especialidade.sigla} - #{atualizarConsultaController.consulta.gradeAgendamenConsulta.especialidade.nomeEspecialidade}" readonly="true" id="especialidade"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextProntuario value="#{atualizarConsultaController.consulta.paciente.prontuario}" label="#{messages.LABEL_PRONTUARIO}" readonly="true" id="prontuario"/>  
+                <mec:inputText value="#{atualizarConsultaController.consulta.paciente.codigo}" label="#{messages.LABEL_PAC_CODIGO}" size="10" readonly="true" id="pacoCodigo"/>  
+                <mec:inputText value="#{atualizarConsultaController.consulta.paciente.nome}" label="#{messages.LABEL_NOME_PACIENTE}" size="50" readonly="true" id="nome"/>  
+                <br clear="none"/>  
+                <mec:commandButton id="bt_pesquisaPaciente" value="#{messages.LABEL_ALTERAR_PACIENTE}" action="#{atualizarConsultaController.verificarModificacao}" style="width:140px" process="@this" styleClass=" icon-pesquisa-fonetica bt_cinza" ajax="true" render="panelModalAlteracaoPendente, detalhes_consulta, detalhes_consulta_interior"> 
+                  <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="ambulatorio-atualizarConsulta" for="command"/>  
+                  <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="true" for="command"/> 
+                </mec:commandButton> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox id="formaAgendamento" label="#{messages.LABEL_FORMA_AGENDAMENTO}" title="#{messages.TITLE_FORMA_AGENDAMENTO_ATLZ_CONTA}" descricaoInput="pagador.descricao" size="40" maxlength="40" width="600" descricaoLabel="descCondicaoTipo" suggestionAction="obterFormasAgendamento" controller="#{atualizarConsultaController}" value="#{atualizarConsultaController.formaAgendamento}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_PAGADOR}</b> 
+                    </f:facet> #{item.pagador.descricao}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_TIPO}</b> 
+                    </f:facet> #{item.tipoAgendamento.descricao}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_CONDICAO}</b> 
+                    </f:facet> #{item.condicaoAtendimento.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:suggestionBox label="#{messages.LABEL_MANTER_GRADE_AGENDAMENTO_PROJETO}" title="#{messages.TITLE_ATUALIZAR_CONSULTA_PROJETO}" descricaoInput="numero" rendered="false" size="10" maxlength="10" width="450" descricaoLabel="nome" suggestionAction="obterProjetosPesquisa" id="projeto" controller="#{atualizarConsultaController}" value="#{atualizarConsultaController.projetoPesquisa}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.numero}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME}</b> 
+                    </f:facet> #{item.nome}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox id="medico" size="40" maxlength="40" width="600" label="#{messages.LABEL_ATENDIDO_POR}" title="#{messages.TITLE_ATUALIZAR_CONSULTA_ATENDIDO_POR}" required="false" converter="#{espCrmVOConverter}" descricaoInput="matricula" descricaoLabel="nomeMedico" suggestionAction="obterMedicos" controller="#{atualizarConsultaController}" value="#{atualizarConsultaController.espCrmVO}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_VINCULO}</b> 
+                    </f:facet> #{item.vinCodigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MATRICULA}</b> 
+                    </f:facet> #{item.matricula}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME}</b> 
+                    </f:facet> #{item.nomeMedico}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox id="convenio" label="#{messages.LABEL_CONVENIO}" title="#{messages.TITLE_ATUALIZAR_CONSULTA_CONVENIO}" descricaoInput="descConv" size="40" maxlength="40" width="600" descricaoLabel="descPlan" suggestionAction="obterConvenios" controller="#{atualizarConsultaController}" value="#{atualizarConsultaController.convenioPlano}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CONVENIO}</b> 
+                    </f:facet> #{item.descConv}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_PLANO}</b> 
+                    </f:facet> #{item.descPlan}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:inputNumero id="codCentral" value="#{atualizarConsultaController.consulta.codCentral}" label="#{messages.LABEL_COD_CENTRAL}" title="#{messages.TITLE_ATUALIZAR_CONSULTA_COD_CENTRAL}" maxlength="12" size="12"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputTextArea label="#{messages.LABEL_JUSTIFICATIVA}" id="justificativa" rows="2" cols="75" value="#{atualizarConsultaController.consulta.justificativa}" title="#{messages.TITLE_ATUALIZAR_CONSULTA_JUSTIFICATIVA}" maxlength="120"/> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel>  
+        <p:outputPanel id="panel_atualizar" layout="inline"> 
+          <mec:commandButton value="#{messages.LABEL_GRAVAR}" id="bt_gravar" rendered="#{atualizarConsultaController.consulta != null and (!mf:hasPermission(securityController, 'ambulatorio,somenteLeitura'))}" action="#{atualizarConsultaController.atualizar}" profile="ok" ajax="true"> 
+            <f:setPropertyActionListener target="#{atualizarConsultaController.ignorarAtendimento}" value="#{false}" for="command"/>  
+            <f:setPropertyActionListener target="#{atualizarConsultaController.ignorarSolExame}" value="#{false}" for="command"/>  
+            <f:setPropertyActionListener target="#{atualizarConsultaController.exibirModalExame}" value="#{false}" for="command"/>  
+            <f:setPropertyActionListener target="#{atualizarConsultaController.exibirModalAtendimento}" value="#{false}" for="command"/> 
+          </mec:commandButton> 
+          <br clear="none"/>  
+          <br clear="none"/>
+        </p:outputPanel>
+      </h:form>  
+      <p:outputPanel id="panelModalAlteracaoPendente" layout="inline"> 
+        <p:dialog id="modalAlteracaoPendente" rendered="#{atualizarConsultaController.exibirModalAlteracaoPendente}" width="400" height="150" showWhenRendered="true" modal="true" resizable="false" widgetVar="modalAlteracaoPendenteWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_CONFIRMACAO}"/> 
+          </f:facet> #{messages.MENSAGEM_ALTERACAO_PENDENTE} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalAlteracaoPendente"> 
+              <mec:commandButton id="bt_sim_alteracaoPendente" value="#{messages.LABEL_SIM}" action="#{atualizarConsultaController.chamarTelaPesquisaFonetica}" profile="ok"> 
+                <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="ambulatorio-atualizarConsulta" for="command"/>  
+                <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="true" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_alteracaoPendente" action="#{atualizarConsultaController.ocultarModalModificacaoPendente}" profile="cancel"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelModalAvisoSolExame" layout="inline"> 
+        <p:dialog id="modalAvisoSolExame" showWhenRendered="true" width="400" height="150" modal="true" resizable="false" widgetVar="modalAvisoSolExameWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_CONFIRMACAO}"/> 
+          </f:facet> #{messages.LABEL_SOLICITACAO_EXAME_EXISTENTE} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalAvisoSolExame"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_sol_exams" action="#{atualizarConsultaController.ignorarSolExame}" profile="ok"/>  
+              <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_sol_exams" onclick="PF('modalAvisoSolExameWG').hide();;" action="#{atualizarConsultaController.ocultarModal}" profile="cancel"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:dialog id="modalAvisoAtendimento" width="400" height="150" modal="true" resizable="false" widgetVar="modalAvisoAtendimentoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.CONFIRMACAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.LABEL_ATENDIMENTO_EM_ANDAMENTO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalAvisoAtendimento" name="formModalAvisoAtendimento"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_atend" action="#{atualizarConsultaController.ignorarAtendimento}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_atend" onclick="PF('modalAvisoAtendimentoWG').hide();;" action="#{atualizarConsultaController.ocultarModal}" profile="cancel"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:outputPanel id="panelModalAvisoAtendimento" rendered="#{atualizarConsultaController.exibirModalAtendimento}" layout="inline"> 
+        <script xml:space="preserve">
+				PF('modalAvisoAtendimentoWG').show();;
+			</script> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

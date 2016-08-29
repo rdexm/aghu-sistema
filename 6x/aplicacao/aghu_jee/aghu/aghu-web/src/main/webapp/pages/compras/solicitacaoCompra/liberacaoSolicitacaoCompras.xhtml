@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_LIBERACAO_SOLCOMPRAS}</title>  
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{liberacaoSolicitacaoComprasPaginatorController}"/>  
+      <p:outputPanel id="panelCorpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formDadosCabecalho"> 
+          <aghu:panelGeral legend="#{messages.LEGEND_LIBERACAO_SOLCOMPRAS}"> 
+            <p:outputPanel id="panelFiltros" layout="inline"> 
+              <aghu:linha> 
+                <mec:inputNumero id="numeroSc" label="#{messages.LABEL_SOL_NUMERO_SC}" size="11" title="#{messages.TITLE_SOL_NUMERO_SC}" maxlength="7" value="#{liberacaoSolicitacaoComprasPaginatorController.numeroSolicitacaoCompra}"> 
+                  <p:ajax event="change" eventsQueue="blurQueue" update="@(#panelFiltros)" process="@this" listener="#{liberacaoSolicitacaoComprasPaginatorController.desligarFiltros}"/> 
+                </mec:inputNumero>  
+                <mec:inputTextData label="#{messages.LABEL_DATA_SOLICITACAO_COMPRAS}" id="dtSolicitacao" title="#{messages.TITLE_DATA_SOLICITACAO_COMPRAS}" size="10" maxlength="10" onkeypress="Pesquisar(event);" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{liberacaoSolicitacaoComprasPaginatorController.dataSolicitacaoCompra}" required="false" tipo="data"/>  
+                <mec:suggestionBox id="suggestionPontoParada" label="#{messages.LABEL_SOL_PONTO_PARADA}" title="#{messages.TITLE_PONTO_PARADA}" suggestionAction="pesquisarPontoParadaSolicitacaoPorCodigoEDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" required="false" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" controller="#{liberacaoSolicitacaoComprasPaginatorController}" value="#{liberacaoSolicitacaoComprasPaginatorController.pontoParada}"> 
+                  <p:column>#{item.codigo}</p:column>  
+                  <p:column>#{item.descricao}</p:column> 
+                </mec:suggestionBox>  
+                <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_FILTRO_URGENTE}" title="#{messages.TITLE_FILTRO_LIB_URGENTE}" id="chkUrgente" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{liberacaoSolicitacaoComprasPaginatorController.indUrgente}"/>  
+                <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_FILTRO_PRIORITARIA}" id="chkPrioritaria" title="#{messages.TITLE_FILTRO_LIB_PRIORITARIA}" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{liberacaoSolicitacaoComprasPaginatorController.indPrioritaria}"/>  
+                <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_FILTRO_DEVOLUCAO}" id="chkDevolucao" title="#{messages.TITLE_FILTRO_LIB_DEVOLUCAO}" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{liberacaoSolicitacaoComprasPaginatorController.indDevolucao}"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox id="suggestionGrupoMaterial" label="#{messages.LABEL_FILTRO_GRUPO_MATERIAL}" title="#{messages.TITLE_FILTRO_GRUPO_MATERIAL}" suggestionAction="pesquisarGrupoMaterialPorCodigoDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" required="false" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaSuggestionGrupoMaterial or liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" controller="#{liberacaoSolicitacaoComprasPaginatorController}" value="#{liberacaoSolicitacaoComprasPaginatorController.grupoMaterial}"> 
+                  <p:column>#{item.codigo}</p:column>  
+                  <p:column>#{item.descricao}</p:column> 
+                </mec:suggestionBox>  
+                <p:outputPanel id="panelMaterial" layout="inline"> 
+                  <mec:suggestionBox var="mat" itemValue="#{mat}" label="#{messages.LABEL_CONSULTA_SC_SS_MATERIAL}" title="#{messages.TITLE_CONSULTA_SC_SS_MATERIAL}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarMaterialPorCodigoDescricao" width="650" posSelectionAction="verificarGrupoMaterialHabilitado" posDeleteAction="verificarGrupoMaterialHabilitado" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" id="suggestionMaterial" controller="#{liberacaoSolicitacaoComprasPaginatorController}" value="#{liberacaoSolicitacaoComprasPaginatorController.material}" render="panelFiltros,materialToolTip"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_CODIGO}</b> 
+                      </f:facet> #{mat.codigo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_NOME}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{(mat.nome.length() > 40) ? fn:substring(mat.nome,0,40) : mat.nome}#{(mat.nome.length() > 40) ? '...' : '' }"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_DESCRICAO}</b> 
+                      </f:facet>  
+                      <h:outputText value="#{(mat.descricao.length() > 40) ? fn:substring(mat.descricao,0,40) : item.descricao}#{(mat.descricao.length() > 40) ? '...' : '' }"/> 
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <p:tooltip  id="materialToolTip" for="panelMaterial" mode="ajax" disabled="#{empty liberacaoSolicitacaoComprasPaginatorController.material}">  
+                    <h:outputText value="#{messages.LABEL_NOME}: #{liberacaoSolicitacaoComprasPaginatorController.material.nome}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}: #{liberacaoSolicitacaoComprasPaginatorController.material.descricao}" rendered="#{not empty liberacaoSolicitacaoComprasPaginatorController.material.descricao}"/> 
+                  </p:tooltip> 
+                </p:outputPanel> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox id="suggestionCcSolicitante" label="#{messages.LABEL_CCUSTO_SOLICITANTE}" title="#{messages.TITLE_CCUSTO_SOLICITANTE}" suggestionAction="pesquisarCentroCustoPorCodigoDescricao" descricaoInput="codigo" descricaoLabel="descricao" size="30" maxlength="60" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" required="false" controller="#{liberacaoSolicitacaoComprasPaginatorController}" value="#{liberacaoSolicitacaoComprasPaginatorController.centroCustoSolicitante}"> 
+                  <p:column>#{item.codigo}</p:column>  
+                  <p:column>#{item.descricao}</p:column> 
+                </mec:suggestionBox>  
+                <mec:suggestionBox id="suggestionCcAplicacao" label="#{messages.LABEL_CCUSTO_APLICACAO}" title="#{messages.TITLE_CCUSTO_APLICACAO}" suggestionAction="pesquisarCentroCustoPorCodigoDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" size="30" readonly="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaFiltros}" required="false" controller="#{liberacaoSolicitacaoComprasPaginatorController}" value="#{liberacaoSolicitacaoComprasPaginatorController.centroCustoAplicacao}"> 
+                  <p:column>#{item.codigo}</p:column>  
+                  <p:column>#{item.descricao}</p:column> 
+                </mec:suggestionBox> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{liberacaoSolicitacaoComprasPaginatorController.pesquisar}" render="panelFiltros, panelListaSolicitacoes,panelBotoes" profile="search"/>  
+            <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{liberacaoSolicitacaoComprasPaginatorController.limparPesquisa}" render="panelFiltros, panelListaSolicitacoes" styleClass="bt_cinza" profile="clear"/>  
+            <mec:commandButton id="bt_gerar_sc" value="#{messages.LABEL_GERAR_SC}" action="#{liberacaoSolicitacaoComprasPaginatorController.gerarSc}" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar')  or           mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or        mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or        mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or        mf:hasPermission(securityController,'cadastrarSCChefias,gravar') or        mf:hasPermission(securityController,'cadastrarSCGeral,gravar')}" styleClass="bt_cinza"/> 
+          </aghu:acao> 
+          
+	       <p:outputPanel id="panelListaSolicitacoes" rendered="#{liberacaoSolicitacaoComprasPaginatorController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+	          <aghu:panelGeral legend="#{messages.LEGENDA_GRID_LIB_SOLICITACOES_COMPRA}"> 
+	          	<aghu:column type="table"> 
+                    <mec:serverDataTableMultipleSelection render="panelBotoes" updateCheckOnPage="atualizarAllChecked" toggleSelectListener="marcarTodos" rowCheckListener="selecionarLinha" rowUncheckListener="desmarcarLinha" dataModel="dataModel" id="solcomprasTable" value="#{liberacaoSolicitacaoComprasPaginatorController}" selection="listaChecked" rendered="#{liberacaoSolicitacaoComprasPaginatorController.dataModel.pesquisaAtiva}" controller="#{liberacaoSolicitacaoComprasPaginatorController}"> 
+                      <c:set var="_item" value="#{item}"/>  
+                      <p:column exportable="false" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                        </f:facet>  
+                        <mec:commandLink id="lnkVisualizar" title="#{messages.LABEL_VISUALIZAR}" rendered="#{ not mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar') and                      not mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') and                  not mf:hasPermission(securityController,'cadastrarSCComprador,gravar') and                  not mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') and                   not mf:hasPermission(securityController,'cadastrarSCChefias,gravar') and                  mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')}" action="#{liberacaoSolicitacaoComprasPaginatorController.redirecionarSolicitacaoCompra}" styleClass=" silk-zoom silk-icon"> 
+                          <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{_item.numero}" for="command"/>  
+                          <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-liberacaoSolicitacaoCompras" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink id="lnkEditar" title="#{messages.LABEL_EDITAR}" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar') or                     mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or                  mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or                  mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or                  mf:hasPermission(securityController,'cadastrarSCChefias,gravar')}" action="#{liberacaoSolicitacaoComprasPaginatorController.redirecionarSolicitacaoCompra}" profile="edit"> 
+                          <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{_item.numero}" for="command"/>  
+                          <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-liberacaoSolicitacaoCompras" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink id="lnkEstatistica" rendered="#{mf:hasPermission(securityController,'consultaEstatiscaConsumo,consultar')}" title="#{messages.LABEL_ESTATISTICA_CONSUMO}" action="#{liberacaoSolicitacaoComprasPaginatorController.redirecionarEstatisticaConsumo}" styleClass=" silk-chart-bar silk-icon"> 
+                          <f:setPropertyActionListener target="#{estatisticaConsumoController.codigoMaterial}" value="#{_item.material.getCodigo()}" for="command"/>  
+                          <f:setPropertyActionListener target="#{estatisticaConsumoController.voltarPara}" value="compras-liberacaoSolicitacaoCompras" for="command"/> 
+                        </mec:commandLink>  
+                        <mec:commandLink id="lnkFases" title="#{messages.LABEL_ANDAMENTO}" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar') or                  mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')  or                     mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or                  mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or                  mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or                  mf:hasPermission(securityController,'cadastrarSCChefias,gravar')}" action="#{liberacaoSolicitacaoComprasPaginatorController.redirecionarFasesSolicitacaoCompra}" styleClass=" silk-lista-consultar silk-icon"> 
+                          <f:setPropertyActionListener target="#{fasesSolicitacaoCompraController.numero}" value="#{_item.numero}" for="command"/>  
+                          <f:setPropertyActionListener target="#{fasesSolicitacaoCompraController.mostrarBotaoVoltar}" value="true" for="command"/>  
+                          <f:setPropertyActionListener target="#{fasesSolicitacaoCompraController.voltarPara}" value="compras-liberacaoSolicitacaoCompras" for="command"/> 
+                        </mec:commandLink> 
+                      </p:column>
+                      <p:column exportable="false" selectionMode="multiple" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"/>  
+                      <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_SC}" title="#{messages.LABEL_SOLICITACAO_COMPRA}"/> 
+                        </f:facet>
+                        <h:outputText value="#{item.numero}"/>
+                      </p:column>  
+                      <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_URGENTE}" title="#{messages.LABEL_SOLICITACAO_COMPRA_URGENTE}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{(_item.urgente == true ? 'S' : 'N')}"/> 
+                      </p:column>  
+                      <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_PRIORITARIO}" title="#{messages.LABEL_SOLICITACAO_COMPRA_PRIORITARIA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{(_item.prioridade == true ? 'S' : 'N')}"/> 
+                      </p:column>  
+                      <p:column exportable="true" style="#{(_item.urgente == true ? 'display:none;background-color:#F8C88D;' : 'display:none')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_DEVOLVIDO}" title="#{messages.LABEL_SOLICITACAO_COMPRA_DEVOLVIDA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{(_item.devolucao == true ? 'S' : 'N')}"/>
+                      </p:column>  
+                      <p:column exportable="false" rendered="true" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_DEVOLVIDO}" title="#{messages.LABEL_SOLICITACAO_COMPRA_DEVOLVIDA}"/> 
+                        </f:facet>  
+                        <p:outputPanel id="panelDev">
+                        	<h:outputText value="#{(_item.devolucao == true ? 'S' : 'N')}"/>
+                        </p:outputPanel>  
+                        <p:tooltip for="panelDev" style="width:300px; word-wrap: break-word;" styleClass="tooltip" rendered="#{not empty _item.justificativaDevolucao}"> 
+                          <h:outputText value="#{_item.justificativaDevolucao}"/> 
+                        </p:tooltip> 
+                      </p:column>
+                      <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_DT_GRID_HEADER_SC}" title="#{messages.LABEL_DATA_SOLICITACAO_COMPRA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.dtSolicitacao}"> 
+                          <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_QTD_SOLICITADA_GRID_SOLCOMPRAS}" title="#{messages.LABEL_QUANTIDADE_SOLICITADA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.qtdeSolicitada}" style="float:right; "/> 
+                      </p:column>  
+                      <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_QTD_APROVADA}" title="#{messages.LABEL_QUANTIDADE_APROVADA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.qtdeAprovada}" style="float:right; "/> 
+                      </p:column>  
+                      <p:column exportable="false" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_MATERIAL}"/> 
+                        </f:facet> 
+                        <p:outputPanel id="panelMat"> 
+                        	<h:outputText value="#{liberacaoSolicitacaoComprasPaginatorController.getMaterialDescription(_item.material)}"/>
+                        </p:outputPanel>	  
+                        <p:tooltip for="panelMat" style="width:300px; word-wrap: break-word;" styleClass="tooltip"> 
+                          <h:outputText value="#{messages.LABEL_NOME}: #{_item.material.nome}"/>  
+                          <br clear="none"/>  
+                          <h:outputText rendered="#{not empty _item.material.descricao}" value="#{messages.LABEL_DESCRICAO}: #{_item.material.descricao}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column exportable="true" style="#{(_item.urgente == true ? 'display:none;background-color:#F8C88D;' : 'display:none')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_MATERIAL}"/> 
+                        </f:facet> 
+                        <h:outputText value="#{liberacaoSolicitacaoComprasPaginatorController.getMaterialDescription(_item.material)}"/>
+                      </p:column>
+                      <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_UNIDADE}" title="#{messages.LABEL_UNIDADE_MEDIDA_MATERIAL_SOLICITADO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.unidadeMedida.codigo}"/> 
+                      </p:column>  
+                      <p:column exportable="false" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_PP}" title="#{messages.LABEL_PONTO_PARADA}"/> 
+                        </f:facet>  
+                        <p:outputPanel id="panelPP">
+                        	<h:outputText value="#{_item.pontoParadaProxima.getCodigo()}"/>
+                        </p:outputPanel>	  
+                        <p:tooltip for="panelPP" style="width:300px; word-wrap: break-word;" styleClass="tooltip"> 
+                          <h:outputText value="#{messages.LABEL_DE}: #{_item.pontoParada.getDescricao()}"/>  
+                          <br clear="none"/>  
+                          <h:outputText value="#{messages.LABEL_PP_PARA}: #{_item.pontoParadaProxima.getDescricao()}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column exportable="true" style="#{(_item.urgente == true ? 'display:none;background-color:#F8C88D;' : 'display:none')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_PP}" title="#{messages.LABEL_PONTO_PARADA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.pontoParadaProxima.getCodigo()}"/>
+                      </p:column>
+                      <p:column exportable="false" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_LIB_CC_SOLICITANTE}" title="#{messages.LABEL_CCUSTO_SOLICITANTE}"/> 
+                        </f:facet>  
+                        <p:outputPanel id="panelCcSolic">
+                        	<h:outputText value="#{_item.centroCusto.getCodigo()}"/>
+                        </p:outputPanel>  
+                        <p:tooltip for="panelCcSolic" style="width:300px; word-wrap: break-word;" styleClass="tooltip"> 
+                          <h:outputText value="#{messages.LABEL_DESCRICAO}: #{_item.centroCusto.getDescricao()}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column exportable="true" style="#{(_item.urgente == true ? 'display:none;background-color:#F8C88D;' : 'display:none')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_LIB_CC_SOLICITANTE}" title="#{messages.LABEL_CCUSTO_SOLICITANTE}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.centroCusto.getCodigo()}"/>
+                      </p:column>
+                      <p:column exportable="true" style="#{(_item.urgente == true ? 'display:none;background-color:#F8C88D;' : 'display:none')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_LIB_CC_APLICACAO}" title="#{messages.LABEL_CCUSTO_APLICACAO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_item.centroCustoAplicada.getCodigo()}"/>
+                      </p:column> 
+                      <p:column exportable="false" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_GRID_LIB_CC_APLICACAO}" title="#{messages.LABEL_CCUSTO_APLICACAO}"/> 
+                        </f:facet>  
+                        <p:outputPanel id="panelCcAplic">
+                        	<h:outputText value="#{_item.centroCustoAplicada.getCodigo()}"/>
+                        </p:outputPanel>	  
+                        <p:tooltip for="panelCcAplic" style="width:300px; word-wrap: break-word;" styleClass="tooltip"> 
+                          <h:outputText value="#{messages.LABEL_DESCRICAO}: #{_item.centroCustoAplicada.getDescricao()}"/> 
+                        </p:tooltip> 
+                      </p:column> 
+                    </mec:serverDataTableMultipleSelection> 
+                </aghu:column>
+                <aghu:column type="button" id="columnBotoes">    
+                    <p:outputPanel id="panelBotoes" rendered="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaBotoes == false}" layout="inline"> 
+                        <mec:commandButton id="bt_encaminhar" rendered="#{mf:hasPermission(securityController,'encaminharSolicitacaoCompras,gravar')}" action="#{liberacaoSolicitacaoComprasPaginatorController.limparModalEncaminhamento()}" oncomplete="PF('modalEncaminharScoWG').show();" disabled="#{fn:length(liberacaoSolicitacaoComprasPaginatorController.listaChecked)==0}" value="#{messages.LABEL_BOTAO_ENCAMINHAR}" ajax="true" styleClass="bt_cinza"/>  
+                        <mec:commandButton id="bt_devolver" render="modalDevolverSco" action="#{liberacaoSolicitacaoComprasPaginatorController.limparModalDevolucao()}" oncomplete="PF('modalDevolverScoWG').show();" value="#{messages.LABEL_BOTAO_DEVOLVER}" disabled="#{fn:length(liberacaoSolicitacaoComprasPaginatorController.listaChecked)==0}" ajax="true" styleClass="bt_cinza"/>  
+                        <mec:commandButton id="bt_exclusao" render="modalExclusaoSco" action="#{liberacaoSolicitacaoComprasPaginatorController.limparModalExclusao()}" oncomplete="PF('modalExclusaoScoWG').show();" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar')  or                   mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or                mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or                mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or                mf:hasPermission(securityController,'cadastrarSCChefias,gravar')}" disabled="#{fn:length(liberacaoSolicitacaoComprasPaginatorController.listaChecked)==0}" value="#{messages.LABEL_BOTAO_EXCLUIR}" ajax="true" styleClass="bt_cinza"/>  
+                        <mec:commandButton id="bt_imprimirsolicitacao" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar') or                       mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')  or                       mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or                    mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or                    mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or                    mf:hasPermission(securityController,'cadastrarSCChefias,gravar')}" action="#{liberacaoSolicitacaoComprasPaginatorController.imprimirItens}" disabled="#{fn:length(liberacaoSolicitacaoComprasPaginatorController.listaChecked)==0}" name="bt_imprimir" value="#{messages.LABEL_IMPRIMIR}" ajax="true" render="panelListaSolicitacoes" profile="print"> 
+                          <f:setPropertyActionListener target="#{imprimirSolicitacaoDeComprasController.voltarParaUrl}" value="compras-liberacaoSolicitacaoCompras" for="command"/> 
+                        </mec:commandButton> 
+                    </p:outputPanel> 
+	            </aghu:column>    
+	          </aghu:panelGeral> 
+	        </p:outputPanel>
+        </h:form>  
+        <h:form prependId="false"> 
+          <p:outputPanel layout="inline"> 
+            <ui:decorate template="/pages/compras/solicitacaoCompra/modalExclusaoSolicitacaoScSsEmLote.xhtml"> 
+              <ui:param name="controllerBean" value="#{liberacaoSolicitacaoComprasPaginatorController}"/>  
+              <ui:param name="obsTextArea" value="observacaoExclusao"/>  
+              <ui:param name="deleteAction" value="excluirItens"/>  
+              <ui:param name="clearModalAction" value="limparModalExclusao"/>  
+              <ui:param name="keepOnError" value="true"/>  
+              <ui:param name="goBack" value="voltarPanel"/>  
+              <ui:param name="reRenderOnSuccess" value=":formDadosCabecalho:panelListaSolicitacoes"/>  
+              <ui:param name="modalTitle" value="#{messages.LABEL_EXCLUIR_SOLICITACAO_COMPRAS}"/> 
+            </ui:decorate> 
+          </p:outputPanel> 
+        </h:form>  
+        <h:form prependId="false"> 
+          <p:outputPanel layout="inline"> 
+            <ui:decorate template="/pages/compras/solicitacaoCompra/modalEncaminharSolicitacaoScSsEmLote.xhtml"> 
+              <ui:param name="controllerBean" value="#{liberacaoSolicitacaoComprasPaginatorController}"/>  
+              <ui:param name="disableSuggestion" value="#{liberacaoSolicitacaoComprasPaginatorController.desabilitaSuggestionComprador}"/>  
+              <ui:param name="forwardAction" value="encaminharItens"/>  
+              <ui:param name="clearModalAction" value="limparModalEncaminhamento"/>  
+              <ui:param name="goBack" value="voltarPanel"/>  
+              <ui:param name="varPontoParada" value="#{liberacaoSolicitacaoComprasPaginatorController.proximoPontoParada}"/>  
+              <ui:param name="varComprador" value="#{liberacaoSolicitacaoComprasPaginatorController.funcionarioComprador}"/>  
+              <ui:param name="reRenderOnSuccess" value=":formDadosCabecalho:panelListaSolicitacoes"/>  
+              <ui:param name="modalTitle" value="#{messages.LABEL_ENCAMINHAR_SOLICITACAO_COMPRAS}"/> 
+            </ui:decorate> 
+          </p:outputPanel> 
+        </h:form>  
+        <h:form prependId="false"> 
+          <p:outputPanel layout="inline"> 
+            <ui:decorate template="/pages/compras/solicitacaoCompra/modalDevolverSolicitacaoScSsEmLote.xhtml"> 
+              <ui:param name="controllerBean" value="#{liberacaoSolicitacaoComprasPaginatorController}"/>  
+              <ui:param name="forwardAction" value="devolverItens"/>  
+              <ui:param name="clearModalAction" value="limparModalDevolucao"/>  
+              <ui:param name="goBack" value="voltarPanel"/>  
+              <ui:param name="reRenderOnSuccess" value=":formDadosCabecalho:panelListaSolicitacoes"/>  
+              <ui:param name="modalTitle" value="#{messages.LABEL_DEVOLVER_SOLICITACAO_COMPRAS}"/> 
+            </ui:decorate> 
+          </p:outputPanel> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.ENCERRAMENTO_COMPETENCIA_INTERNACAO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{encerramentoCompetenciaInternacaoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{encerramentoCompetenciaInternacaoController}" ignoreEnter="true"/>
+		<script type="text/javascript" xml:space="preserve">
+			//<![CDATA[ 
+			function atualizarMensagens() {
+				core.executeDialogMsg(PF('messageDialogWG'));
+			}
+			//]]> 
+		</script>  
+      <h:form prependId="false" id="formEncerramentoCompetencia"> 
+    	<p:ajaxStatus onstart="PF('waitDialogWG').hide();PF('loadDialogWG').hide();" oncomplete="PF('waitDialogWG').hide();PF('loadDialogWG').hide();"/>
+        <aghu:panelGeral legend="#{messages.TITLE_COMPETENCIA_INTERNACAO_ABERTA}" id="panelEncerramento"> 
+          <aghu:linha>
+            <mec:inputTextData useSeconds="true" label="#{messages.LABEL_DATA_HORA_COMPETENCIA}" value="#{encerramentoCompetenciaInternacaoController.competencia.id.dtHrInicio}" readonly="true" id="dtHrInicio" tipo="datahora"/>  
+            <mec:inputNumero size="6" maxlength="2" label="#{messages.LABEL_MES_COMPETENCIA}" value="#{encerramentoCompetenciaInternacaoController.competencia.id.mes}" readonly="true" id="mes"/>  
+            <mec:inputNumero size="6" maxlength="4" label="#{messages.LABEL_ANO_COMPETENCIA}" value="#{encerramentoCompetenciaInternacaoController.competencia.id.ano}" readonly="true" id="ano"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_SITUACAO}" enum="DominioSituacaoCompetencia" value="#{encerramentoCompetenciaInternacaoController.competencia.indSituacao}" readonly="true" id="indSituacao"/> 
+          </aghu:linha>
+        </aghu:panelGeral>
+		
+        <aghu:panelGeral id="panelEncerramentoAuto">
+            <aghu:linha>
+            </aghu:linha> 		
+            <aghu:linha>
+				<mec:commandButton id="bt_encerrarContasSincrono" 
+					value="#{messages.LABEL_ENCERRAMENTO_AUTOMATICO_CONTAS}" 
+					onclick="PF('loadModalDialogWG').show();" 
+					oncomplete="PF('loadModalDialogWG').hide();PF('modalConfirmacaoEncerramentoContasWG').show();" styleClass="bt_cinza"  
+        	    	ajax="true" process="@this @(#dtHrInicio) @(#mes) @(#ano) @(#indSituacao)" 
+        	    	render="panelEncerramento"/> 
+          </aghu:linha>
+        </aghu:panelGeral>
+		  
+        <aghu:panelGeral legend="#{messages.TITLE_GERACAO_ARQUIVO_PARCIAL_COMPETENCIA}" id="panelCompetencia"> 
+            <aghu:linha> 
+                <mec:inputTextData value="#{encerramentoCompetenciaInternacaoController.dtInicialArqParcial}"
+                                   label="#{messages.LABEL_DATA_INICIAL}"
+                                   required="true"
+                                   styleClassField="frm_obrigatorio"
+                                   id="dtInicialArqParcial"
+                                   tipo="data"/>
+                <mec:inputTextData value="#{encerramentoCompetenciaInternacaoController.dtFinalArqParcial}"
+                                   label="#{messages.LABEL_DATA_FINAL}"
+                                   required="true"
+                                   styleClassField="frm_obrigatorio"
+                                   id="dtFinalArqParcial"
+                                   tipo="data"/>
+                <br clear="none"/>  
+                <mec:commandButton onclick="PF('pollGerarArquivoWV').start();PF('loadModalDialogWG').show();" 
+                	oncomplete="PF('pollGerarArquivoWV').stop();PF('loadModalDialogWG').hide();jq('button#abrirArquivoDownloadButton:button').click()" 
+					ajax="true"
+   					process="@this @(#dtInicialArqParcial) @(#dtFinalArqParcial)"
+                	id="bt_gerarArquivoParcial" value="#{messages.LABEL_GERAR_ARQUIVO}" 
+                	action="#{encerramentoCompetenciaInternacaoController.gerarArquivoParcial}" 
+                	styleClass="bt_cinza"/>
+			    <p:poll
+					interval="10"
+					autoStart="false"
+					listener="#{encerramentoCompetenciaInternacaoController.incrementa}"
+					id="pollGerarArquivo"
+					widgetVar="pollGerarArquivoWV"
+					global="false"
+					process="@this" />					
+            </aghu:linha> 
+        </aghu:panelGeral> 
+		
+		<aghu:panelGeral legend="#{messages.ENCERRAMENTO_COMPETENCIA_INTERNACAO}">
+            <aghu:linha>
+			</aghu:linha>	
+            <aghu:linha> 
+				<mec:commandButton id="bt_encerrarAbrirNovaCompetencia" 
+					value="#{messages.LABEL_ENCERRAR_ABRIR_NOVA_COMPETENCIA}" 
+					immediate="true" 
+					onclick="PF('modalConfirmacaoEncerramentoAberturaCompetenciaWG').show();" 
+					ajax="true" styleClass="bt_cinza"
+					process="@this @(#dtHrInicio) @(#mes) @(#ano) @(#indSituacao)" 
+        	    	render="panelEncerramento">
+        	    </mec:commandButton>  
+				<mec:commandButton id="bt_estornarCompetencia" value="#{messages.LABEL_ESTORNAR_COMPETENCIA}" 
+					immediate="true" onclick="PF('loadModalDialogWG').show();" 
+					oncomplete="PF('loadModalDialogWG').hide();PF('modalConfirmacaoEstornoDeCompetenciaWG').show();" 
+					disabled="#{!mf:hasPermission(securityController,'faturamentoAmbulatorio, estornarCompetencia')}" 
+					ajax="true" styleClass="bt_cinza">
+				</mec:commandButton> 
+					
+            </aghu:linha> 
+		</aghu:panelGeral>
+			
+        <aghu:panelGeral legend="#{messages.TITLE_DATA_ENCERRAMENTO_PROCEDIMENTO_REABERTURA}" id="panelReabertura"> 
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_DATA_INICIAL}" title="#{messages.TITLE_DATA_INICIAL_COMPETENCIA}" value="#{encerramentoCompetenciaInternacaoController.dtInicialCompetencia}" id="dtInicialCompetencia" tipo="data"/>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_FINAL}" title="#{messages.TITLE_DATA_FINAL_COMPETENCIA}" value="#{encerramentoCompetenciaInternacaoController.dtFinalCompetencia}" id="dtFinalCompetencia" tipo="data"/>  
+            <mec:inputNumero size="20" maxlength="10" label="#{messages.LABEL_PROCEDIMENTO_SUS}" title="#{messages.TITLE_PROCEDIMENTO_SUS}" value="#{encerramentoCompetenciaInternacaoController.procedimentoSUS}" id="procedimentoSUS"/>  
+            <br clear="none"/>  
+            <mec:commandButton id="bt_reabrirContasEncerradas" value="#{messages.LABEL_REABRIR_CONTAS_ENCERRADAS}" onclick="PF('loadModalDialogWG').show();" oncomplete="PF('loadModalDialogWG').hide();PF('modalConfirmarReaberturaContasWG').show();" styleClass="bt_cinza" 
+            	ajax="true" process="@this @(#dtInicialCompetencia) @(#dtFinalCompetencia) @(#procedimentoSUS)" render="panelReabertura"/> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form>      
+     
+      <p:dialog id="modalConfirmacaoEncerramentoAberturaCompetencia" width="400"
+		height="150" 
+  		modal="true" resizable="false" 
+ 		widgetVar="modalConfirmacaoEncerramentoAberturaCompetenciaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ENCERRAR_ABRIR_NOVA_COMPETENCIA}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_ENCERRAMENTO_ABERTURA_COMPETENCIA} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalEncerramentoAberturaCompetencia"> 
+            <aghu:linha> 
+              <mec:commandButton 
+              	onclick="PF('modalConfirmacaoEncerramentoAberturaCompetenciaWG').hide();" 
+              	id="bt_okEncerramentoAberturaCompetencia" 
+              	value="#{messages.LABEL_SIM}" 
+              	block="true" 
+              	action="#{encerramentoCompetenciaInternacaoController.encerrarCompetenciaAtualAbrirNovaCompetencia}" 
+              	render="progressPanelEncerrarAbrir"
+              	profile="ok"
+              	ajax="true" process="@this">
+              </mec:commandButton>  
+              <mec:commandButton id="bt_cancelarEncerramentoAberturaCompetencia" 
+              	value="#{messages.LABEL_NAO}" 
+             	onclick="PF('modalConfirmacaoEncerramentoAberturaCompetenciaWG').hide();" 
+             	profile="cancel" 
+             	ajax="true">
+              </mec:commandButton> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      
+      <p:dialog id="modalConfirmacaoEncerramentoContas" width="400" height="150" 
+      			modal="true" resizable="false" widgetVar="modalConfirmacaoEncerramentoContasWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ENCERRAMENTO_AUTOMATICO_CONTAS}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_ENCERRAMENTO_CONTAS_HOSPITALARES} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalConfirmacaoEncerramentoContas"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_gerar_ec_cth"
+              	value="#{messages.LABEL_SIM}"
+              	onclick="PF('modalConfirmacaoEncerramentoContasWG').hide();"
+                oncomplete="PF('gerar_ec_cth_LoadingModalBoxWG').show();PF('pollEncerrarContasNG').start();"
+              	action="#{encerramentoCompetenciaInternacaoController.encerrarContas}"
+              	profile="ok"
+              	render="progressPanelEncerrando"
+              	ajax="true" process="@this"/>  
+              <mec:commandButton id="bt_cancelar_ec_cth" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoEncerramentoContasWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      
+      <p:dialog id="modalConfirmacaoEstornoDeCompetencia" width="360" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoEstornoDeCompetenciaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ESTORNAR_COMPETENCIA}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_ESTORNO_DE_COMPETENCIA} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formConfirmacaoEstornoDeCompetencia"> 
+            <aghu:linha> 
+              <mec:commandButton onclick="PF('modalConfirmacaoEstornoDeCompetenciaWG').hide();PF('loadModalDialogWG').show();" 
+               oncomplete="PF('loadModalDialogWG').hide();" id="bt_okConfirmacaoEstornoDeCompetencia" value="#{messages.LABEL_SIM}" block="true"
+               action="#{encerramentoCompetenciaInternacaoController.estornarCompetencia}" profile="ok"/>  
+              <mec:commandButton id="bt_cancelarConfirmacaoEstornoDeCompetencia" value="#{messages.LABEL_NAO}" 
+              onclick="PF('modalConfirmacaoEstornoDeCompetenciaWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      
+
+  	  
+  	  <!--  Timer para encerramento atutomatico de conta -->
+  	  <p:outputPanel id="progressPanelEncerrando" layout="inline">
+	      <p:dialog style="text-align:center;"
+	      	id="gerar_ec_cth_LoadingModalBox"
+	      	height="200" width="400" top="100"
+	      	resizeable="false" moveable="false" closable="true" zindex="99999999" modal="true"
+	      	widgetVar="gerar_ec_cth_LoadingModalBoxWG"> 
+	        <f:facet name="header"> 
+	          <h:outputText value="Operação em andamento"/> 
+	        </f:facet>  
+	        <div style="text-align: center;"> 
+	          <br clear="none"/>  
+	          <br clear="none"/>  
+	          <h:graphicImage value="/resources/img/loading.gif"/>  
+	          <br clear="none"/>  
+	          <br clear="none"/>  
+	          <h:form prependId="false" id="formProgressBar"> 
+			    <p:poll
+					interval="1"
+					autoStart="false"
+					listener="#{encerramentoCompetenciaInternacaoController.getPorcentagemProgresso}"
+					id="pollProgressBarPanel"
+					update="outputPanelEncerramento"
+					widgetVar="pollEncerrarContasNG"
+					process="@this"
+					global="false"
+					stop="#{!encerramentoCompetenciaInternacaoController.encerrando}"/>
+				<p:outputPanel id="outputPanelEncerramento" layout="inline">
+	          		<h:outputText value="#{encerramentoCompetenciaInternacaoController.labelProgresso}" id="outputLabelProgress"/>
+	          	</p:outputPanel>
+	          </h:form>  
+	          <br clear="none"/>  
+	          <br clear="none"/>  
+	          <h:outputText value="#{mf:getDefaultValue(blockMsg,'Seu pedido está sendo processado, aguarde.')}"/> 
+	        </div> 
+	      </p:dialog> 
+      </p:outputPanel>
+    
+      <p:dialog id="modalConfirmarReaberturaContas" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmarReaberturaContasWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_REABRIR_CONTAS_ENCERRADAS}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_REABERTURA_CONTAS_HOSPITALARES} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalConfirmarReaberturaContas"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_reabertura_cths"
+              	value="#{messages.LABEL_SIM}"
+              	onclick="PF('modalConfirmarReaberturaContasWG').hide();PF('loadModalDialogWG').show();"
+                oncomplete="PF('loadModalDialogWG').hide();PF('reabrir_cths_LoadingModalBoxWG').show();PF('pollReaberturaContaNG').start();"
+              	action="#{encerramentoCompetenciaInternacaoController.reabrirContasEncerradas}"
+              	profile="ok"
+              	render="progressPanelReabertura"
+              	ajax="true"
+				stop="#{!encerramentoCompetenciaInternacaoController.reabrindo}"
+				global="false"
+              	process="@this"/>  
+              <mec:commandButton id="bt_cancelar_reabertua_cths" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmarReaberturaContasWG').hide();" profile="cancel" ajax="true"/> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    
+      <p:outputPanel id="progressPanelReabertura"> 
+	      <p:dialog style="text-align:center;" id="reabrir_cths_LoadingModalBox" height="200" top="100" resizeable="false" moveable="false" closable="true" width="400" zindex="99999999" modal="true" widgetVar="reabrir_cths_LoadingModalBoxWG"> 
+	        <f:facet name="header"> 
+	          <h:outputText value="Operação em andamento"/> 
+	        </f:facet>  
+	        <div style="text-align: center;"> 
+	          <br clear="none"/>  
+	          <br clear="none"/>  
+	          <h:graphicImage value="/resources/img/loading.gif"/>  
+	          <br clear="none"/>  
+	          <br clear="none"/>
+	          <h:form prependId="false" id="formProgressBarReabertura">            
+			    <p:poll
+					interval="3"
+					autoStart="false"
+					listener="#{encerramentoCompetenciaInternacaoController.getPorcentagemProgressoReabertura}"
+					id="pollProgressBarReabertura"
+					update="outputPanelReabertura"
+					widgetVar="pollReaberturaContaNG"
+					stop="#{!encerramentoCompetenciaInternacaoController.reabrindo}"
+					global="false"
+					process="@this" />
+				<p:outputPanel id="outputPanelReabertura" layout="inline">
+	          		<h:outputText value="#{encerramentoCompetenciaInternacaoController.labelProgresso}" id="outputLabelProgressReabertura"/>
+	          	</p:outputPanel>
+	          </h:form>          
+	          <br clear="none"/>  
+	          <br clear="none"/>  
+	          <h:outputText value="#{mf:getDefaultValue(blockMsg,'Seu pedido está sendo processado, aguarde.')}"/> 
+	        </div> 
+	      </p:dialog> 
+      </p:outputPanel> 
+	  <p:dialog header="..." widgetVar="loadModalDialogWG" minHeight="160" closable="false" resizable="false" modal="true">
+	  </p:dialog>	
+      <h:form prependId="false" id="formDownloadArquivo">            
+          <mec:commandButton id="abrirArquivoDownloadButton" immediate="true" 
+				action="#{encerramentoCompetenciaInternacaoController.dispararDownloadArquivoSus}" 
+				value="#{messages.LABEL_POPUP_DOWNLOAD}" style="visibility: hidden;" styleClass="bt_cinza"> 
+            <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+          </mec:commandButton> 
+	  </h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

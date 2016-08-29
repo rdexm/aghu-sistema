@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_AREAS_TRICOTOMIA} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{areaTricotomiaController}" />
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral
+				legend="#{messages.TITLE_PESQUISAR_AREAS_TRICOTOMIA}">
+				<mec:inputNumero id="filtroSeq" label="#{messages.LABEL_CODIGO}"
+					title="#{messages.TITLE_AREAS_TRICOTOMIA_CODIGO}"
+					value="#{areaTricotomiaController.filtroSeq}" maxlength="3"
+					size="3" />
+				<mec:inputText id="filtroDescricao"
+					label="#{messages.LABEL_AREAS_TRICOTOMIA_AREA_TRICOTOMIA}"
+					title="#{messages.TITLE_AREAS_TRICOTOMIA_AREA_TRICOTOMIA}"
+					value="#{areaTricotomiaController.filtroDescricao}" size="50"
+					maxlength="120" style="text-transform:uppercase"
+					removerCaratersEspeciais="false" />
+				<mec:selectOneMenu id="filtroSituacao"
+					label="#{messages.LABEL_SITUACAO}"
+					title="#{messages.TITLE_AREAS_TRICOTOMIA_SITUACAO}"
+					value="#{areaTricotomiaController.filtroSituacao}"
+					enum="DominioSituacao" />
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}" block="true"
+					disabled="#{not mf:hasPermission(securityController,'areaTricotomia,pesquisar')}"
+					action="#{areaTricotomiaController.pesquisar}" profile="search" />
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					action="#{areaTricotomiaController.limpar}" styleClass="bt_cinza"
+					profile="clear" />
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formCadastro">
+			<p:outputPanel id="panelCrud" rendered="#{areaTricotomiaController.realizouPesquisa}">
+				<aghu:panelGeral id="panelCadastro"
+					legend="#{messages.TITLE_LISTA_AREAS_TRICOTOMIA}">
+					<p:outputPanel id="panelFieldsCadastro" layout="inline">
+						<aghu:linha>
+							<mec:inputText id="descricao"
+								label="#{messages.LABEL_AREAS_TRICOTOMIA_AREA_TRICOTOMIA}"
+								title="#{messages.TITLE_AREAS_TRICOTOMIA_AREA_TRICOTOMIA}"
+								value="#{areaTricotomiaController.descricao}" size="50"
+								maxlength="120" required="true" style="text-transform:uppercase"
+								onkeypress="return disableEnterKey(event)"
+								removerCaratersEspeciais="false" />
+							<aghu:acao newLine="false">
+								<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}"
+									action="#{areaTricotomiaController.gravar}" status="commonstatus"
+									process="@this"
+									disabled="#{not mf:hasPermission(securityController,'areaTricotomia,gravar')}"
+									profile="ok" render="descricao, panelResultado" />
+							</aghu:acao>
+						</aghu:linha>
+					</p:outputPanel>
+					<aghu:linha>
+						<p:outputPanel id="panelMsgNaoEncontrado" layout="inline">
+							<p:outputPanel id="msgNaoEncontrado" layout="block"
+								styleClass="div-alerta"
+								rendered="#{empty areaTricotomiaController.listaAreaTricotomia}">
+								<h:outputText
+									value="#{messages.MENSAGEM_AREAS_TRICOTOMIA_NAO_ENCONTRADA}" />
+							</p:outputPanel>
+						</p:outputPanel>
+						<p:outputPanel id="panelResultado"
+							rendered="#{not empty areaTricotomiaController.listaAreaTricotomia}"
+							layout="inline">
+							<p:outputPanel layout="block"
+								style="width:99%; max-height:265px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;">
+								<mec:serverDataTable id="tabelaResultado"
+									style="margin: 0px !important;" width="99%"
+									list="#{areaTricotomiaController.listaAreaTricotomia}"
+									scrollable="true">
+									<c:set var="_areaTricotomia" value="#{item}" />
+									<p:column style="width: 90px; white-space:nowrap;">
+										<f:facet name="header">#{messages.LABEL_ACAO}</f:facet>
+										<mec:commandLink id="linkAtivarInativar"
+											title="#{_areaTricotomia.situacao eq 'A' ? messages.TITLE_AREA_TRICOTOMIA_CLIQUE_PARA_DESATIVAR : messages.TITLE_AREA_TRICOTOMIA_CLIQUE_PARA_ATIVAR}"
+											action="#{areaTricotomiaController.ativarInativar(_areaTricotomia)}"
+											rendered="#{mf:hasPermission(securityController,'areaTricotomia,gravar')}"
+											styleClass=" #{_areaTricotomia.situacao eq 'A' ? 'silk-activate' : 'silk-deactivate'} silk-icon"
+											ajax="true" render="panelResultado" process="@this" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">#{messages.LABEL_CODIGO}</f:facet>
+										<h:outputText value="#{_areaTricotomia.seq}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">#{messages.LABEL_AREAS_TRICOTOMIA_AREA_TRICOTOMIA}</f:facet>
+										<h:outputText value="#{_areaTricotomia.descricao}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">#{messages.LABEL_SITUACAO}</f:facet>
+										<h:outputText value="#{_areaTricotomia.situacao.descricao}" />
+									</p:column>
+								</mec:serverDataTable>
+							</p:outputPanel>
+						</p:outputPanel>
+					</aghu:linha>
+				</aghu:panelGeral>
+			</p:outputPanel>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

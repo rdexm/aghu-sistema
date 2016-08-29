@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Listar Sumário Alta para Reimpressão :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{listarSumarioAltaReimpressaoController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_SUMARIO_ALTA_CONCLUIDOS}"> 
+          <aghu:linha> 
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" size="9" maxlength="8" required="false" title="#{messages.TITLE_PRONTUARIO_INTERNACAO}" value="#{listarSumarioAltaReimpressaoController.prontuario}" id="prontuarioPesq"/>  
+            <mec:inputNumero label="#{messages.LABEL_CODIGO}" size="9" maxlength="8" required="false" title="#{messages.TITLE_CODIGO}" value="#{listarSumarioAltaReimpressaoController.codigo}" id="codigoPesq"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{listarSumarioAltaReimpressaoController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{listarSumarioAltaReimpressaoController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formTransPac"> 
+        <mec:serverDataTable dataModel="dataModel" value="#{listarSumarioAltaReimpressaoController}" id="tabelaTransfPac" controller="#{listarSumarioAltaReimpressaoController}"> 
+          <c:set var="_atendimento" value="#{item}"/>  
+          <p:column width="60px"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink title="#{messages.LABEL_HISTORICO_PACIENTE}" action="#{listarSumarioAltaReimpressaoController.imprimirHistoricoPaciente(_atendimento.prontuario)}" styleClass=" silk-book silk-icon"/>  
+            <mec:commandLink ajax="true" oncomplete="PF('modalConfirmacaoRefazerWG').show();" action="#{listarSumarioAltaReimpressaoController.carregarModal}" title="#{messages.LABEL_REFAZER}" styleClass=" silk-refazer silk-icon"> 
+              <f:setPropertyActionListener target="#{listarSumarioAltaReimpressaoController.atdSeq}" value="#{_atendimento.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink action="#{listarSumarioAltaReimpressaoController.reimprimir(_atendimento.seq)}" rendered="#{listarSumarioAltaReimpressaoController.obterQtAltasSumario(_atendimento.seq) gt 0}" title="#{messages.LABEL_REIMPRIMIR}" styleClass=" silk-reimprimir silk-icon"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_atendimento.prontuario}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_atendimento.paciente.codigo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME_PACIENTE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_atendimento.paciente.nome}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ESPECIALIDADE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_atendimento.especialidade.nomeReduzido}" title="#{_atendimento.especialidade.nomeEspecialidade}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_RESPONSAVEL}"/> 
+            </f:facet>  
+            <h:outputText value="#{(not empty _atendimento.servidor.pessoaFisica.nomeUsual) ? _atendimento.servidor.pessoaFisica.nomeUsual :_atendimento.servidor.pessoaFisica.nome}" rendered="#{_atendimento.servidor ne null}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DT_ATEND}"/> 
+            </f:facet>  
+            <h:outputText value="#{_atendimento.dthrInicio}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DT_ALTA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_atendimento.internacao.dthrAltaMedica}" rendered="#{_atendimento.origem eq 'I'}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText>  
+            <h:outputText value="#{_atendimento.dthrFim}" rendered="#{_atendimento.origem ne 'I'}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DT_SAIDA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_atendimento.dthrFim}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+            </h:outputText> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoRefazer" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoRefazerWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_CONFIRMAR_REFAZER}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_REFAZER} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalRefazer"> 
+            <mec:commandButton id="bt_refazer" value="#{messages.LABEL_SIM}" action="#{listarSumarioAltaReimpressaoController.refazer}" profile="search"/>  
+            <mec:commandButton id="bt_cancelar_refazer" value="#{messages.LABEL_NAO}" oncomplete="PF('modalConfirmacaoRefazerWG').hide();" profile="cancel" ajax="true" process="@this"> 
+              <f:setPropertyActionListener for="command" target="#{listarSumarioAltaReimpressaoController.exibirModal}" value="false"/> 
+            </mec:commandButton> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+    </ui:define> 
+  </ui:composition> 
+</html>

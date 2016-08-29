@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_CADASTRAR_CONTRATO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{manterConvenioItemContratoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manterConvenioItemContratoController}" />
+		<p:outputPanel id="item_panel" layout="inline"
+			styleClass="aghu-panel-geral">
+
+			<h:form prependId="false" id="formHdr">
+				<aghu:panelGeral legend="#{messages.TITLE_MODAL_ITENSCONTRATO_HDR}">		
+					<aghu:linha>
+						<mec:inputNumero id="nrContrato"
+							value="#{manterConvenioItemContratoController.nrContrato}"
+							label="#{messages.LABEL_NUMERO}" readonly="true" maxlength="7"
+							size="10" />
+						<mec:inputText id="cpfCnpj"
+							label="#{messages.LABEL_HEADER_CNPJCPF}"
+							value="#{manterConvenioItemContratoController.getCpfCnpj()}"
+							size="22" readonly="true" />
+						<mec:inputText id="razaoSocial"
+							label="#{messages.LABEL_HEADER_RAZAO_SOCIAL}"
+							value="#{manterConvenioItemContratoController.contrato.fornecedor.razaoSocial}"
+							style="text-transform:uppercase" size="60" readonly="true" />
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputText id="descricaoItem"
+							label="#{messages.LABEL_DESCRICAO_ITEM}"
+							value="#{manterConvenioItemContratoController.itemContrato.getDescricao()}"
+							style="text-transform:uppercase" size="60" readonly="true" />					
+						<mec:inputNumero id="valorTotal"
+							label="#{messages.LABEL_VALOR_TOTAL}"
+							value="#{manterConvenioItemContratoController.getValorTotal()}"
+							size="20" maxlength="15" inteiros="12" decimais="2"
+							styleClass="mascara(decimal)" readonly="true" > 
+						</mec:inputNumero>	
+					</aghu:linha>
+				</aghu:panelGeral>
+			</h:form>
+
+			<h:form prependId="false" id="form_item_contrato">
+				<aghu:panelGeral legend="#{messages.LABEL_CONVENIOS_ITEM}">
+					<aghu:linha>
+						<mec:suggestionBox id="convenioFinanceiro"
+						    var="convFinanceiro" itemValue="#{convFinanceiro}"
+							label="#{messages.LABEL_CONVENIO_FINANCEIRO}"
+							title="#{messages.TITLE_CONVENIO_FINANCEIRO}"
+							suggestionAction="listarConveniosFinanceirosAtivos"
+							descricaoInput="codigo" descricaoLabel="descricao"
+							removerCaratersEspeciais="true" width="400" maxlength="30"
+							required="true"
+							controller="#{manterConvenioItemContratoController}"
+							value="#{manterConvenioItemContratoController.convenio}">
+							<p:column>#{convFinanceiro.codigo}</p:column>
+							<p:column>#{convFinanceiro.descricao}</p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+					
+					<aghu:linha>
+						<mec:inputNumero label="#{messages.LABEL_VALOR}"
+							title="#{messages.TITLE_VALOR}"
+							value="#{manterConvenioItemContratoController.valorRateio}"
+							inteiros="13" decimais="2" required="true"
+							style="margin-top: 3px !important;"
+							styleClass="mascara(decimal)" id="valorRateio" />					
+					</aghu:linha>
+				</aghu:panelGeral>
+
+				<aghu:acao>
+					<mec:commandButton id="btn_adicionar" status="commonstatus"
+						value="#{manterConvenioItemContratoController.isEdit ? messages.LABEL_BT_EDICAO : messages.LABEL_BT_ADD}"
+						action="#{manterConvenioItemContratoController.adicionarConvenioAoItem}"
+						render="formTabelaConvenios"
+						profile="add" />
+				</aghu:acao>					
+			</h:form>
+		</p:outputPanel>
+				
+		<h:form prependId="false" id="formTabelaConvenios">
+
+				<mec:serverDataTable id="tabelaConvenios" 
+					rendered="#{manterConvenioItemContratoController.existeConvenio}"
+					list="#{manterConvenioItemContratoController.listaConveniosItens}">
+					<c:set var="_item" value="#{item}" />
+					
+					<p:column width="10">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_ACOES}" />
+						</f:facet>
+						<mec:commandLink propagation="nest" id="linkEdit"
+							title="#{messages.LABEL_EDITAR_ITEM}"
+							rendered="#{not _item.editando}"
+							action="#{manterConvenioItemContratoController.alterar(_item)}"
+							profile="edit" >
+						</mec:commandLink>
+						<mec:commandLink
+						    rendered="#{not _item.editando}"
+							action="#{manterConvenioItemContratoController.excluir(_item)}"
+							title="#{messages.LABEL_EXCLUIR}" profile="delete" >
+						</mec:commandLink>
+					</p:column>
+					<p:column width="180">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_CONVENIOS_FINANCEIROS}" />
+						</f:facet>
+						<h:outputText value="#{_item.fsoConveniosFinanceiro.descricao}" />
+					</p:column>
+					<p:column width="50">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_VALOR}" />
+						</f:facet>
+						<h:outputText value="#{_item.valorRateio}" >
+							<f:convertNumber type="currency" currencySymbol="R$"
+								maxFractionDigits="2" minFractionDigits="2" groupingUsed="true" />
+						</h:outputText>								
+					</p:column>
+				</mec:serverDataTable> 
+			
+			<aghu:acao>
+				<mec:commandButton value="#{messages.LABEL_GRAVAR}"
+					action="#{manterConvenioItemContratoController.gravar}"
+					id="bt_gravar" immediate="true" profile="ok">
+				</mec:commandButton>
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}"
+					action="#{manterConvenioItemContratoController.limpar}"
+					id="bt_limpar" immediate="true" profile="clear" />
+				<mec:commandButton value="#{messages.LABEL_VOLTAR}"
+					action="#{manterConvenioItemContratoController.voltar}"
+					id="bt_voltar" immediate="true"
+					styleClass="bt_voltar icon-back bt_cinza" profile="back">
+				</mec:commandButton>
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

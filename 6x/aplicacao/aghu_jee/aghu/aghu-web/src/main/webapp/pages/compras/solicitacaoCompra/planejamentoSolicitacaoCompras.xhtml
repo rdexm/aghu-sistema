@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">
+  <ui:define name="head">
+    <title>#{messages.TITLE_PLANEJAMENTO_SOLCOMPRAS}</title>
+    <h:outputScript name="aghu-aghweb.js"  library="js" target="head" />
+  </ui:define>
+
+  <ui:define name="metadata">
+    <f:metadata>
+      <f:viewAction action="#{planejamentoSolicitacaoComprasPaginatorController.pesquisar}"/>
+    </f:metadata>
+  </ui:define>
+
+  <ui:define name="body">
+    <mec:pageConfig controller="#{planejamentoSolicitacaoComprasPaginatorController}"/>
+    <h:form prependId="false">
+      <h:inputHidden id="contextPath" value="#{request.contextPath}" immediate="true"/>
+      <h:inputHidden id="cacheTab"/>
+    </h:form>
+    <h:form prependId="false" id="formDadosCabecalho">
+      <aghu:linha>
+        <p:outputPanel id="panelFiltros" layout="inline">
+          <p:accordionPanel id="togglePanelFiltroPesquisa" style="margin-left: 4px !important; margin-right: 4px !important; width: 99%" prependId="false" widgetVar="togglePanelFiltroPesquisaWG" dynamic="true">
+            <p:tab closable="true" title="#{messages.TITLE_PLANEJAMENTO_SOLCOMPRAS}">
+              <aghu:linha>
+                <mec:inputNumero id="numeroSc" label="#{messages.LABEL_SOL_NUMERO_SC}" size="7" title="#{messages.TITLE_SOL_NUMERO_SC}" maxlength="7" value="#{planejamentoSolicitacaoComprasPaginatorController.numeroSolicitacaoCompra}">
+                  <p:ajax event="change" eventsQueue="blurQueue" update="@(#panelFiltros)" process="@this" listener="#{planejamentoSolicitacaoComprasPaginatorController.desligarFiltros}"/>
+                </mec:inputNumero>
+                <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_REP_AUTOMATICA}" title="#{messages.TITLE_REP_AUTOMATICA}" id="slRepAutomatica" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{planejamentoSolicitacaoComprasPaginatorController.repAutomatica}"/>
+                <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_MAT_ESTOCAVEL}" title="#{messages.TITLE_MAT_ESTOCAVEL}" id="matEstocavel" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{planejamentoSolicitacaoComprasPaginatorController.matEstocavel}"/>
+                <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_FILTRO_URGENTE}" title="#{messages.TITLE_FILTRO_PLA_URGENTE}" id="chkUrgente" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{planejamentoSolicitacaoComprasPaginatorController.indUrgente}"/>
+                <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_FILTRO_PRIORITARIA}" id="chkPrioritaria" title="#{messages.TITLE_FILTRO_PLA_PRIORITARIA}" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{planejamentoSolicitacaoComprasPaginatorController.indPrioritaria}"/>
+                <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_FILTRO_EM_CONTRATO}" id="chkEmContrato" title="#{messages.TITLE_FILTRO_EM_CONTRATO}" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" value="#{planejamentoSolicitacaoComprasPaginatorController.indContrato}"/>
+              </aghu:linha>
+              <aghu:linha>
+                <mec:suggestionBox id="suggestionGrupoMaterial" label="#{messages.LABEL_FILTRO_GRUPO_MATERIAL}" title="#{messages.TITLE_FILTRO_GRUPO_MATERIAL}" width="400" suggestionAction="pesquisarGrupoMaterialPorCodigoDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" required="false" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaSuggestionGrupoMaterial or planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" controller="#{planejamentoSolicitacaoComprasPaginatorController}" value="#{planejamentoSolicitacaoComprasPaginatorController.grupoMaterial}">
+                  <p:column>#{item.codigo}</p:column>
+                  <p:column>#{item.descricao}</p:column>
+                </mec:suggestionBox>
+                <p:outputPanel id="panelMaterial" layout="inline">
+                  <mec:suggestionBox id="suggestionMaterial" label="#{messages.LABEL_FILTRO_MATERIAL}" title="#{messages.TITLE_FILTRO_MATERIAL}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarMaterialPorCodigoDescricao" width="650" posSelectionAction="verificarGrupoMaterialHabilitado" posDeleteAction="verificarGrupoMaterialHabilitado" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" controller="#{planejamentoSolicitacaoComprasPaginatorController}" value="#{planejamentoSolicitacaoComprasPaginatorController.material}" render="panelFiltros,materialToolTip">
+                    <p:column>
+                      <f:facet name="header">
+                        <b>#{messages.LABEL_CODIGO}</b>
+                      </f:facet> #{item.codigo}
+                    </p:column>
+                    <p:column>
+                      <f:facet name="header">
+                        <b>#{messages.LABEL_NOME}</b>
+                      </f:facet>
+                      <h:outputText value="#{(item.nome.length() > 40) ? fn:substring(item.nome,0,40) : item.nome} #{(item.nome.length() > 40) ? '...' : '' }" title="#{item.nome}" />
+                    </p:column>
+                    <p:column>
+                      <f:facet name="header">
+                        <b>#{messages.LABEL_DESCRICAO}</b>
+                      </f:facet>
+                      <h:outputText value="#{(item.descricao.length() > 40) ? fn:substring(item.descricao,0,40) : item.descricao} #{(item.descricao.length() > 40) ? '...' : '' }" title="#{item.getDescricaoSplited(70)}" />
+                    </p:column>
+                  </mec:suggestionBox>
+                  <p:tooltip id="materialToolTip" for="panelMaterial" mode="ajax" disabled="#{empty planejamentoSolicitacaoComprasPaginatorController.material}">
+                    <h:outputText value="#{messages.LABEL_NOME}: #{planejamentoSolicitacaoComprasPaginatorController.material.nome}"/>
+                    <br clear="none"/>
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}: #{planejamentoSolicitacaoComprasPaginatorController.material.descricao}" rendered="#{not empty planejamentoSolicitacaoComprasPaginatorController.material.descricao}"/>
+                  </p:tooltip>
+                </p:outputPanel>
+                <mec:suggestionBox id="suggestionPontoParada" label="#{messages.LABEL_SOL_PONTO_PARADA}" title="#{messages.TITLE_PONTO_PARADA}" width="500" suggestionAction="pesquisarPontoParadaSolicitacaoCaminhoPorCodigoOuDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" required="false" controller="#{planejamentoSolicitacaoComprasPaginatorController}" value="#{planejamentoSolicitacaoComprasPaginatorController.pontoParada}">
+                  <p:column>#{item.codigo}</p:column>
+                  <p:column>#{item.descricao}</p:column>
+                  <p:column>#{item.tipoPontoParada.getDescricao()}</p:column>
+                </mec:suggestionBox>
+              </aghu:linha>
+              <aghu:linha>
+                <mec:suggestionBox id="suggestionCcSolicitante" label="#{messages.LABEL_CCUSTO_SOLICITANTE}" title="#{messages.TITLE_CCUSTO_SOLICITANTE}" width="400" suggestionAction="pesquisarCentroCustoPorCodigoDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" required="false" controller="#{planejamentoSolicitacaoComprasPaginatorController}" value="#{planejamentoSolicitacaoComprasPaginatorController.centroCustoSolicitante}">
+                  <p:column>#{item.codigo}</p:column>
+                  <p:column>#{item.descricao}</p:column>
+                </mec:suggestionBox>
+                <mec:suggestionBox id="suggestionCcAplicacao" label="#{messages.LABEL_CCUSTO_APLICACAO}" title="#{messages.TITLE_CCUSTO_APLICACAO}" width="400" suggestionAction="pesquisarCentroCustoPorCodigoDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" required="false" controller="#{planejamentoSolicitacaoComprasPaginatorController}" value="#{planejamentoSolicitacaoComprasPaginatorController.centroCustoAplicacao}">
+                  <p:column>#{item.codigo}</p:column>
+                  <p:column>#{item.descricao}</p:column>
+                </mec:suggestionBox>
+              </aghu:linha>
+              <aghu:linha>
+                <mec:suggestionBox id="suggestionFiltroComprador" label="#{messages.LABEL_ENC_COMPRADOR}" title="#{messages.TITLE_ENC_COMPRADOR}" width="400" suggestionAction="pesquisarCompradorAtivoPorMatriculaNome" descricaoInput="id.matricula" descricaoLabel="pessoaFisica.nome" maxlength="60" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" required="false" controller="#{planejamentoSolicitacaoComprasPaginatorController}" value="#{planejamentoSolicitacaoComprasPaginatorController.filtroComprador}">
+                  <p:column>#{item.id.matricula}</p:column>
+                  <p:column>#{item.pessoaFisica.nome}</p:column>
+                </mec:suggestionBox>
+                <mec:suggestionBox id="suggestionVerbaGestao" label="#{messages.LABEL_FILTRO_VERBA_GESTAO}" title="#{messages.TITLE_FILTRO_VERBA_GESTAO}" maxlength="60" width="400" descricaoInput="seq" descricaoLabel="descricao" readonly="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}" suggestionAction="pesquisarVerbasGestao" required="false" controller="#{planejamentoSolicitacaoComprasPaginatorController}" value="#{planejamentoSolicitacaoComprasPaginatorController.verbaGestao}">
+                  <p:column>#{item.seq}</p:column>
+                  <p:column>#{item.descricao}</p:column>
+                </mec:suggestionBox>
+              </aghu:linha>
+              <aghu:linha>
+                <p:outputPanel id="panelPeriodoSol" layout="inline">
+                  <mec:inputTextData id="cdPeriodoInicioSol" size="10"
+                                     label="#{messages.LABEL_DT_SOLICITACAO_SOL_COMPR}" title="#{messages.TITLE_PERIODO_SOL_COMPRAS}" required="false"
+                                     disabled="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}"
+                                     value="#{planejamentoSolicitacaoComprasPaginatorController.dataInicioSolicitacaoCompra}">
+                  </mec:inputTextData>
+                  <div  class="aghu-boxinput" style="padding-top: 25px;">
+                    <p:outputPanel styleClass="aghu-lineinput">
+                      <p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+                    </p:outputPanel>
+                  </div>
+                  <mec:inputTextData id="cdPeriodoFimSol" size="10" disabled="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}"
+                                     value="#{planejamentoSolicitacaoComprasPaginatorController.dataFimSolicitacaoCompra}">
+                  </mec:inputTextData>
+                </p:outputPanel>
+
+                <p:outputPanel id="panelPeriodoAut" layout="inline">
+                  <mec:inputTextData id="dtIniAutorizacaoSolicitacao" size="10"
+                                     label="#{messages.LABEL_DATA_AUTORIZACAO_SOLICITACAO_COMPRAS}" title="#{messages.TITLE_DATA_AUTORIZACAO_SOLICITACAO_COMPRAS}" required="false"
+                                     disabled="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}"
+                                     value="#{planejamentoSolicitacaoComprasPaginatorController.dataInicioAutorizacaoSolicitacaoCompra}">
+                  </mec:inputTextData>
+                  <div  class="aghu-boxinput" style="padding-top: 25px;">
+                    <p:outputPanel styleClass="aghu-lineinput">
+                      <p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+                    </p:outputPanel>
+                  </div>
+                  <mec:inputTextData id="dtFimAutorizacaoSolicitacao" size="10" disabled="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}"
+                                     value="#{planejamentoSolicitacaoComprasPaginatorController.dataFimAutorizacaoSolicitacaoCompra}">
+                  </mec:inputTextData>
+                </p:outputPanel>
+
+                <p:outputPanel id="panelPeriodoAnalise" layout="inline">
+                  <mec:inputTextData id="dtIniAnaliseSolicitacao" size="10"
+                                     label="#{messages.LABEL_DATA_ANALISE_SOLICITACAO_COMPRAS}" title="#{messages.TITLE_DATA_ANALISE_SOLICITACAO_COMPRAS}" required="false"
+                                     disabled="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}"
+                                     value="#{planejamentoSolicitacaoComprasPaginatorController.dataInicioAnaliseSolicitacaoCompra}">
+                  </mec:inputTextData>
+                  <div  class="aghu-boxinput" style="padding-top: 25px;">
+                    <p:outputPanel styleClass="aghu-lineinput">
+                      <p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+                    </p:outputPanel>
+                  </div>
+                  <mec:inputTextData id="dtFimAnaliseSolicitacao" size="10" disabled="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaFiltros}"
+                                     value="#{planejamentoSolicitacaoComprasPaginatorController.dataFimAnaliseSolicitacaoCompra}">
+                  </mec:inputTextData>
+                </p:outputPanel>
+                <p:outputPanel id="panelFieldDtUltExec" layout="inline">
+                  <mec:inputTextData id="fieldDtUltExec" size="12"
+                                     label="#{messages.LABEL_DATA_ULTIMA_EXECUCAO}" title="#{messages.TITLE_DATA_ULTIMA_EXECUCAO}" required="false"
+                                     readonly="true" tipo="datahora"
+                                     value="#{planejamentoSolicitacaoComprasPaginatorController.dataUltimaExecucao}">
+                  </mec:inputTextData>
+                </p:outputPanel>
+              </aghu:linha>
+            </p:tab>
+          </p:accordionPanel>
+        </p:outputPanel>
+      </aghu:linha>
+      <aghu:acao>
+        <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" onclick="PF('togglePanelFiltroPesquisaWG').unselect(0);" action="#{planejamentoSolicitacaoComprasPaginatorController.pesquisar}" ajax="true" render="formTabelaSco" profile="search"/>
+        <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{planejamentoSolicitacaoComprasPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>
+        <mec:commandButton id="bt_gerarsc" value="#{messages.LABEL_GERAR_SC}" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoCadastrarSc or planejamentoSolicitacaoComprasPaginatorController.temPermissaoPlanejamento  or planejamentoSolicitacaoComprasPaginatorController.temPermissaoComprador or planejamentoSolicitacaoComprasPaginatorController.temPermissaoAreasEspec or planejamentoSolicitacaoComprasPaginatorController.temPermissaoChefia}" action="#{planejamentoSolicitacaoComprasPaginatorController.gerarSc}" styleClass="bt_cinza">
+          <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-planejamentoSolicitacaoCompras" for="command"/>
+        </mec:commandButton>
+        <mec:commandButton id="bt_gerarscrepautomatica" action="#{planejamentoSolicitacaoComprasPaginatorController.carregarHorarioAgendamentoGeracaoAutomaticaSolCompras}" oncomplete="PF('modalGerarSolComprasAlmoxWG').show();" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoGerarScAutomatica}" value="#{messages.LABEL_GERAR_SC_REP_AUTOMATICA}" ajax="true" render="horaAgendamento" styleClass="bt_cinza"/>
+        <mec:commandButton id="bt_listarscrepautomatica" value="#{messages.LABEL_LISTAR_SC_ESTOCAVEL}" oncomplete="PF('modalRelatorioSCEstocavelWG').show();" action="#{planejamentoSolicitacaoComprasPaginatorController.limparModalRelatorioEstocavel()}" ajax="true" render="formRelatCompraEstocavel" styleClass="bt_cinza"/>
+        <mec:commandButton id="bt_pesquisarSCAut" render="formTabelaSco" onclick="PF('togglePanelFiltroPesquisaWG').unselect(0);" ajax="true" value="#{messages.LABEL_PESQUISAR_SC_AUT}" disabled="#{planejamentoSolicitacaoComprasPaginatorController.dataUltimaExecucao == null}" action="#{planejamentoSolicitacaoComprasPaginatorController.pesquisarSCAutomatica}" styleClass="bt_cinza"/>
+        <mec:commandButton id="bt_visualizarLog" value="#{messages.LABEL_LOG_REPOSICAO_AUT}" action="#{planejamentoSolicitacaoComprasPaginatorController.visualizarLogReposicaoAutomatica}" styleClass="bt_cinza">
+          <f:setPropertyActionListener target="#{logReposicaoAutomaticaPaginatorController.voltarParaUrl}" value="compras-planejamentoSolicitacaoCompras" for="command"/>
+        </mec:commandButton>
+        <mec:commandButton id="bt_reposicaoSc_aghu5"
+                           value="#{messages.LABEL_REPOSICAO_AUT_PLAN}"
+                           onclick="abrirAGHUExternoModal('#{planejamentoSolicitacaoComprasPaginatorController.getURLPlanejarCompras()}',{parameters:{onClose:function(){}}});return false;"
+                           styleClass="bt_cinza"
+                           readonly="#{empty planejamentoSolicitacaoComprasPaginatorController.getURLPlanejarCompras()}"/>
+
+        <mec:commandButton value="#{messages.LABEL_VOLTAR}" immediate="true" rendered="#{not empty planejamentoSolicitacaoComprasPaginatorController.voltarParaUrl}" action="#{planejamentoSolicitacaoComprasPaginatorController.voltar}" styleClass="bt_voltar bt_cinza" profile="back"/>
+      </aghu:acao>
+    </h:form>
+    <h:form id="formTabelaSco" prependId="false">
+      <p:outputPanel rendered="#{planejamentoSolicitacaoComprasPaginatorController.dataModel.pesquisaAtiva}">
+
+        <aghu:panelGeral legend="#{messages.LEGEND_GRID_PLAN_SOLICITACOES_COMPRA}">
+          <p:outputPanel id="panelBotoes">
+            <aghu:linha style="padding: 5px">
+              <table>
+                <tr>
+                  <td rowspan="1" colspan="1">
+                    <mec:commandButton id="bt_encaminhar" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoEncaminhar}" disabled="#{empty planejamentoSolicitacaoComprasPaginatorController.allChecked}" action="#{planejamentoSolicitacaoComprasPaginatorController.limparModalEncaminhamento()}" oncomplete="PF('modalEncaminharScoWG').show();" value="#{messages.LABEL_BOTAO_ENCAMINHAR}" ajax="true" styleClass="bt_cinza"/>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <mec:commandButton id="bt_exclusao" render="modalExclusaoSco" disabled="#{empty planejamentoSolicitacaoComprasPaginatorController.allChecked}" oncomplete="PF('modalExclusaoScoWG').show();" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoCadastrarSc or planejamentoSolicitacaoComprasPaginatorController.temPermissaoPlanejamento  or planejamentoSolicitacaoComprasPaginatorController.temPermissaoComprador or planejamentoSolicitacaoComprasPaginatorController.temPermissaoAreasEspec or planejamentoSolicitacaoComprasPaginatorController.temPermissaoChefia}" action="#{planejamentoSolicitacaoComprasPaginatorController.limparModalExclusao()}" value="#{messages.LABEL_BOTAO_EXCLUIR}" ajax="true" styleClass="bt_cinza"/>
+                  </td>
+                  <td rowspan="1" colspan="1">
+                    <mec:commandButton id="bt_gravarsolicitacoes" disabled="#{empty planejamentoSolicitacaoComprasPaginatorController.allChecked}" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoCadastrarSc or planejamentoSolicitacaoComprasPaginatorController.temPermissaoPlanejamento  or planejamentoSolicitacaoComprasPaginatorController.temPermissaoComprador or planejamentoSolicitacaoComprasPaginatorController.temPermissaoAreasEspec or planejamentoSolicitacaoComprasPaginatorController.temPermissaoChefia}" action="#{planejamentoSolicitacaoComprasPaginatorController.gravarEdicoes}" value="#{messages.LABEL_BOTAO_GRAVAR}" ajax="true" render="solcomprasTable" styleClass="bt_cinza"/>
+                    <mec:commandButton id="bt_imprimirsolicitacao" disabled="#{empty planejamentoSolicitacaoComprasPaginatorController.allChecked}" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoCadastrarSc or planejamentoSolicitacaoComprasPaginatorController.temPermissaoPlanejamento  or planejamentoSolicitacaoComprasPaginatorController.temPermissaoComprador or planejamentoSolicitacaoComprasPaginatorController.temPermissaoAreasEspec or planejamentoSolicitacaoComprasPaginatorController.temPermissaoChefia or planejamentoSolicitacaoComprasPaginatorController.temPermissaoConsultarSc}" action="#{planejamentoSolicitacaoComprasPaginatorController.imprimirItens}" name="bt_imprimir" value="#{messages.LABEL_IMPRIMIR}" ajax="true" render="panelListaSolicitacoes" styleClass="bt_cinza">
+                      <f:setPropertyActionListener target="#{imprimirSolicitacaoDeComprasController.voltarParaUrl}" value="compras-planejamentoSolicitacaoCompras" for="command"/>
+                    </mec:commandButton>
+                  </td>
+                </tr>
+              </table>
+            </aghu:linha>
+          </p:outputPanel>
+          <aghu:linha>
+
+            <mec:serverDataTableMultipleSelection rowKeyVar="index" render="panelBotoes" updateCheckOnPage="atualizarAllChecked" toggleSelectListener="marcarTodos" rowCheckListener="selecionarLinha" rowUncheckListener="desmarcarLinha" dataModel="dataModel" selection="listaChecked" id="solcomprasTable" value="#{planejamentoSolicitacaoComprasPaginatorController}" controller="#{planejamentoSolicitacaoComprasPaginatorController}">
+              <c:set var="_item" value="#{item}"/>
+              <p:column exportable="false" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_ACAO}"/>
+                </f:facet>
+                <mec:commandLink id="lnkEstatistica" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoConsultaEstatisticaConsumo}" title="#{messages.LABEL_ESTATISTICA_CONSUMO}" action="#{planejamentoSolicitacaoComprasPaginatorController.redirecionarEstatisticaConsumo}" styleClass=" silk-chart-bar silk-icon">
+                  <f:setPropertyActionListener target="#{estatisticaConsumoController.codigoMaterial}" value="#{_item.material.getCodigo()}" for="command"/>
+                  <f:setPropertyActionListener target="#{estatisticaConsumoController.voltarPara}" value="compras-planejamentoSolicitacaoCompras" for="command"/>
+                </mec:commandLink>
+                <mec:commandLink id="lnkFases" title="#{messages.LABEL_ANDAMENTO}" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoCadastrarSc or planejamentoSolicitacaoComprasPaginatorController.temPermissaoPlanejamento  or planejamentoSolicitacaoComprasPaginatorController.temPermissaoComprador or planejamentoSolicitacaoComprasPaginatorController.temPermissaoAreasEspec or planejamentoSolicitacaoComprasPaginatorController.temPermissaoChefia or planejamentoSolicitacaoComprasPaginatorController.temPermissaoConsultarSc}" action="#{planejamentoSolicitacaoComprasPaginatorController.redirecionarFasesSolicitacaoCompra}" styleClass=" silk-lista-consultar silk-icon">
+                  <f:setPropertyActionListener target="#{fasesSolicitacaoCompraController.numero}" value="#{_item.numero}" for="command"/>
+                  <f:setPropertyActionListener target="#{fasesSolicitacaoCompraController.mostrarBotaoVoltar}" value="#{true}" for="command"/>
+                  <f:setPropertyActionListener target="#{fasesSolicitacaoCompraController.voltarPara}" value="compras-planejamentoSolicitacaoCompras" for="command"/>
+                </mec:commandLink>
+                <mec:commandLink id="lnkParcelasItenAf" title="#{messages.TITLE_PARCELAMENTO_ENTREGA_AF}" rendered="#{planejamentoSolicitacaoComprasPaginatorController.verificarHabilitacaoCamposAf(_item,true,false,false,false,false) and                                         (planejamentoSolicitacaoComprasPaginatorController.temPermissaoLiberarParcelasAf or planejamentoSolicitacaoComprasPaginatorController.temPermissaoConsultarParcelasAf)}" action="#{planejamentoSolicitacaoComprasPaginatorController.redirecionarLinks(_item, true, false)}" styleClass=" silk-grade-horario-pesquisa silk-icon" ajax="true" process="@this" />
+                <mec:commandLink id="lnkEditarAf" title="#{messages.TITLE_EDITAR_AF}" rendered="#{(planejamentoSolicitacaoComprasPaginatorController.temPermissaoGerarAf or planejamentoSolicitacaoComprasPaginatorController.temPermissaoConsultarAf ) and                                         (planejamentoSolicitacaoComprasPaginatorController.verificarHabilitacaoCamposAf(_item,true,false,false,false,false))}" action="#{planejamentoSolicitacaoComprasPaginatorController.redirecionarLinks(_item, false, true)}" styleClass=" silk-text-padding-right silk-icon" ajax="true"  process="@this" />
+              </p:column>
+              <p:column id="selChk" exportable="false" selectionMode="multiple" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}"/>
+              <p:column sortBy="#{_item.numero}" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_SC}" title="#{messages.MESSAGE_HINT_GRID_SC}"/>
+                </f:facet>
+                <mec:commandLink id="lnkVisualizar" style="color:blue;" value="#{_item.numero}" title="#{messages.LABEL_VISUALIZAR_GRID_SC}" rendered="#{ not (planejamentoSolicitacaoComprasPaginatorController.temPermissaoCadastrarSc or planejamentoSolicitacaoComprasPaginatorController.temPermissaoPlanejamento  or planejamentoSolicitacaoComprasPaginatorController.temPermissaoComprador or planejamentoSolicitacaoComprasPaginatorController.temPermissaoAreasEspec or planejamentoSolicitacaoComprasPaginatorController.temPermissaoChefia) and planejamentoSolicitacaoComprasPaginatorController.temPermissaoConsultarSc}" action="#{planejamentoSolicitacaoComprasPaginatorController.redirecionarSolicitacaoCompra}">
+                  <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{_item.numero}" for="command"/>
+                  <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-planejamentoSolicitacaoCompras" for="command"/>
+                </mec:commandLink>
+                <mec:commandLink id="lnkEditar" style="color:blue;" value="#{_item.numero}" title="#{messages.LABEL_EDITAR_GRID_SC}" rendered="#{planejamentoSolicitacaoComprasPaginatorController.temPermissaoCadastrarSc or planejamentoSolicitacaoComprasPaginatorController.temPermissaoPlanejamento  or planejamentoSolicitacaoComprasPaginatorController.temPermissaoComprador or planejamentoSolicitacaoComprasPaginatorController.temPermissaoAreasEspec or planejamentoSolicitacaoComprasPaginatorController.temPermissaoChefia}" action="#{planejamentoSolicitacaoComprasPaginatorController.redirecionarSolicitacaoCompra}">
+                  <f:setPropertyActionListener target="#{solicitacaoCompraController.numero}" value="#{_item.numero}" for="command"/>
+                  <f:setPropertyActionListener target="#{solicitacaoCompraController.voltarParaUrl}" value="compras-planejamentoSolicitacaoCompras" for="command"/>
+                </mec:commandLink>
+              </p:column>
+              <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_ESTOCAVEL}" title="#{messages.MESSAGE_HINT_GRID_ESTOCAVEL}"/>
+                </f:facet>
+                <h:outputText value="#{_item.material.indEstocavel}"/>
+              </p:column>
+              <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_GERACAO_AUTOMATICA}" title="#{messages.MESSAGE_HINT_GRID_GERACAO_AUTOMATICA}"/>
+                </f:facet>
+                <h:outputText value="#{(_item.geracaoAutomatica == true ? 'S' : 'N')}"/>
+              </p:column>
+              <p:column sortBy="#{_item.prioridade}" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_PRIORITARIO}" title="#{messages.MESSAGE_HINT_GRID_PRIORITARIO}"/>
+                </f:facet>
+                <h:outputText value="#{(_item.prioridade == true ? 'S' : 'N')}"/>
+              </p:column>
+              <p:column sortBy="#{_item.dtAutorizacao}" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_DATA_GRID_AUTORIZACAO_SOLICITACAO_COMPRAS}" title="#{messages.MESSAGE_HINT_DATA_AUT_SOLCOMPRAS}"/>
+                </f:facet>
+                <p:outputPanel id="panelDtAut">
+                  <h:outputText value="#{_item.dtAutorizacao}">
+                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                  </h:outputText>
+                </p:outputPanel>
+                <p:tooltip for="panelDtAut" style="width:300px; word-wrap: break-word;" styleClass="tooltip">
+                  <h:outputText value="#{messages.LABEL_DATA_GRID_SOLICITACAO_COMPRAS_PLAN}:"/>
+                  <h:outputText value="#{_item.dtSolicitacao}">
+                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                  </h:outputText>
+                </p:tooltip>
+              </p:column>
+              <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_DATA_ANALISE_SOLICITACAO_COMPRAS}" title="#{messages.MESSAGE_HINT_DATA_ANAL_SOLCOMPRAS}"/>
+                </f:facet>
+                <p:calendar id="dtAutorizacao#{_item.numero}" locale="pt" style="white-space: nowrap;" name="dtAutorizacao#{_item.numero}" firstWeekDay="0" inputSize="7" accesskey="d" maxlength="10" size="10" value="#{_item.dtAnalise}" buttonIconDisabled="/images/blank.gif" enableManualInput="true" showFooter="true" showApplyButton="false" showWeeksBar="false" ajaxSingle="true" direction="bottom-right" oninputfocus="jQuery(this).mask('99/99/9999');" mode="popup" showButtonPanel="true" pattern="dd/MM/yyyy" showOn="button">
+                  <p:ajax event="dateSelect" oncomplete="PF('solcomprasTableWG').selectRow(#{index});" process="@this" listener="#{planejamentoSolicitacaoComprasPaginatorController.atualizarListaEdicoes(_item)}"/>
+                  <p:ajax event="change" oncomplete="PF('solcomprasTableWG').selectRow(#{index});" process="@this" listener="#{planejamentoSolicitacaoComprasPaginatorController.atualizarListaEdicoes(_item)}"/>
+                </p:calendar>
+              </p:column>
+              <p:column sortBy="#{_item.material}" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_MATERIAL}"/>
+                </f:facet>
+                <p:outputPanel id="panelMaterial">
+                  <h:outputText value="#{_item.material.codigo}"/>
+                </p:outputPanel>
+                <p:tooltip for="panelMaterial" style="width:300px; word-wrap: break-word;" styleClass="tooltip">
+                  <h:outputText value="#{_item.material.nome}"/>
+                  <br clear="none"/>
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}: #{_item.material.descricao}" rendered="#{not empty _item.material.descricao}"/>
+                </p:tooltip>
+              </p:column>
+              <p:column sortBy="#{_item.qtdeSolicitada}" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_QTD_SOLICITADA_GRID_SOLCOMPRAS}"/>
+                </f:facet>
+                <p:outputPanel id="panelQtdsolic">
+                  <h:outputText value="#{_item.qtdeSolicitada}" style="float:right; ">
+                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" maxIntegerDigits="11" type="currency" currencySymbol=""/>
+                  </h:outputText>
+                </p:outputPanel>
+                <p:tooltip for="panelQtdsolic" style="width:300px;  word-wrap: break-word;" styleClass="tooltip">
+                  <h:outputText value="#{messages.LABEL_QTD_SALDO_PROG_PARCELA}: #{planejamentoSolicitacaoComprasPaginatorController.obterQtdSaldoParcelas(_item)}"/>
+                </p:tooltip>
+              </p:column>
+              <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_QTD_APROVADA}" title="#{messages.MESSAGE_HINT_QTD_APROV}"/>
+                </f:facet>
+                <h:inputText id="qtdAprovada#{_item.numero}" styleClass="numerico" value="#{_item.qtdeAprovada}" name="qtdAprovada#{_item.numero}" required="false" maxlength="7" autocomplete="off" disabled="#{planejamentoSolicitacaoComprasPaginatorController.verificarHabilitacaoCamposAf(_item,false,false,false,false,true)}" size="6">
+                  <f:converter converterId="javax.faces.Long"/>
+                  <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>
+                  <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>
+                  <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>
+                  <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>
+                  <p:ajax event="change" oncomplete="PF('solcomprasTableWG').selectRow(#{index});" process="@this" listener="#{planejamentoSolicitacaoComprasPaginatorController.atualizarListaEdicoes(_item)}"/>
+                </h:inputText>
+              </p:column>
+              <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_QTD_REF}" title="#{messages.MESSAGE_HINT_QTD_REF}"/>
+                </f:facet>
+                <h:inputText id="qtdReforco#{_item.numero}" styleClass="numerico" value="#{_item.qtdeReforco}" title="#{messages.MESSAGE_HINT_FIELD_QTD_REF}" name="qtdReforco#{_item.numero}" disabled="#{planejamentoSolicitacaoComprasPaginatorController.verificarHabilitacaoCamposAf(_item,false,false,false,false,true) or              (not planejamentoSolicitacaoComprasPaginatorController.verificarItemAF(_item))}" required="false" maxlength="7" autocomplete="off" size="7">
+                  <f:converter converterId="javax.faces.Long"/>
+                  <f:attribute name="emptyStringToNull" value="#{mf:getDefaultValue(emptyStringToNull, false)}"/>
+                  <f:attribute name="removerEspacosBrancos" value="#{mf:getDefaultValue(removerEspacosBrancos, true)}"/>
+                  <f:attribute name="removerCaratersEspeciais" value="#{mf:getDefaultValue(removerCaratersEspeciais, true)}"/>
+                  <f:attribute name="caixaAlta" value="#{mf:getDefaultValue(caixaAlta, true)}"/>
+                  <p:ajax event="change" oncomplete="PF('solcomprasTableWG').selectRow(#{index});" process="@this" listener="#{planejamentoSolicitacaoComprasPaginatorController.atualizarListaEdicoes(_item)}"/>
+                </h:inputText>
+              </p:column>
+              <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_UNIDADE}" title="#{messages.MESSAGE_HINT_UNIDADE_MATERIAL}"/>
+                </f:facet>
+                <h:outputText value="#{_item.unidadeMedida.codigo}"/>
+              </p:column>
+              <p:column sortBy="#{_item.centroCusto}" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_LIB_CC_SOLICITANTE}" title="#{messages.MESSAGE_HINT_CC_SOLICITANTE}" />
+                </f:facet>
+                <p:outputPanel id="panelCcSolic">
+                  <h:outputText value="#{_item.centroCusto.getCodigo()}"/>
+                </p:outputPanel>
+                <p:tooltip for="panelCcSolic" style="width:300px; word-wrap: break-word;" styleClass="tooltip">
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}: #{_item.centroCusto.getDescricao()}"/>
+                </p:tooltip>
+              </p:column>
+              <p:column sortBy="#{_item.centroCustoAplicada}" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_LIB_CC_APLICACAO}" title="#{messages.MESSAGE_HINT_CC_APLICACAO}"/>
+                </f:facet>
+                <p:outputPanel id="panelCcAplic">
+                  <h:outputText value="#{_item.centroCustoAplicada.getCodigo()}"/>
+                </p:outputPanel>
+                <p:tooltip for="panelCcAplic" style="width:300px; word-wrap: break-word;" styleClass="tooltip">
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}: #{_item.centroCustoAplicada.getDescricao()}"/>
+                </p:tooltip>
+              </p:column>
+              <p:column sortBy="#{_item.pontoParadaProxima}" style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_PP}" title="#{messages.MESSAGE_HINT_PP_GRID}" />
+                </f:facet>
+                <p:outputPanel id="panelPpProximo">
+                  <h:outputText value="#{_item.pontoParadaProxima.getCodigo()}"/>
+                </p:outputPanel>
+                <p:tooltip for="panelPpProximo" style="width:300px; word-wrap: break-word;" styleClass="tooltip">
+                  <h:outputText value="#{messages.LABEL_DE}: #{planejamentoSolicitacaoComprasPaginatorController.obterDescricaoPontoParada(_item, false)}"/>
+                  <br clear="none"/>
+                  <h:outputText value="#{messages.LABEL_PP_PARA}: #{planejamentoSolicitacaoComprasPaginatorController.obterDescricaoPontoParada(_item, true)} "/>
+                </p:tooltip>
+              </p:column>
+              <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_LIBREF}" title="#{messages.MESSAGE_HINT_GRID_LIBREF}"/>
+                </f:facet>
+                <h:selectBooleanCheckbox id="lrchk_#{_item.numero}" name="lrchk_#{_item.numero}" value="#{planejamentoSolicitacaoComprasPaginatorController.hasLibRef[_item.numero]}" rendered="#{planejamentoSolicitacaoComprasPaginatorController.verificarHabilitacaoCamposAf(_item,false,true,false,false,false)  and (planejamentoSolicitacaoComprasPaginatorController.temPermissaoLiberarParcelasAf or planejamentoSolicitacaoComprasPaginatorController.temPermissaoConsultarParcelasAf)}">
+                  <p:ajax event="click" oncomplete="PF('solcomprasTableWG').selectRow(#{index});" process="@this" listener="#{planejamentoSolicitacaoComprasPaginatorController.addLibRef(_item.numero)}" />
+                </h:selectBooleanCheckbox>
+              </p:column>
+              <p:column style="#{(_item.urgente == true ? 'background-color:#F8C88D;' : '')}">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_GRID_ASSINADO}" title="#{messages.MESSAGE_HINT_ASSINADO}"/>
+                </f:facet>
+                <h:selectBooleanCheckbox id="lachk_#{_item.numero}" name="lachk_#{_item.numero}" value="#{planejamentoSolicitacaoComprasPaginatorController.hasLibAss[_item.numero]}" disabled="#{(not planejamentoSolicitacaoComprasPaginatorController.hasLibRef[_item.numero]) and                      (planejamentoSolicitacaoComprasPaginatorController.verificarHabilitacaoCamposAf(_item,false,true,false,false,false))}" rendered="#{planejamentoSolicitacaoComprasPaginatorController.verificarHabilitacaoCamposAf(_item,false,false,false,true,false) and (planejamentoSolicitacaoComprasPaginatorController.temPermissaoLiberarParcelasAf or planejamentoSolicitacaoComprasPaginatorController.temPermissaoConsultarParcelasAf)}">
+                  <p:ajax event="click" oncomplete="PF('solcomprasTableWG').selectRow(#{index});" process="@this" listener="#{planejamentoSolicitacaoComprasPaginatorController.addLibAss(_item.numero)}" />
+                </h:selectBooleanCheckbox>
+              </p:column>
+            </mec:serverDataTableMultipleSelection>
+
+          </aghu:linha>
+        </aghu:panelGeral>
+      </p:outputPanel>
+    </h:form>
+    <h:form prependId="false">
+      <p:outputPanel layout="inline">
+        <ui:decorate template="/pages/compras/solicitacaoCompra/modalExclusaoSolicitacaoScSsEmLote.xhtml">
+          <ui:param name="controllerBean" value="#{planejamentoSolicitacaoComprasPaginatorController}"/>
+          <ui:param name="obsTextArea" value="observacaoExclusao"/>
+          <ui:param name="deleteAction" value="excluirItens"/>
+          <ui:param name="clearModalAction" value="limparModalExclusao"/>
+          <ui:param name="keepOnError" value="true"/>
+          <ui:param name="goBack" value="voltarPanel"/>
+          <ui:param name="reRenderOnSuccess" value=":formTabelaSco:solcomprasTable"/>
+          <ui:param name="modalTitle" value="#{messages.LABEL_EXCLUIR_SOLICITACAO_COMPRAS}"/>
+        </ui:decorate>
+      </p:outputPanel>
+    </h:form>
+    <h:form prependId="false">
+      <p:outputPanel layout="inline">
+        <ui:decorate template="/pages/compras/solicitacaoCompra/modalEncaminharSolicitacaoScSsEmLote.xhtml">
+          <ui:param name="controllerBean" value="#{planejamentoSolicitacaoComprasPaginatorController}"/>
+          <ui:param name="disableSuggestion" value="#{planejamentoSolicitacaoComprasPaginatorController.desabilitaSuggestionComprador}"/>
+          <ui:param name="forwardAction" value="encaminharItens"/>
+          <ui:param name="clearModalAction" value="limparModalEncaminhamento"/>
+          <ui:param name="goBack" value="voltarPanel"/>
+          <ui:param name="varPontoParada" value="#{planejamentoSolicitacaoComprasPaginatorController.proximoPontoParada}"/>
+          <ui:param name="varComprador" value="#{planejamentoSolicitacaoComprasPaginatorController.funcionarioComprador}"/>
+          <ui:param name="reRenderOnSuccess" value=":formTabelaSco:solcomprasTable"/>
+          <ui:param name="modalTitle" value="#{messages.LABEL_ENCAMINHAR_SOLICITACAO_COMPRAS}"/>
+        </ui:decorate>
+      </p:outputPanel>
+    </h:form>
+    <h:form prependId="false" id="formRelatCompraEstocavel">
+      <p:outputPanel layout="inline">
+        <ui:decorate template="/pages/compras/solicitacaoCompra/modalListarSolicitacaoCompraEstocavel.xhtml">
+          <ui:param name="controllerBean" value="#{planejamentoSolicitacaoComprasPaginatorController}"/>
+          <ui:param name="goBack" value="voltarPanel"/>
+        </ui:decorate>
+      </p:outputPanel>
+    </h:form>
+    <h:form prependId="false" id="formGeracaoAutomatica">
+      <p:outputPanel layout="inline">
+        <ui:decorate template="/pages/compras/solicitacaoCompra/modalGerarSolicitacaoCompraAlmox.xhtml"/>
+      </p:outputPanel>
+    </h:form>
+    <h:form prependId="false" id="formAdvertEnc">
+      <p:outputPanel layout="inline">
+        <ui:decorate template="/pages/compras/solicitacaoCompra/modalAdvertenciaEncaminharSemSalvar.xhtml"/>
+      </p:outputPanel>
+    </h:form>
+  </ui:define>
+</ui:composition>
+</html>

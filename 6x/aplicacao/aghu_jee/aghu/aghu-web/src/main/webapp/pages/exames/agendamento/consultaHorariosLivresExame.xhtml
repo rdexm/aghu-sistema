@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_HORARIOS_LIVRES_EXAME}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{consultaHorarioLivreController.carregarContexto}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{consultaHorarioLivreController}"/>  
+      <h:form prependId="false" id="formPesquisa">
+
+        <pe:remoteCommand name="selecionarHorario" update="formPesquisa" actionListener="#{consultaHorarioLivreController.atribuirHorario}"> 
+          <pe:assignableParam name="idHorario" assignTo="#{consultaHorarioLivreController.idSelecionado}"/> 
+        </pe:remoteCommand>
+
+        <pe:remoteCommand name="selecionarItem" update="formPesquisa" actionListener="#{consultaHorarioLivreController.atribuirItemHorarioAgendado}"> 
+          <pe:assignableParam name="idItem" assignTo="#{consultaHorarioLivreController.seqpSelecionado}"/> 
+        </pe:remoteCommand>
+
+        <p:outputPanel id="panelFields" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputNumero id="prontuario" label="#{messages.LABEL_PRONTUARIO}" size="10" value="#{consultaHorarioLivreController.paciente.prontuario}" readonly="true"/>  
+              <mec:inputNumero id="pacCodigo" label="#{messages.LABEL_CODIGO}" size="10" value="#{consultaHorarioLivreController.paciente.codigo}" readonly="true"/>  
+              <mec:inputText id="pacNome" label="#{messages.LABEL_NOME}" value="#{consultaHorarioLivreController.paciente.nome}" style="text-transform:uppercase" size="75" styleclass="suggestion_input" readonly="true"/>  
+              <mec:inputNumero id="solicitacao" label="#{messages.LABEL_NUMERO_SOLICITACAO_AGENDAMENTO_EXAMES}" size="10" value="#{consultaHorarioLivreController.soeSeq}" readonly="true"/>  
+              <mec:inputNumero id="consulta" label="#{messages.LABEL_CONSULTA}" size="10" value="#{consultaHorarioLivreController.conNumero}" readonly="true"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>
+
+		<p:accordionPanel id="panelToggle" prependId="false" multiple="true" activeIndex="#{consultaHorarioLivreController.indexToggle}" >
+		<p:ajax event="tabChange" listener="#{consultaHorarioLivreController.alteraAba}" update="panelToggle, panelHorariosInterno" />
+		<p:ajax event="tabClose" listener="#{consultaHorarioLivreController.fechaAba}" update="panelToggle, panelHorariosInterno" />
+        <p:tab title="#{messages.LABEL_EXAMES}"> 
+          <mec:serverDataTable id="tabelaExames" scrollable="true"
+                               list="#{consultaHorarioLivreController.listaItemHorarioAgendadoVO}"
+                               scrollHeight="134">
+            <c:set var="_itemHorarioAgendado" value="#{item}"/>  
+            <p:column width="10%" rendered="#{!consultaHorarioLivreController.agendaAmostraComum}">
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <p:outputPanel id="panelRadioItemHorarioAgendado"
+                             rendered="#{_itemHorarioAgendado.itemHorarioAgendadoId eq null and _itemHorarioAgendado.seqp.equals(consultaHorarioLivreController.seqpSelecionado)}"
+                             layout="inline">
+                <input id="#{_itemHorarioAgendado.seqp}" name="group2"
+                       type="radio"
+                       class="serverDataTable"
+                       onchange="selecionarItem(#{_itemHorarioAgendado.seqp})"
+                       checked="checked"/>
+              </p:outputPanel>
+              <p:outputPanel id="panelRadioItemHorarioAgendadoAux"
+                             rendered="#{_itemHorarioAgendado.itemHorarioAgendadoId eq null and not _itemHorarioAgendado.seqp.equals(consultaHorarioLivreController.seqpSelecionado)}"
+                             layout="inline">
+                <input type="radio" class="serverDataTable" id="#{_itemHorarioAgendado.seqp}"
+                       onchange="selecionarItem(#{_itemHorarioAgendado.seqp})" name="group2"/>
+              </p:outputPanel>
+
+              <p:outputPanel id="panelCommandLink" layout="inline">
+                <mec:commandLink action="#{consultaHorarioLivreController.cancelarItemHorarioAgendado(_itemHorarioAgendado)}"
+                                 title="#{messages.LABEL_CANCELA_AGENDAMENTO}"
+                                 render="sugestaoAgendamento, sugestaoAgendamentoAmbulatorio, panelModalPendencias"
+                                 style="vertical-align:-2px !important;"
+                                 styleClass="silk-grade-alterar silk-icon"
+                                 rendered="#{_itemHorarioAgendado.itemHorarioAgendadoId ne null and mf:hasPermission(securityController,'agendarExame,cancelar')}"/>
+
+                <mec:commandLink action="#{consultaHorarioLivreController.atualizarModalPendencia}"
+                                 title="#{messages.LABEL_VISUALIZAR_EXAMES_AGENDADOS_PACIENTE}"
+                                 immediate="true"
+                                 render="panelModalPendencias"
+                                 rendered="#{_itemHorarioAgendado.visualizaExames and mf:hasPermission(securityController,'agendarExame,visualizarExamesAgendadosPaciente')}"
+                                 style="vertical-align:-2px;!important;"
+                                 styleClass="silk-clock silk-icon">
+                    <f:setPropertyActionListener target="#{visualizarExamesAgendadosPacienteController.unfExecutora}"
+                                                 value="#{consultaHorarioLivreController.unfExecutora}"
+                                                 for="command"/>
+                </mec:commandLink>
+              </p:outputPanel>
+            </p:column>
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ITEM}"/> 
+              </f:facet>  
+              <h:outputText value="#{_itemHorarioAgendado.seqp}"/> 
+            </p:column>  
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SIGLA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_itemHorarioAgendado.sigla}"/> 
+            </p:column>  
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_EXAME}"/> 
+              </f:facet>  
+              <h:outputText value="#{_itemHorarioAgendado.descricaoExame}"/> 
+            </p:column>  
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PESQUISA_ITEM_HORARIO_AGENDA_EXAME_MATERIAL_ANALISE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_itemHorarioAgendado.descricaoMaterialAnalise}"/> 
+            </p:column>  
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_itemHorarioAgendado.descricaoUnidade}"/> 
+            </p:column>  
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText id="codSituacao" value="#{_itemHorarioAgendado.codigoSituacao}"/>  
+              <p:tooltip direction="bottom-right" for="codSituacao" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{_itemHorarioAgendado.descricaoSituacao}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DATA_HORA_AGENDA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_itemHorarioAgendado.dthrAgenda}"/> 
+            </p:column>  
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRADE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_itemHorarioAgendado.grade}"/> 
+            </p:column>  
+            <p:column>
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SALA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_itemHorarioAgendado.sala}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        <p:outputPanel id="sugestaoAgendamentoAmbulatorio"
+                       rendered="#{consultaHorarioLivreController.agendamentoAmbulatorio!=null and not consultaHorarioLivreController.exibeComponentes}"
+                       layout="inline" styleClass="aghu-panel-geral">
+          <aghu:panelGeral legend="#{messages.LABEL_PROXIMOS_EXAMES_AGENDADOS}"> 
+            <aghu:linha> 
+              <h:outputText>#{consultaHorarioLivreController.possuiAgendamento}</h:outputText>  
+              <b>#{consultaHorarioLivreController.agendamentoAmbulatorio}</b> 
+            </aghu:linha>  
+            <mec:serverDataTable id="listaAgendamentos"
+                                 rendered="#{consultaHorarioLivreController.listaAgendamento!=null and (fn:length(consultaHorarioLivreController.listaAgendamento) != 0) and not consultaHorarioLivreController.exibeComponentes}"
+                                 list="#{consultaHorarioLivreController.listaAgendamento}">
+              <c:set var="_agendamento" value="#{item}"/>  
+              <p:column width="10%">
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DATA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_agendamento.dataAgendamento}"/> 
+              </p:column>  
+              <p:column width="10%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_HORA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_agendamento.horaAgendamento}"/> 
+              </p:column>  
+              <p:column width="20%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_EXAME}"/> 
+                </f:facet>  
+                <h:outputText value="#{_agendamento.descricaoExame}"/> 
+              </p:column>  
+              <p:column width="20%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_MATERIAL_ANALISE}"/> 
+                </f:facet>  
+                <h:outputText value="#{_agendamento.descricaoMaterialAnalise}"/> 
+              </p:column>  
+              <p:column width="20%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_UNIDADE_EXECUTORA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_agendamento.descricaoUnidade}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+            </aghu:panelGeral>
+           </p:outputPanel>
+         </p:tab>
+        <p:tab title="#{messages.TITLE_PESQUISAR_HORARIOS_LIVRES_EXAME}" >
+          <p:outputPanel id="panelPesquisaHorarios" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral> 
+              <aghu:linha> 
+                <mec:inputTextData id="data" label="#{messages.LABEL_CONSULTA_HORARIO_LIVRE_DATA}" title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_DATA}" size="10" maxlength="10" value="#{consultaHorarioLivreController.data}" tipo="data"/>  
+                <mec:inputText id="hora" label="#{messages.LABEL_CONSULTA_HORARIO_LIVRE_HORA}" title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_HORA}" incluirMascaraHora="true" size="5" maxlength="5" onkeypress="formatar(this, '99:99', event)" ajaxValidation="false" datePattern="HH:mm" removerCaratersEspeciais="false" value="#{consultaHorarioLivreController.hora}"/>  
+                <mec:inputNumero size="5" maxlength="5" rendered="#{consultaHorarioLivreController.exibeComponentes}" label="#{messages.LABEL_GRADE}" title="#{messages.TITLE_GRADE}" value="#{consultaHorarioLivreController.grade}" id="grade"/> 
+                <mec:suggestionBox var="_itemGrupoExame" itemValue="#{_itemGrupoExame}" label="#{messages.LABEL_CONSULTA_HORARIO_LIVRE_GRUPO_EXAME}" title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_GRUPO_EXAME}" suggestionAction="pesquisarGrupoExame" rendered="#{consultaHorarioLivreController.exibeComponentes}" descricaoInput="seq" descricaoLabel="descricao" width="350" id="sbGrupo" controller="#{consultaHorarioLivreController}" value="#{consultaHorarioLivreController.grupoExame}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                    </f:facet><h:outputText value="#{_itemGrupoExame.seq}"/>
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                    </f:facet><h:outputText value="#{_itemGrupoExame.descricao}"/>
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:suggestionBox var="_itemSala" itemValue="#{_itemSala}" label="#{messages.LABEL_SALA}" title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_SALA}" suggestionAction="pesquisarSala" rendered="#{consultaHorarioLivreController.exibeComponentes}" descricaoInput="id.seqp" descricaoLabel="numero" maxlength="20" id="sbSala" controller="#{consultaHorarioLivreController}" value="#{consultaHorarioLivreController.salaExecutoraExame}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SALA}"/> 
+                    </f:facet><h:outputText value="#{_itemSala.id.seqp}"/>
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                    </f:facet><h:outputText value="#{_itemSala.numero}"/>
+                  </p:column> 
+                </mec:suggestionBox> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox id="responsavel" var="_itemResponsavel" itemValue="#{_itemResponsavel}" label="#{messages.LABEL_RESPONSAVEL}" title="#{messages.TITLE_CONSULTA_HORARIO_LIVRE_RESPONSAVEL}" descricaoInput="id.matricula" width="1000" rendered="#{consultaHorarioLivreController.exibeComponentes}" descricaoLabel="pessoaFisica.nome" suggestionAction="pesquisarServidor" controller="#{consultaHorarioLivreController}" value="#{consultaHorarioLivreController.servidor}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MATRICULA}"/> 
+                    </f:facet><h:outputText value="#{_itemResponsavel.id.matricula}"/>
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VINCULO}"/> 
+                    </f:facet><h:outputText value="#{_itemResponsavel.id.vinCodigo}"/>
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME}"/>
+                    </f:facet><h:outputText value="#{_itemResponsavel.pessoaFisica.nome}"/>
+                  </p:column> 
+                </mec:suggestionBox> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <p:outputPanel id="sugestaoAgendamento" layout="inline"> 
+                  <p:outputPanel rendered="#{consultaHorarioLivreController.agendamento!=null and consultaHorarioLivreController.exibeComponentes}" layout="inline"> 
+                    <h:outputText value="#{consultaHorarioLivreController.possuiAgendamento}"/>  
+                    <h:outputText value="#{consultaHorarioLivreController.agendamento}"/> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:linha> 
+              <mec:commandButton id="bt_pesquisar"
+                                 value="#{messages.LABEL_PESQUISAR}"
+                                 block="true"
+                                 disabled="#{not mf:hasPermission(securityController,'agendarExame,visualizarHorariosAgendamento')}"
+                                 action="#{consultaHorarioLivreController.pesquisar}"
+                                 render="panelToggle,panelMsgaoEncontrado,panelGravar,panelHorarios, panelModalPendencias, panelGravar"
+                                 profile="search" ajax="true"/>
+              <mec:commandButton id="bt_limpar"
+                                 value="#{messages.LABEL_LIMPAR}"
+                                 action="#{consultaHorarioLivreController.limparPesquisa}"
+                                 ajax="true"
+                                 render="tabelaExames, panelPesquisaHorarios, panelHorarios, panelMsgNaoEncontrado, panelGravar, panelModalPendencias"
+                                 process="@this" styleClass="bt_cinza" profile="clear"/>
+            </aghu:linha> 
+          </p:outputPanel>  
+         </p:tab>
+        <p:tab title="#{messages.TITLE_HORARIOS_LIVRES_EXAME}"  rendered="#{not empty consultaHorarioLivreController.listaHorarios}">
+          <p:outputPanel id="panelHorarios" layout="inline"> 
+            <p:outputPanel id="panelHorariosInterno" rendered="#{not empty consultaHorarioLivreController.listaHorarios}" layout="inline"> 
+              <aghu:linha> 
+                <table style="width:100%"> 
+                  <tr> 
+                    <td width="95%" rowspan="1" colspan="1"> 
+                      <p:outputPanel layout="block" style="width: 100%; height:#{consultaHorarioLivreController.alturaHorarios}px; overflow-y:scroll;"> 
+                        <mec:serverDataTable id="listaHorarios" list="#{consultaHorarioLivreController.listaHorarios}"> 
+                          <c:set var="_horario" value="#{item}"/>  
+                          <p:column width="10%" style="text-align:center;"> 
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                            </f:facet>  
+                            <p:outputPanel id="panelRadioHorario" rendered="#{_horario.id.equals(consultaHorarioLivreController.idSelecionado)}" layout="inline"> 
+                              <input type="radio" class="serverDataTable" id="#{_horario.id}" name="group1" onchange="selecionarHorario(#{_horario.id})" checked="checked"/> 
+                            </p:outputPanel>  
+                            <p:outputPanel id="panelRadioHorarioAux" rendered="#{not _horario.id.equals(consultaHorarioLivreController.idSelecionado)}" layout="inline"> 
+                              <input type="radio" class="serverDataTable" id="#{_horario.id}" onchange="selecionarHorario(#{_horario.id})" name="group1"/> 
+                            </p:outputPanel> 
+                          </p:column>  
+                          <p:column width="15%">
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_DATA}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_horario.dthrAgenda}"> 
+                              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                            </h:outputText> 
+                          </p:column>  
+                          <p:column width="10%">
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_HORA}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_horario.hrAgenda}"/> 
+                          </p:column>  
+                          <p:column width="5%">
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_CONSULTA_HORARIO_LIVRE_UNIDADE}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_horario.grade}"/> 
+                          </p:column>  
+                          <p:column width="5%">
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_GRADE}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_horario.seqGrade}"/> 
+                          </p:column>  
+                          <p:column width="25%">
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_GRUPO_EXAME}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_horario.descricaoGrupo}"/> 
+                          </p:column>  
+                          <p:column width="5%">
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_SALA}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_horario.descricaoSala}"/> 
+                          </p:column>  
+                          <p:column width="30%">
+                            <f:facet name="header"> 
+                              <h:outputText value="#{messages.LABEL_RESPONSAVEL}"/> 
+                            </f:facet>  
+                            <h:outputText value="#{_horario.responsavel}"/> 
+                          </p:column> 
+                        </mec:serverDataTable> 
+                      </p:outputPanel> 
+                    </td> 
+                  </tr> 
+                </table> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelMsgNaoEncontrado" layout="inline"> 
+            <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{consultaHorarioLivreController.primeiraPesquisa and empty consultaHorarioLivreController.listaHorarios}"> 
+              <h:outputText value="#{messages.NENHUM_HORARIO_LIVRE_ENCONTRADO}"/> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </p:tab>
+        </p:accordionPanel>
+        <aghu:linha> 
+          <p:outputPanel id="panelGravar" layout="inline"> 
+            <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}"
+                               profile="ok"
+                               disabled="#{consultaHorarioLivreController.vAelHrGradeDispVO eq null}"
+                               action="#{consultaHorarioLivreController.gravarHorario}"
+                               ajax="true"
+                               render="panelHorarios, tabelaExames,panelGravar,sugestaoAgendamento,sugestaoAgendamentoAmbulatorio,panelModalPendencias,panelModalConfirmaGravacaoHorario"
+                               styleClass="bt_cinza"/>
+            <mec:commandButton id="bt_gerarHoraExtra"
+                               oncomplete="PF('modalAgendarHorarioExtraWG').show();;"
+                               rendered="#{consultaHorarioLivreController.permitirHorarioExtra and (mf:hasPermission(securityController,'agendarExame,consultarHorarioExtra') or mf:hasPermission(securityController,'agendarExame,gerarHorarioExtra'))}"
+                               disabled="#{not consultaHorarioLivreController.executouIdentificacaoGrupoExames}"
+                               value="#{messages.LABEL_GERAR_HORA_EXTRA}"
+                               ajax="true"
+                               render="tabelaExames,panelHorarios,panelGravar,modalAgendarHorarioExtra,panelModalPendencias"
+                               styleClass="bt_cinza"/>
+          </p:outputPanel>  
+          <mec:commandButton id="bt_voltar"
+                             value="#{messages.LABEL_VOLTAR}"
+                             action="#{consultaHorarioLivreController.verificarExamesPendentes}"
+                             styleClass="alinha-direita bt_cinza"
+                             render="panelModalPendencias"
+                             profile="back"
+                             immediate="true"/>
+        </aghu:linha>  
+        <p:outputPanel id="panelModalPendencias" layout="inline"> 
+          <p:dialog id="modalConfirmacaoPendencia"
+                    rendered="#{consultaHorarioLivreController.examePendente}"
+                    width="400" height="150"
+                    showWhenRendered="true"
+                    modal="true"
+                    resizable="false"
+                    widgetVar="modalConfirmacaoPendenciaWG">
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIA_AGENDAMENTO_EXAME}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{consultaHorarioLivreController.voltar}" styleClass="bt_cinza"/>  
+              <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" action="#{consultaHorarioLivreController.setExamePendente(false)}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" styleClass="bt_vermelho  bt_cinza" ajax="true"/> 
+            </h:panelGroup> 
+          </p:dialog> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelModalConfirmaGravacaoHorario" layout="inline"> 
+          <p:dialog id="modalConfirmaGravacaoHorario"
+                    rendered="#{consultaHorarioLivreController.exibeModalConfirmacaoHorario}"
+                    width="400" height="100"
+                    showWhenRendered="true"
+                    modal="true"
+                    resizable="false"
+                    widgetVar="modalConfirmaGravacaoHorarioWG">
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.LABEL_AGENDAMENTO_EXAMES_CONFIRMACAO_AGENDAR_NOVAMENTE}"/> 
+              </h:panelGroup> 
+            </f:facet>  
+            <h:outputFormat value="#{messages.MENSAGEM_AGENDAMENTO_EXAMES_CONFIRMACAO_AGENDAR_NOVAMENTE}"> 
+              <f:param value="#{consultaHorarioLivreController.itemHorarioAgendadoVO.descricaoExame}"/> 
+            </h:outputFormat>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <mec:commandButton id="bt_sim_confirma_horario"
+                                 value="#{messages.LABEL_SIM}"
+                                 action="#{consultaHorarioLivreController.confirmarGravacaoHorario}"
+                                 oncomplete="PF('modalConfirmaGravacaoHorarioWG').hide();"
+                                 styleClass="bt_cinza"
+                                 ajax="true"
+                                 render="tabelaExames,panelGravar,sugestaoAgendamento,sugestaoAgendamentoAmbulatorio,panelModalPendencias,panelModalConfirmaGravacaoHorario"/>
+              <mec:commandButton id="bt_nao_confirma_horario"
+                                 value="#{messages.LABEL_NAO}"
+                                 action="#{consultaHorarioLivreController.fecharModalConfirmaGravacaoHorario}"
+                                 styleClass="bt_vermelho  bt_cinza"
+                                 ajax="true"
+                                 render="panelModalConfirmaGravacaoHorario"/>
+            </h:panelGroup> 
+          </p:dialog> 
+        </p:outputPanel> 
+      </h:form>  
+      <ui:decorate template="/pages/exames/agendamento/modalAgendarHorarioExtra.xhtml"/> 
+    </ui:define> 
+  </ui:composition> 
+</html>

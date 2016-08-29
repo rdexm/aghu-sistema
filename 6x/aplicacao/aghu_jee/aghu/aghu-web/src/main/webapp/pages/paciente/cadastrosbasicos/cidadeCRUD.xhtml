@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CADASTRO_CIDADES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cidadeController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cidadeController}"/>  
+      <h:form prependId="false" id="formCadastro"> 
+        <aghu:panelGeral legend="#{messages.TITLE_CADASTRAR_CIDADES}"> 
+          <aghu:linha> 
+            <mec:inputNumero maxlength="5" size="10" value="#{cidadeController.aipCidades.codigo}" label="#{messages.LABEL_CODIGO}" readonly="true" id="codigo"/>  
+            <mec:inputNumero maxlength="8" size="10" value="#{cidadeController.aipCidades.codIbge}" label="#{messages.LABEL_CODIGO_IBGE}" title="#{messages.TITLE_CODIGO_IBGE_GRAV}" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" id="codigoIbge"/>  
+            <mec:inputText maxlength="40" size="60" style="text-transform:uppercase" value="#{cidadeController.aipCidades.nome}" label="#{messages.LABEL_NOME}" title="#{messages.TITLE_NOME_CIDADE_GRAV}" required="true" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" id="nome"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_ATIVA}" title="#{messages.TITLE_CIDADE_ATIVA_GRAV}" value="#{cidadeController.aipCidades.ativo}" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" id="ativo"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextCEP componentSize="6,3" label="#{messages.LABEL_CEP_INICIAL}" value="#{cidadeController.aipCidades.cep}" title="#{messages.TITLE_CEP_INICIAL_GRAV}" required="true" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" id="cepInicial"/>  
+            <mec:inputTextCEP componentSize="6,3" label="#{messages.LABEL_CEP_FINAL}" value="#{cidadeController.aipCidades.cepFinal}" title="#{messages.TITLE_CEP_FINAL_GRAV}" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" id="cepFinal"/>  
+            <mec:suggestionBox label="#{messages.LABEL_UF}" title="Selecione a Unidade da Federação referente ao município." descricaoInput="sigla" descricaoLabel="nome" suggestionAction="pesquisarUFs" required="true" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" id="suggestionUF" controller="#{cidadeController}" value="#{cidadeController.aipCidades.aipUf}"> 
+              <p:column>#{item.nome}</p:column>  
+              <p:column>#{item.sigla}</p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_CADASTRA_LOGRADOURO}" value="#{cidadeController.cadastraLogradouro}" title="Selecione se o município cadastra logradouro ou não." noSelectionOption="true" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" id="simNao"/> 
+          </aghu:linha> 
+        <p:outputPanel id="tabelaDistritoSanitario" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:linha> 
+              <div> 
+                <mec:suggestionBox width="500" label="#{messages.LABEL_DISTRITO_SANITARIO}" title="Selecione um Distrito Sanitário para o município." descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarPorCodigoDescricao" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" id="distritoSanitario" controller="#{cidadeController}" value="#{cidadeController.aipDistritoSanitario}"> 
+                  <p:column> 
+                    <f:facet name="header">#{messages.LABEL_DESCRICAO}</f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </div>  
+              <br/>
+              <mec:commandButton id="bt_adicionarDistritoSanitario" value="Adicionar" style="margin-left: 10px" action="#{cidadeController.adicionarDistritoSanitario}" readonly="#{!mf:hasPermission(securityController,'cidade,alterar')}" profile="add" ajax="true" render="tabelaDistritoSanitario" process="@this"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <h:outputText value="#{messages.LABEL_NENHUM_DISTRITO_SANITARIO_ENCONTRADO}" rendered="#{empty cidadeController.distritoSanitarioList}"/>  
+              <mec:serverDataTable rendered="#{not empty cidadeController.distritoSanitarioList}" list="#{cidadeController.distritoSanitarioList}" scrollable="true"> 
+                <c:set var="_distritoSanitario" value="#{item}"/>  
+                <p:column style="width:50px"> 
+                  <mec:commandLink action="#{cidadeController.excluirDistritoSanitarioDeCidade(_distritoSanitario.codigo)}" title="#{messages.LABEL_EXCLUIR}" profile="delete" ajax="true" render="tabelaDistritoSanitario"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_distritoSanitario.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+        </p:outputPanel>  
+        </aghu:panelGeral>
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar" disabled="#{not mf:hasPermission(securityController, 'cidade,alterar')}" value="#{messages.LABEL_GRAVAR}" action="#{cidadeController.salvar}" profile="ok"/>  
+          <mec:commandButton id="bt_cancelar_cidade" value="#{messages.LABEL_CANCELAR}" action="#{cidadeController.cancelar}" immediate="true" profile="cancel"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

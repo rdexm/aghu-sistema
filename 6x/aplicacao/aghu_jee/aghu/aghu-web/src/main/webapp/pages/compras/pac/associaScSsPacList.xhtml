@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQUISA_ASSOCIAR_SC_SS_PAC} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{associaScSsPacListController.limparPesquisa}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{associaScSsPacListController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISA_ASSOCIAR_SC_SS_PAC}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestCaixa" label="#{messages.LABEL_CAIXA_ASSOCIAR_SC_SS_PAC}" title="#{messages.TITLE_CAIXA_ASSOCIAR_SC_SS_PAC}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="listarCaixas" controller="#{associaScSsPacListController}" value="#{associaScSsPacListController.caixa}" render="panelComprador"> 
+              <p:column> 
+                <h:outputText value="#{item.codigo}"/> 
+              </p:column>  
+              <p:column> 
+                <h:outputText value="#{item.descricao}"/> 
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox id="suggestionComprador" label="#{messages.LABEL_ENC_RESPONSAVEL}" title="#{messages.TITLE_ENC_RESPONSAVEL}" width="300" suggestionAction="pesquisarCompradorAtivoPorMatriculaNome" descricaoInput="id.matricula" descricaoLabel="pessoaFisica.nome" maxlength="60" required="false" controller="#{associaScSsPacListController}" value="#{associaScSsPacListController.funcionarioComprador}"> 
+              <p:column>#{item.id.matricula}</p:column>  
+              <p:column>#{item.pessoaFisica.nome}</p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox id="suggestMaterial" label="#{messages.LABEL_MATERIAL_ASSOCIAR_SC_SS_PAC}" title="#{messages.TITLE_MATERIAL_ASSOCIAR_SC_SS_PAC}" readonly="false" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="listarMateriais" required="false" width="400" controller="#{associaScSsPacListController}" value="#{associaScSsPacListController.material}" render="descricao"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_NOME}</b> 
+                </f:facet> #{item.nome}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:suggestionBox id="suggestServico" label="#{messages.LABEL_SERVICO_ASSOCIAR_SC_SS_PAC}" title="#{messages.TITLE_SERVICO_ASSOCIAR_SC_SS_PAC}" readonly="false" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="listarServicos" required="false" width="400" controller="#{associaScSsPacListController}" value="#{associaScSsPacListController.servico}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_NOME}</b> 
+                </f:facet> #{item.nome}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{associaScSsPacListController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR_CAMPOS}" action="#{associaScSsPacListController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton immediate="true" value="#{messages.LABEL_CANCELAR}" id="bt_cancelar" rendered="#{!(associaScSsPacListController.getListaPreItensPac().size() &gt; 0)}" action="#{associaScSsPacListController.cancelar}" profile="cancel" ajax="true"/> 
+        </aghu:acao> 
+      </h:form>  
+      <ui:fragment rendered="#{associaScSsPacListController.getListaPreItensPac()!=null and associaScSsPacListController.pesquisou }"> 
+        <h:form prependId="false" id="formPesquisaResultado"> 
+          <mec:serverDataTable style="margin: 0px !important;" id="resultList" scrollHeight="350" list="#{associaScSsPacListController.listaPreItensPac}" scrollable="true"> 
+            <c:set var="item" value="#{item}"/>  
+            <p:column style="width:30px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_SELECAO_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:selectBooleanCheckbox id="chkaf_#{item.numero}" value="#{item.marked}" label="" name="chkaf_#{item.numero}"> 
+                <p:ajax event="change" eventsQueue="blurQueue" update="@(#panelModalSolicitacoesAssociadasPac)" process="@this" listener="#{associaScSsPacListController.abrirModalListarAssociadas(item)}"/> 
+              </h:selectBooleanCheckbox> 
+            </p:column>  
+            <p:column sortBy="#{item.numero}" sortable="true" style="width:75px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_NUM_SOLIC_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.numero}"/> 
+            </p:column>  
+            <p:column sortBy="#{item.qtdSC == null ? 'SS' : 'SC'}" sortable="true" style="width:58px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_TIPO_SOLIC_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.qtdSC == null ? 'SS' : 'SC'}"/> 
+            </p:column>  
+            <p:column sortBy="#{item.codMatOuServ}" sortable="true" style="width:67px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_COD_MAT_SERV_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.codMatOuServ}"/> 
+            </p:column>  
+            <p:column sortBy="#{item.nomeMatOuServ}" sortable="true" style="width:360px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_MAT_SERV_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.nomeMatOuServ}"/> 
+            </p:column>  
+            <p:column sortBy="#{item.indUrgente}" sortable="true" style="width:58px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_URGENTE_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.indUrgente}"> 
+                <f:converter converterId="simNaoConverter"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column sortBy="#{item.qtdSC == null ? null : item.indEstocavel}" sortable="true" style="width:67px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_ESTOCAVEL_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.qtdSC == null ? null : item.indEstocavel}"> 
+                <f:converter converterId="simNaoConverter"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column sortBy="#{item.qtdSC == null ? item.qtdSS : item.qtdSC}" sortable="true" style="width:58px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_QTDE_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.qtdSC == null ? item.qtdSS : item.qtdSC}"/> 
+            </p:column>  
+            <p:column sortBy="#{item.valorUnitPrevisto}" sortable="true" style="width:67px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_VLR_UNIT_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.valorUnitPrevisto}" style="text-align:right;"> 
+                <f:convertNumber maxFractionDigits="2" minFractionDigits="2" groupingUsed="true"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column sortBy="#{item.caixaCod}" sortable="true" style="width:300px"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_LISTA_CAIXA_ASSOCIAR_SC_SS_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.caixaCod} - #{item.caixaDesc}"/> 
+            </p:column> 
+          </mec:serverDataTable>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_adicionar" block="true" value="#{messages.LABEL_ADICIONAR_ASSOCIAR_SC_SS_PAC}" rendered="#{associaScSsPacListController.getListaPreItensPac().size() &gt; 0 and associaScSsPacListController.pesquisou }" action="#{associaScSsPacListController.adicionar}" profile="add" styleClass="bt_verde "/>  
+            <mec:commandButton immediate="true" id="bt_cancelar2" value="#{messages.LABEL_CANCELAR}" rendered="#{associaScSsPacListController.getListaPreItensPac().size() &gt; 0 and associaScSsPacListController.pesquisou }" action="#{associaScSsPacListController.cancelar}" profile="cancel" ajax="true"/> 
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false"> 
+          <p:outputPanel id="panelModalSolicitacoesAssociadasPac" layout="inline"> 
+            <p:outputPanel rendered="#{associaScSsPacListController.getListaScSsAssocPreItensPac().size() &gt; 0}" layout="inline"> 
+              <ui:decorate template="/pages/compras/pac/modalSolicitacoesAssociadasPac.xhtml"> 
+                <ui:param name="controllerBean" value="#{associaScSsPacListController}"/>  
+                <ui:param name="forwardAction" value="adicionarScSSAssociadas"/>  
+                <ui:param name="clearModalAction" value="limparAssociadas"/>  
+                <ui:param name="goBack" value="voltarPanel"/>  
+                <ui:param name="modalTitle" value="#{messages.TITLE_MODAL_ASSOCIAR_SOLICITACOES_PAC}"/>  
+                <ui:param name="reRenderOnSuccess" value="modalSolicitacoesAssociadasPac,panelModalSolicitacoesAssociadasPac,listaPreItensPacPanel"/> 
+              </ui:decorate>  
+              <h:form> 
+                <script xml:space="preserve">
+					   PF('modalSolicitacoesAssociadasPacWG').show();;
+				   </script> 
+              </h:form> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </h:form> 
+      </ui:fragment> 
+    </ui:define> 
+  </ui:composition> 
+</html>

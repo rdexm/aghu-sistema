@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_AVALIAR_PROPOSTAS_PARECER_TECNICO']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title>  
+      <style type="text/css" xml:space="preserve">#propostasGrid { margin-top: -10px; }</style> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{avaliacaoPropostasParecerTecnicoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{avaliacaoPropostasParecerTecnicoPaginatorController}"/>  
+      <h:form prependId="false" id="propostasFrm"> 
+        <aghu:panelGeral legend="#{messages.TITLE_AVALIAR_PROPOSTAS_PARECER_TECNICO}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="numeroPac" label="#{messages.LABEL_AVAL_PROPOSTAS_NRO_DO_PAC}" value="#{avaliacaoPropostasParecerTecnicoPaginatorController.numeroPac}" size="10" maxlength="6" readonly="true"/>  
+            <mec:inputText id="descricaoPac" label="#{messages.LABEL_AVAL_PROPOSTAS_DESCRICAO_PAC}" value="#{avaliacaoPropostasParecerTecnicoPaginatorController.descricaoPac}" maxlength="60" size="60" style="text-transform: uppercase" readonly="true"/>  
+            <mec:suggestionBox id="modalidadeSb" label="#{messages.LABEL_AVAL_PROPOSTAS_MODALIDADE_PAC}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarModalidades" readonly="true" controller="#{avaliacaoPropostasParecerTecnicoPaginatorController}" value="#{avaliacaoPropostasParecerTecnicoPaginatorController.modalidadePac}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu label="#{messages.LABEL_AVAL_PROPOSTAS_SITUACAO}" title="#{messages.TITLE_AVAL_PROPOSTAS_SITUACAO}" id="situacaoParecer" noSelectionOption="true" enum="DominioSituacaoParecer" itemsType="enum" required="false" value="#{avaliacaoPropostasParecerTecnicoPaginatorController.situacaoParecer}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{avaliacaoPropostasParecerTecnicoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{avaliacaoPropostasParecerTecnicoPaginatorController.limparPesquisar}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="propostasGridFrm" rendered="#{avaliacaoPropostasParecerTecnicoPaginatorController.ativo}"> 
+        <p:outputPanel id="propostasGridPanel" layout="inline"> 
+         <br/>
+          <mec:serverDataTable dataModel="dataModel" id="propostasGrid"  controller="#{avaliacaoPropostasParecerTecnicoPaginatorController}"> 
+            <c:set var="item" value="#{item}"/>  
+            <p:column style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>
+              <mec:commandLink action="#{avaliacaoPacParecerTecnicoPaginatorController.avaliarMarcaItem}" title="#{messages.TITLE_PROP_AVALIAR_MARCAS_ITEM}" style="margin-bottom: -3px;" styleClass=" silk-incluir-enc-propostas-parecer-tecnico silk-icon"> 
+                <f:setPropertyActionListener target="#{analiseTecnicaItemPropostaFornecedorController.licitacaoId}" value="#{item.pfrLctNumeroItemProposta}" for="command"/>  
+                <f:setPropertyActionListener target="#{analiseTecnicaItemPropostaFornecedorController.fornecedorId}" value="#{item.pfrFrnNumeroItemPropostaFornecedor}" for="command"/>  
+                <f:setPropertyActionListener target="#{analiseTecnicaItemPropostaFornecedorController.itemId}" value="#{item.numeroItemPropostaFornecedor}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink action="#{avaliacaoPropostasParecerTecnicoPaginatorController.verificarParecerTecnico}" title="#{messages.TITLE_VERIFICAR_PARECER_TECNICO}" style="margin-bottom: -3px;" styleClass=" silk-incluir-enc-propostas-comissao-licitacao silk-icon"> 
+                <f:setPropertyActionListener target="#{parecerController.codigoParecerMaterial}" value="#{item.codigoParecerMaterial}" for="command"/>  
+                <f:setPropertyActionListener target="#{parecerController.codigoMaterial}" value="#{item.codigoMaterial}" for="command"/>  
+                <f:setPropertyActionListener target="#{parecerController.codigoMarca}" value="#{item.codigoMarcaItemPropostaFornecedor}" for="command"/>  
+                <f:setPropertyActionListener target="#{parecerController.codigoModelo}" value="#{item.codigoModeloItemPropostaFornecedor}" for="command"/>  
+                <f:setPropertyActionListener target="#{parecerController.modoEdit}" value="#{item.codigoParecerMaterial != null}" for="command"/>  
+                <f:setPropertyActionListener target="#{parecerController.voltarPara}" value="avaliacaoPropostasParecerTecnicoList" for="command"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column clientOrder="true" value="#{item.numeroLicitacao}" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_NRO_ITEM_PAC}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.numeroItemLicitacao}"/> 
+            </p:column>  
+            <p:column clientOrder="true" value="#{item.codigoMaterial}" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_CODIGO_MATERIAL}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.codigoMaterial}"/>  
+              <p:tooltip mode="ajax" style="width:300px;word-wrap:break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_NOME_MATERIAL}: #{item.nomeMaterial}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_GRID_PROP_DESCRICAO_MATERIAL}: #{item.descricaoMaterial}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_GRID_PROP_QTDE}: #{item.qtdeAprovadaSC}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_GRID_PROP_UNIDADE}: #{item.codigoUnidadeMedida}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column clientOrder="true" value="#{item.razaoSocialFornecedor}" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_FORNECEDOR}"/> 
+              </f:facet>  
+              <h:outputText value="#{avaliacaoPropostasParecerTecnicoPaginatorController.obterStringTruncada(item.razaoSocialFornecedor,30)}"/>  
+              <p:tooltip mode="ajax" style="width:300px;word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{messages.LABEL_CNPJ_CPF_FORNEC}: #{item.getCnpjCpfFormatado()}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_GRID_PROP_FORNECEDOR_RAZAO_SOCIAL}: #{item.razaoSocialFornecedor}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column clientOrder="true" value="#{item.descricaoMarcaItemPropostaFornecedor}" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_MARCA}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.descricaoMarcaItemPropostaFornecedor}"/> 
+            </p:column>  
+            <p:column clientOrder="true" value="#{item.descricaoMarcaItemPropostaFornecedor}" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_MODELO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.descricaoModeloItemPropostaFornecedor}"/>  
+              <p:tooltip mode="ajax" style="width:300px;word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_CODIGO_MODELO_MARCA}: #{item.codigoMarcaItemPropostaFornecedor}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column clientOrder="true" value="#{item.valorUnitarioItemPropostaFornecedor}" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_VALOR_UNITARIO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.valorUnitarioItemPropostaFornecedor}"/> 
+            </p:column>  
+            <p:column clientOrder="true" value="#{item.dtEntregaAmostraItemPropostaFornecedor}" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_DT_AMOSTRA}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.dtEntregaAmostraItemPropostaFornecedor}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText>  
+              <p:tooltip value="#{avaliacaoPropostasParecerTecnicoPaginatorController.obterMensagemDataVencida(item.dtEntregaAmostraItemPropostaFornecedor)}" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor)}"/> 
+            </p:column>  
+            <p:column width="20px" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_AUTORIZADA}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.indAutorizUsrItemPropostaFornecedor}"> 
+                <f:converter converterId="simNaoConverter"/> 
+              </h:outputText>  
+              <p:tooltip value="#{messages.TITLE_TOOLTIP_PROP_JUSTIFICATIVA} #{item.justifAutorizUsrItemPropostaFornecedor}" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{item.indAutorizUsrItemPropostaFornecedor}"/> 
+            </p:column>  
+            <p:column width="20px" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_DESCLASSIF}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.indDesclassificadoItemPropostaFornecedor}"> 
+                <f:converter converterId="simNaoConverter"/> 
+              </h:outputText>  
+              <p:tooltip value="#{messages.TITLE_TOOLTIP_PROP_DESCLASSIF} #{item.motDesclassifItemPropostaFornecedor.descricao}" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{item.indDesclassificadoItemPropostaFornecedor}"/> 
+            </p:column>  
+            <p:column clientOrder="true" value="#{item.situacaoParecerDescricao}" style="#{avaliacaoPropostasParecerTecnicoPaginatorController.isDataVencida(item.dtEntregaAmostraItemPropostaFornecedor) ? 'background-color:#FF6347;' : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_PROP_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.situacaoParecerDescricao}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{avaliacaoPropostasParecerTecnicoPaginatorController.voltar}" immediate="true" ajax="true" styleClass="bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

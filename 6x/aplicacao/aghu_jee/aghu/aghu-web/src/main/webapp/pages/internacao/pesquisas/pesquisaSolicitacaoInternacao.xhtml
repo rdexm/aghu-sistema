@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Pesquisa de Solicitação de Internação :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaSolicitacaoInternacaoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="Pesquisar Solicitação de Internação"> 
+          <aghu:linha> 
+            <mec:selectOneMenu enum="DominioSituacaoSolicitacaoInternacao" label="#{messages.LABEL_SITUACAO}" value="#{pesquisaSolicitacaoInternacaoPaginatorController.indSolicitacaoInternacao}" title="#{messages.TITLE_LABEL_SITUACAO_SOL_INT_PESQ}" id="indSolicitacaoInternacao"/>  
+            <mec:suggestionBox label="#{messages.LABEL_CLINICA}" title="#{messages.TITLE_LABEL_CLINICA_PESQ}" suggestionAction="pesquisarClinicas" descricaoInput="codigo" descricaoLabel="descricao" id="clinicaSuggestion" controller="#{pesquisaSolicitacaoInternacaoPaginatorController}" value="#{pesquisaSolicitacaoInternacaoPaginatorController.clinicaPesquisa}"> 
+              <p:column>#{item.codigo}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_SOLICITACAO}" title="#{messages.TITLE_LABEL_DATA_SOLICITACAO_INT_PESQ}" size="10" maxlength="10" value="#{pesquisaSolicitacaoInternacaoPaginatorController.dataSolicitacao}" id="dataSolicitacao" tipo="data"/>  
+            <mec:inputTextData label="#{messages.LABEL_PREVISAO_INT}" title="#{messages.TITLE_LABEL_PREV_INTERNACAO_PESQ}" size="10" maxlength="10" value="#{pesquisaSolicitacaoInternacaoPaginatorController.dataPrevisao}" id="dataPrevisao" tipo="data"/> 
+          </aghu:linha>  
+          <aghu:linha>       
+          	<p:outputPanel id="pesquisaPacienteProntuario">   
+	          	<mec:inputNumero id="prontuario" 
+	          		label="#{messages.LABEL_PRONTUARIO}" 
+	          		onkeypress="Pesquisar(event);" 
+	          		readonly="false" 
+	          		title="#{messages.TITLE_PRONTUARIO_INTERNACAO}" 
+	          		size="10" maxlength="10" 
+	          		value="#{pesquisaSolicitacaoInternacaoPaginatorController.prontuario}">
+						<p:ajax event="change" 
+							update="@(#pesquisaPacienteCodigo) @(#pesquisaPacienteNome)"
+							process="@this" 
+							listener="#{pesquisaSolicitacaoInternacaoPaginatorController.processarBuscaPacientePorProntuario()}" />			
+				</mec:inputNumero>
+			</p:outputPanel>
+			<p:outputPanel id="pesquisaPacienteCodigo">			
+				<mec:inputNumero id="pacCodigo" 
+					size="12" maxlength="12"
+					onkeypress="Pesquisar(event);" 
+					value="#{pesquisaSolicitacaoInternacaoPaginatorController.codigoPaciente}" 
+					label="#{messages.LABEL_CODIGO_PACIENTE}" 
+					title="#{messages.TITLE_CODIGO_PACIENTE}">
+						<p:ajax event="change" 
+							update="@(#pesquisaPacienteProntuario) @(#pesquisaPacienteNome)" 
+							process="@this" 
+							listener="#{pesquisaSolicitacaoInternacaoPaginatorController.processarBuscaPacientePorCodigo()}" />
+				</mec:inputNumero>
+			</p:outputPanel>
+			<p:outputPanel id="pesquisaPacienteNome">
+				<mec:inputText id="pacNome"
+					label="#{messages.LABEL_PORTAL_PESQUISA_NOME_PACIENTE}"  
+					maxlength="50" size="50" 
+					value="#{pesquisaSolicitacaoInternacaoPaginatorController.nomePaciente}" 
+					style="text-transform:uppercase" 
+					styleclass="suggestion_input" 
+					readonly="true" />
+			</p:outputPanel>
+			<aghu:acao newLine="false">
+				<mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" action="#{pesquisaSolicitacaoInternacaoPaginatorController.pesquisarPaciente}" styleClass=" bt_cinza icon-pesquisa-fonetica">
+					<f:setPropertyActionListener 
+						target="#{pesquisaPacienteController.cameFrom}" 
+						value="agendamentoProcedimento" 
+						for="command" />
+					<f:setPropertyActionListener 
+						target="#{pesquisaPacienteController.exibeBotaoEditar}" 
+						value="true" 
+						for="command" />
+					<f:setPropertyActionListener 
+						target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" 
+						value="true" 
+						for="command" />
+				</mec:commandButton>
+			</aghu:acao>
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CRM}" title="#{messages.TITLE_LABEL_CRM_SOL_INT}" suggestionAction="pesquisarCRM" converter="#{servidorConselhoVOConverter}" descricaoInput="nroRegConselho" descricaoLabel="nome" id="crmSuggestion" controller="#{pesquisaSolicitacaoInternacaoPaginatorController}" value="#{pesquisaSolicitacaoInternacaoPaginatorController.servidorConselhoVOPesquisa}"> 
+              <p:column>#{item.nome}</p:column>  
+              <p:column>#{item.nroRegConselho}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_ESPECIALIDADE}" title="#{messages.TITLE_LABEL_ESPECIALIDADE_PESQ}" suggestionAction="pesquisarEspecialidades" converter="#{aghEspecialidadesAtivasInternasConverter}" descricaoInput="sigla" descricaoLabel="nomeEspecialidade" id="especialidadeSuggestion" controller="#{pesquisaSolicitacaoInternacaoPaginatorController}" value="#{pesquisaSolicitacaoInternacaoPaginatorController.especialidadePesquisa}"> 
+              <p:column>#{item.nomeEspecialidade}</p:column>  
+              <p:column>#{item.sigla}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CONVENIO}" title="#{messages.TITLE_LABEL_CONVENIO_PESQ}" suggestionAction="pesquisarConvenio" converter="#{convenioPlanoVOConverter}" descricaoInput="cnvCodigo" descricaoLabel="convenioPlano" id="convenioSuggestion" controller="#{pesquisaSolicitacaoInternacaoPaginatorController}" value="#{pesquisaSolicitacaoInternacaoPaginatorController.convenioPlanoVOPesquisa}"> 
+              <p:column>#{item.cnvCodigo}</p:column>  
+              <p:column>#{item.plano}</p:column>  
+              <p:column>#{item.convenioPlano}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisaSolicitacaoInternacaoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{pesquisaSolicitacaoInternacaoPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_visualizar" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" action="#{pesquisaSolicitacaoInternacaoPaginatorController.visualizarRelatorio}" profile="view"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formSolInternacao"> 
+        <mec:serverDataTable id="tabelaSolicicoesAlta" dataModel="dataModel" controller="#{pesquisaSolicitacaoInternacaoPaginatorController}"> 
+          <c:set var="_solAlta" value="#{item}"/>  
+          <p:column headerText="Ações" width="70" styleClass="first-column auto-adjust" exportable="false">
+					<nobr>
+						<mec:commandLink title="#{messages.LABEL_LIBERAR}"
+							rendered="#{pesquisaSolicitacaoInternacaoPaginatorController.exibirBotaoLiberar(_solAlta)}"
+							action="#{pesquisaSolicitacaoInternacaoPaginatorController.liberarSolicitacaoInternacao(_solAlta)}"
+							styleClass=" silk-accept silk-icon"
+							disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura') or mf:hasPermission(securityController,'assistencial, somenteLeitura')}" />
+						<mec:commandLink title="#{messages.LABEL_CANCELAR}"
+							rendered="#{pesquisaSolicitacaoInternacaoPaginatorController.exibirBotaoCancelar(_solAlta)}"
+							action="#{pesquisaSolicitacaoInternacaoPaginatorController.obterSolicitacaoParaCancelamento(_solAlta)}"
+							oncomplete="PF('modalObservacaoWG').show();;"
+							styleClass=" silk-icon silk-delete" ajax="true"
+							render="modalObservacao"
+							disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura') or mf:hasPermission(securityController,'assistencial, somenteLeitura')}" />
+						<mec:commandLink title="#{messages.LABEL_ATENDER}"
+							rendered="#{pesquisaSolicitacaoInternacaoPaginatorController.exibirBotaoAtender(_solAlta)}"
+							action="#{pesquisaSolicitacaoInternacaoPaginatorController.atenderSolicitacaoInternacao(_solAlta.seq)}"
+							styleClass=" silk-thumb-up silk-icon" ajax="true"
+							disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}" />
+						<mec:commandLink title="#{messages.LABEL_NAO_ATENDER}"
+							rendered="#{pesquisaSolicitacaoInternacaoPaginatorController.exibirBotaoAtender(_solAlta)}"
+							action="#{pesquisaSolicitacaoInternacaoPaginatorController.naoAtenderSolicitacao(_solAlta.seq)}"
+							styleClass=" silk-thumb-down silk-icon" ajax="true"
+							disabled="#{mf:hasPermission(securityController, 'internacao,somenteLeitura')}">
+							<f:setPropertyActionListener
+								target="#{negativaAtendimentoSolicitacaoInternacaoController.codPaciente}"
+								value="#{_solAlta.paciente.codigo}" for="command" />
+						</mec:commandLink>
+						<mec:commandLink title="#{messages.LABEL_INTERNAR}"
+							rendered="#{pesquisaSolicitacaoInternacaoPaginatorController.exibirBotaoInternar(_solAlta)}"
+							action="#{pesquisaSolicitacaoInternacaoPaginatorController.internarPaciente(_solAlta.paciente.codigo, _solAlta.seq)}"
+							styleClass=" silk-internacao silk-icon" ajax="true" />
+						<mec:commandLink title="#{messages.LABEL_DETALHAR}"
+							action="#{pesquisaSolicitacaoInternacaoPaginatorController.detalharSolicitacaoInternacao(_solAlta.seq)}"
+							styleClass=" silk-table silk-icon" ajax="true" />
+					</nobr>
+				</p:column>  
+          <p:column label="#{messages.LABEL_PRONTUARIO}" width="47"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.paciente.prontuario}"> 
+              <f:converter converterId="prontuarioConverter"/> 
+            </h:outputText>  
+            <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{messages.LABEL_TELEFONE}: "/>  
+              <h:outputText value="#{pesquisaSolicitacaoInternacaoPaginatorController.formatarTelefonePaciente(_solAlta.paciente)}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_SSM}: "/>  
+              <h:outputText value="#{pesquisaSolicitacaoInternacaoPaginatorController.formatarProcedimento(_solAlta.procedimento)}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column width="300"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.paciente.nome}"/>  
+            <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{messages.LABEL_TELEFONE}: "/>  
+              <h:outputText value="#{pesquisaSolicitacaoInternacaoPaginatorController.formatarTelefonePaciente(_solAlta.paciente)}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_SSM}: "/>  
+              <h:outputText value="#{pesquisaSolicitacaoInternacaoPaginatorController.formatarProcedimento(_solAlta.procedimento)}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column width="40"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.paciente.codigo}"/>  
+            <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+              <h:outputText value="#{messages.LABEL_TELEFONE}: "/>  
+              <h:outputText value="#{pesquisaSolicitacaoInternacaoPaginatorController.formatarTelefonePaciente(_solAlta.paciente)}"/>  
+              <br clear="none"/>  
+              <h:outputText value="#{messages.LABEL_SSM}: "/>  
+              <h:outputText value="#{pesquisaSolicitacaoInternacaoPaginatorController.formatarProcedimento(_solAlta.procedimento)}"/> 
+            </p:tooltip> 
+          </p:column>  
+          <p:column width="40"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_IDADE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.paciente.idadeFormat}"/> 
+          </p:column>  
+          <p:column width="90"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_SOLICITACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.criadoEm}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column width="80"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ESPECIALIDADE}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.especialidade.sigla}"/> 
+          </p:column>  
+          <p:column width="300"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PROFISSIONAL}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.servidor.pessoaFisica.nome}"/> 
+          </p:column>  
+          <p:column width="80"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PREVISAO_INT}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.dtPrevInternacao}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column width="70"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_solAlta.indSitSolicInternacao.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:dialog id="modalObservacao" width="600" height="200" modal="true" resizable="false" widgetVar="modalObservacaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.OBSERVACOES}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <h:form prependId="false" id="formModal"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextArea cols="60" rows="4" style="text-transform:uppercase" label="#{messages.LABEL_OBSERVACOES}" value="#{pesquisaSolicitacaoInternacaoPaginatorController.solicitacaoInternacaoAlteracao.observacao}" title="#{messages.LABEL_OBSERVACOES}" id="obs" maxlength="240"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <h:panelGroup> 
+            <mec:commandButton id="bt_gravar_obs" value="#{messages.LABEL_GRAVAR}" block="true" action="#{pesquisaSolicitacaoInternacaoPaginatorController.cancelarSolicitacaoInternacao}" profile="search"/>  
+            <mec:commandButton id="cancelarModalObs" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalObservacaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:panelGroup> 
+        </h:form> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

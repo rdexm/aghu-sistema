@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_BLOQUEIO_SALA}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{bloqueioSalaListController}"/>  
+      <h:form prependId="false" id="formBloqueioSalas"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_SALAS_BLOQUEADAS}"> 
+          <aghu:linha> 
+            <mec:suggestionBox width="400"
+                               height="150"
+                               var="_unidade"
+                               itemValue="#{_unidade}"
+                               label="#{messages.LABEL_UNIDADE_CIRURGICA_SALA_CIRURGICA}"
+                               title="#{messages.TITLE_BLOQUEIO_SALA_LIST_UNIDADE_CIRURGICA}"
+                               descricaoInput="seq"
+                               descricaoLabel="descricao"
+                               descricaoLimite="35"
+                               suggestionAction="pesquisarUnidades"
+                               posDeleteAction="limparSuggestions"
+                               id="unidadeCirurgica"
+                               controller="#{bloqueioSalaListController}"
+                               value="#{bloqueioSalaListController.bloqueioSalaCirurgica.unidadeSalaCirurgica}"
+                               render="salaPanel">
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{_unidade.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{_unidade.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <p:outputPanel id="salaPanel" layout="inline"> 
+              <mec:suggestionBox label="#{messages.LABEL_SALA}"
+                                 var="_sala"
+                                 itemValue="#{_sala}"
+                                 title="#{messages.TITLE_BLOQUEIO_SALA_LIST_SALA}"
+                                 descricaoInput="id.seqp"
+                                 descricaoLabel="nome"
+                                 width="400"
+                                 height="150"
+                                 suggestionAction="buscarSalasCirurgicas"
+                                 readonly="#{bloqueioSalaListController.bloqueioSalaCirurgica.unidadeSalaCirurgica == null}"
+                                 id="sala"
+                                 controller="#{bloqueioSalaListController}"
+                                 value="#{bloqueioSalaListController.bloqueioSalaCirurgica.mbcSalaCirurgica}"
+                                 render="equipePanel">
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                  </f:facet> #{_sala.id.seqp}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                  </f:facet> #{_sala.nome}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextData id="dtInicio"
+                               label="#{messages.LABEL_BLOQUEIO_SALA_DATA_DE_INICIO}"
+                               title="#{messages.TITLE_BLOQUEIO_SALA_LIST_DATA_INICIAL}"
+                               value="#{bloqueioSalaListController.bloqueioSalaCirurgica.dtInicio}"
+                               tipo="data"/>
+            <mec:inputTextData id="dtFinal" label="#{messages.LABEL_BLOQUEIO_SALA_DATA_DE_FIM}" title="#{messages.TITLE_BLOQUEIO_SALA_LIST_DATA_FINAL}" value="#{bloqueioSalaListController.bloqueioSalaCirurgica.dtFim}" tipo="data"/>  
+            <mec:selectOneMenu id="diaSemana"
+                               enum="DominioDiaSemanaSigla"
+                               label="#{messages.LABEL_BLOQUEIO_SALA_DIA_SEMANA}"
+                               title="#{messages.TITLE_BLOQUEIO_SALA_LIST_DIA_SEMANA}"
+                               value="#{bloqueioSalaListController.bloqueioSalaCirurgica.diaSemana}"
+                               semSelecione="false">
+              <p:ajax event="change" update="@(#equipePanel)" process="@this" listener="#{bloqueioSalaController.limparSuggestionEquipe}"/> 
+            </mec:selectOneMenu>
+            <mec:selectOneMenu name="input_selectTurno1"
+                               id="input_selectTurno1"
+                               label="#{messages.LABEL_TURNO}"
+                               title="#{messages.TITLE_BLOQUEIO_SALA_LIST_TURNO}"
+                               converter="mbcTurnosConverter"
+                               items="#{bloqueioSalaListController.pesquisarTurnos()}"
+                               itemLabel="descricao"
+                               value="#{bloqueioSalaListController.bloqueioSalaCirurgica.turno}"
+                               semSelecione="false"/>
+          </aghu:linha>
+          <aghu:linha> 
+            <p:outputPanel id="equipePanel" layout="inline"> 
+              <mec:suggestionBox label="#{messages.LABEL_EQUIPE}" title="#{messages.TITLE_BLOQUEIO_SALA_LIST_EQUIPE}" suggestionAction="pesquisarEquipes" descricaoInput="numero11" descricaoLabel="texto1" readonly="#{bloqueioSalaListController.bloqueioSalaCirurgica.mbcSalaCirurgica == null}" width="400" height="150" id="sgEquipe" controller="#{bloqueioSalaListController}" value="#{bloqueioSalaListController.equipe}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VINCULO}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.numero4}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MATRICULA}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.numero11}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.texto1}
+                </p:column> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ESP_EQUIPE}" style="font-weight: bold;"/> 
+                  </f:facet> #{item.siglaEsp}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar"
+                             value="#{messages.LABEL_PESQUISAR}"
+                             action="#{bloqueioSalaListController.pesquisar}"
+                             profile="search"/>
+          <mec:commandButton id="bt_limpar"
+                             value="#{messages.LABEL_LIMPAR}"
+                             immediate="true"
+                             ajax="true"
+                             render="formBloqueioSalas"
+                             action="#{bloqueioSalaListController.limparPesquisa}"
+                             styleClass="bt_cinza"
+                             profile="clear"/>
+          <mec:commandButton id="bt_bloquear"
+                             value="#{messages.LABEL_BLOQUEAR_SALA}"
+                             action="#{bloqueioSalaListController.bloquearSala}"
+                             rendered="#{mf:hasPermission(securityController,'manterBloqueioSala,atualizar')}"
+                             styleClass="bt_cinza">
+            <f:setPropertyActionListener target="#{bloqueioSalaController.unidadeSalaCirurgica}"
+                                         value="#{bloqueioSalaListController.bloqueioSalaCirurgica.unidadeSalaCirurgica.seq}"
+                                         for="command"/>
+          </mec:commandButton> 
+        </aghu:acao>  
+        <p:outputPanel rendered="#{bloqueioSalaListController.dataModel.pesquisaAtiva}" id="outPanelDataTable" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_SALAS_BLOQUEADAS}"> 
+            <aghu:linha> 
+              <mec:serverDataTable dataModel="dataModel" id="formPesquisa" controller="#{bloqueioSalaListController}"> 
+                <c:set var="_bloqueioSala" value="#{item}"/>  
+                <p:column id="columnAcao" style="width:90px;" exportable="false">
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink id="linkAtivarDesativar" title="#{_bloqueioSala.indSituacao eq 'A' ? messages.LABEL_DESATIVAR : messages.LABEL_ATIVAR}" action="#{bloqueioSalaListController.selecionarBloqueioSala(_bloqueioSala)}" oncomplete="PF('modalConfirmarWG').show();;" rendered="#{mf:hasPermission(securityController,'manterBloqueioSala,atualizar')}" styleClass=" #{_bloqueioSala.indSituacao eq 'A' ? 'silk-activate' : 'silk-deactivate'} silk-icon" ajax="true" process="@this"/>  
+                  <mec:commandLink id="linkMotivo" title="#{messages.LABEL_BLOQUEIO_SALA_MOTIVO_BLOQUEIO}" oncomplete="PF('modalMotivoCancelamentoWG').show();" action="#{bloqueioSalaListController.selecionarBloqueioSala(_bloqueioSala)}" styleClass=" silk-page-white silk-icon" ajax="true" render="formPesquisa, modalMotivoCancelamento" process="@this"/> 
+                </p:column>  
+                <p:column id="columnUnidadeFuncional"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_UNIDADE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_bloqueioSala.mbcSalaCirurgica.unidadeFuncional.sigla}"/> 
+                </p:column>  
+                <p:column id="columnSala"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SALA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_bloqueioSala.mbcSalaCirurgica.nome}"/> 
+                </p:column>  
+                <p:column id="columnDataInicio"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_BLOQUEIO_SALA_DATA_INICIO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_bloqueioSala.dtInicio}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column id="columnDataFim"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_BLOQUEIO_SALA_DATA_FIM}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_bloqueioSala.dtFim}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column id="columnDiaSemana"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_BLOQUEIO_SALA_DIA_SEMANA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_bloqueioSala.diaSemana.descricaoCompleta}" style="text-transform:uppercase"/> 
+                </p:column>  
+                <p:column id="columnTurno"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_TURNO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_bloqueioSala.turno.descricao}"/> 
+                </p:column>  
+                <p:column id="columnEquipe"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_EQUIPE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_bloqueioSala.mbcProfAtuaUnidCirgs.rapServidores.pessoaFisica.nome}"/> 
+                </p:column>  
+                <p:column id="columnEsp"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ESP_EQUIPE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{bloqueioSalaListController.obterEspecialidadeSigla(_bloqueioSala.especialidade)}"/> 
+                </p:column> 
+                <p:column style="width:70px;" id="columnSituacao"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_bloqueioSala.indSituacao.descricao eq 'Inativo' ? messages.LABEL_DESBLOQUEADA : messages.LABEL_BLOQUEADA}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalConfirmar" width="450" height="150" modal="true" resizable="false" widgetVar="modalConfirmarWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CONFIRMAR}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_SITUACAO_BLOQUEIO_SALA} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalConfirmar"> 
+            <mec:commandButton id="bt_mudastatus" value="#{messages.LABEL_SIM}" action="#{bloqueioSalaListController.alterarSituacaoBloqueioSala}" profile="search"/>  
+            <mec:commandButton id="bt_cancelar_modal" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmarWG').hide();; return false;" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalMotivoCancelamento" style="text-align:center;" height="180" resizeable="false" moveable="true" width="400" zindex="2000" modal="true" resizable="false" widgetVar="modalMotivoCancelamentoWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_BLOQUEIO_SALA}"/> 
+        </f:facet>  
+        <aghu:linha> 
+          <h:form prependId="false" id="formModalMotivoCancelamento">
+            <mec:inputTextArea id="idMotivoCancelamento" label="#{messages.LABEL_BLOQUEIO_SALA_MOTIVO_BLOQUEIO}" readonly="true" value="#{bloqueioSalaListController.bloqueioSalaCirurgicaSelecionado.motivo}" style="width: 350px; height: 100px;"/> 
+          </h:form>
+        </aghu:linha> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

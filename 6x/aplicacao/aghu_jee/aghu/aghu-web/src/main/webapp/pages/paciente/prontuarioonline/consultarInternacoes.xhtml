@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PRONTUARIO_ONLINE_CONSULTAR_INTERNACOES} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{consultarInternacoesPOLController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+
+	<ui:define name="body">
+		<mec:pageConfig controller="#{consultarInternacoesPOLController}" />
+		
+		<h:form prependId="false" id="formConsulta">
+
+			<aghu:panelGeral legend="#{messages.LABEL_INTERNACOES}" style="width:94%;height:100%;">
+				<p:outputPanel id="panelAcoes" layout="inline">
+				
+					<aghu:linha>
+				
+						<mec:commandButton id="bt_anamnese" 
+							ajaxSingle="true"
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoAnanmese()}"
+							action="#{consultarInternacoesPOLController.pesquisarAnamnese}"
+							rendered="#{!consultarInternacoesPOLController.exibirBotaoAnamneseEvolucaoPrescricaoMedica()}"
+							title="#{messages.TITLE_ANAMNESE_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_ANAMNESE_CONSULTA_INTERNACAO}"
+							style="margin:1px 3px !important" />
+
+						<mec:commandButton id="bt_anamnese_prescricao"
+							styleClass="bt_secund"
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoAnanmesePrescricao()}"
+							action="visualizarAnamnesePOL"
+							rendered="#{consultarInternacoesPOLController.exibirBotaoAnamneseEvolucaoPrescricaoMedica() and mf:hasPermission(securityController, 'visualizarAnamneseEvolucaoPOL,visualizar')}"
+							title="#{messages.TITLE_ANAMNESE_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_ANAMNESE_CONSULTA_INTERNACAO}">
+							<f:setPropertyActionListener
+								target="#{visualizarAnamnesePOLController.seqAtendimento}"
+								value="#{consultarInternacoesPOLController.internacao.atdSeq}" for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarAnamnesePOLController.voltarPara}"
+								value="consultarInternacoes" for="command" />
+						</mec:commandButton>
+
+						<mec:commandButton id="bt_evolucao"
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoEvolucao()}"
+							rendered="#{!consultarInternacoesPOLController.exibirBotaoAnamneseEvolucaoPrescricaoMedica()}" 
+							title="#{messages.TITLE_EVOLUCAO_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_EVOLUCAO_CONSULTA_INTERNACAO}"
+							oncomplete="PF('modalEvolucaoWG').show();" ajax="true"
+							render="modalEvolucao" process="@this" style="margin:1px 3px !important" />
+
+						<mec:commandButton id="bt_evolucao_prescricao"
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoEvolucaoPrescricao()}"
+							action="ambulatorio-redirecionarVisualizarEvolucoes"
+							rendered="#{consultarInternacoesPOLController.exibirBotaoAnamneseEvolucaoPrescricaoMedica() and mf:hasPermission(securityController,'visualizarAnamneseEvolucaoPOL, visualizar')}"
+							title="#{messages.TITLE_EVOLUCAO_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_EVOLUCAO_CONSULTA_INTERNACAO}">
+							<f:setPropertyActionListener
+								target="#{visualizarEvolucoesPOLController.seqAtendimento}"
+								value="#{consultarInternacoesPOLController.seqAtendimento}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarEvolucoesPOLController.seqAnamnese}"
+								value="#{consultarInternacoesPOLController.seqAnamnese}"
+								for="command" />
+							<f:setPropertyActionListener
+								target="#{consultarInternacoesPOLController.voltarPara}"
+								value="consultarDetalhesInternacao" for="command" />
+							<f:setPropertyActionListener
+								target="#{visualizarEvolucoesPOLController.voltarPara}"
+								value="consultarInternacoes" for="command" />
+						</mec:commandButton>
+
+						<mec:commandButton id="bt_prescricao1"
+							rendered="#{!consultarInternacoesPOLController.renderizarBotaoPacienteProtegido()}"
+							disabled="#{empty consultarInternacoesPOLController.listQuinzenaPrescricaoMedica or !consultarInternacoesPOLController.habilitarBotaoPadrao()  or mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"
+							value="#{messages.LABEL_PRESCRICAO_CONSULTA_INTERNACAO}"
+							action="#{consultarInternacoesPOLController.montaQuinzenaPrescricaoMedica}"
+							 title="#{messages.TITLE_SUMARIO_PRONTUARIO}"
+							oncomplete="PF('i_sumarioPrescricaoMedica_modalWG').show();"
+							ajax="true" render="i_sumario_result" process="@this"
+							style="margin:1px 3px !important">
+							<f:setPropertyActionListener target="#{consultarInternacoesPOLController.modoVoltar}" value="L" for="command" />
+						</mec:commandButton>
+						
+						<mec:commandButton id="bt_prescricao2"
+							rendered="#{consultarInternacoesPOLController.renderizarBotaoPacienteProtegido()}"
+							disabled="#{empty consultarInternacoesPOLController.listQuinzenaPrescricaoMedica or consultarInternacoesPOLController.habilitarBotaoPadrao()  or mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"
+							value="#{messages.LABEL_PRESCRICAO_CONSULTA_INTERNACAO}"
+							 title="#{messages.TITLE_SUMARIO_PRONTUARIO}"
+							onclick="PF('modalConfirmacaoWG').show();" ajax="true"
+							process="@this" style="margin:1px 3px !important">
+							<f:setPropertyActionListener target="#{consultarInternacoesPOLController.modoVoltar}" value="L" for="command" />
+						</mec:commandButton>
+	
+						<mec:commandButton id="bt_administracao" 
+							rendered="#{!consultarInternacoesPOLController.exibirModalBotaoAdministracao()}"
+							disabled="#{(consultarInternacoesPOLController.urlBaseAdministracao == null) || !consultarInternacoesPOLController.habilitarBotaoAdministracao()}"
+							title="#{messages.TITLE_ADMINISTRACAO_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_ADMINISTRACAO_CONSULTA_INTERNACAO}"
+							action="#{consultarInternacoesPOLController.visualizarRelatorioOrdemAdministracao}" style="margin:1px 3px !important">
+							<f:setPropertyActionListener value="consultarInternacoes" target="#{relatorioOrdemAdministracaoController.voltarPara}" for="command" />
+						</mec:commandButton>
+	
+						<mec:commandButton id="bt_administracao2" 
+							rendered="#{consultarInternacoesPOLController.exibirModalBotaoAdministracao()}"
+							disabled="#{consultarInternacoesPOLController.urlBaseAdministracao eq null || !consultarInternacoesPOLController.habilitarBotaoAdministracao()}"
+							action="#{consultarInternacoesPOLController.exibirModalOrdemDeAdministracao()}"
+							title="#{messages.TITLE_ADMINISTRACAO_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_ADMINISTRACAO_CONSULTA_INTERNACAO}"
+							ajax="true" render="painelListagemOrdemAdministracao"
+							process="@this" style="margin:1px 3px !important">
+						</mec:commandButton>
+	
+						<p:outputPanel id="bt_exames_panel" layout="inline">
+							<mec:commandButton id="bt_exames"
+								disabled="#{!consultarInternacoesPOLController.habilitarBotaoExames()}"
+								action="#{consultarInternacoesPOLController.montaQuinzenaPrescricaoEnfermagem}"
+								rendered="#{consultarInternacoesPOLController.getExibirModalExames()}"
+								title="#{messages.TITLE_EXAMES_CONSULTA_INTERNACAO}"
+								value="#{messages.LABEL_EXAMES_CONSULTA_INTERNACAO}"
+								oncomplete="PF('modalExamesWG').show();" ajax="true"
+								render="nomePacSelecionado" process="@this"
+								style="margin:1px 3px !important" >
+							</mec:commandButton>
+							
+							<mec:commandButton id="bt_exames2"
+								disabled="#{!consultarInternacoesPOLController.habilitarBotaoExames()}"
+								action="#{consultarInternacoesPOLController.gerarDadosRelatorioExamesPaciente()}"
+								rendered="#{!consultarInternacoesPOLController.getExibirModalExames()}"
+								title="#{messages.TITLE_EXAMES_CONSULTA_INTERNACAO}"
+								value="#{messages.LABEL_EXAMES_CONSULTA_INTERNACAO}"
+								ajax="true" process="@this" style="margin:1px 3px !important">
+							</mec:commandButton>
+						</p:outputPanel>
+	
+						<mec:commandButton id="bt_cuidados1"
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoCuidados()}"
+							action="#{consultarInternacoesPOLController.montaQuinzenaPrescricaoEnfermagem}"
+							rendered="#{!consultarInternacoesPOLController.renderizarBotaoPacienteProtegido()}"
+							title="#{messages.TITLE_SUMARIO_PRONTUARIO_ENFERMAGEM}"
+							value="#{messages.LABEL_CUIDADOS_CONSULTA_INTERNACAO}"
+							ajax="true" render="i_sumarioPrescricaoEnfermagem_modal"
+							process="@this" style="margin:1px 3px !important"
+							oncomplete="PF('i_sumarioPrescricaoEnfermagem_modalWG').show();">
+							<f:setPropertyActionListener target="#{consultarInternacoesPOLController.modoVoltar}" value="L" for="command" />
+						</mec:commandButton>
+	
+						<mec:commandButton id="bt_cuidados2"
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoCuidados()}"
+							rendered="#{consultarInternacoesPOLController.renderizarBotaoPacienteProtegido()}"
+							title="#{messages.TITLE_SUMARIO_PRONTUARIO_ENFERMAGEM}"
+							value="#{messages.LABEL_CUIDADOS_CONSULTA_INTERNACAO}"
+							ajax="true" render="i_sumarioPrescricaoEnfermagem_modal"
+							process="@this" style="margin:1px 3px !important">
+							<f:setPropertyActionListener target="#{consultarInternacoesPOLController.modoVoltar}" value="L" for="command" />
+						</mec:commandButton>
+					</aghu:linha>
+					
+					<aghu:linha>	
+
+						<mec:commandButton id="bt_controles"
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoControles()}"
+							action="#{consultarInternacoesPOLController.prepararRelatorioControles}"
+							title="#{messages.TITLE_VISUALIZAR_CONTROLES_PACIENTE}"
+							value="#{messages.LABEL_CONTROLES_CONSULTA_INTERNACAO}"
+							ajax="true" render="@(#dataHoraInicio) @(#dataHoraFim)" process="@this"
+							style="margin:1px 3px !important" />
+							
+						<mec:commandButton id="bt_cirurgia" 
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoPadrao()}"
+							title="#{messages.TITLE_CIRURGIA_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_CIRURGIA_CONSULTA_INTERNACAO}"
+							action="#{consultarInternacoesPOLController.abrirCirurgiasInternacao}"
+							style="margin:1px 3px !important">
+							<f:setPropertyActionListener target="#{cirurgiasInternacaoPOLController.prontuario}" value="#{consultarInternacoesPOLController.numeroProntuario}" for="command" />
+							<f:setPropertyActionListener target="#{cirurgiasInternacaoPOLController.origem}" value="pol-internacao" for="command" />
+						</mec:commandButton>
+						
+						<mec:commandButton id="bt_transferencia" 
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoTransferencia()}"
+							rendered="#{!consultarInternacoesPOLController.renderizaBotaoTransferenciaMulti()}"
+							 action="relatorioSumarioTransferenciaPdf"
+							title="#{messages.TITLE_TRANSFERENCIA_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_TRANSFERENCIA_CONSULTA_INTERNACAO}"
+							style="margin:1px 3px !important">
+							<f:setPropertyActionListener target="#{relatorioSumarioTransferenciasController.seqAtendimento}" value="#{consultarInternacoesPOLController.internacao.atdSeq}" for="command" />
+							<f:setPropertyActionListener target="#{relatorioSumarioTransferenciasController.voltarPara}" value="consultarInternacoes" for="command" />
+						</mec:commandButton>
+							
+						<mec:commandButton id="bt_transferencia_multi" disabled="false"
+							rendered="#{consultarInternacoesPOLController.renderizaBotaoTransferenciaMulti()}"
+							
+							title="#{messages.TITLE_TRANSFERENCIA_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_TRANSFERENCIA_CONSULTA_INTERNACAO}"
+							action="#{consultarInternacoesPOLController.carregarListaSumarioVO}"
+							oncomplete="PF('i_sumarioAltaTransferencia_modalWG').show();"
+							ajax="true" render="relTransfDataTable, btnVisualizarPanel"
+							process="@this" style="margin:1px 3px !important" />
+							
+						<mec:commandButton
+							value="#{messages.LABEL_CONSULTORIA_CONSULTA_INTERNACAO}"
+							disabled="#{!consultarInternacoesPOLController.possuiConsultoriasAtivas()}"
+							action="consultaDetalheConsultoria" ajax="true" process="@this"
+							style="margin:1px 3px !important">
+							<f:setPropertyActionListener target="#{consultaDetalheConsultoriaController.atdSeq}" value="#{consultarInternacoesPOLController.internacao.atdSeq}" for="command" />
+							<f:setPropertyActionListener target="#{consultaDetalheConsultoriaController.exibirCancelarDetalheInternacao}" value="#{false}" for="command" />
+						</mec:commandButton>
+						
+						<p:outputPanel
+							rendered="#{consultarInternacoesPOLController.habilitarBotaoAlta()}"
+							layout="inline">
+							<p:outputPanel
+								rendered="#{consultarInternacoesPOLController.internacao.possuiDocumentoAssinado}"
+								layout="inline">
+								<mec:commandButton
+									title="#{messages.LABEL_RELATORIO_ALTA_OBITO}"
+									disabled="false" action="visualizarDocumentoCertificado"
+									value="#{messages.LABEL_ALTA_CONSULTA_INTERNACAO}"
+									id="bt_alta1"  ajax="true" process="@this"
+									style="margin:1px 3px !important">
+									<f:setPropertyActionListener target="#{visualizarDocumentoCertificadoController.seqVersaoDocumento}" value="#{consultarInternacoesPOLController.internacao.seqVersaoDocumento}" for="command" />
+									<f:setPropertyActionListener target="#{visualizarDocumentoCertificadoController.voltarPara}" value="pol-internacao" for="command" />
+									<f:setPropertyActionListener target="#{visualizarDocumentoCertificadoController.situacaoDocumento}" value="assinado" for="command" />
+								</mec:commandButton>
+							</p:outputPanel>
+							<p:outputPanel
+								rendered="#{consultarInternacoesPOLController.internacao.possuiDocumentoPendente}"
+								layout="inline">
+								<mec:commandButton
+									title="#{messages.LABEL_RELATORIO_ALTA_OBITO}"
+									disabled="false" action="visualizarDocumentoCertificado"
+									value="#{messages.LABEL_ALTA_CONSULTA_INTERNACAO}"
+									id="bt_alta2"  ajax="true" process="@this"
+									style="margin:1px 3px !important">
+									<f:setPropertyActionListener target="#{visualizarDocumentoCertificadoController.seqVersaoDocumento}" value="#{consultarInternacoesPOLController.internacao.seqVersaoDocumento}" for="command" />
+									<f:setPropertyActionListener target="#{visualizarDocumentoCertificadoController.voltarPara}" value="pol-internacao" for="command" />
+									<f:setPropertyActionListener target="#{visualizarDocumentoCertificadoController.situacaoDocumento}" value="original" for="command" />
+								</mec:commandButton>
+							</p:outputPanel>
+							<p:outputPanel rendered="#{consultarInternacoesPOLController.internacao.possuiRelatorioAltaObito}" layout="inline">
+								<mec:commandButton
+									title="#{messages.LABEL_RELATORIO_ALTA_OBITO}"
+									disabled="false" action="relatorioSumarioAltaObitoPdf"
+									value="#{messages.LABEL_ALTA_CONSULTA_INTERNACAO}"
+									id="bt_alta3"  ajax="true" process="@this"
+									style="margin:1px 3px !important">
+									<f:setPropertyActionListener target="#{relatorioInternacaoSumarioAltaObitoController.atdSeq}" value="#{consultarInternacoesPOLController.internacao.atdSeq}" for="command" />
+									<f:setPropertyActionListener target="#{relatorioInternacaoSumarioAltaObitoController.sumarioObito}" value="#{consultarInternacoesPOLController.internacao.obito}" for="command" />
+									<f:setPropertyActionListener target="#{relatorioInternacaoSumarioAltaObitoController.voltarPara}" value="internacao" for="command" />
+								</mec:commandButton>
+							</p:outputPanel>
+						</p:outputPanel>
+								
+						<p:outputPanel
+							rendered="#{!consultarInternacoesPOLController.habilitarBotaoAlta()}"
+							layout="inline">
+							<mec:commandButton id="bt_alta" disabled="true"
+								 ajaxSingle="true"
+								title="#{messages.LABEL_RELATORIO_ALTA_OBITO}"
+								value="#{messages.LABEL_ALTA_CONSULTA_INTERNACAO}"
+								style="margin:1px 3px !important" />
+						</p:outputPanel>
+	
+						<mec:commandButton id="bt_sumario_parada" 
+							disabled="#{!consultarInternacoesPOLController.habilitarBotaoSumarioParada()}"
+							title="#{messages.TITLE_SUMARIO_PARADA_CONSULTA_INTERNACAO}"
+							value="#{messages.LABEL_SUMARIO_PARADA_CONSULTA_INTERNACAO}"
+							action="#{consultarInternacoesPOLController.abrirRelatorioParadaInternacao}"
+							ajax="true" process="@this" style="margin:1px 3px !important">
+							<f:setPropertyActionListener target="#{consultarInternacoesPOLController.voltarPara}" value="consultarInternacoes" for="command" />
+						</mec:commandButton>
+					</aghu:linha>	
+				
+					<aghu:linha style="margin-left: -7px !important;">
+						<aghu:panelGeral legend="#{messages.LABEL_DOCUMENTOS_ESPECIFICOS_CONSULTA_INTERNACAO}" style="margin-left: 2px !important;">
+							<aghu:linha id="panelDocumentosEspecificos">
+		
+								<h:outputText value="#{messages.LABEL_CENTRO_OBSTETRICO_CONSULTA_INTERNACAO}" />
+								<mec:commandButton id="bt_admissao" style="margin:1px 3px !important;"
+									ajaxSingle="true"
+									disabled="#{!consultarInternacoesPOLController.habilitarBotaoAdmissao()}"
+									block="true"
+									hint="#{messages.TITLE_ADMISSAO_CONSULTA_INTERNACAO}"
+									value="#{messages.LABEL_ADMISSAO_CONSULTA_INTERNACAO}"
+									action="#{consultarInternacoesPOLController.abrirRelatorioAdmissaoObstetrica}">
+								</mec:commandButton>
+								
+								<mec:commandButton id="bt_parto" 
+									disabled="#{!consultarInternacoesPOLController.habilitarBotaoParto()}"
+									action="#{consultarInternacoesPOLController.visualizarSumarioAssistenciaParto()}"
+									hint="#{messages.TITLE_PARTO_CONSULTA_INTERNACAO}"
+									value="#{messages.LABEL_PARTO_CONSULTA_INTERNACAO}" ajax="true"
+									process="@this" style="margin:1px 3px !important" >
+								</mec:commandButton>
+								
+								<mec:commandButton id="bt_nascimento1"
+									disabled="#{!consultarInternacoesPOLController.habilitarBotaoNascimento()}"
+									ignoreDupResponses="true" 
+									action="#{consultarInternacoesPOLController.cleanParamRecemNascido()}"
+									title="#{messages.TITLE_NASCIMENTO_CONSULTA_INTERNACAO}"
+									value="#{messages.LABEL_NASCIMENTO_CONSULTA_INTERNACAO}"
+									rendered="#{consultarInternacoesPOLController.getExibirModalGestacao()}"
+									oncomplete="PF('modalGestacaoWG').show();" ajax="true"
+									render="modalGestacao, tabelaGestacoes" process="@this"
+									style="margin:1px 3px !important" >
+								</mec:commandButton>
+								
+								<mec:commandButton id="bt_nascimento2"
+									disabled="#{!consultarInternacoesPOLController.habilitarBotaoNascimento()}"
+									ajaxSingle="true" 
+									title="#{messages.TITLE_NASCIMENTO_CONSULTA_INTERNACAO}"
+									value="#{messages.LABEL_NASCIMENTO_CONSULTA_INTERNACAO}"
+									rendered="#{!consultarInternacoesPOLController.getExibirModalGestacao()}"
+									action="#{consultarInternacoesPOLController.abrirRelatorioNascimento}"
+									style="margin:1px 3px !important" >
+								</mec:commandButton>
+								
+								<mec:commandButton id="bt_exameFisicoRecemNascido"
+									disabled="#{!consultarInternacoesPOLController.habilitarExameFisicoRecemNascido()  or mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"
+									hint="#{messages.TITLE_EXAME_FISICO_CONSULTA_INTERNACAO}"
+									value="#{messages.LABEL_EXAME_FISICO_CONSULTA_INTERNACAO}"
+									action="#{consultarInternacoesPOLController.visualizarRelatorioExameFisicoRecemNascido}"
+									ajax="true" render="modalExameFisicoRecemNascido"
+									process="@this" style="margin:1px 3px !important" >
+								</mec:commandButton>
+							</aghu:linha>
+										
+							<aghu:linha style="padding-left: 8px;">
+								<mec:selectOneMenu
+									label="#{messages.LABEL_SELECAO_CTI_UTIP_CONSULTA_INTERNACAO}"
+									title="#{messages.TITLE_SELECAO_CTI_UTIP_CONSULTA_INTERNACAO}"
+									id="selecaoCtiUtip" noSelectionOption="false"
+									value="#{consultarInternacoesPOLController.itemSelecionado}"
+									disabled="#{!consultarInternacoesPOLController.habilitarComboCTIUTI()}"
+									style="width:200px">
+									<f:selectItems id="ctis" var="item" value="#{consultarInternacoesPOLController.listarCTIUTIP()}" itemLabel="#{item['description']}" itemValue="#{item['value']}" />
+									<p:ajax event="change" process="@(#ctis)" listener="#{consultarInternacoesPOLController.selecionarCTIUTI()}" />
+								</mec:selectOneMenu>
+							</aghu:linha>
+						</aghu:panelGeral>
+					</aghu:linha>
+				</p:outputPanel>
+				<aghu:linha style="width:100%">
+					<mec:serverDataTable
+						list="#{consultarInternacoesPOLController.internacaoVOList}"
+						id="tabelaInternacoes"
+						controller="#{consultarInternacoesPOLController}"
+						scrollable="true" scrollHeight="280" selection="internacao">
+						<c:set var="_internacao" value="#{item}" />
+	
+						<p:ajax event="rowSelect"
+							listener="#{consultarInternacoesPOLController.obterInternacaoVOVerificarAcaoPermitida}"
+							update="@(#panelAcoes),@(#panelDocumentosEspecificos)" />
+							
+						<p:column style="text-align:center;width:55px; padding-left: 2px !important;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_INTERNACAO}" />
+							</f:facet>
+							<h:outputText value="#{_internacao.dthrInicio}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</p:column>
+						<p:column style="text-align:center;width:55px; padding-left: 2px !important;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ALTA}" />
+							</f:facet>
+							<h:outputText value="#{_internacao.dthrFim}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</p:column>
+						<p:column style="width:134px; padding-left: 2px !important;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_LEITO}" />
+							</f:facet>
+			                <h:outputText value="#{fn:substring(_internacao.leito,0,21)}..." rendered="#{(fn:length(_internacao.leito) gt 25)}" title="#{_internacao.leito}"/>  
+				            <h:outputText value="#{_internacao.leito}" rendered="#{(fn:length(_internacao.leito) le 25)}"/> 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ESPECIALIDADE}" />
+							</f:facet>
+							<h:outputText value="#{_internacao.nomeEspecialidade}" />
+						</p:column>
+						
+						<p:column
+							rendered="#{!consultarInternacoesPOLController.usuarioAdministrativo}">
+							<f:facet name="header">
+								<h:outputText value="Diagnóstico" />
+							</f:facet>
+							<ui:repeat var="_cid" value="#{_internacao.descricaoCids}">
+								<h:outputText value="#{_cid}" />
+								<br />
+							</ui:repeat>
+						</p:column>
+						<p:column style="text-align:center;width:15px; padding-left: 2px !important;">
+							<mec:commandLink
+								action="#{consultarInternacoesPOLController.abreDetalheInternacao}"
+								rendered="#{consultarInternacoesPOLController.pol}"
+								title="#{messages.LABEL_DETALHES_INTERNACAO}"
+								styleClass=" silk-page-white-magnify silk-icon">
+								<f:setPropertyActionListener target="#{consultarInternacoesPOLController.detalheSeq}"  value="#{_internacao.seq}" for="command" />
+								<f:setPropertyActionListener target="#{consultarInternacoesPOLController.detalheTipo}" value="#{_internacao.tipo}" for="command" />
+							</mec:commandLink>
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<ui:decorate template="/pages/paciente/prontuarioonline/modalPrescricaoMedica.xhtml" />
+			<ui:decorate template="/pages/paciente/prontuarioonline/modalPrescricaoEnfermagem.xhtml" />
+			<ui:decorate template="/pages/paciente/prontuarioonline/modalTransferencia.xhtml" />
+		</h:form>
+		<h:form prependId="false" id="formControle">
+			<ui:decorate template="/pages/paciente/prontuarioonline/modalControlesPaciente.xhtml" />
+		</h:form>
+		
+		<p:dialog id="modalEvolucao" width="343" height="250" minWidth="280"
+			minHeight="340" resizable="false"
+			style="overflow: visible;" modal="true" widgetVar="modalEvolucaoWG" closable="true">
+			<f:facet name="header">
+				<h:outputText value="#{messages.LABEL_VISUALIZAR_EVOLUCAO}" />
+			</f:facet>
+			<h:form prependId="false" id="formModalEvolucao">
+				<aghu:panelGeral legend="#{messages.LABEL_POPUP_EVOLUCAO}">
+					<aghu:linha>
+						<mec:inputTextData label="#{messages.LABEL_DATA_INICIAL}"
+							value="#{consultarInternacoesPOLController.dataInicial}"
+							id="dataInicio" tipo="data" />
+						<mec:inputTextData label="#{messages.LABEL_DATA_FINAL}"
+							direction="bottom-left" jointPoint="bottom-right"
+							value="#{consultarInternacoesPOLController.dataFinal}"
+							id="dataFim" tipo="data" />
+					</aghu:linha>
+					<br  />
+					<br  />
+					<aghu:linha style="margin-top: 5px !important">
+						<mec:commandButton id="bt_UltimosQuinzedias"
+							block="true" value="#{messages.LABEL_BOTAO_VISUALIZAR_PERIODO}"
+							action="#{consultarInternacoesPOLController.pesquisarEvolucaoPeriodo}"
+							render="formModalEvolucao" ajax="true" profile="view" />
+						<mec:commandButton value="#{messages.LABEL_BOTAO_IMPRIMIR_TODOS}"
+							onclick="PF('modalEvolucaoWG').hide();"
+							rendered="#{mf:hasPermission(securityController,'permiteImprimirAnamneseInternacaoPOL,imprimir')}"
+							id="bt_VisualizarTodos"
+							action="#{consultarInternacoesPOLController.pesquisarEvolucaoTodos}"
+							ajax="false" profile="print" />
+					</aghu:linha>
+				</aghu:panelGeral>
+				<br clear="none" />
+			</h:form>
+		</p:dialog>
+		
+		<p:dialog id="modalGestacao" width="320" height="320"
+			resizable="false" modal="true" widgetVar="modalGestacaoWG"
+			closable="true">
+			<f:facet name="header">
+				<h:outputText value="#{messages.LABEL_VISUALIZAR_GESTACAO}" />
+			</f:facet>
+			<h:form prependId="false" id="formModalGestacao">
+				<aghu:panelGeral legend="#{messages.TITLE_NASCIMENTO_RECEM_NASCIDO}"  style="height:220px; width:250px;">
+					<aghu:linha>
+						<mec:serverDataTable id="tabelaGestacoes"
+							list="#{consultarInternacoesPOLController.recemNasc}"
+							controller="#{consultarInternacoesPOLController}" selection="selecionadoRecemNasc"
+							scrollable="true" scrollHeight="210" >
+							<c:set var="_rnasc" value="#{item}" />
+
+							<p:ajax event="rowSelect" immediate="true" update="@(#panelBtnGestacao2)" />
+
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_DESCRICAO_RECEM_NASCIDO}" />
+								</f:facet>
+								<h:outputText value="RN#{_rnasc.id.seqp}" />
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:linha>
+				</aghu:panelGeral>
+				<aghu:acao>
+      			 <p:outputPanel id="panelBtnGestacao2" layout="inline">
+					<mec:commandButton
+						value="#{messages.LABEL_BTN_VISUALIZAR_RECEM_NASCIDO}"
+						disabled="#{consultarInternacoesPOLController.selecionadoRecemNasc == null}"
+						id="btOkModalGestacao"
+						action="#{consultarInternacoesPOLController.abrirRelatorioNascimento}"
+						styleClass=" icon-display bt_cinza"/>
+  				  </p:outputPanel>
+				</aghu:acao>
+			</h:form>
+		</p:dialog>
+		
+		<p:dialog id="modalExameFisicoRecemNascido" width="320" height="320"
+			resizable="false" modal="true"
+			widgetVar="modalExameFisicoRecemNascidoWG" closable="true">
+			<f:facet name="header">
+				<h:outputText value="#{messages.TITLE_MODAL_EXAME_FISICO_RN}" />
+			</f:facet>
+			<h:form prependId="false" id="formModalExameFisicoRecemNascido">
+				<aghu:panelGeral legend="#{messages.TITLE_NASCIMENTO_RECEM_NASCIDO}"  style="height:220px; width:250px;">
+					<aghu:linha>
+						<mec:serverDataTable id="tabelaExameFisicoRecemNascido"
+							list="#{consultarInternacoesPOLController.listaSeqp}"
+							controller="#{consultarInternacoesPOLController}" selection="selecionadoExameFisicoRecemNascido"
+							scrollable="true" scrollHeight="210" >
+							
+							<c:set var="_efrn" value="#{item}" />
+							<p:ajax event="rowSelect" immediate="true" update="@(#panelBtnExameFisicoRecemNascido2)" />
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_DESCRICAO_RECEM_NASCIDO}" />
+								</f:facet>
+								<h:outputText value="RN#{_efrn.getId().getSeqp()}" />
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:linha>
+					<br clear="none" />
+				</aghu:panelGeral>
+				<aghu:acao>
+      			 <p:outputPanel id="panelBtnExameFisicoRecemNascido2" layout="inline">
+					<mec:commandButton value="#{messages.LABEL_VISUALIZAR_IMPRESSAO}"
+						id="bt_imprimir"
+						disabled="#{consultarInternacoesPOLController.selecionadoExameFisicoRecemNascido.id.seqp == null}"
+						action="#{consultarInternacoesPOLController.visualizarDiretoRelatorioExameFisicoRecemNascido}"
+						styleClass=" icon-see-print bt_cinza" />
+				 </p:outputPanel>
+				</aghu:acao>
+			</h:form>
+		</p:dialog>
+		
+		<p:dialog id="modalExames" width="320" height="180" resizable="false"
+			modal="true" widgetVar="modalExamesWG">
+			<f:facet name="header">
+				<h:outputText value="#{messages.TITLE_EXAMES_CONSULTA_INTERNACAO}" />
+			</f:facet>
+			<h:form prependId="false" id="formModalExames">
+				<aghu:panelGeral legend="#{messages.TITLE_EXAMES_PACIENTE}">
+					<aghu:linha>
+						<p:outputPanel id="nomePacSelecionado" layout="inline">
+							<h:outputFormat
+								value="#{consultarInternacoesPOLController.mensagemModalExames}" />
+						</p:outputPanel>
+					</aghu:linha>
+					<br clear="none" />
+				</aghu:panelGeral>
+				<aghu:acao>
+					<mec:commandButton value="#{messages.LABEL_SIM}"
+						id="btOkModalExames"
+						action="#{consultarInternacoesPOLController.gerarDadosRelatorioExamesPaciente}"
+						profile="ok" />
+					<mec:commandButton id="btCancelarModalExames"
+						value="#{messages.LABEL_NAO}"
+						onclick="PF('modalExamesWG').hide();return false;"
+						profile="cancel" ajax="true" />
+				</aghu:acao>
+				<br clear="none" />	
+			</h:form>
+		</p:dialog>
+		
+			<h:form prependId="false" id="formModalOrdemDeAdministracao">
+		<p:dialog id="modalOrdemDeAdministracao" width="350" height="408" resizable="false" modal="true"
+			widgetVar="modalOrdemDeAdministracaoWG" closable="true" onShow="PF('listaOrdemDeAdministracaoWG').filter()">
+			
+			<f:facet name="header">
+				<h:outputText value="#{messages.TITLE_MODAL_ORDEM_DE_ADMINISTRACAO}" />
+			</f:facet>
+				<aghu:panelGeral id="painelListagemOrdemAdministracao" legend="#{messages.TITLE_ORDEM_DE_ADMINISTRACAO}">
+
+					<mec:serverDataTable name="tabelaOrdemDeAdministracao"
+						list="#{consultarInternacoesPOLController.ordemDeAdminVOList}"
+						filteredValue="#{consultarInternacoesPOLController.filtredOrdemDeAdminVOList}" 
+						scrollable="true" widgetVar="listaOrdemDeAdministracaoWG" scrollHeight="300"
+						controller="#{consultarInternacoesPOLController}">
+						
+						<p:column filterBy="#{_item.dia}" filterMatchMode="contains"
+								  style="text-align:center; padding-left: 4px !important;">
+						  	<f:facet name="filter">
+		                		<p:inputText size="5" value="#{consultarInternacoesPOLController.dia}" onchange="PF('listaOrdemDeAdministracaoWG').filter()" />
+				            </f:facet>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DIA}" />
+							</f:facet>
+							<h:outputText value="#{_item.dia}" />
+						</p:column>
+						<p:column filterBy="#{_item.mes}" filterMatchMode="contains"
+								  style="text-align:center; padding-left: 4px !important;">
+						  	<f:facet name="filter">
+		                		<p:inputText size="5" value="#{consultarInternacoesPOLController.mes}" onchange="PF('listaOrdemDeAdministracaoWG').filter()" />
+				            </f:facet>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_MES}" />
+							</f:facet>
+							<h:outputText value="#{_item.mes}" />
+						</p:column>
+						<p:column filterBy="#{_item.ano}" filterMatchMode="contains"
+								  style="text-align:center; padding-left: 4px !important;">
+						  	<f:facet name="filter">
+		                		<p:inputText size="5" value="#{consultarInternacoesPOLController.ano}" onchange="PF('listaOrdemDeAdministracaoWG').filter()" />
+				            </f:facet>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ANO}" />
+							</f:facet>
+							<h:outputText value="#{_item.ano}" />
+						</p:column>
+						<p:column style="text-align:center; padding-left: 4px !important; width: 30px">
+							<f:facet name="header">#{messages.LABEL_ACAO}</f:facet>
+							<mec:commandLink
+								title="#{messages.MENSAGEM_ABRIR_ADMINISTRACAO_PRESCRICAO}"
+								action="#{consultarInternacoesPOLController.visualizarRelatorioOrdemAdministracao(_item)}"
+								styleClass=" silk-page-white-magnify silk-icon" ajax="true">
+								<f:setPropertyActionListener value="pol-internacao" target="#{relatorioOrdemAdministracaoController.voltarPara}" for="command" />
+							</mec:commandLink>
+						</p:column>
+					</mec:serverDataTable>
+						
+				</aghu:panelGeral>
+		</p:dialog>
+			</h:form>
+	</ui:define>
+</ui:composition>
+</html>

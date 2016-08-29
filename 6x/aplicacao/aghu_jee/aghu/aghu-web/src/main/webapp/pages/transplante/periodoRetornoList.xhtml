@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+  	<ui:define name="head"> 
+    </ui:define>
+    <ui:define name="metadata">
+	    <f:metadata>
+	        <f:viewAction action="#{periodoRetornoListController.iniciar()}"/>
+	    </f:metadata>
+	</ui:define>  
+    <ui:define name="body"> 
+      	<mec:pageConfig controller="#{periodoRetornoListController}"/>  
+      	<h:form prependId="false" id="formConsultarTipoRetorno">
+      	 	<aghu:panelGeral legend="#{messages.LABEL_CONSULTAR_PERIODO_RETORNO}" > 
+           		<aghu:linha>
+           			
+           			
+           			<p:outputPanel id="panelCombo" layout="inline">
+                		
+                		<mec:selectOneMenu id="tipo" title="#{messages.LABEL_HP_TIPO_RETORNO}" label="#{messages.LABEL_TIPO_DE_RETORNO}" noSelectionOption="true" enum="DominioTipoRetorno"  value="#{periodoRetornoListController.mtxPeriodoRetorno.tipoRetorno.indTipo}">
+       						<p:ajax event="change" listener="#{periodoRetornoListController.habilitarDescricao}"  process="@this" update="@(#panelCombo)"/> 
+       					</mec:selectOneMenu>
+                		              		
+                		<mec:suggestionBox id="suggestionDescricao" label="#{messages.LABEL_DESCRICAO_PR}" width="300" descricaoInput="seq" 
+                					descricaoLabel="descricao" posDeleteAction="limparCampo"  maxlength="200"
+                					suggestionAction="pesquisarTipoRetorno" title="#{messages.LABEL_HP_DESCRICAO}"
+                					controller="#{periodoRetornoListController}" readonly="#{!periodoRetornoListController.exibirDescricao}"
+                					value="#{periodoRetornoListController.selecaoDescricao}" size="80" 
+                					render="corpoPagina,panelLabel">
+	                  <p:column>
+	                    <f:facet name="header">
+	                      <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/>
+	                    </f:facet> #{item.seq}
+	                  </p:column>
+	                  
+	                   <p:column>
+	                    <f:facet name="header">
+	                      <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/>
+	                    </f:facet> #{item.descricao}
+	                  </p:column>
+	         
+	                </mec:suggestionBox>
+              </p:outputPanel>       				
+       				<mec:selectOneMenu id="repeticao" title="#{messages.LABEL_HP_REPETICAO}" label="#{messages.LABEL_REPETICAO_PR}" 
+       					noSelectionOption="true" enum="DominioRepeticaoRetorno" 
+       					value="#{periodoRetornoListController.repeticao}">
+       				</mec:selectOneMenu>
+       				
+       				
+       				<mec:selectOneMenu id="situacao" title="#{messages.LABEL_HP_ATIVO}" label="#{messages.LABEL_ATIVO_PR}" 
+       					noSelectionOption="true" enum="DominioSimNao" 
+       					value="#{periodoRetornoListController.dominioSimNao}">
+       				</mec:selectOneMenu>
+     			</aghu:linha>
+      		</aghu:panelGeral>
+			<br />
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{periodoRetornoListController.pesquisarPais()}" 
+					ajax="true" render="@form" profile="search" update="@(#panelPesq)"   />
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{periodoRetornoListController.limpar()}"
+					ajax="true"	render="@form" profile="clear" />
+				<mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" action="#{periodoRetornoListController.novo()}" rendered="#{periodoRetornoListController.btNovo}"
+					profile="add" />
+			</aghu:acao>
+			<br />
+			<br />
+			<aghu:panelGeral id="panelPesq" legend="#{messages.TITLE_PERIODO_DE_RETORNO}" rendered="#{periodoRetornoListController.exibirGrid}"> 
+				<mec:serverDataTable id="tabelaTipoRetorno" scrollHeight="180" list="#{periodoRetornoListController.listaPeriodosRetorno}" 
+					scrollable="true" controller="#{periodoRetornoListController}" selection="selecionado">		 
+					<c:set var="row" value="#{item}"/>
+						<p:ajax event="rowSelect" listener="#{periodoRetornoListController.pesquisarFilhos()}"  process="@this" update="@(#tabelaQuantidadeRetorno)"/> 
+				
+					<p:column width="50px;" style="text-align:center">
+			          <f:facet name="header"> 
+			            <h:outputText value="#{messages.LABEL_ACAO_PR}" /> 
+			          </f:facet>
+					  
+						  <mec:commandLink id="editar" action="#{periodoRetornoListController.editar()}" 
+						  title="#{messages.LABEL_EDITAR}" profile="edit">
+							<f:setPropertyActionListener value="#{item}" target="#{periodoRetornoCRUDController.mtxPeriodoRetorno}" for="command"/>
+							<f:setPropertyActionListener value="#{true}" target="#{periodoRetornoCRUDController.edicao}" for="command"/>
+							<f:setPropertyActionListener value="#{periodoRetornoListController.selecaoDescricao}" target="#{periodoRetornoCRUDController.selecionaDescricao}" for="command"/>
+							<f:setPropertyActionListener value="#{periodoRetornoListController.listaItemPeriodoRetorno}" target="#{periodoRetornoCRUDController.listaItensPeriodoRetorno}" for="command"/>
+						  </mec:commandLink>
+					  
+			        </p:column>
+			        <p:column width="150px;" style="text-align:center">
+			          <f:facet name="header"> 
+			            <h:outputText value="#{messages.LABEL_TIPO_DE_RETORNO}"/> 
+			          </f:facet>
+			          <h:outputText id="TipodeRetorno" value="#{item.tipoRetorno.indTipo.getDescricao()}" />
+			        </p:column>
+			         <p:column width="500px;" style="text-align:left !important">
+			          <f:facet name="header" > 
+			            <h:outputText value="#{messages.LABEL_DESCRICAO_PR}" /> 
+			          </f:facet>
+			          <p:tooltip id="toolTipFocus" for="outDescricao" styleClass="tooltip" direction="bottom-right" rendered="#{item.tipoRetorno.descricao.length() > 70}"
+					  value="#{item.tipoRetorno.descricao}" style="width:150px; word-wrap: break-word;"/>
+			          <h:outputText id="outDescricao" value="#{periodoRetornoListController.truncar(item.tipoRetorno.descricao, 70)}"/> 
+			        </p:column>
+			        <p:column width="100px;" style="text-align:center">
+			          <f:facet name="header"> 
+			            <h:outputText value="#{messages.LABEL_ATIVO_PR}"/> 
+			          </f:facet>
+			          <h:outputText id="outSituacao" value="#{item.indSituacao.toString() eq 'A' ? 'Sim' : 'Não'}"/>
+			        </p:column>
+		        </mec:serverDataTable> 
+				
+	       		<br />
+				<p:outputPanel id="tabelaQuantidadeRetorno">
+				<mec:serverDataTable   scrollHeight="100" list="#{periodoRetornoListController.listaItemPeriodoRetorno}" rendered="#{periodoRetornoListController.gridRepeticoes}"
+					scrollable="true" controller="#{periodoRetornoListController}" selection="selecionadoIPR"> 
+					<c:set var="row" value="#{item}"/>  
+       				<p:column width="50px;">
+			          <f:facet name="header"> 
+			            <h:outputText value="#{messages.LABEL_ORDEM_PR}"/> 
+			          </f:facet>
+					  <center>
+						<h:outputText id="idOrdem" value="#{item.ordem}"/>
+					  </center>
+			        </p:column>
+			        <p:column width="150px;" style="text-align:left !important">
+			          <f:facet name="header"> 
+			            <h:outputText value="#{messages.LABEL_REPETICAO_PR}"/> 
+			          </f:facet>
+			          
+			          <p:tooltip id="toolTipFocus" for="outDescricao" styleClass="tooltip" direction="bottom-right" rendered="#{item.indRepeticao.getDescricao().length() > 70}"
+					  value="#{item.indRepeticao.getDescricao()}" style="width:250px; word-wrap: break-word;"/>
+			          <h:outputText id="idRepeticao" value="#{item.indRepeticao.getDescricao()}"/>
+			         
+			        </p:column>
+			         <p:column width="150px;">
+			          <f:facet name="header"> 
+			           <h:outputText value="#{messages.LABEL_QTDE_PR}"/> 
+			          </f:facet>
+			          <center><h:outputText id="idQuantidade" value="#{item.quantidade}"/></center>
+			        </p:column>
+		        </mec:serverDataTable>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			
+		</h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

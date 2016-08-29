@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <script type="text/javascript">
+		/*                   <![CDATA[ */
+			function sliderClick(sliderIndex) {
+				setSliderPosAlta(sliderIndex);
+				var tpArray = new Array();
+				tpArray[0] = "togglePanelPaciente";					
+				controlaSliderClick(sliderIndex, tpArray);
+			}
+			
+		/* ]]> */
+		</script>
+		  
+    <p:accordionPanel id="togglePanelPaciente" prependId="false">
+      <p:tab title="#{messages.LABEL_PESQUISA_POR_PACIENTE}">
+        <aghu:panelGeral legend="#{messages.LABEL_PACIENTE}" layout="block">
+          <aghu:linha>
+            <p:outputPanel id="panelPaciente" layout="block">
+                <mec:serverDataTable id="tblistaPacientes"
+                                     scrollHeight="100"
+				     				 controller="#{pesquisaExamesPorPacienteController}"
+                                     list="#{pesquisaExamesPorPacienteController.listaPacientes}"
+                                     selection="pacienteSelecionado"                                     
+                                     scrollable="true">
+                                     
+                  <c:set var="_itemPaciente" value="#{item}"/>  
+                  <p:ajax event="rowSelect" 
+                  update="@(#tblistaPacientes) @(#tblistaExames) @(#tabelaAcao) @(#btLimparSelecao)" 
+                  listener="#{pesquisaExameController.selecionarPaciente()}" />                    
+                  <p:column width="50%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(_itemPaciente.codigo, _itemPaciente.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME_SOCIAL_DO_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemPaciente.nomeSocialPaciente != null ? item.nomeSocialPaciente : item.nomePaciente}"/> 
+                  </p:column>  
+                  <p:column width="25%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(_itemPaciente.codigo, _itemPaciente.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PRONTUARIO_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemPaciente.prontuario}" styleClass="mask_prontuario}"> 
+                      <f:converter converterId="prontuarioConverter"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column width="25%" style="#{pesquisaExamesPorPacienteController.isPacienteEmEdicao(_itemPaciente.codigo, _itemPaciente.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CONSULTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_itemPaciente.consulta}"/> 
+                  </p:column> 
+                </mec:serverDataTable>
+            </p:outputPanel>
+          </aghu:linha>
+        </aghu:panelGeral>
+
+
+        <aghu:panelGeral legend="#{messages.LABEL_EXAMES_SOLICITADOS_PAC}">
+            <aghu:column type="table">
+                <p:outputPanel id="panelExames" layout="block">
+
+                  <mec:serverDataTable id="tblistaExames"
+                                       list="#{pesquisaExamesPorPacienteController.listaResultadoPesquisa}"
+                                       scrollHeight="350"
+                                       style="width: 60px"
+                                       scrollable="true">
+                    <c:set var="_itemExameSolicitado" value="#{item}"/>
+                    <p:column style="width:5%;" >
+                      <f:facet name="header">
+                        <h:outputText value="#{messages.LABEL_ACAO}"/>
+                      </f:facet>
+                      <h:selectBooleanCheckbox name="marcador" id="marcador" value="#{_itemExameSolicitado.verResultado}" title="Exibir Resultados">
+                        <p:ajax event="click" update="@(#tabelaAcao) @(#btLimparSelecao)" process="@this" listener="#{pesquisaExameController.selecionaItemExame(_itemExameSolicitado.codigoSoe, _itemExameSolicitado.iseSeq, _itemExameSolicitado.situacaoCodigo)}"/>
+                      </h:selectBooleanCheckbox>
+                      <p:outputPanel id="panelDownload" rendered="#{_itemExameSolicitado.isExisteDocAnexado()}" layout="inline">
+                        <mec:commandLink id="btDownload" name="btDownload" title="#{messages.LABEL_DOWNLOAD_ARQUIVO_LAUDO}" action="exames-visualizarResultado" styleClass=" silk-attach silk-icon">
+                          <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSoeSeq}" value="#{_itemExameSolicitado.codigoSoe}" for="command"/>
+                          <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSeqp}" value="#{_itemExameSolicitado.iseSeq}" for="command"/>
+                          <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.voltarPara}" value="exames-pesquisaExames" for="command"/>
+                        </mec:commandLink>
+                      </p:outputPanel>
+                    </p:column>
+                    <p:column id="dtHoraProgramada" sortBy="#{_itemExameSolicitado.dtHrProgramada}" style="width:11%; text-align: center;">
+                      <f:facet name="header">
+                        <h:outputText value="#{messages.LABEL_DT_PROGR}"/>
+                          <p:tooltip direction="bottom-right" styleClass="tooltip"
+                                     layout="block" rendered="true" for="dtHoraProgramada">
+                            <h:outputText value="#{messages.LABEL_DTHR_PROG}"/>
+                          </p:tooltip>
+                      </f:facet>
+                      <h:outputText value="#{_itemExameSolicitado.dtHrProgramada}">
+                        <f:convertDateTime pattern="dd/MM/yy HH:mm"/>
+                      </h:outputText>
+                    </p:column>
+                    <p:column sortBy="#{_itemExameSolicitado.codigoSoe}" style="width:9%; text-align: center;">
+                      <f:facet name="header">
+                        <h:outputText value="#{messages.LABEL_SOLICITACAO}"/>
+                      </f:facet>
+                      <h:outputText value="#{_itemExameSolicitado.codigoSoe}"/>
+                    </p:column>
+                    <p:column sortBy="#{_itemExameSolicitado.iseSeq}" style="width:5%; text-align: center;">
+                      <f:facet name="header">
+                        <h:outputText value="#{messages.LABEL_ITEM}"/>
+                      </f:facet>
+                      <h:outputText value="#{_itemExameSolicitado.iseSeq}"/>
+                    </p:column>
+                    <p:column sortBy="#{_itemExameSolicitado.exame}" style="width:30%">
+                      <f:facet name="header">
+                        <h:outputText value="#{messages.LABEL_EXAME}"/>
+                      </f:facet>
+                      <h:outputText value="#{_itemExameSolicitado.exame}"/>
+                    </p:column>
+                    <p:column sortBy="#{_itemExameSolicitado.situacaoItem}" style="width:9%">
+                      <f:facet name="header">
+                        <h:outputText value="#{messages.SITUACAO_EXAME}"/>
+                      </f:facet>
+                      <h:outputText value="#{_itemExameSolicitado.situacaoItem}"/>
+                    </p:column>
+                    <p:column sortBy="#{_itemExameSolicitado.dtHrEvento}" style="width:11%; text-align: center;">
+                      <f:facet name="header">
+                          <h:outputText value="#{messages.LABEL_DATA}"/>
+                      </f:facet>
+                      <h:outputText value="#{_itemExameSolicitado.dtHrEvento}">
+                        <f:convertDateTime pattern="dd/MM/yy HH:mm"/>
+                      </h:outputText>
+                    </p:column>
+                    <p:column sortBy="#{_itemExameSolicitado.origemAtendimento.descricao}" style="width:10%">
+                      <f:facet name="header">
+                          <h:outputText value="#{messages.LABEL_ORIGEM}"/>
+                      </f:facet>
+                      <h:outputText value="#{_itemExameSolicitado.origemAtendimento.descricao}"/>
+                    </p:column>
+                    <p:column sortBy="#{_itemExameSolicitado.tipoColeta}" style="width:6%">
+                      <f:facet name="header">
+                          <h:outputText value="#{messages.LABEL_TIPO}"/>
+                      </f:facet>
+                      <h:outputText value="#{_itemExameSolicitado.tipoColeta}"/>
+                    </p:column>
+                    <p:column sortBy="#{_itemExameSolicitado.etiologia}" style="width:4%">
+                      <f:facet name="header">
+                          <h:outputText value="#{messages.LABEL_AMOSTRA}"/>
+                      </f:facet>
+                      <h:outputText value="#{pesquisaExamesPorPacienteController.obterAmostras(_itemExameSolicitado)}"/>
+                    </p:column>
+                  </mec:serverDataTable>
+
+                </p:outputPanel>
+            </aghu:column>
+
+            <aghu:column type="button" style="text-align: right;">
+              <p:outputPanel id="tabelaAcao" layout="inline">
+
+                <mec:commandButton value="#{messages.LABEL_RESULTADOS}" action="#{pesquisaExameController.verResultadosNotHist()}"
+                                   id="resultados"
+                                   disabled="#{empty pesquisaExameController.solicitacoes}" styleClass="bt_cinza">
+                  <f:setPropertyActionListener target="#{consultarResultadosNotaAdicionalController.voltarPara}" value="exames-pesquisaExames" for="command"/>
+                  <f:setPropertyActionListener target="#{consultarResultadosNotaAdicionalController.origemProntuarioOnline}" value="#{pesquisaExameController.origemProntuarioOnline}" for="command"/>
+                  <f:setPropertyActionListener target="#{consultarResultadosNotaAdicionalController.isHist}" value="true" for="command"/>
+                </mec:commandButton>
+
+                <mec:commandButton value="#{messages.LABEL_IMAGENS}"
+                                   id="imagens"
+                                   disabled="#{empty pesquisaExameController.getUrlImpax()}"
+                                   rendered="#{mf:hasPermission(securityController,'verImagensExames,pesquisar')}"
+                                   onclick="window.open('#{pesquisaExameController.getUrlImpax()}', 'IMPAX');return false" styleClass="bt_cinza"/>
+
+                <mec:commandButton id="reimpLaudoPaciente"
+                                   disabled="#{empty pesquisaExameController.solicitacoes or not mf:hasPermission(securityController,'pesquisarRespostaQuestionario,pesquisar')}"
+                                   value="#{messages.LABEL_BTN_QUESTIONARIOS}"
+                                   action="#{pesquisaExameController.redirecionarRespostaQuestionario()}"
+                                   styleClass="bt_cinza">
+                  <f:setPropertyActionListener target="#{respostaQuestionarioController.soeSeq}" value="#{pesquisaExameController.codigoSoeSelecionado}" for="command"/>
+                  <f:setPropertyActionListener target="#{respostaQuestionarioController.seqp}" value="#{pesquisaExameController.iseSeqSelecionado}" for="command"/>
+                  <f:setPropertyActionListener target="#{respostaQuestionarioController.voltarPara}" value="exames-pesquisaExames" for="command"/>
+                  <f:setPropertyActionListener target="#{respostaQuestionarioController.isHist}" value="false" for="command"/>
+                </mec:commandButton>
+
+                <mec:commandButton disabled="#{empty pesquisaExameController.solicitacoes or not mf:hasPermission(securityController,'detalharItemSolicitacao,pesquisar')}"
+                                   action="#{pesquisaExameController.detalhesExames()}"
+                                   id="detalharExames"
+                                   value="#{messages.LABEL_DET_EXAMES}"
+                                   styleClass="bt_cinza">
+                  <f:setPropertyActionListener target="#{detalharItemSolicitacaoExameController.voltarPara}" value="exames-pesquisaExames" for="command"/>
+                </mec:commandButton>
+
+                <mec:commandButton disabled="#{empty pesquisaExameController.solicitacoes or not mf:hasPermission(securityController,'verFluxograma,pesquisar')}"
+                                   id="fluxograma"
+                                   action="pesquisaFluxograma"
+                                   value="#{messages.LABEL_FLUXO}"
+                                   styleClass="bt_cinza">
+                  <f:setPropertyActionListener target="#{pesquisaFluxogramaController.voltarPara}" value="exames-pesquisaExames" for="command"/>
+                  <f:setPropertyActionListener target="#{pesquisaFluxogramaController.prontuario}" value="#{pesquisaExamesPorPacienteController.prontuario}" for="command"/>
+                </mec:commandButton>
+
+                <mec:commandButton disabled="true"
+                                   id="regiao"
+                                   action="regiao"
+                                   value="#{messages.LABEL_REG_SANG}"
+                                   styleClass="bt_cinza"/>
+
+                <mec:commandButton disabled="#{empty pesquisaExameController.solicitacoes or not mf:hasPermission(securityController,'cancelarExamesResponsabilidadeSolicitante,pesquisar')}"
+                                   action="#{pesquisaExameController.cancelarExames()}"
+                                   id="cancelar"
+                                   value="#{messages.LABEL_CANCEL_EXA}"
+                                   styleClass="bt_cinza" ajax="true">
+                  <f:setPropertyActionListener target="#{cancelarExamesResponsabilidadeSolicitanteController.soeSeq}" value="#{pesquisaExameController.codigoSoeSelecionado}" for="command"/>
+                  <f:setPropertyActionListener target="#{cancelarExamesResponsabilidadeSolicitanteController.voltarPara}" value="exames-pesquisaExames" for="command"/>
+                </mec:commandButton>
+
+                <mec:commandButton disabled="true"
+                                   id="etiologia"
+                                   action="etiologia"
+                                   value="#{messages.LABEL_ETIOLOGIA}"
+                                   styleClass="bt_cinza"/>
+
+                <mec:commandButton id="sismama"
+                                   action="#{pesquisaExameController.verificarQuestoesSismama()}"
+                                   disabled="#{(!pesquisaExameController.habilitarBotaoQuestoesSismama() and !pesquisaExameController.habilitarBotaoQuestoesSismamaBiopsia())  or (not mf:hasPermission(securityController,'verificaQuestoesSismama,pesquisar') and not mf:hasPermission(securityController,'verificarQuestoesSismamaAPBio,exibir'))}"
+                                   rendered="#{(pesquisaExameController.habilitarBotaoQuestoesSismamaBiopsia() or pesquisaExameController.habilitarBotaoQuestoesSismama()) or (!pesquisaExameController.habilitarBotaoQuestoesSismamaBiopsia() and !pesquisaExameController.habilitarBotaoQuestoesSismama())}"
+                                   value="#{messages.LABEL_QUEST_SISMAMA}"
+                                   styleClass="bt_cinza">
+                  <f:setPropertyActionListener target="#{verificaQuestoesSismamaController.voltarPara}" value="exames-pesquisaExames" for="command"/>
+                  <f:setPropertyActionListener target="#{verificaQuestoesSismamaController.iseSoeSeq}" value="#{pesquisaExameController.codigoSoeSelecionado}" for="command"/>
+                  <f:setPropertyActionListener target="#{verificaQuestoesSismamaController.iseSeqp}" value="#{pesquisaExameController.iseSeqSelecionado}" for="command"/>
+                  
+                  <f:setPropertyActionListener target="#{verificarQuestoesSismamaApBiopsiaController.voltarPara}" value="exames-pesquisaExames" for="command"/>
+                  <f:setPropertyActionListener target="#{verificarQuestoesSismamaApBiopsiaController.soeSeq}" value="#{pesquisaExameController.codigoSoeSelecionado}" for="command"/>
+                  <f:setPropertyActionListener target="#{verificarQuestoesSismamaApBiopsiaController.seqp}" value="#{pesquisaExameController.iseSeqSelecionado}" for="command"/>
+          
+                </mec:commandButton>
+                
+                <mec:commandButton id="bt_reImprimirEtiquetaAmostra" 
+                				   value="#{messages.TITLE_IMPRIMIR_ETIQUETAS}" 
+                				   action="#{pesquisaExameController.processaReimpressaoEtiquetas()}" 
+                				   disabled="#{!pesquisaExameController.habilitarBotaoImprimirEtiqueta()}" 
+                				   oncomplete="PF('modalConfirmacaoImpressaoEtiquetasWG').show();;" 
+                				   ignoreDupResponses="true" styleClass="bt_cinza" ajax="true" render="panelMensagemConfirmacaoImpressaoEtiquetas"/>  
+
+
+              </p:outputPanel>
+            </aghu:column>
+        </aghu:panelGeral>
+			<aghu:linha>
+				<p:commandButton style="margin-left: 10px !important;"
+					actionListener="#{pesquisaExameController.selecionarLiberados()}"
+					value="Selecionar Exames Liberados"
+					rendered="#{not empty pesquisaExamesPorPacienteController.listaResultadoPesquisa}"
+					styleClass="button-acao bt_cinza"
+					update="@this @(:checkbox) tabelaAcao btLimparSelecao" />
+				<p:commandButton value="Limpar Seleção" id="btLimparSelecao"
+					actionListener="#{pesquisaExameController.limparSelecao()}"
+					rendered="#{not empty pesquisaExamesPorPacienteController.listaResultadoPesquisa}"
+					styleClass="button-acao bt_cinza"
+					disabled="#{empty pesquisaExameController.solicitacoes}"
+					update="@this @(:checkbox) tabelaAcao" />
+			</aghu:linha>
+
+
+		</p:tab> 
+    </p:accordionPanel> 
+  </ui:composition> 
+</html>

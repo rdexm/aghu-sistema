@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MAPEAMENTO_SALAS} :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{mapeamentoSalasController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{mapeamentoSalasController}" ignoreEnter="true"/>  
+      <p:outputPanel id="panelTodos" layout="inline" styleClass="aghu-panel-geral">
+      <h:form prependId="false" id="formMapaDist">
+          <aghu:panelGeral id="fieldSalaUnidade" legend="#{messages.TITLE_FIELDSET_MAPEAMENTO_SALA_UNID_CIRURGICA}">
+              <mec:inputText id="sala" label="#{messages.LABEL_MAPEAMENTO_SALAS_SALA}" value="#{mapeamentoSalasController.sala}" size="60" readonly="true"/>
+              <mec:inputText id="unidadeCirurgica" label="#{messages.LABEL_MAPEAMENTO_SALAS_UNIDADE_CIRURGICA}" value="#{mapeamentoSalasController.unidadeCirurgica}" size="60" readonly="true"/>
+              <aghu:acao newLine="false">
+                  <mec:commandButton id="bt_mapa_distribuicao"
+                                     value="#{messages.LABEL_MAPEAMENTO_SALAS_MAPA_DISTRIBUICAO}"
+                                     action="#{mapeamentoSalasController.abreEscalaSalas}"
+                                     rendered="#{mf:hasPermission(securityController,'escalaSalas,consultar')}"
+                                     styleClass=" icon-mapeamento bt_cinza">
+                      <f:setPropertyActionListener value="#{mapeamentoSalasController.mapeamentoSalas}"
+                                                   target="#{consultaEscalaSalasController.urlVoltar}"
+                                                   for="command"/>
+                  </mec:commandButton>
+              </aghu:acao>
+          </aghu:panelGeral>
+      </h:form>
+
+        <h:form prependId="false" id="formMapeamentoSalas"> 
+          <aghu:panelGeral id="fieldSetMapeamento" legend="#{messages.LABEL_MAPEAMENTO_SALAS_POR_DIA_TURNO}"> 
+            <p:outputPanel id="panelMapeamento" layout="inline"> 
+              <aghu:linha> 
+          
+                <mec:selectOneMenu id="diaSemana"
+                                   noSelectionOption="false"
+                                   enum="DominioDiaSemana"
+                                   label="#{messages.LABEL_MAPEAMENTO_SALAS_DIA_SEMANA}"
+                                   title="#{messages.TITLE_MAPEAMENTO_SALAS_DIA_SEMANA}"
+                                   readonly="#{mapeamentoSalasController.modoEdicao}"
+                                   rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}"
+                                   value="#{mapeamentoSalasController.diaSemana}"/>
+          
+          
+                <mec:suggestionBox id="turno"
+                                   var="_turno"
+                                   itemValue="#{_turno}"
+                                   label="#{messages.LABEL_MAPEAMENTO_SALAS_TURNO}"
+                                   title="#{messages.TITLE_MAPEAMENTO_SALAS_TURNO}"
+                                   width="350"
+                                   size="5"
+                                   suggestionAction="getTurnosPorUnidadeFuncional"
+                                   descricaoInput="mbcTurnos.turno"
+                                   required="true"
+                                   rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}"
+                                   readonly="#{mapeamentoSalasController.modoEdicao}"
+                                   descricaoLabel="mbcTurnos.descricao"
+                                   controller="#{mapeamentoSalasController}"
+                                   value="#{mapeamentoSalasController.turno}">
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MAPEAMENTO_SALAS_TURNO}</b> 
+                    </f:facet> #{_turno.mbcTurnos.descricao}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MAPEAMENTO_SALAS_INICIO}</b> 
+                    </f:facet>  
+                    <h:outputText value="#{_turno.horarioInicial}">
+                      <f:convertDateTime pattern="HH:mm" type="time"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_MAPEAMENTO_SALAS_FIM}</b> 
+                    </f:facet>  
+                    <h:outputText value="#{_turno.horarioFinal}">
+                      <f:convertDateTime pattern="HH:mm" type="time"/> 
+                    </h:outputText> 
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:selectBooleanCheckbox id="particular" label="#{messages.LABEL_MAPEAMENTO_SALAS_PARTICULAR}" title="#{messages.TITLE_MAPEAMENTO_SALAS_PARTICULAR}" rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}" value="#{mapeamentoSalasController.cirurgiaParticular}"/>  
+                <mec:selectBooleanCheckbox id="urgencias" label="#{messages.LABEL_MAPEAMENTO_SALAS_URGENCIAS}" title="#{messages.TITLE_MAPEAMENTO_SALAS_URGENCIAS}" rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}" value="#{mapeamentoSalasController.urgencia}"/>  
+                <mec:selectBooleanCheckbox id="instalada" label="#{messages.LABEL_MAPEAMENTO_SALAS_INSTALADA}" title="#{messages.TITLE_MAPEAMENTO_SALAS_INSTALADA}" rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}" value="#{mapeamentoSalasController.instalada}"/>  
+                <mec:selectBooleanCheckbox id="operacional" label="#{messages.LABEL_MAPEAMENTO_SALAS_OPERACIONAL}" title="#{messages.TITLE_MAPEAMENTO_SALAS_OPERACIONAL}" rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}" value="#{mapeamentoSalasController.disponivel}"/>  
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton id="bt_adicionar"
+                                     value="#{messages.LABEL_ADICIONAR}"
+                                     rendered="#{mapeamentoSalasController.modoEdicao == false and mf:hasPermission(securityController,'mapearSalas,persistir')}"
+                                     action="#{mapeamentoSalasController.gravarMapeamento}"
+                                     render="panelMapeamento, tabelaMapeamento"
+                                     profile="add"
+                                     styleClass="bt_verde "/>
+                  <mec:commandButton id="bt_alterar"
+                                     value="#{messages.LABEL_ALTERAR}"
+                                     rendered="#{mapeamentoSalasController.modoEdicao == true and mf:hasPermission(securityController,'mapearSalas,persistir')}"
+                                     action="#{mapeamentoSalasController.gravarMapeamento}"
+                                     render="panelMapeamento, tabelaMapeamento"
+                                     profile="ok"/>
+                  <mec:commandButton id="bt_cancel_edit" ajaxSingle="true" value="#{messages.LABEL_CANCELAR_EDICAO}" 
+                  status="commonstatus" immediate="true" rendered="#{mapeamentoSalasController.modoEdicao == true}" action="#{mapeamentoSalasController.cancelarEdicao}" 
+                  render="panelMapeamento, tabelaMapeamento, panelGeralDisp" profile="cancel"/> 
+                </aghu:acao> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:serverDataTable id="tabelaMapeamento"
+                                     scrollHeight="297"
+                                     onRowMouseOver="this.style.backgroundColor='#F1F1F1'"
+                                     onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'"
+                                     list="#{mapeamentoSalasController.listaMapeamentoSala}"
+                                     selection="itemSelecionado"
+                                     controller="#{mapeamentoSalasController}"
+                                     scrollable="true">
+                  <c:set var="_item" value="#{item}"/>
+                  <p:ajax event="rowSelect"
+                          listener="#{mapeamentoSalasController.visualizarDisponibilidade}"
+                          update="@(#formMapeamentoSalas) @(#panelBotoes) @(#panelCancelamento) @(#panelModais) @(#formDisponibilidade)" />
+                  <p:column style="#{mapeamentoSalasController.codigo eq _item.seq ? 'background-color:#EEE8AA' : ''};" styleClass="tdAcao">
+                    <f:facet name="header" style="white-space:nowrap;"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink immediate="true"
+                                     id="selecionarMapeamento"
+                                     title="#{messages.TITLE_MAPEAMENTO_SALAS_DISPO_HINT}"
+                                     action="#{mapeamentoSalasController.selecionar(_item)}"
+                                     rendered="#{mapeamentoSalasController.modoEdicao == false}"
+                                     styleClass="silk-disp-especialidade silk-icon"
+                                     ajax="true"
+                                     render="tabelaMapeamento, panelGeralDisp, tabelaDisponibilidade"
+                                     process="@this"/>
+                    <mec:commandLink immediate="true"
+                                     id="editarMapeamento"
+                                     title="#{messages.LABEL_EDITAR}"
+                                     action="#{mapeamentoSalasController.editar(_item)}"
+                                     rendered="#{mapeamentoSalasController.modoEdicao == false and mf:hasPermission(securityController,'mapearSalas,persistir')}"
+                                     profile="edit"
+                                     ajax="true"
+                                     render="panelMapeamento, tabelaMapeamento, panelGeralDisp"
+                                     process="@this"/>
+                    <mec:commandLink id="historicoMapeamento"
+                                     oncomplete="PF('modalHistoricoAlteracoesCaractSalasWG').show();"
+                                     title="#{messages.TITLE_MAPEAMENTO_SALAS_HISTORICO}"
+                                     rendered="#{mf:hasPermission(securityController,'historicoCaracteristicasSalas,pesquisar') and mapeamentoSalasController.modoEdicao == false}"
+                                     styleClass=" silk-historico-cirurgias silk-icon"
+                                     ajax="true"
+                                     render="modalHistoricoAlteracoesCaractSalasPanel,modalHistoricoAlteracoesCaractSalas,tabelaDisponibilidade"
+                                     process="@this">
+                      <f:setPropertyActionListener value="#{mapeamentoSalasController.pesquisarHistoricoAlteracoesCaractSalas(_item)}" target="#{mapeamentoSalasController.listaHistoricoAlteracoesCaractSalasVO}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column style="#{mapeamentoSalasController.codigo eq _item.seq ? 'background-color:#EEE8AA' : ''};">
+                    <f:facet name="header" style="white-space:nowrap;">
+                      <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_DIA_SEMANA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.diaSemana}"/> 
+                  </p:column>  
+                  <p:column style="#{mapeamentoSalasController.codigo eq _item.seq ? 'background-color:#EEE8AA' : ''};">
+                    <f:facet name="header" style="white-space:nowrap;">
+                      <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_TURNO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.mbcHorarioTurnoCirg.mbcTurnos.descricao}"/> 
+                  </p:column>  
+                  <p:column style="#{mapeamentoSalasController.codigo eq _item.seq ? 'background-color:#EEE8AA' : ''};">
+                    <f:facet name="header" style="white-space:nowrap;">
+                      <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_PARTICULAR}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{mapeamentoSalasController.getDescricaoDominioSimNao(_item.cirurgiaParticular)}"/> 
+                  </p:column>  
+                  <p:column style="#{mapeamentoSalasController.codigo eq _item.seq ? 'background-color:#EEE8AA' : ''};">
+                    <f:facet name="header" style="white-space:nowrap;">
+                      <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_URGENCIAS}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{mapeamentoSalasController.getDescricaoDominioSimNao(_item.indUrgencia)}"/> 
+                  </p:column>  
+                  <p:column style="#{mapeamentoSalasController.codigo eq _item.seq ? 'background-color:#EEE8AA' : ''};">
+                    <f:facet name="header" style="white-space:nowrap;">
+                      <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_INSTALADA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{mapeamentoSalasController.getDescricaoDominioSimNao(_item.situacao.isAtivo())}"/> 
+                  </p:column>  
+                  <p:column style="#{mapeamentoSalasController.codigo eq _item.seq ? 'background-color:#EEE8AA' : ''};">
+                    <f:facet name="header" style="white-space:nowrap;">
+                      <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_OPERACIONAL}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{mapeamentoSalasController.getDescricaoDominioSimNao(_item.indDisponivel)}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <h:form prependId="false" id="formDisponibilidade"> 
+          <aghu:panelGeral id="fieldSetDisp" legend="#{messages.TITLE_MAPEAMENTO_SALAS_DISPO_HINT}"> 
+            <p:outputPanel id="panelGeralDisp" layout="inline"> 
+              <p:outputPanel id="camposInsercaoDisp" rendered="#{(mapeamentoSalasController.modoVisualizacaoDisp == false and mapeamentoSalasController.itemSelecionado != null) or mapeamentoSalasController.modoEdicaoDisp}" layout="inline"> 
+                <aghu:linha> 
+                  <mec:suggestionBox id="especialidade" label="#{messages.LABEL_MAPEAMENTO_SALAS_ESPECIALIDADE}" title="#{messages.TITLE_MAPEAMENTO_SALAS_ESPECIALIDADE}" width="500" suggestionAction="pesquisarEspecialidades" rendered="#{not mapeamentoSalasController.modoEdicaoDisp and mf:hasPermission(securityController,'mapearSalas,persistir')}" descricaoInput="sigla" required="true" descricaoLabel="nomeEspecialidade" controller="#{mapeamentoSalasController}" value="#{mapeamentoSalasController.especialidade}"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_SIGLA}</b> 
+                      </f:facet> #{item.sigla}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_DESCRICAO}</b> 
+                      </f:facet> #{item.nomeEspecialidade}
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:suggestionBox id="equipe"
+                                     label="#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE}"
+                                     title="#{messages.TITLE_MAPEAMENTO_SALAS_EQUIPE}"
+                                     width="500"
+                                     suggestionAction="pesquisarEquipe"
+                                     rendered="#{not mapeamentoSalasController.modoEdicaoDisp and mf:hasPermission(securityController,'mapearSalas,persistir')}"
+                                     descricaoInput="id.serMatricula"
+                                     required="true"
+                                     descricaoLabel="nomePessoa"
+                                     controller="#{mapeamentoSalasController}"
+                                     value="#{mapeamentoSalasController.equipe}">
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE}</b> 
+                      </f:facet> #{item.nomePessoa}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE_VINC}</b> 
+                      </f:facet> #{item.id.serVinCodigo}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE_MATRICULA}</b> 
+                      </f:facet> #{item.id.serMatricula}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE_FUNCAO}</b> 
+                      </f:facet> #{item.id.indFuncaoProf}
+                    </p:column> 
+                  </mec:suggestionBox> 
+                </aghu:linha>  
+                <aghu:linha> 
+                  <mec:inputNumero id="reserva" label="#{messages.LABEL_MAPEAMENTO_SALAS_RESERVA}" title="#{messages.TITLE_MAPEAMENTO_SALAS_RESERVA}" value="#{mapeamentoSalasController.reserva}" rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}" maxlength="3" required="true" size="3"/>  
+                  <mec:field id="hrInicio_field" label="#{messages.LABEL_MAPEAMENTO_SALAS_HORA_INICIO}" rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}" title="#{messages.TITLE_MAPEAMENTO_SALAS_HORA_INICIO}"> 
+                    <h:inputText id="hrInicio_input" onfocus="jq('#hrInicio_field:hrInicio_input').mask('99:99')" size="5" maxlength="5"  value="#{mapeamentoSalasController.horaInicial}"> 
+                      <f:convertDateTime pattern="HH:mm" type="time"/> 
+                    </h:inputText> 
+                  </mec:field>  
+                  <mec:field id="hrFim_field" label="#{messages.LABEL_MAPEAMENTO_SALAS_HORA_FIM}" rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}" title="#{messages.TITLE_MAPEAMENTO_SALAS_HORA_FIM}"> 
+                    <h:inputText id="hrFim_input" onfocus="jq('#hrFim_field:hrFim_input').mask('99:99')" size="5" maxlength="5"  value="#{mapeamentoSalasController.horaFinal}"> 
+                      <f:convertDateTime pattern="HH:mm" type="time"/> 
+                    </h:inputText> 
+                  </mec:field>  
+                  <mec:selectBooleanCheckbox id="ativo" label="#{messages.LABEL_MAPEAMENTO_SALAS_ATIVO}" title="#{messages.TITLE_MAPEAMENTO_SALAS_ATIVO}" rendered="#{mf:hasPermission(securityController,'mapearSalas,persistir')}" value="#{mapeamentoSalasController.ativo}"/>  
+                  <aghu:acao newLine="false"> 
+                    <mec:commandButton id="bt_adicionar_disp" value="#{messages.LABEL_ADICIONAR}" rendered="#{mapeamentoSalasController.modoEdicaoDisp == false and mf:hasPermission(securityController,'mapearSalas,persistir')}" action="#{mapeamentoSalasController.gravarDisponibilidade}" render="camposInsercaoDisp, panelGridDisp" profile="add" styleClass="bt_verde "/>  
+                    <mec:commandButton id="bt_alterar_disp" value="#{messages.LABEL_ALTERAR}" rendered="#{mapeamentoSalasController.modoEdicaoDisp == true and mf:hasPermission(securityController,'mapearSalas,persistir')}" action="#{mapeamentoSalasController.gravarDisponibilidade}" render="camposInsercaoDisp, panelGridDisp" profile="ok"/>  
+                    <mec:commandButton id="bt_cancel_edit_disp" ajaxSingle="true" status="commonstatus" immediate="true" value="#{messages.LABEL_CANCELAR_EDICAO}" 
+                    rendered="#{mapeamentoSalasController.modoEdicaoDisp == true}" action="#{mapeamentoSalasController.cancelarEdicaoDisp}" 
+                    render="camposInsercaoDisp, panelGridDisp" profile="cancel"/> 
+                  </aghu:acao> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelGridDisp" layout="inline"> 
+                <aghu:linha> 
+                  <mec:serverDataTable id="tabelaDisponibilidade"
+                                       scrollHeight="279"
+                                       rendered="#{not empty mapeamentoSalasController.listaDisponibilidade}"
+                                       onRowMouseOver="this.style.backgroundColor='#F1F1F1'"
+                                       onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'"
+                                       list="#{mapeamentoSalasController.listaDisponibilidade}"
+                                       scrollable="true">
+                    <c:set var="item" value="#{item}"/>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};" styleClass="tdAcao">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink immediate="true" id="editarDisponibilidade" title="#{messages.LABEL_EDITAR}" action="#{mapeamentoSalasController.editarDisp(item)}" rendered="#{(mapeamentoSalasController.modoVisualizacaoDisp == false and mapeamentoSalasController.modoEdicaoDisp == false) and mf:hasPermission(securityController,'mapearSalas,persistir')}" profile="edit" ajax="true" render="camposInsercaoDisp,panelGridDisp" process="@this"/>  
+                      <mec:commandLink id="historicoDisponibilidade"
+                                       oncomplete="PF('modalHistoricoAlteracoesAlocacaoSalasWG').show();"
+                                       title="#{messages.TITLE_MAPEAMENTO_SALAS_HISTORICO}"
+                                       rendered="#{mf:hasPermission(securityController,'historicoCaracteristicasAlocacoesSalas,pesquisar')}"
+                                       styleClass=" silk-historico-cirurgias silk-icon"
+                                       ajax="true"
+                                       render="modalHistoricoAlteracoesAlocacaoSalasPanel,modalHistoricoAlteracoesAlocacaoSalas,tabelaDisponibilidade"
+                                       process="@this">
+                        <f:setPropertyActionListener value="#{mapeamentoSalasController.pesquisarHistoricoAlteracoesAlocacaoSalas(item)}"
+                                                     target="#{mapeamentoSalasController.listaHistoricoAlteracoesAlocacaoSalasVO}"
+                                                     for="command"/>
+                      </mec:commandLink> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_ESPECIALIDADE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{mapeamentoSalasController.getSiglaNomeDisponibilidadeFormatado(item)}"/>  
+                      <p:tooltip direction="top-right" styleClass="tooltip" layout="block" rendered="#{(mapeamentoSalasController.getSiglaNomeDisponibilidade(item).length() &gt; 30)}"> 
+                        <h:outputText value="#{mapeamentoSalasController.getSiglaNomeDisponibilidade(item)}"/> 
+                      </p:tooltip> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_RESERVA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.percentualReserva}"/> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{mapeamentoSalasController.getNomeEquipeFormatado(item)}"/>  
+                      <p:tooltip direction="top-right" styleClass="tooltip" layout="block" rendered="#{(mapeamentoSalasController.getNomeEquipe(item).length() &gt; 30)}"> 
+                        <h:outputText value="#{mapeamentoSalasController.getNomeEquipe(item)}"/> 
+                      </p:tooltip> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE_VINC}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.pucServidor.id.vinCodigo}"/> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE_MATRICULA}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.pucServidor.id.matricula}"/> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_EQUIPE_FUNCAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.mbcProfAtuaUnidCirgs.id.indFuncaoProf}"/> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_HORA_INICIO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.horaInicioEquipe}"> 
+                        <f:convertDateTime pattern="HH:mm" type="time"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;">
+                        <h:outputText value="#{messages.LABEL_MAPEAMENTO_SALAS_HORA_FIM}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.horaFimEquipe}"> 
+                        <f:convertDateTime pattern="HH:mm" type="time"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column style="#{mapeamentoSalasController.mbcCaractId eq item.id ? 'background-color:#EEE8AA' : ''};">
+                      <f:facet name="header" style="white-space:nowrap;"> 
+                        <h:outputText value="#{messages.TITLE_MAPEAMENTO_SALAS_SITUACAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{item.indSituacao.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <h:form> 
+          <aghu:acao> 
+            <p:outputPanel id="painelBotoesVoltar" layout="inline"> 
+              <mec:commandButton value="#{messages.LABEL_CANCELAR}" id="t_cancelar" action="#{mapeamentoSalasController.verificarVoltar}" profile="cancel"/> 
+            </p:outputPanel> 
+          </aghu:acao> 
+        </h:form> 
+      </p:outputPanel>  
+      <h:form prependId="false">
+        <p:outputPanel layout="inline">
+          <ui:decorate template="/pages/blococirurgico/cadastroapoio/modalHistoricoAlteracoesCaractSalas.xhtml"/>
+        </p:outputPanel>
+      </h:form>
+      <h:form prependId="false">
+        <p:outputPanel layout="inline">
+          <ui:decorate template="/pages/blococirurgico/cadastroapoio/modalHistoricoAlteracoesAlocacaoSalas.xhtml"/>
+        </p:outputPanel>
+      </h:form>
+    </ui:define>
+  </ui:composition> 
+</html>

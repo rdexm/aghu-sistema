@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Manter Solicitação de Hemoterapia :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterSolicitacaoHemoterapiaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterSolicitacaoHemoterapiaController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formPrescricaoCabecalho"> 
+        <aghu:panelGeral> 
+          <aghu:linha> 
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.prontuario}" size="8" maxlength="9" emptyStringToNullConverter="emptyStringToNullConverter" readonly="true" id="prontuarioPaciente" converter="#{prontuarioConverter}"/>  
+            <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.nome}" size="56" maxlength="50" style="text-transform:uppercase" readonly="true" id="nomePaciente"/>  
+            <mec:inputText label="#{messages.LABEL_LOCAL}" value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.local}" size="15" maxlength="15" style="text-transform:uppercase" readonly="true" id="localPaciente"/>  
+            <mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}" value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.dthrInicio}" readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm" id="dataValidadeInicial"/>  
+            <mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}" value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.dthrFim}" readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm" id="dataValidadeFinal"/> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <h:form> 
+        <pe:remoteCommand name="excluirJs"> 
+          <pe:assignableParam name="atd_seq" assignTo="#{manterSolicitacaoHemoterapiaController.atdSeq}"/>  
+          <pe:assignableParam name="seq_she" assignTo="#{manterSolicitacaoHemoterapiaController.seqShe}"/>  
+          <pe:assignableParam name="seq_item" assignTo="#{manterSolicitacaoHemoterapiaController.seqItem}"/>  
+        </pe:remoteCommand> 
+      </h:form>  
+      <h:form prependId="false" id="formDadosCabecalho"> 
+        <p:outputPanel id="panelCampos" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_SOLICITACAO_HEMOTERAPIA}"> 
+            <aghu:linha> 
+              <p:outputPanel id="panel_itens" layout="inline">
+              <mec:selectOneMenu label="#{messages.LABEL_ITENS}" style="width:370px" required="true" title="#{messages.TITLE_ITENS}" 
+              	readonly="#{manterSolicitacaoHemoterapiaController.edicao}" id="tipoSolicitacaoHemoterapica" 
+                disabled="#{manterSolicitacaoHemoterapiaController.edicao}" value="#{manterSolicitacaoHemoterapiaController.codigoComposto}">
+                  <f:selectItems var="item" itemValue="#{item.codigoComposto}" itemLabel="#{item.descricao}" value="#{manterSolicitacaoHemoterapiaController.listaItens}"/>
+                  <p:ajax event="change" listener="#{manterSolicitacaoHemoterapiaController.changeTipoItem}" partialSubmit="true" 
+              		update="@(#panel_checks) @(#quantidade_unidade) @(#panelQuantidade_ml) @(#tipoSolicitacaoHemoterapica)" process="@this"/>
+              </mec:selectOneMenu>
+              </p:outputPanel>  
+              <p:outputPanel id="quantidade_unidade" layout="inline"> 
+                <mec:inputNumero label="#{messages.LABEL_QTDE_UNIDADE}" size="3" maxlength="2" title="#{messages.TITLE_QTDE_UNIDADE}" readonly="#{manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.tipo eq 'P'}" value="#{manterSolicitacaoHemoterapiaController.quantidadeUnidade}" id="qtdeUnidade"> 
+                  <p:ajax id="checkQtdeUnidadeOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setItemFormModified(true)}"/> 
+                </mec:inputNumero> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelQuantidade_ml" layout="inline"> 
+                <mec:inputNumero label="#{messages.LABEL_QTDE_ML}" size="5" maxlength="4" title="#{messages.TITLE_QTDE_ML}" readonly="#{manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.tipo eq 'P'}" value="#{manterSolicitacaoHemoterapiaController.quantidadeMl}" id="quantidade_ml"> 
+                  <p:ajax id="checkQtdeMlOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setItemFormModified(true)}"/> 
+                </mec:inputNumero> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panel_checks" layout="inline"> 
+                <mec:field name="checkIrradiado" inputId="checkIrradiado" label="#{messages.LABEL_IRRADIADO}"> 
+                  <h:selectBooleanCheckbox name="checkIrradiado" title="#{messages.TITLE_IRRADIADO}" value="#{manterSolicitacaoHemoterapiaController.indIrradiado}" readonly="#{!manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.indIrradiado}" disabled="#{!manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.indIrradiado}"> 
+                    <p:ajax id="checkIrradiadoOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setItemFormModified(true)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </mec:field>  
+                <mec:field name="checkDesleucocitado" inputId="checkDesleucocitado" label="#{messages.LABEL_DESLEUCOCITADO}"> 
+                  <h:selectBooleanCheckbox name="checkDesleucocitado" title="#{messages.TITLE_DESLEUCOCITADO}" value="#{manterSolicitacaoHemoterapiaController.indDesleucocitado}" readonly="#{!manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.indFiltrado}" disabled="#{!manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.indFiltrado}"> 
+                    <p:ajax id="checkDesleucocitadoOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setItemFormModified(true)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </mec:field>  
+                <mec:field name="checkLavado" inputId="checkLavado" label="#{messages.LABEL_LAVADO}"> 
+                  <h:selectBooleanCheckbox name="checkLavado" title="#{messages.TITLE_LAVADO}" value="#{manterSolicitacaoHemoterapiaController.indLavado}" readonly="#{!manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.indLavado}" disabled="#{!manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.indLavado}"> 
+                    <p:ajax id="checkLavadoOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setItemFormModified(true)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </mec:field>  
+                <mec:field name="#{messages.LABEL_AFERESE}" label="#{messages.LABEL_AFERESE}" inputId="checkAferese"> 
+                  <h:selectBooleanCheckbox name="checkAferese" title="#{messages.TITLE_AFERESE}" value="#{manterSolicitacaoHemoterapiaController.indAferese}" readonly="#{!manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.indAferese}" disabled="#{!manterSolicitacaoHemoterapiaController.compSanguineoProcedHemoterapicoVO.indAferese}"> 
+                    <p:ajax id="checkAfereseOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.verificaAferese}"/> 
+                  </h:selectBooleanCheckbox> 
+                </mec:field> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panel_aprazamento" layout="inline"> 
+                <p:outputPanel id="panelFrequencia" layout="inline"> 
+                  <mec:inputNumero size="3" maxlength="3" label="#{messages.LABEL_FREQUENCIA}" title="#{messages.TITLE_FREQUENCIA_MEDICAMENTO}" value="#{manterSolicitacaoHemoterapiaController.frequencia}" status="commonstatus" required="#{manterSolicitacaoHemoterapiaController.verificaRequiredFrequencia()}" id="frequencia"> 
+                    <p:ajax id="frequenciaSupOnChange" event="change" update="@(#tipoAprazamentoLabelPanel)" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setItemFormModified(true)}"/> 
+                  </mec:inputNumero> 
+                </p:outputPanel>  
+                <p:outputPanel id="panelTipoFrequenciaAprazamento" layout="inline"> 
+                  <mec:suggestionBox var="aprazamento" itemValue="#{aprazamento}" label="#{messages.LABEL_TIPO_APRAZAMENTO}" title="Selecione um Tipo de Frequência de Aprazamento." descricaoInput="sigla" externalDescricaoLabel="descricaoTipoFrequenciaAprazamento" labelId="tipoAprazamentoLabelPanel" suggestionAction="buscarTiposFrequenciaAprazamento" posSelectionAction="verificarFrequencia" id="tipoAprazamento" controller="#{manterSolicitacaoHemoterapiaController}" value="#{manterSolicitacaoHemoterapiaController.tipoAprazamento}" render="panelFrequencia"> 
+                    <p:column>#{manterSolicitacaoHemoterapiaController.buscaDescricaoTipoFrequenciaAprazamento(aprazamento)}</p:column>  
+                    <p:column>#{aprazamento.sigla}</p:column> 
+                  </mec:suggestionBox> 
+                </p:outputPanel>  
+                <p:outputPanel id="panelQuantidadeAplicacoes" layout="inline"> 
+                  <mec:inputNumero size="3" maxlength="3" label="#{messages.LABEL_QTDE_APLICACOES}" title="#{messages.TITLE_QTDE_APLICACOES}" value="#{manterSolicitacaoHemoterapiaController.quantidadeAplicacoes}" id="quantidadeAplicacoes"> 
+                    <p:ajax id="quantidadeAplicacoesOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setItemFormModified(true)}"/> 
+                  </mec:inputNumero> 
+                </p:outputPanel> 
+              </p:outputPanel>  
+              <p:outputPanel id="panel_botoes" layout="inline"> 
+                <p:outputPanel id="panel_botoes_adicionar" rendered="#{!manterSolicitacaoHemoterapiaController.edicao}" layout="inline"> 
+                  <br clear="none"/>
+					<mec:commandButton id="bt_adicionarItem"
+						value="#{messages.LABEL_ADICIONAR}" process="@this"
+						rendered="#{!manterSolicitacaoHemoterapiaController.edicao}"
+						action="#{manterSolicitacaoHemoterapiaController.adicionarItem}"									
+						profile="add" ajax="true"
+						render="panel_itens,lista_itens_hemoterapicos, panel_observacao, panel_botoes, panel_aprazamento,panel_checks, 
+						panelQuantidade_ml, quantidade_unidade, panel_itens, panelModalJustificativas, panelModalJust, panelJust" />
+				</p:outputPanel>  
+                <p:outputPanel id="panel_botoes_alterar" rendered="#{manterSolicitacaoHemoterapiaController.edicao}" layout="inline"> 
+                  <br clear="none"/>  
+                  <mec:commandButton id="bt_alterarItem" value="#{messages.LABEL_ALTERAR}" process="@form" rendered="#{manterSolicitacaoHemoterapiaController.edicao}" action="#{manterSolicitacaoHemoterapiaController.alterarItem}" profile="ok" styleClass=" icon-margin " ajax="true" render="panel_itens, lista_itens_hemoterapicos, panel_observacao, panel_botoes, panel_aprazamento,          panel_checks, panelQuantidade_ml, quantidade_unidade, panel_itens, panelModalJustificativas, panelModalJust"/> 
+                </p:outputPanel>  
+                <p:outputPanel id="panel_botoes_cancelar" rendered="#{manterSolicitacaoHemoterapiaController.edicao}" layout="inline"> 
+                  <mec:commandButton id="bt_cancelarEdicItem" value="#{messages.LABEL_CANCEL_EDI}" immedite="true" rendered="#{manterSolicitacaoHemoterapiaController.edicao}" status="commonstatus" action="#{manterSolicitacaoHemoterapiaController.cancelarEdiItem}" ajax="true" render="panel_itens, lista_itens_hemoterapicos, panel_observacao, panel_botoes, panelTipoFrequenciaAprazamento, panelQuantidadeAplicacoes,          panel_checks, panelQuantidade_ml, quantidade_unidade, panel_itens, panel_aprazamento" process="@this" styleClass="bt_cinza"/> 
+                </p:outputPanel> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="lista_itens_hemoterapicos" styleClass="tabela-hachurada" layout="inline"> 
+                  <mec:serverDataTable id="tabelaItemHemoterapico" title="" rowKeyVar="index" 
+                  	list="#{manterSolicitacaoHemoterapiaController.listaItensHemoterapicos}" 
+                  	scrollable="true" scrollHeight="120"> 
+                    <c:set var="_itemHemoterapico" value="#{item}"/>  
+                    <p:column style="#{(_itemHemoterapico.componenteSanguineo != null and _itemHemoterapico.componenteSanguineo eq manterSolicitacaoHemoterapiaController.codigoItem) 
+                    		|| (_itemHemoterapico.procedHemoterapico != null and _itemHemoterapico.componenteSanguineo eq manterSolicitacaoHemoterapiaController.codigoItem) 
+                    		?'background-color:#EEE8AA':''}; width:120px;">
+                    	<f:facet name="header"> 
+		                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+		                </f:facet>  
+                    		 
+                      <mec:commandLink action="#{manterSolicitacaoHemoterapiaController.editarItemHemoterapico(_itemHemoterapico)}" title="#{messages.LABEL_EDITAR}" rendered="#{!manterSolicitacaoHemoterapiaController.validarItemSelecionado(_itemHemoterapico)}" profile="edit" ajax="true" render="panel_itens, lista_itens_hemoterapicos, panel_observacao, panel_botoes, panel_aprazamento,            panel_checks, panelQuantidade_ml, quantidade_unidade, panel_itens, panelModalConfirmaEdicaoItem" process="@this"/>  
+                      <mec:commandLink rendered="#{_itemHemoterapico.id.sequencia eq null}" title="#{messages.LABEL_EXCLUIR}" onclick="excluirJs(#{index}, null, null, false);" oncomplete="PF('modalConfirmacaoExclusaoWG').show();;" styleClass="silk-icon silk-delete" ajax="true" process="@this"/>  
+                      <mec:commandLink rendered="#{_itemHemoterapico.id.sequencia ne null}" title="#{messages.LABEL_EXCLUIR}" onclick="excluirJs(#{_itemHemoterapico.id.sheAtdSeq}, #{_itemHemoterapico.id.sheSeq}, #{_itemHemoterapico.id.sequencia}, false);" oncomplete="PF('modalConfirmacaoExclusaoWG').show();;" styleClass="silk-icon silk-delete" ajax="true" process="@this"/>  
+                      <mec:commandLink 
+                      	rendered="#{(_itemHemoterapico.componenteSanguineo!=null and _itemHemoterapico.componenteSanguineo.indJustificativa) or (_itemHemoterapico.procedHemoterapico!=null and _itemHemoterapico.procedHemoterapico.indJustificativa)}" 
+                      	action="#{manterSolicitacaoHemoterapiaController.exibirModalJustificativas(_itemHemoterapico)}" 
+                      	title="#{manterSolicitacaoHemoterapiaController.verificaJustificativas(_itemHemoterapico)?'Justificativas Informadas':'O item necessita ser justificado'}" 
+                      	styleClass="#{manterSolicitacaoHemoterapiaController.verificaJustificativas(_itemHemoterapico) ? 'silk-icon icon-justificativa-ok':'silk-icon icon-justificativa-nao-ok'}" ajax="true" process="@this" render="panelModalJustificativas"/>                    
+                    </p:column>  
+                    <p:column  
+                    	style="#{(_itemHemoterapico.componenteSanguineo != null and _itemHemoterapico.componenteSanguineo eq manterSolicitacaoHemoterapiaController.codigoItem) 
+                    		|| (_itemHemoterapico.procedHemoterapico != null and _itemHemoterapico.componenteSanguineo eq manterSolicitacaoHemoterapiaController.codigoItem) 
+                    		?'background-color:#EEE8AA':''}">
+                    	<f:facet name="header"> 
+		                    <h:outputText value="#{messages.LABEL_DESCRICAO_ITENS_HEMOTERAPICOS}"/> 
+		                 </f:facet>	 
+                      <h:outputText value="#{_itemHemoterapico.getDescricaoFormatada()}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panel_observacao" layout="inline"> 
+                <mec:inputTextArea label="#{messages.LABEL_OBSERVACAO}" id="observacao_paciente" rows="2" cols="130" value="#{manterSolicitacaoHemoterapiaController.observacao}" maxlength="200"> 
+                  <p:ajax id="observacaoOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setFormModified(true)}"/> 
+                </mec:inputTextArea> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="checks_paciente" layout="inline"> 
+                <mec:field name="checkTranfusoes" required="false" inputId="checkTranfusoes" label="#{messages.LABEL_TRANFUSOES_TRES_DIAS}"> 
+                  <h:selectBooleanCheckbox name="checkTranfusoes" title="#{messages.TITLE_TRANFUSOES_TRES_DIAS}" value="#{manterSolicitacaoHemoterapiaController.indTransfusoes}"> 
+                    <p:ajax id="checkTranfusoesOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setFormModified(true)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </mec:field>  
+                <mec:field name="checkTransplantado" inputId="checkTransplantado" label="#{messages.LABEL_PACIENTE_TRANSPLANTADO}"> 
+                  <h:selectBooleanCheckbox name="checkTransplantado" title="#{messages.TITLE_PACIENTE_TRANSPLANTADO}" value="#{manterSolicitacaoHemoterapiaController.indTransplantado}"> 
+                    <p:ajax id="checkTransplantadoOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setFormModified(true)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </mec:field>  
+                <mec:field name="checkUrgente" inputId="checkUrgente" label="#{messages.LABEL_HEMOTERAPIA_URGENTE}"> 
+                  <h:selectBooleanCheckbox name="checkUrgente" title="#{messages.TITLE_HEMOTERAPIA_URGENTE}" value="#{manterSolicitacaoHemoterapiaController.indUrgente}"> 
+                    <p:ajax id="checkUrgenteOnChange" event="change" process="@this" listener="#{manterSolicitacaoHemoterapiaController.setFormModified(true)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </mec:field> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_gravar_solucao" value="#{messages.LABEL_GRAVAR}" ajax="true" process="@this" action="#{manterSolicitacaoHemoterapiaController.gravar()}" profile="ok" render="lista_hemoterapias_panel, lista_itens_hemoterapicos"/>  
+            <mec:commandButton id="bt_limparPesquisa" value="#{messages.LABEL_LIMPAR}" 
+            	immediate="true" render="formDadosCabecalho,panelCampos,panel_itens"  
+            	action="#{manterSolicitacaoHemoterapiaController.limpar()}" 
+            	profile="clear"/>
+				<mec:commandButton id="bt_voltar" immediate="true"
+					action="#{manterSolicitacaoHemoterapiaController.cancelar}"
+					value="#{messages.LABEL_VOLTAR}"
+					styleClass=" alinha-direita bt_cinza" 
+					render="panelModalVoltar" profile="back"
+					>
+					<f:setPropertyActionListener
+						target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}"
+						value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}"
+						for="command" />
+					<f:setPropertyActionListener
+						target="#{manterPrescricaoMedicaController.pmeSeq}"
+						value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.prescricaoMedica.id.seq}"
+						for="command" />
+				</mec:commandButton>
+			</aghu:acao> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:outputPanel id="panelModalJust" layout="inline"> 
+        <ui:include src="/pages/prescricaomedica/solicitacaohemoterapia/justificarSolicitacaoHemoterapiaModal.xhtml"/> 
+      </p:outputPanel>  
+      <h:form id="formListaHemoterapias" prependId="false"> 
+        <p:outputPanel id="lista_hemoterapias_panel" layout="inline"> 
+          <p:outputPanel id="lista_hemoterapias" rendered="#{not empty manterSolicitacaoHemoterapiaController.listaSolicitacoesHemoterapias}" layout="inline" styleClass="aghu-panel-geral"> 
+            <aghu:panelGeral legend="#{messages.LABEL_SOLICITACOES_HEMOTERAPIA}"> 
+              <aghu:linha> 
+                <mec:serverDataTable id="solicitacoesEmoterapicas" 
+                rendered="#{not empty manterSolicitacaoHemoterapiaController.listaSolicitacoesHemoterapias}" 
+                list="#{manterSolicitacaoHemoterapiaController.listaSolicitacoesHemoterapias}" scrollable="true"
+                scrollHeight="125"> 
+                  <c:set var="_hemoterapia" value="#{item}"/>  
+                  <p:column style="width:60px; #{(_hemoterapia.id.equals(manterSolicitacaoHemoterapiaController.idSolicitacao))?'background-color:#EEE8AA':''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                    </f:facet>  
+                    <mec:commandLink rendered="#{_hemoterapia.id.equals(manterSolicitacaoHemoterapiaController.idSolicitacao)}" onclick="return false;" styleClass=" silk-blank silk-icon" ajax="true"/>  
+                    <mec:commandLink action="#{manterSolicitacaoHemoterapiaController.editar(_hemoterapia)}" oncomplete="window.scrollTo(0,0);" rendered="#{!_hemoterapia.id.equals(manterSolicitacaoHemoterapiaController.idSolicitacao)}" title="#{messages.LABEL_EDITAR}" profile="edit" ajax="true" render="lista_hemoterapias_panel, panel_itens,  lista_itens_hemoterapicos, panel_observacao, panel_botoes, panelTipoFrequenciaAprazamento,           panelQuantidadeAplicacoes, panel_checks, panelQuantidade_ml, quantidade_unidade, panel_itens, checks_paciente,           panelModalConfirmaEdicao" process="@this"/>  
+                    <h:selectBooleanCheckbox name="marcador" id="marcador" value="#{manterSolicitacaoHemoterapiaController.listaSolicitacoesHemoterapiaSelecionas[_hemoterapia]}" title="#{messages.EXCLUIR}"> 
+                      <p:ajax event="click" update="@(#lista_hemoterapias_panel)" process="@this"/> 
+                    </h:selectBooleanCheckbox> 
+                  </p:column>  
+                  <p:column style="#{((manterSolicitacaoHemoterapiaController.listaSolicitacoesHemoterapiaSelecionas.get(_hemoterapia))?'background-color:#FF6347':((_hemoterapia.id.equals(manterSolicitacaoHemoterapiaController.idSolicitacao))?'background-color:#EEE8AA':''))}"> 
+                    <h:outputText escape="false" value="#{_hemoterapia.descricaoFormatada}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </aghu:linha>  
+              <aghu:acao> 
+                <mec:commandButton value="#{messages.LABEL_EXCLUIR}" id="bt_excluir_selecionados" action="#{manterSolicitacaoHemoterapiaController.removerSolicitacoesHemoterapiaSelecionadas}" ajax="true" render="panelCampos, lista_hemoterapias_panel" styleClass="bt_cinza"/> 
+              </aghu:acao> 
+            </aghu:panelGeral> 
+          </p:outputPanel> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.TITLE_EXCLUSAO_ITENS_SOLICITACAO_HEMOTERAPICA}"/> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <mec:commandButton id="bt_excluir" value="#{messages.LABEL_SIM}" action="#{manterSolicitacaoHemoterapiaController.removerItemHemoterapico}" oncomplete="PF('modalConfirmacaoExclusaoWG').hide();;" profile="search" ajax="true" render="lista_itens_hemoterapicos" process="@this"/>  
+            <mec:commandButton id="bt_cancelar_exclusao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();;return false;" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:outputPanel id="panelModalConfirmaEdicaoItem" layout="inline"> 
+        <p:dialog id="modalConfirmaEdicaoItem" width="400" height="150" rendered="#{manterSolicitacaoHemoterapiaController.confirmaEdicaoItemPendente}" modal="true" resizable="false" widgetVar="modalConfirmaEdicaoItemWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formConfirmaEdicaoItem"> 
+              <mec:commandButton id="bt_sim_editar_item" value="#{messages.LABEL_SIM}" action="#{manterSolicitacaoHemoterapiaController.editarItem}" profile="search"/>  
+              <mec:commandButton id="bt_nao_editar_item" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmaEdicaoItemWG').hide();;return false;" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <h:form rendered="#{manterSolicitacaoHemoterapiaController.confirmaEdicaoItemPendente}"> 
+          <script xml:space="preserve">
+                    PF('modalConfirmaEdicaoItemWG').show();;
+                </script> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelModalConfirmaEdicao" layout="inline"> 
+        <p:dialog id="modalConfirmaEdicao" width="400" height="150" rendered="#{manterSolicitacaoHemoterapiaController.confirmaEdicaoPendente}" modal="true" resizable="false" widgetVar="modalConfirmaEdicaoWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formConfirmaEdicao"> 
+              <mec:commandButton id="bt_sim_editar" value="#{messages.LABEL_SIM}" action="#{manterSolicitacaoHemoterapiaController.confirmaEditar}" profile="search"/>  
+              <mec:commandButton id="bt_nao_editar" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmaEdicaoWG').hide();;return false;" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <h:form rendered="#{manterSolicitacaoHemoterapiaController.confirmaEdicaoPendente}"> 
+          <script>
+                    PF('modalConfirmaEdicaoWG').show();;
+                </script> 
+        </h:form> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelModalVoltar" layout="inline"> 
+        <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" showWhenRendered="true" rendered="#{manterSolicitacaoHemoterapiaController.confirmaVoltar}" 
+        	modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}"/> 
+          </f:facet> #{messages.MENSAGEM_PENDENCIAS_ALTERACAO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalPendencias"> 
+              <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{manterSolicitacaoHemoterapiaController.voltar}" profile="search"> 
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterSolicitacaoHemoterapiaController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+    </ui:define> 
+  </ui:composition> 
+</html>

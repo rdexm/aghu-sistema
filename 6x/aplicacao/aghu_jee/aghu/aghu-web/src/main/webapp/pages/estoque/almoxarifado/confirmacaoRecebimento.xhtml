@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_GERAR_NOTA_RECEBIMENTO}</title>  
+      <style>.tbl_docs a { margin: 0 2px -2px 0 !important; padding: 0 !important; } .silk-icon, .icon16 { height: 16px !important; } .silk-printer { width: 16px !important; }</style> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{confirmacaoRecebimentoController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{confirmacaoRecebimentoController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISA_CONFIRMACAO_RECEBIMENTO}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="nrpSeq" label="#{messages.LABEL_NUMERO_RECEBIMENTO_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_NUMERO_RECEBIMENTO_CONFIRMACAO_RECEBIMENTO}" value="#{confirmacaoRecebimentoController.filtroVO.nrpSeq}" maxlength="7" size="8"/>  
+            <mec:inputNumero id="lctNumero" label="#{messages.LABEL_NUMERO_AF_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_NUMERO_AF_CONFIRMACAO_RECEBIMENTO}" value="#{confirmacaoRecebimentoController.filtroVO.lctNumero}" maxlength="7" size="8"> 
+              <p:ajax event="change" eventsQueue="habilitaNrComplemento" focus="nroComplemento" update="@(#panelnroComplemento)" process="@this" listener="#{confirmacaoRecebimentoController.verificarComplemento}"/> 
+            </mec:inputNumero>  
+            <p:outputPanel id="panelnroComplemento" layout="inline"> 
+              <mec:inputNumero id="nroComplemento" label="#{messages.LABEL_COMPLEMENTO_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_COMPLEMENTO_CONFIRMACAO_RECEBIMENTO}" value="#{confirmacaoRecebimentoController.filtroVO.nroComplemento}" maxlength="3" size="4" readonly="#{empty confirmacaoRecebimentoController.filtroVO.lctNumero}"/> 
+            </p:outputPanel>  
+            <mec:inputNumero id="eslNumero" label="#{messages.LABEL_ESL_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_ESL_CONFIRMACAO_RECEBIMENTO}" value="#{confirmacaoRecebimentoController.filtroVO.eslSeq}" maxlength="7" size="8"/>  
+            <mec:suggestionBox id="sugFornecedorAF" label="#{messages.LABEL_FORNECEDOR_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_FORNECEDOR_CONFIRMACAO_RECEBIMENTO}" suggestionAction="pesquisarFornecedoresPorCgcCpfRazaoSocial" descricaoInput="cgcCpf" descricaoLabel="razaoSocial" width="600" controller="#{confirmacaoRecebimentoController}" value="#{confirmacaoRecebimentoController.fornecedor}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CGC_CPF}</b> 
+                </f:facet> #{item.cgcCpf}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_RAZAO_SOCIAL}</b> 
+                </f:facet> #{item.razaoSocial}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha style="margin-bottom: 7px !important"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelNotaFiscal" layout="inline"> 
+                <mec:suggestionBox id="sbNotaFiscalEntrada" label="#{messages.LABEL_NUMERO_NOTA_FISCAL}" title="#{messages.TITLE_NOTA_FISCAL}" descricaoInput="numero" size="10" width="450" posDeleteAction="limparNotaFiscal" posSelectionAction="inicio" onkeypress="return disableEnterKey(event)" suggestionAction="pesquisarNotafiscalEntrada" controller="#{confirmacaoRecebimentoController}" value="#{confirmacaoRecebimentoController.documentoFiscalEntrada}" render="panelNotaFiscal"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NUMERO_NF}</b> 
+                    </f:facet> #{item.numero}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_SERIE_NF}</b> 
+                    </f:facet> #{item.serie}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_TIPO_NF}</b> 
+                    </f:facet> #{item.tipo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_VALOR_TOTAL_NF}</b> 
+                    </f:facet> #{item.valorTotalNf}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_FORNECEDOR}</b> 
+                    </f:facet> #{item.fornecedor.nomeFantasia}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:inputText id="serieNotaFiscal" label="#{messages.LABEL_SERIE_NOTA_FISCAL}" readonly="true" value="#{confirmacaoRecebimentoController.documentoFiscalEntrada.serie}" size="6"/>  
+                <mec:inputText id="tipoNotaFiscal" label="#{messages.LABEL_TIPO_NOTA_FISCAL}" readonly="true" value="#{confirmacaoRecebimentoController.documentoFiscalEntrada.tipo.descricao}" size="14"/>  
+                <mec:inputTextData label="#{messages.LABEL_DATA_EMISSAO}" id="dataEmissao" size="10" readonly="true" value="#{confirmacaoRecebimentoController.documentoFiscalEntrada.dtEmissao}" tipo="data"/>  
+                <mec:inputTextData label="#{messages.LABEL_DATA_ENTRADA}" id="dataEntrada" size="10" readonly="true" value="#{confirmacaoRecebimentoController.documentoFiscalEntrada.dtEntrada}" tipo="data"/>  
+                <aghu:acao newLine="false"> 
+                  <mec:commandButton value="#{messages.LABEL_NOTA_FISCAL}" id="bt_notaFiscal" immediate="true" action="#{confirmacaoRecebimentoController.buscarNotaFiscalEntrada}" render="panelNotaFiscal" styleClass="bt_cinza"> 
+                    <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemGerarNotaRecebimento}" value="false" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemGerarNotaRecebimentoSemAf}" value="false" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.voltarPara}" value="estoque-confirmacaoRecebimento" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.numeroDocumento}" value="#{null}" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.serie}" value="#{null}" for="command"/>  
+                    <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemConfirmacaoRecebimento}" value="true" for="command"/> 
+                  </mec:commandButton>  
+                  <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limparNota" immediate="true" action="#{confirmacaoRecebimentoController.limparNotaFiscal}" disabled="#{confirmacaoRecebimentoController.seqNota == null}" reRender="panelNotaFiscal" profile="clear"/> 
+                </aghu:acao> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{confirmacaoRecebimentoController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{confirmacaoRecebimentoController.limpar}" immediate="true" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form id="formRecebimentoProvisorio" prependId="false" rendered="#{confirmacaoRecebimentoController.notaRecebProvisorios ne null}"> 
+        <aghu:panelGeral legend="#{messages.TITLE_RECEBIMENTO_PROVISORIO_CONFIRMACAO_RECEBIMENTO}"> 
+          <aghu:linha> 
+            <p:outputPanel id="listagem" layout="inline"> 
+              <p:outputPanel id="msgNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{empty confirmacaoRecebimentoController.notaRecebProvisorios}"> 
+                <aghu:linha> 
+                  <h:outputText value="#{messages.REGISTRO_NAO_LOCALIZADO}"/> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <p:outputPanel id="resultado" rendered="#{not empty confirmacaoRecebimentoController.notaRecebProvisorios}" layout="inline"> 
+                <aghu:linha> 
+                  <p:outputPanel layout="block" id="baseRolagem" style="max-height: 90px; overflow-y:auto;"> 
+                    <mec:serverDataTable id="resultadoDataTable" rowKeyVar="_rowNotaRecProv" list="#{confirmacaoRecebimentoController.notaRecebProvisorios}" scrollable="true"> 
+                      <c:set var="_notaProv" value="#{item}"/>  
+                      <p:ajax event="rowSelect" update="@(#resultado) @(#formItensRecebimentoProvisorio)" listener="#{confirmacaoRecebimentoController.selecionarNotaRecebProvisorio(_notaProv.seq)}"/>  
+                      <p:column style="width:73px; #{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                        </f:facet>  
+                        <mec:commandLink id="bt_confirmacao" title="#{messages.TITLE_ACAO_CONFIRMAR_RECEBIMENTO_CONFIRMACAO_RECEBIMENTO}" rendered="#{mf:hasPermission(securityController,'recebimentoProvisorio,confirmar')}" action="#{confirmacaoRecebimentoController.confirmarRecebimento(_notaProv.seq,true,true)}" styleClass=" silk-checked silk-icon" ajax="true" render="listagem,panelDados,panelValorForaPercentualVariacao, formItensRecebimentoProvisorio, panelListaItens, resultadoItemRecebimentoProvisorio"/>  
+                        <mec:commandLink id="bt_estorno" title="#{messages.TITLE_ACAO_ESTORNAR_RECEBIMENTO_CONFIRMACAO_RECEBIMENTO}" rendered="#{mf:hasPermission(securityController,'recebimentoProvisorio,confirmar') and _notaProv.eslSeq == null}" action="#{confirmacaoRecebimentoController.setSeqSelecionado(_notaProv.seq)}" onclick="PF('modalConfirmacaoEstornoWG').show();;" styleClass=" silk-arrow-undo silk-icon" ajax="true"/>  
+                        <mec:commandLink id="bt_estorno_esl" title="#{messages.TITLE_ACAO_ESTORNAR_RECEBIMENTO_CONFIRMACAO_RECEBIMENTO}" rendered="#{mf:hasPermission(securityController,'recebimentoProvisorio,confirmar') and _notaProv.eslSeq != null}" action="#{confirmacaoRecebimentoController.setSeqSelecionado(_notaProv.seq)}" onclick="PF('modalConfirmacaoEstornoRecebimentoEslWG').show();;" styleClass=" silk-arrow-undo silk-icon" ajax="true"/>  
+                        <mec:commandLink id="bt_notaFiscal" title="#{messages.TITLE_ACAO_NOTA_FISCAL_CONFIRMACAO_RECEBIMENTO}" rendered="#{mf:hasPermission(securityController,'recebimentoProvisorio,alterar')}" action="#{confirmacaoRecebimentoController.redirecionarNotaFiscal(_notaProv.seq)}" styleClass=" silk-nota-fiscal silk-icon"> 
+                          <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemConfirmacaoRecebimento}" value="true" for="command"/>  
+                          <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.numeroFornecedor}" value="#{confirmacaoRecebimentoController.nroFornecedorSelecionado}" for="command"/>  
+                          <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemGerarNotaRecebimento}" value="false" for="command"/>  
+                          <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.origemGerarNotaRecebimentoSemAf}" value="false" for="command"/>  
+                          <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.numeroDocumento}" value="#{null}" for="command"/>  
+                          <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.serie}" value="#{null}" for="command"/>  
+                          <f:setPropertyActionListener target="#{pesquisarDocumentoFiscalEntradaPaginatorController.voltarPara}" value="estoque-confirmacaoRecebimento" for="command"/> 
+                        </mec:commandLink>  
+                        <script>if(#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado)}) { document.getElementById('baseRolagem').scrollTop = #{_rowNotaRecProv} * 35; }</script>  
+                        <mec:commandLink id="bt_imprimir" title="#{messages.TITLE_ACAO_PROTOCOLO_RECEB}" disabled="#{_notaProv.seq == null}" action="#{imprimirNotaRecebimentoProvisorioController.printConfirmacaoRecebimento(_notaProv.seq)}" styleClass=" silk-printer silk-icon" ajax="true"/> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_NRO_RECEB_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_NRO_RECEB_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_notaProv.seq}"/> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ENTRADA_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_ENTRADA_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_notaProv.dtGeracao}"> 
+                          <f:convertDateTime pattern="dd/MM/yy"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_AF_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_AF_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_notaProv.prfLctNumero}"/> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_CP_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_notaProv.nroComplemento}"/> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_AFP_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_AFP_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_notaProv.afeNumero}"/> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_ESL_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_ESL_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText id="esl" value="#{_notaProv.eslSeq}"/>  
+                        <p:tooltip id="tipEsl" rendered="#{not empty _notaProv.sigla}"> 
+                          <h:outputText value="#{_notaProv.sigla}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_SIT_AF_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_SIT_AF_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText id="situacao" value="#{_notaProv.situacao}"/>  
+                        <p:tooltip id="tipSituacao" for="situacao" direction="top-right" rendered="#{_notaProv.situacao ne null}"> 
+                          <h:outputText value="#{_notaProv.situacao.descricao}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_FORNECEDOR_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText id="fornRef" value="#{_notaProv.razaoSocial}"/>  
+                        <p:tooltip id="fornToolTip" for="fornRef" direction="top-right" rendered="#{not empty _notaProv.cgc}"> 
+                          <h:outputText value="#{_notaProv.cgc}" rendered="#{_notaProv.cgc ne null}"> 
+                            <f:converter converterId="cnpjConverter"/> 
+                          </h:outputText>  
+                          <h:outputText value="#{_notaProv.cpf}" rendered="#{_notaProv.cpf ne null}"> 
+                            <f:converter converterId="cpfConverter"/> 
+                          </h:outputText>  
+                          <h:outputText value=" - #{_notaProv.razaoSocial}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_VALOR_NF_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_VALOR_NF_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{_notaProv.valorTotalNfe}"> 
+                          <f:convertNumber pattern="###,##0.00" type="currency"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column style="#{(_notaProv.seq eq confirmacaoRecebimentoController.seqSelecionado) ? 'background-color:#EEE8AA' : ''}"> 
+                        <f:facet name="header"> 
+                          <h:outputText value="#{messages.LABEL_NOTA_FISCAL_CONFIRMACAO_RECEBIMENTO}"/> 
+                        </f:facet>  
+                        <mec:commandLink id="notaFiscalRef" style="color: #0090FF;" action="#{confirmacaoRecebimentoController.notaFiscalReferencia()}"> 
+                          <h:outputText value="#{_notaProv.docFiscalEntradaNumero}"/>  
+                          <f:setPropertyActionListener target="#{manterDocumentoFiscalEntradaController.seq}" value="#{_notaProv.docFiscalEntradaSeq}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterDocumentoFiscalEntradaController.voltarPara}" value="estoque-confirmacaoRecebimento" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterDocumentoFiscalEntradaController.emEdicao}" value="true" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterDocumentoFiscalEntradaController.numeroFornecedor}" value="#{_notaProv.numeroFornecedor}" for="command"/>  
+                          <f:setPropertyActionListener target="#{manterDocumentoFiscalEntradaController.origemGerarNotaRecebimento}" value="false" for="command"/> 
+                        </mec:commandLink>  
+                        <p:tooltip id="notaFiscalToolTip" for="notaFiscalRef" direction="top-right" rendered="#{not empty _notaProv.docFiscalEntradaSeq}"> 
+                          <h:outputText value="#{messages.LABEL_NOTA_FISCAL_EMISSAO_CONFIRMACAO_RECEBIMENTO}:"/>  
+                          <h:outputText value="#{_notaProv.dtEmissao}"> 
+                            <f:convertDateTime pattern="dd/MM/yy"/> 
+                          </h:outputText>  
+                          <br clear="none"/>  
+                          <h:outputText value="#{messages.LABEL_NOTA_FISCAL_VENCIMENTO_CONFIRMACAO_RECEBIMENTO}:"/>  
+                          <h:outputText value="#{_notaProv.dtAutorizacao}"> 
+                            <f:convertDateTime pattern="dd/MM/yy"/> 
+                          </h:outputText>  
+                          <br clear="none"/>  
+                          <h:outputText value="#{messages.LABEL_VALOR_TOTAL_CONFIRMACAO_RECEBIMENTO}:"/>  
+                          <h:outputText value="#{_notaProv.valorRecebido}"> 
+                            <f:convertNumber pattern="###,##0.00" type="currency"/> 
+                          </h:outputText> 
+                        </p:tooltip> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <h:form id="formItensRecebimentoProvisorio" prependId="false" rendered="#{not empty confirmacaoRecebimentoController.notaRecebProvisorios}"> 
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravarItens" value="#{messages.LABEL_BT_GRVAR_CONFIRMACAO_RECEBIMENTO}" rendered="#{mf:hasPermission(securityController,'recebimentoProvisorio,confirmar') and not empty confirmacaoRecebimentoController.itemRecebimentoProvisorioVOs}" action="#{confirmacaoRecebimentoController.gravarItens(true)}" oncomplete="PF('modalValorForaPercentualVariacaoItensWG').show();;" ajax="true" render="panelValorForaPercentualVariacaoItens" styleClass="bt_cinza"/> 
+        </aghu:acao>  
+        <aghu:panelGeral legend="#{messages.TITLE_ITEM_RECEBIMENTO_PROVISORIO_CONFIRMACAO_RECEBIMENTO}"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelListaItens" layout="inline"> 
+              <p:outputPanel id="msgItensNaoEncontrado" layout="block" styleClass="div-alerta" rendered="#{empty confirmacaoRecebimentoController.itemRecebimentoProvisorioVOs and empty confirmacaoRecebimentoController.listaItemRecebProvisorio}"> 
+                <aghu:linha> 
+                  <h:outputText value="#{messages.REGISTRO_NAO_LOCALIZADO}"/> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <p:outputPanel id="resultadoItemRecebimentoProvisorio2" rendered="#{not empty confirmacaoRecebimentoController.listaItemRecebProvisorio}" layout="inline"> 
+                <aghu:linha> 
+                  <p:outputPanel layout="block" id="baseRolagem2" style="width: 100%; max-height:90px; float:left; overflow-y:auto;"> 
+                    <mec:serverDataTable id="itemRecebimentoProvisorioDataTable2" list="#{confirmacaoRecebimentoController.listaItemRecebProvisorio}" scrollable="true"> 
+                      <c:set var="_item" value="#{item}"/>  
+                      <f:facet name="header"> 
+                        <p:columnGroup> 
+                          <p:column style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_MATERIAL_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column style="text-align: right"> 
+                            <h:outputText value="#{messages.LABEL_QUANTIDADE_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column style="text-align: right"> 
+                            <h:outputText value="#{messages.LABEL_RECEBIDO_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column style="text-align: center"> 
+                            <h:outputText value="#{messages.LABEL_UNIDADE_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column> 
+                        </p:columnGroup> 
+                      </f:facet>  
+                      <p:column> 
+                        <h:outputText value="#{_item.scoMaterial.codigo} - #{_item.scoMaterial.nome}"/>  
+                        <p:tooltip id="tipMaterial" direction="top-right" rendered="#{_item.scoMaterial.nome.length() + _item.scoMaterial.nome.length() &gt; 120}"> 
+                          <h:outputText value="#{_item.scoMaterial.codigo} - #{_item.scoMaterial.nome}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column style="text-align: right"> 
+                        <h:outputText value="#{_item.quantidade}"/> 
+                      </p:column>  
+                      <p:column style="text-align: right"> 
+                        <h:outputText value="#{_item.valor}"> 
+                          <f:convertNumber pattern="###,##0.00" type="currency"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column style="text-align: center"> 
+                        <h:outputText value="#{_item.scoUnidadeMedida.descricao}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <p:outputPanel id="resultadoItemRecebimentoProvisorio" rendered="#{not empty confirmacaoRecebimentoController.itemRecebimentoProvisorioVOs}" layout="inline"> 
+                <aghu:linha> 
+                  <p:outputPanel layout="block" style="text-align: center; width: 100%; max-height:80px; float:left; overflow-y:auto;"> 
+                    <mec:serverDataTable id="itemRecebimentoProvisorioDataTable" list="#{confirmacaoRecebimentoController.itemRecebimentoProvisorioVOs}" scrollable="true"> 
+                      <c:set var="_notaProvItem" value="#{item}"/>  
+                      <f:facet name="header"> 
+                        <p:columnGroup> 
+                          <p:column style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_ITEM_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_PARCELA_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_QUANTIDADE_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_VALOR_TOTAL_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column rendered="#{not confirmacaoRecebimentoController.indMaterial}" style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_PERCENTUAL_VARIACAO_CONFIRMACAO_RECEBIMENTO}" title="#{messages.TITLE_PERCENTUAL_VARIACAO_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column rendered="#{confirmacaoRecebimentoController.indMaterial}" style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_VALOR_TOTAL_AF_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column rendered="#{not confirmacaoRecebimentoController.indMaterial}" style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_UNIDADE_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column>  
+                          <p:column style="text-align: left"> 
+                            <h:outputText value="#{messages.LABEL_MATERIAL_SERVICO_CONFIRMACAO_RECEBIMENTO}"/> 
+                          </p:column> 
+                        </p:columnGroup> 
+                      </f:facet>  
+                      <p:column style="#{_notaProvItem.atraso ? 'background-color:#F00' : ''}"> 
+                        <h:outputText value="#{_notaProvItem.itlNumero}"/>  
+                        <p:tooltip id="tipItem" direction="top-right" rendered="#{_notaProvItem.atraso}"> 
+                          <h:outputText value="#{messages.ERRO_CLONE_SALDO_ESTOQUE}"/> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column> 
+                        <h:outputText value="#{_notaProvItem.parcela}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <h:outputText value="#{_notaProvItem.quantidade}"/> 
+                      </p:column>  
+                      <p:column style="text-align: right;"> 
+                        <h:inputText id="notaProvItemValor" value="#{_notaProvItem.valor}" onfocus="jQuery(this).autoNumeric({mNum:'9',mDec:2,aSep: '.',aDec:','})" converter="javax.faces.Double" styleClass="mascara(decimal)" style="text-align: right;" rendered="#{mf:hasPermission(securityController,'recebimentoProvisorio,confirmar')}"> 
+                          <p:ajax event="change" update="@(#itemRecebimentoProvisorioDataTable)" process="@this" listener="#{confirmacaoRecebimentoController.calcularVariacao(_notaProvItem)}"/> 
+                        </h:inputText>  
+                        <h:outputText id="notaProvItemValorReadonly" value="#{_notaProvItem.valor}" styleClass="mascara(decimal)" rendered="#{mf:hasPermission(securityController,'recebimentoProvisorio,consultar') and not mf:hasPermission(securityController,'recebimentoProvisorio,confirmar')}"> 
+                          <f:converter converterId="javax.faces.Double"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column rendered="#{not confirmacaoRecebimentoController.indMaterial}"> 
+                        <h:outputText id="variacaoAtual" value="#{_notaProvItem.variacaoAtual}"> 
+                          <f:convertNumber pattern="##0.00" type="percentage"/> 
+                        </h:outputText>  
+                        <p:tooltip id="variacaoToolTip" for="variacaoAtual" direction="top-right"> 
+                          <h:outputText value="#{messages.LABEL_VALOR_UNITARIO_AF_CONFIRMACAO_RECEBIMENTO}:"/>  
+                          <h:outputText value="#{_notaProvItem.valorItem}"> 
+                            <f:convertNumber pattern="###,##0.00" type="currency"/> 
+                          </h:outputText>  
+                          <br clear="none"/>  
+                          <h:outputText value="#{messages.HINT_VARIACAO_ORIGINAL_PERMITIDA}:"/>  
+                          <h:outputText value="#{_notaProvItem.variacao}"> 
+                            <f:convertNumber pattern="##0.00" type="percentage"/> 
+                          </h:outputText> 
+                        </p:tooltip> 
+                      </p:column>  
+                      <p:column rendered="#{confirmacaoRecebimentoController.indMaterial}"> 
+                        <h:outputText value="#{_notaProvItem.valorItem}"> 
+                          <f:convertNumber pattern="###,##0.00" type="currency"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column rendered="#{not confirmacaoRecebimentoController.indMaterial}"> 
+                        <h:outputText value="#{_notaProvItem.codigoUnidadeMedida}"/> 
+                      </p:column>  
+                      <p:column> 
+                        <h:outputText id="matServ" value="#{_notaProvItem.codigoMaterial}#{_notaProvItem.codigoServico} - #{_notaProvItem.nomeMaterial}#{_notaProvItem.nomeServico}"/>  
+                        <p:tooltip id="matServToolTip" for="matServ" direction="top-right" rendered="#{(not empty _notaProvItem.descricaoMaterial) or (not empty _notaProvItem.descricaoServico)}"> 
+                          <h:outputText value="#{_notaProvItem.descricaoMaterial}#{_notaProvItem.descricaoServico}"/> 
+                        </p:tooltip> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </aghu:linha> 
+              </p:outputPanel> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{confirmacaoRecebimentoController.voltar}" rendered="#{confirmacaoRecebimentoController.voltarPara != null}" styleClass="bt_voltar bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelDados" layout="inline"> 
+        <p:dialog resizeable="false" showWhenRendered="#{(confirmacaoRecebimentoController.listaItensSemSaldo!=null and confirmacaoRecebimentoController.listaItensSemSaldo.size()&gt;0) or (confirmacaoRecebimentoController.listaItensValoresDivergentes!=null and confirmacaoRecebimentoController.listaItensValoresDivergentes.size()&gt;0) }" id="modalMensagem1" zindex="2" width="500" autosized="true" modal="true" resizable="false" widgetVar="modalMensagem1WG" closable="true"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.ERRO_CONFIRMAR_RECEBIMENTO}"/> 
+          </f:facet>  
+          <aghu:panelGeral style="padding:10px;"> 
+            <aghu:linha> 
+              <p:outputPanel layout="block" style="width:100%; max-height:200px; overflow-y:auto;"> 
+                <h:outputText value="#{messages.LABEL_MENSAGEM_ITEM_SEM_SALDO_SUFICIENTE}" rendered="#{confirmacaoRecebimentoController.listaItensSemSaldo!=null and confirmacaoRecebimentoController.listaItensSemSaldo.size()&gt;0 }"/>  
+                <mec:serverDataTable id="tabelaItensSemSaldo" rendered="#{confirmacaoRecebimentoController.listaItensSemSaldo!=null and confirmacaoRecebimentoController.listaItensSemSaldo.size()&gt;0 }" list="#{confirmacaoRecebimentoController.listaItensSemSaldo}" scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ITEM_CONFIRMACAO_RECEBIMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.itlNumero}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SALDO_AF_CONFIRMACAO_RECEBIMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.qtdSaldoAf}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_QUANTIDADE_A_SER_RECEBIDA_CONFIRMACAO_RECEBIMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.quantidade}"/> 
+                  </p:column> 
+                </mec:serverDataTable>  
+                <h:outputText value="#{messages.LABEL_VERIFICAR_ITEM_SEM_SALDO_SUFICIENTE}" rendered="#{confirmacaoRecebimentoController.listaItensSemSaldo!=null and confirmacaoRecebimentoController.listaItensSemSaldo.size()&gt;0 }"/>  
+                <h:outputText value="#{messages.LABEL_MENSAGEM_VALOR_UNITARIO_DIVERGENTE}" rendered="#{confirmacaoRecebimentoController.listaItensValoresDivergentes!=null and confirmacaoRecebimentoController.listaItensValoresDivergentes.size()&gt;0 }"/>  
+                <mec:serverDataTable id="tabelaItensValoresDivergentes" rendered="#{confirmacaoRecebimentoController.listaItensValoresDivergentes!=null and confirmacaoRecebimentoController.listaItensValoresDivergentes.size()&gt;0 }" list="#{confirmacaoRecebimentoController.listaItensValoresDivergentes}" scrollable="true"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ITEM_CONFIRMACAO_RECEBIMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.itlNumero}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VALOR_ITEM_CONFIRMACAO_RECEBIMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.valorItem}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VALOR_AF_CONFIRMACAO_RECEBIMENTO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.quantidade}"/> 
+                  </p:column> 
+                </mec:serverDataTable>  
+                <h:outputText value="#{messages.LABEL_VERIFICAR_VALOR_UNITARIO_DIVERGENTE}" rendered="#{confirmacaoRecebimentoController.listaItensValoresDivergentes!=null and confirmacaoRecebimentoController.listaItensValoresDivergentes.size()&gt;0 }"/> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelValorForaPercentualVariacao" layout="inline"> 
+        <p:dialog id="modalValorForaPercentualVariacao" showWhenRendered="#{confirmacaoRecebimentoController.exibeModal}" width="400" autosized="true" modal="true" resizable="false" widgetVar="modalValorForaPercentualVariacaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_ACAO_CONFIRMAR_RECEBIMENTO_CONFIRMACAO_RECEBIMENTO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{confirmacaoRecebimentoController.validaConfirmacaoRecebimentoVO.mensagemModal} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalValorForaPercentualVariacao"> 
+              <mec:commandButton id="bt_confirmar" value="#{messages.LABEL_SIM}" status="commonstatus" action="#{confirmacaoRecebimentoController.confirmarRecebimentoSemValidacao}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_NAO}" action="#{confirmacaoRecebimentoController.setExibeModal(false)}" immediate="true" oncomplete="PF('modalValorForaPercentualVariacaoWG').hide();" profile="cancel" ajax="true" process="@this"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelValorForaPercentualVariacaoItens" layout="inline"> 
+        <p:dialog id="modalValorForaPercentualVariacaoItens" width="400" autosized="true" rendered="#{confirmacaoRecebimentoController.exibeModalItens}" modal="true" resizable="false" widgetVar="modalValorForaPercentualVariacaoItensWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_ACAO_GRAVAR_ITENS_RECEBIMENTO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{confirmacaoRecebimentoController.validaConfirmacaoRecebimentoVO.mensagemModal} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalValorForaPercentualVariacaoItens"> 
+              <mec:commandButton id="bt_confirmarItens" value="#{messages.LABEL_SIM}" action="#{confirmacaoRecebimentoController.gravarItens(false)}" profile="search"/>  
+              <mec:commandButton id="bt_cancelarItens" value="#{messages.LABEL_NAO}" action="#{confirmacaoRecebimentoController.setExibeModalItens(false)}" immediate="true" oncomplete="PF('modalValorForaPercentualVariacaoItensWG').hide();" profile="cancel" ajax="true" process="@this"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:outputPanel id="panelEmprestimoPendente" layout="inline"> 
+        <p:dialog id="modalEmprestimoPendente" showWhenRendered="#{confirmacaoRecebimentoController.exibeModalEsl}" width="400" autosized="true" modal="true" resizable="false" widgetVar="modalEmprestimoPendenteWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_ACAO_CONFIRMAR_RECEBIMENTO_CONFIRMACAO_RECEBIMENTO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{confirmacaoRecebimentoController.validaConfirmacaoRecebimentoVO.mensagemModal} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalEmprestimoPendente"> 
+              <mec:commandButton id="bt_confirmar_emprestimo_pendente" value="#{messages.LABEL_SIM}" status="commonstatus" action="#{confirmacaoRecebimentoController.confirmarRecebimentoSemValidacao}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_emprestimo_pendente" value="#{messages.LABEL_NAO}" action="#{confirmacaoRecebimentoController.setExibeModalEsl(false)}" immediate="true" oncomplete="PF('modalEmprestimoPendenteWG').hide();" profile="cancel" ajax="true" process="@this"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      <p:dialog id="modalConfirmacaoEstorno" width="400" autosized="true" modal="true" resizable="false" widgetVar="modalConfirmacaoEstornoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.MENSAGEM_TITLE_CONFIRMACAO_ESTORNO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_ESTORNO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalEstorno" name="formModalEstorno"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" oncomplete="PF('modalConfirmacaoEstornoWG').hide();" id="bt_estornar" action="#{confirmacaoRecebimentoController.estornarRecebimento}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoEstornoWG').hide();" id="bt_cancelarEstorno" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+      <p:dialog id="modalConfirmacaoEstornoRecebimentoEsl" width="400" autosized="true" modal="true" resizable="false" widgetVar="modalConfirmacaoEstornoRecebimentoEslWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.MENSAGEM_TITLE_CONFIRMACAO_ESTORNO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_ESTORNO_ESL} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalEstornoEsl" name="formModalEstornoEsl"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" oncomplete="PF('modalConfirmacaoEstornoRecebimentoEslWG').hide();" id="bt_estornar_esl" action="#{confirmacaoRecebimentoController.estornarRecebimento}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoEstornoRecebimentoEslWG').hide();" id="bt_cancelarEstorno_esl" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_ASSOCIAR_SC_SS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{solicitacaoCompraServicoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{solicitacaoCompraServicoController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <pe:remoteCommand name="excluir"> 
+          <pe:assignableParam name="numeroSolicitacaoCompra" assignTo="#{solicitacaoCompraServicoController.numeroSolicitacaoCompra}"/> 
+        </pe:remoteCommand>  
+        <aghu:panelGeral legend="#{messages.TITLE_ASSOCIAR_SC_SS}"> 
+          <aghu:linha> 
+            <mec:inputNumero value="#{solicitacaoCompraServicoController.solicitacaoDeCompra.numero}" label="#{messages.LABEL_NUMERO_SOL_COMPR}" title="#{messages.TITLE_NUMERO_SOL_COMPR}" maxlength="7" size="8" readonly="true" id="numero"/>  
+            <mec:inputNumero value="#{solicitacaoCompraServicoController.solicitacaoDeCompra.material.codigo}" label="#{messages.LABEL_MATERIAL_SOL_COMPR}" title="#{messages.TITLE_NUMERO_SOL_COMPR}" maxlength="7" size="8" readonly="true" id="materialCodigo"/>  
+            <mec:inputText label="#{messages.LABEL_ASSOCIAR_SC_SS_NM_MATERIAL}" value="#{solicitacaoCompraServicoController.solicitacaoDeCompra.material.nome}" maxlength="500" size="80" readonly="true" id="nomeMaterial"/>  
+            <mec:inputText value="#{solicitacaoCompraServicoController.solicitacaoDeCompra.unidadeMedida.codigo}" label="#{messages.LABEL_UNIDADE_MEDIDA}" title="#{messages.TITLE_UNIDADE_MEDIDA}" maxlength="10" size="10" readonly="true" id="unidade"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero value="#{solicitacaoCompraServicoController.solicitacaoDeCompra.qtdeSolicitada}" label="#{messages.LABEL_QTDE_SOL_COMPR}" title="#{messages.TITLE_QTDE_SOL_COMPR}" maxlength="7" readonly="true" size="8" ajaxValidation="false" id="qtde"/>  
+            <mec:inputTextData label="#{messages.LABEL_DT_SOLICITACAO_SOL_COMPR}" title="#{messages.TITLE_DT_SOLICITACAO_SOL_COMPR}" value="#{solicitacaoCompraServicoController.solicitacaoDeCompra.dtSolicitacao}" disabled="false" maxlength="10" size="15" readonly="true" id="dtSol" tipo="data"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="#{messages.TITLE_SS_ASSOCIADAS}"> 
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_ASSOCIAR_SC_SS_SERVICO}" title="#{messages.TITLE_ASSOCIAR_SC_SS_SERVICO}" descricaoInput="numero" descricaoLabel="descricao" suggestionAction="pesquisarSolicitacaoServicoPorNumeroOuDescricao" width="400" required="true" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar')}" id="solServico" controller="#{solicitacaoCompraServicoController}" value="#{solicitacaoCompraServicoController.solServico}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.numero}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <aghu:acao newLine="false"> 
+              <mec:commandButton id="bt_adicionarItem" value="#{messages.LABEL_ADICIONAR}" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar')}" action="#{solicitacaoCompraServicoController.adicionarSolServico}" render="panelSolServicos" profile="add"/>  
+              <mec:commandButton id="bt_gerar_ss" value="#{messages.LABEL_GERAR_SS}" immediate="true" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoServico,gravar')}" action="#{solicitacaoCompraServicoController.gerarSS}" styleClass="bt_cinza"> 
+                <f:setPropertyActionListener target="#{solicitacaoServicoController.gravarVoltarUrl}" value="compras-associarSolicitacaoCompraServico" for="command"/>  
+                <f:setPropertyActionListener target="#{solicitacaoServicoController.voltarParaUrl}" value="compras-associarSolicitacaoCompraServico" for="command"/> 
+              </mec:commandButton> 
+            </aghu:acao> 
+          </aghu:linha>  
+          <p:outputPanel id="panelSolServicos" rendered="#{not empty solicitacaoCompraServicoController.listaSolServicosCompras}" layout="inline"> 
+            <aghu:linha> 
+              <p:outputPanel layout="block" style="max-height: 230px; overflow-y: auto;"> 
+                <mec:serverDataTable id="tblistaSolicitacoesServicos" rowKeyVar="indice" rendered="#{not empty solicitacaoCompraServicoController.listaSolServicosCompras}" list="#{solicitacaoCompraServicoController.listaSolServicosCompras}" scrollable="true"> 
+                  <c:set var="solCompraServico" value="#{item}"/>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet> 
+                     <mec:commandLink id="deletelink_remover" profile="delete" immediate="true" title="#{messages.LABEL_EXCLUIR}"  action="#{solicitacaoCompraServicoController.excluir}" permission="cadastrarSolicitacaoCompras,gravar"> 
+                            <f:setPropertyActionListener for="command" target="#{solicitacaoCompraServicoController.itemScoSolCompra}" value="#{solCompraServico}"/> 
+                     </mec:commandLink> 
+                    
+                     
+                   </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ASSOCIAR_SC_SS_NUMERO_SC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{solCompraServico.scoSolicitacaoServico.numero}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_SOL_SERVICO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{solCompraServico.scoSolicitacaoServico.servico.codigo} - #{solCompraServico.scoSolicitacaoServico.servico.nome}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_QTD_SOL_SERVICO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{solCompraServico.scoSolicitacaoServico.qtdeSolicitada}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ASSOCIAR_SC_SS_DT_SOLIC }"/> 
+                    </f:facet>  
+                    <h:outputText value="#{solCompraServico.scoSolicitacaoServico.dtSolicitacao}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <p:outputPanel id="panelAcao" layout="inline"> 
+            <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" immediate="true" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar')}" action="#{solicitacaoCompraServicoController.gravar}" profile="ok" ajax="true"/>  
+            <mec:commandButton immediate="true" id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{solicitacaoCompraServicoController.validaItensPendentes}" styleClass="bt_voltar bt_cinza" ajax="true" profile="back"/> 
+          </p:outputPanel> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelModalConfirmacaoExclusao" layout="inline"> 
+        <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACOES}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalExclusao"> 
+              <aghu:linha> 
+                <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir" action="#{solicitacaoCompraServicoController.voltar}" profile="search"/>  
+                <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_cancelar" action="#{solicitacaoCompraServicoController.cancelarPendenteItens}" profile="cancel"/> 
+              </aghu:linha> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>          
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

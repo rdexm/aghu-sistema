@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CONSULTAR_PROGRAMACAO_ENTREGA_GLOBAL_POR_GRUPO_MATERIAL}</title> 
+	<style type="text/css">
+	.ui-datatable-scrollable-footer-box .ui-state-default {
+	   	background: #FFFFFF !important;
+		color: #000000 !important;
+      	border: 1px solid #DFD9C3;
+	 }
+	</style>  
+    </ui:define>   
+   <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaGrupoMaterialEntregaProgramadaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define> 
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaGrupoMaterialEntregaProgramadaController}"/>  
+      <script type="text/javascript" xml:space="preserve">  
+			jQuery(function($){  
+			    $(".valor").mask("#.##0,00");  
+			});  
+		</script>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_GRUPOS_MATERIAIS_COM_ENTREGA_PROGRAMADA}"> 
+           <aghu:linha> 
+           
+             <mec:inputTextData id="cdPeriodoInicio"
+					label="#{messages.LABEL_PERIODO_ENTREGA}"
+					title="#{messages.TITLE_PERIODO_ENTREGA}"
+					value="#{pesquisaGrupoMaterialEntregaProgramadaController.filtro.dataInicioEntrega}"/>							
+				
+								
+				<div  class="aghu-boxinput" style="padding-top: 25px;">				
+					<p:outputPanel styleClass="aghu-lineinput">
+						<p:outputLabel styleClass="aghu-lineinput" value="#{messages.LABEL_ATE}"/>
+					</p:outputPanel>			
+				</div>	
+				
+				<mec:inputTextData id="cdPeriodoFim"
+					value="#{pesquisaGrupoMaterialEntregaProgramadaController.filtro.dataFimEntrega}"/>
+           
+            <mec:suggestionBox id="sbGrupoMaterial" label="#{messages.LABEL_CPGAF_GP}" title="#{messages.TITLE_CPGAF_GP}" suggestionAction="obterGrupos" descricaoInput="codigo" descricaoLabel="descricao" maxlength="30" width="400" size="25" controller="#{pesquisaGrupoMaterialEntregaProgramadaController}" value="#{pesquisaGrupoMaterialEntregaProgramadaController.filtro.grupoMaterial}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_GRUPO}</b> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_MATERIAL_ESTOCAVEL}" id="selectOneMenuMaterialEstocavel" value="#{pesquisaGrupoMaterialEntregaProgramadaController.filtro.materialEstocavel}" title="#{messages.TITLE_MATERIAL_ESTOCAVEL}"/>
+            <br/>  
+            <mec:commandButton id="bt_ajuda" value="#{messages.LABEL_AJUDA}" immediate="true" styleClass=" icon-help bt_cinza" ajax="true" oncomplete="PF('modalAjudaWG').show();"/> 
+          </aghu:linha> 
+          <aghu:linha> 
+            <mec:suggestionBox id="sugFornecedorAF" label="#{messages.LABEL_FORNECEDOR}" title="#{messages.TITLE_GMEP_FORNECEDOR}" suggestionAction="pesquisarFornecedoresPorCgcCpfRazaoSocial" size="20" descricaoInput="cnpjCpf" descricaoLabel="razaoSocial" width="600" readonly="false" controller="#{pesquisaGrupoMaterialEntregaProgramadaController}" value="#{pesquisaGrupoMaterialEntregaProgramadaController.filtro.fornecedor}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.numero}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CGC_CPF}</b> 
+                </f:facet> #{item.cnpjCpf}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_RAZAO_SOCIAL}</b> 
+                </f:facet> #{item.razaoSocial}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>
+        </aghu:panelGeral>  
+        <aghu:acao>  
+          <mec:commandButton block="true" value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{pesquisaGrupoMaterialEntregaProgramadaController.pesquisar}" render="panelDatatable" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{pesquisaGrupoMaterialEntregaProgramadaController.limpar}" profile="clear"/> 
+        </aghu:acao>
+
+          <p:outputPanel id="panelDatatable" rendered="#{pesquisaGrupoMaterialEntregaProgramadaController.listagem ne null and fn:length(pesquisaGrupoMaterialEntregaProgramadaController.listagem) gt 0}" layout="inline"> 
+             <aghu:panelGeral legend="#{messages.TITLE_CONSULTAR_PROGRAMACAO_ENTREGA_GLOBAL_POR_GRUPO_MATERIAL}"> 
+                  <mec:serverDataTable id="tabelaListagem" name="tabelaListagem" list="#{pesquisaGrupoMaterialEntregaProgramadaController.listagem}" scrollable="true"
+                    emptyMessage="#{messages.MENSAGEM_REGISTRO_NAO_LOCALIZADO}" controller="#{pesquisaGrupoMaterialEntregaProgramadaController}"> 
+                    <c:set var="_item" value="#{item}"/>  
+                    <p:column style="width:4%"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink id="redirecionaConsultaPorFornecedores" action="#{pesquisaGrupoMaterialEntregaProgramadaController.redirecionaConsultaPorFornecedores(_item)}" title="#{messages.LABEL_FORNECEDORES}" immediate="true" styleClass=" silk-fornecedores silk-icon" ajax="true"/> 
+                    </p:column>  
+                    <p:column style="width:6%" sortBy="#{_item.gmtCodigo}" sortable="true" id="colCodigo"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.gmtCodigo}" id="colTextoGmtCodigo"/> 
+                    </p:column>  
+                    <p:column style="width:27%" sortBy="#{_item.gmtDescricao}" sortable="true" id="colDescricao"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_GRUPO_MATERIAL}"/> 
+                      </f:facet>  
+						<h:outputText id="colTextoGmtDescricao" title="#{_item.gmtDescricao}"
+							value="#{(_item.gmtDescricao.length() &gt; 40) ? fn:substring(_item.gmtDescricao,0,40) : _item.gmtDescricao}" />
+						<h:outputText value="..."
+							rendered="#{(_item.gmtDescricao.length() &gt; 40)}" />                                            
+                    </p:column>  
+                    <p:column sortBy="#{_item.saldoProgramado}" sortable="true" id="colSaldoProgamado" style="text-align:right;width:12%; !important; #{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.corTotalSaldoProgramado}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_SALDO_PROGRAMADO}" title="#{messages.TITLE_GMEP_SALDO_PROGRAMADO}"/> 
+                      </f:facet>  
+                      <mec:commandLink id="redirecionaItensAfSaldoProgramado" action="#{pesquisaGrupoMaterialEntregaProgramadaController.redirecionaConsultaPorFornecedoresSaldoProgramado(_item)}" immediate="true" style="text-decoration: underline;"> 
+                        <h:outputText value="#{_item.saldoProgramado}" id="colTextoSaldoProgramado"> 
+                          <f:convertNumber pattern="#,##0.00"/> 
+                        </h:outputText> 
+                      </mec:commandLink> 
+                    </p:column>  
+                    <p:column sortBy="#{_item.valorALiberar}" sortable="true" id="colValorLiberar" style="text-align:right; width:12%; !important; #{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.corTotalValorALiberar}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_VALOR_LIBERAR}" title="#{messages.LABEL_GMEP_VALOR_LIBERAR}"/> 
+                      </f:facet>  
+                      <mec:commandLink id="redirecionaItensAfValorLiverar" action="#{pesquisaGrupoMaterialEntregaProgramadaController.redirecionaConsultaPorFornecedoresValorLiberar(_item)}" immediate="true" style="text-decoration: underline;"> 
+                        <h:outputText value="#{_item.valorALiberar}" id="colTextoValorLiberar"> 
+                          <f:convertNumber pattern="#,##0.00"/> 
+                        </h:outputText> 
+                      </mec:commandLink> 
+                    </p:column>  
+                    <p:column sortBy="#{_item.valorLiberado}" sortable="true" id="colValorLiberado" style="text-align:right; width:12%; !important; #{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.corTotalValorLiberado}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_VALOR_LIBERADO}" title="#{messages.LABEL_GMEP_VALOR_LIBERADO}"/> 
+                      </f:facet>  
+                      <mec:commandLink id="redirecionaItensAfValorLiberado" action="#{pesquisaGrupoMaterialEntregaProgramadaController.redirecionaConsultaPorFornecedoresValorLiberado(_item)}" immediate="true" style="text-decoration: underline;"> 
+                        <h:outputText value="#{_item.valorLiberado}" id="colTextoValorLiberado"> 
+                          <f:convertNumber pattern="#,##0.00"/> 
+                        </h:outputText> 
+                      </mec:commandLink> 
+                    </p:column>  
+                    <p:column sortBy="#{_item.valorEmAtraso}" sortable="true" id="colValorAtraso" style="text-align:right; width:12%; !important; #{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.corTotalValorEmAtraso}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_VALOR_ATRASO}" title="#{messages.LABEL_GMEP_VALOR_ATRASO}"/> 
+                      </f:facet>  
+                      <mec:commandLink id="redirecionaItensAfValorAtraso" action="#{pesquisaGrupoMaterialEntregaProgramadaController.redirecionaConsultaPorFornecedoresValorAtraso(_item)}" immediate="true" style="text-decoration: underline;"> 
+                        <h:outputText value="#{_item.valorEmAtraso}" id="colTextoValorAtraso"> 
+                          <f:convertNumber pattern="#,##0.00"/> 
+                        </h:outputText> 
+                      </mec:commandLink> 
+                    </p:column>  
+                    <p:column style="text-align:right; width:12%" sortBy="#{_item.percentualAtraso}" sortable="true" id="colPercentualAtraso"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_PERCENTUAL_ATRASO}" title="#{messages.LABEL_GMEP_PERCENTUAL_ATRASO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.percentualAtraso}" id="colTextoPercentualAtraso"> 
+                        <f:convertNumber pattern="#,##0.00%"/> 
+                      </h:outputText> 
+                    </p:column>  
+					<p:columnGroup type="footer">
+						<p:row>
+						    <p:column/>
+							<p:column/>
+							<p:column footerText="#{messages.LABEL_TOTAL_GERAL}"/>
+						    <p:column style="text-align:right; color: #000000 !important; font-weight: bold !important; #{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.corTotalSaldoProgramado}">
+					            <f:facet name="footer">
+						          <h:outputText id="colTextoTotalSaldoProgramado" value="#{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.totalSaldoProgramado}" title="#{messages.LABEL_GMPE_TOTAL_SALDO_PROGRAMADO}"> 
+						            <f:convertNumber pattern="#,###,##0.00"/> 
+						          </h:outputText> 
+					            </f:facet>
+					        </p:column>
+						    <p:column style="text-align:right; color: #000000 !important; font-weight: bold !important; #{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.corTotalValorALiberar}">
+					           	<f:facet name="footer">
+						          <h:outputText id="colTextoTotalValorLiberar" value="#{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.totalValorALiberar}" title="#{messages.LABEL_GMPE_TOTAL_VALOR_LIBERAR}"> 
+						            <f:convertNumber pattern="#,###,##0.00"/> 
+						          </h:outputText>
+					            </f:facet>
+					        </p:column>	    
+					   	    <p:column style="text-align:right; color: #000000 !important; font-weight: bold !important; #{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.corTotalValorLiberado}">
+					            <f:facet name="footer">
+								  <h:outputText id="colTextoTotalValorLiberado" value="#{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.totalValorLiberado}" title="#{messages.LABEL_GMPE_TOTAL_VALOR_LIBERADO}"> 
+								    <f:convertNumber pattern="#,###,##0.00"/> 
+								  </h:outputText> 
+					            </f:facet>
+					        </p:column>	
+					   	    <p:column style="text-align:right; color: #000000 !important; font-weight: bold !important; #{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.corTotalValorEmAtraso}">
+					            <f:facet name="footer">
+						         <h:outputText id="colTextoTotalValorAtraso" value="#{pesquisaGrupoMaterialEntregaProgramadaController.totalizador.totalValorEmAtraso}" title="#{messages.LABEL_GMPE_TOTAL_VALOR_ATRASO}"> 
+						           <f:convertNumber pattern="#,###,##0.00"/> 
+						         </h:outputText>
+					            </f:facet>
+					        </p:column>	
+					  		<p:column/>
+						</p:row>
+					 </p:columnGroup>
+                  </mec:serverDataTable>                
+              </aghu:panelGeral>
+          </p:outputPanel> 
+
+        <p:outputPanel id="panelModalAjuda" layout="inline"> 
+          <p:dialog id="modalAjuda" width="400" height="400" modal="true" resizable="false" widgetVar="modalAjudaWG" closable="true"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_AJUDA}"/> 
+              </h:panelGroup> 
+            </f:facet>  
+            <p:outputPanel layout="inline"> 
+              <b>#{messages.TITLE_GMEP_PERIODO_ENTREGA}</b>  
+              <br clear="none"/> #{messages.MENSAGEM_GMEP_PERIODO_ENTREGA} 
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <b>#{messages.TITLE_SALDO_PROGRAMADO}</b>  
+              <br clear="none"/> #{messages.MENSAGEM_SALDO_PROGRAMADO} 
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <b>#{messages.TITLE_VALOR_LIBERAR}</b>  
+              <br clear="none"/>  
+              <h:outputFormat value="#{messages.MENSAGEM_VALOR_LIBERAR}"> 
+                <f:param value="#{pesquisaGrupoMaterialEntregaProgramadaController.dataLimite}"/>  
+                <f:param value="#{pesquisaGrupoMaterialEntregaProgramadaController.dataInicialLote}"/>  
+                <f:param value="#{pesquisaGrupoMaterialEntregaProgramadaController.dataFinalLote}"/> 
+              </h:outputFormat>  
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <b>#{messages.TITLE_VALOR_LIBERADO}</b>  
+              <br clear="none"/> #{messages.MENSAGEM_VALOR_LIBERADO} 
+              <br clear="none"/>  
+              <br clear="none"/>  
+              <b>#{messages.TITLE_VALOR_ATRASO}</b>  
+              <br clear="none"/> #{messages.MENSAGEM_VALOR_ATRASO}
+            </p:outputPanel> 
+          </p:dialog> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

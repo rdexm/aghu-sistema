@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PESQ_TOPOGRAFIAS_INFECCAO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>  
+      <style xml:space="preserve">
+            .checked {
+                background-image: url('../../../resources/img/icons/checked.png') !important;
+                background-repeat: no-repeat;
+                background-position: center;
+            }
+        </style> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{topografiaInfeccaoPesquisarController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{topografiaInfeccaoPesquisarController}"/>  
+      <h:form prependId="false" id="formTopografiaInfeccaoPesquisar"> 
+        <p:outputPanel id="panelForm" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PESQ_TOPOGRAFIAS_INFECCAO}"> 
+            <aghu:linha> 
+              <mec:inputText id="descricao" label="#{messages.LABEL_TOPO_INFE_DESCRICAO}" title="#{messages.TITLE_TOPO_INFE_DESCRICAO}" value="#{topografiaInfeccaoPesquisarController.descricao}" size="60" maxlength="60" style="text-transform:uppercase"/>  
+              <mec:selectOneMenu id="situacao" label="#{messages.LABEL_TOPO_INFE_SITUACAO}" value="#{topografiaInfeccaoPesquisarController.situacao}" enum="DominioSituacao"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:linha> 
+            <aghu:acao> 
+              <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" disabled="#{not ( mf:hasPermission(securityController,'superTopografiaInfeccao,pesquisar') or          mf:hasPermission(securityController,'manterTopografiaInfeccao,pesquisar') or         mf:hasPermission(securityController,'consultarTopografiaInfeccao,pesquisar') )}" action="#{topografiaInfeccaoPesquisarController.pesquisar}" profile="search"/>  
+              <mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}" action="#{topografiaInfeccaoPesquisarController.limpar}" profile="clear" ajax="true" render="formTopografiaInfeccaoPesquisar" process="@this"/>  
+              <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" action="#{topografiaInfeccaoPesquisarController.incluir}" rendered="#{topografiaInfeccaoPesquisarController.dataModel.pesquisaAtiva}" block="true" disabled="#{not mf:hasPermission(securityController,'superTopografiaInfeccao,criar')}" profile="add"> 
+                <f:setPropertyActionListener target="#{topografiaInfeccaoCadastroController.voltarPara}" value="topografiaInfeccaoPesquisar" for="command"/> 
+              </mec:commandButton> 
+            </aghu:acao> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaResultado" rendered="#{topografiaInfeccaoPesquisarController.dataModel.pesquisaAtiva}" controller="#{topografiaInfeccaoPesquisarController}"> 
+              <c:set var="_item" value="#{item}"/>  
+              <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                <mec:commandLink id="tabelaResultado_link_editar" profile="edit" title="editar" action="#{topografiaInfeccaoPesquisarController.editar}"> 
+                  <f:setPropertyActionListener target="#{topografiaInfeccaoCadastroController.vo}" value="#{_item}" for="command"/>  
+                  <f:setPropertyActionListener target="#{topografiaInfeccaoCadastroController.voltarPara}" value="topografiaInfeccaoPesquisar" for="command"/>  
+                  <f:setPropertyActionListener for="command" target="#{topografiaInfeccaoPesquisarController.itemSelecionado}" value="#{_item}"/> 
+                </mec:commandLink>  
+                <mec:commandLink id="tabelaResultado_link_remover" profile="delete" title="excluir" action="#{topografiaInfeccaoPesquisarController.excluir}"> 
+                  <f:setPropertyActionListener for="command" target="#{topografiaInfeccaoPesquisarController.itemSelecionado}" value="#{_item}"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_TOPO_INFE_DESCRICAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.descricao}"/> 
+              </p:column>  
+              <p:column styleClass="#{_item.situacao.isAtivo() == true ? 'checked' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_TOPO_INFE_ATIVO}"/> 
+                </f:facet> 
+              </p:column>  
+              <p:column styleClass="#{_item.supervisao == true  ? 'checked' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_TOPO_INFE_SUPERVISAO}"/> 
+                </f:facet> 
+              </p:column>  
+              <p:column styleClass="#{_item.pacienteInfectado == true  ? 'checked' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_TOPO_INFE_INFECTADO}"/> 
+                </f:facet> 
+              </p:column>  
+              <p:column styleClass="#{_item.contaInfecadoMensal == true  ? 'checked' : ''}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_TOPO_INFE_ESTATISTICA}"/> 
+                </f:facet> 
+              </p:column>  
+              <p:column style="white-space:nowrap;width:50px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_TOPO_INFE_CRIADO_ALTERADO_EM}" styleClass="auto-adjust"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.criadoAlteradoEm}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                </h:outputText> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

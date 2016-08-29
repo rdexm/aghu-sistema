@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+  	<aghu:panelGeral id="aba3" style="height:100%;">
+    <p:accordionPanel  height="100%" width="100%"  prependId="false"> 
+      <p:tab closable="false" title="#{messages.ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_ABA3}#{atenderPacientesAgendadosController.tipoCorrente eq 'E'?' (Corrente)':''}:"> 
+        <aghu:linha> 
+          <mec:inputTextArea cols="180" rows="11" required="true" readonly="#{atenderPacientesAgendadosController.readonlyEvolucao or not atenderPacientesAgendadosController.gravaEvolucao}" maxlength="12000" title="#{messages.TITLE_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_EVOLUCAO}" value="#{atenderPacientesAgendadosController.textoEvolucao}" id="texto_evolucao"/> 
+        </aghu:linha>  
+        <aghu:acao> 
+          <mec:commandButton process="@this, texto_evolucao" action="#{atenderPacientesAgendadosController.salvarEvolucao}" value="#{messages.LABEL_GRAVAR}" disabled="#{not atenderPacientesAgendadosController.gravaEvolucao or not mf:hasPermission(securityController,'realizarEvolucaoAmbulatorio,salvar')}" rendered="#{not atenderPacientesAgendadosController.readonlyEvolucao and atenderPacientesAgendadosController.tipoCorrente ne 'A'}" profile="ok" ajax="true" render="aba2,aba3"/>  
+          <mec:commandButton value="#{messages.LABEL_GRAVAR}" oncomplete="PF('modalExcluirAnamneseWG').show();" disabled="#{not atenderPacientesAgendadosController.gravaEvolucao or not mf:hasPermission(securityController,'realizarEvolucaoAmbulatorio,salvar')}" rendered="#{not atenderPacientesAgendadosController.readonlyEvolucao and atenderPacientesAgendadosController.tipoCorrente eq 'A'}" profile="ok" ajax="true" process="@this"/>  
+          <mec:commandButton action="#{atenderPacientesAgendadosController.solicitarExames}" rendered="#{atenderPacientesAgendadosController.verificarModuloExameAtivo() and (mf:hasPermission(securityController,'/exames/solicitacao/solicitacaoExameList.xhtml,render') or mf:hasPermission(securityController,'/exames/solicitacao/solicitacaoExameCRUD.xhtml,render'))}" disabled="#{not atenderPacientesAgendadosController.gravaSolicitacaoExame}" value="#{messages.LABEL_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_SOLICITAR_EXAMES}" ajax="true" process="@this" styleClass="bt_cinza">
+           		<f:setPropertyActionListener target="#{solicitacaoExameController.atendimentoSeq}" value="#{atenderPacientesAgendadosController.atendimento.seq}" for="command"/>  
+	            <f:setPropertyActionListener target="#{solicitacaoExameController.paginaChamadora}" value="ambulatorio-atenderPacientesAgendados" for="command"/>  
+	            <f:setPropertyActionListener target="#{solicitacaoExameController.origemAmbulatorio}" value="#{true}" for="command"/>
+	            <f:setPropertyActionListener target="#{solicitacaoExameController.forcarGeracaoPendente}" value="#{true}" for="command"/>
+          </mec:commandButton> 
+          
+          <mec:commandButton id="bt_ubs_exames_aghweb_aba3"
+				styleClass="bt_secund"
+				value="#{messages.LABEL_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_SOLICITAR_EXAMES}" 
+				rendered="#{atenderPacientesAgendadosController.isHcpa and !atenderPacientesAgendadosController.verificarModuloExameAtivo() and atenderPacientesAgendadosController.isUbs}"
+				onclick="ubs_exames_aghweb('#{atenderPacientesAgendadosController.urlBaseWebForms}', '#{atenderPacientesAgendadosController.consultaSelecionada.paciente.prontuario}', '#{atenderPacientesAgendadosController.consultaSelecionada.numero}', 
+													'#{pesquisarPacientesAgendadosController.obterTokenUsuarioLogado()}', '#{atenderPacientesAgendadosController.banco}'); return false;"
+				disabled="#{atenderPacientesAgendadosController.validarUrlBaseWebFormsBanco()}" />	
+           
+          <mec:commandButton value="#{messages.LABEL_EXCLUIR}" onclick="PF('modalConfirmaExclEvolucaoWG').show();" rendered="#{not atenderPacientesAgendadosController.readonlyEvolucao and atenderPacientesAgendadosController.tipoCorrente eq 'E'}" profile="cancel" ajax="true" process="@this"/>  
+          <mec:commandButton value="#{messages.LABEL_PRESCREVER}" action="#{atenderPacientesAgendadosController.efetuarPrescricaoAmbulatorial}" disabled="#{!atenderPacientesAgendadosController.prescricaoAmbulatorialAtiva}" ajax="true" process="@this" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{verificarPrescricaoMedicaController.atendimentoSeq}" value="#{atenderPacientesAgendadosController.atendimento.seq}" for="command"/>  
+            <f:setPropertyActionListener target="#{verificarPrescricaoMedicaController.voltarPara}" value="ambulatorio-atenderPacientesAgendados" for="command"/> 
+          </mec:commandButton>
+          <mec:commandButton value="#{messages.LABEL_SOLICITAR_INTERNACAO}" action="#{atenderPacientesAgendadosController.solicitarInternacao}" 
+		          ajax="true" styleClass="bt_secund"> 
+		     <f:setPropertyActionListener target="#{solicitacaoInternacaoController.aipPacienteCodigo}" value="#{atenderPacientesAgendadosController.pacienteInternacao.codigo}" for="command"/>  
+		    <f:setPropertyActionListener target="#{solicitacaoInternacaoController.origemChamada}" value="atenderPacientesAgendados" for="command"/> 
+	       </mec:commandButton> 
+        </aghu:acao>
+      </p:tab>  
+      <p:tab closable="false" title="#{messages.LABEL_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_NOTA_ADICIONAL}:">         
+        <aghu:linha> 
+          <p:outputPanel id="texto_notaAdicional2_output" layout="inline"> 
+            <mec:inputTextArea cols="150" rows="4" required="true" readonly="#{atenderPacientesAgendadosController.tipoCorrente ne 'E'}" maxlength="4000" title="#{messages.TITLE_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_NOTA_ADICIONAL}" value="#{atenderPacientesAgendadosController.descrNotaAdicionalEvolucao}" id="texto_notaAdicional2"/> 
+          </p:outputPanel>  
+          <p:outputPanel layout="block" style="float-left;" id="bt_insere_ev_adc"> 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <mec:commandButton disabled="#{atenderPacientesAgendadosController.tipoCorrente ne 'E'}" action="#{atenderPacientesAgendadosController.inserirItemAdicionalEvolucao}" process="@this,texto_notaAdicional2" value="#{messages.LABEL_GRAVAR}" profile="ok" ajax="true" render="texto_notaAdicional2,bt_insere_ev_adc,listAba3"/>  
+            <mec:commandButton style="float:none !important" action="#{atenderPacientesAgendadosController.limparNotaAdicionalEvolucao}" rendered="#{not atenderPacientesAgendadosController.modoInsercaoItemEvolucao and atenderPacientesAgendadosController.tipoCorrente eq 'E'}" value="#{messages.LABEL_CANCELAR}" profile="cancel" ajax="true" render="texto_notaAdicional2,bt_insere_ev_adc" process="@this"/> 
+          </p:outputPanel> 
+        </aghu:linha> 
+        <aghu:linha id="listAba3" styleClass="tabela-hachurada"> 
+          <p:outputPanel layout="block" style="width: 100%; height:155px;overflow-y:scroll;"> 
+            <mec:serverDataTable style="margin: 0px !important;" id="listNotasAdicionais2" list="#{atenderPacientesAgendadosController.notasAdicionaisEvolucaoList}" scrollable="true" scrollHeight="auto"> 
+              <c:set var="item" value="#{item}"/>  
+              <p:column width="40px" rendered="#{atenderPacientesAgendadosController.tipoCorrente eq 'E'}"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                </f:facet>  
+                <mec:commandLink style="vertical-align:middle;" action="#{atenderPacientesAgendadosController.editarItemAdicionalEvolucao(item)}" title="#{messages.LABEL_EDITAR}" rendered="#{item.pendente eq 'P' or (item.servidor.id eq atenderPacientesAgendadosController.servidorLogadoSemFimVinculo.id)}" profile="edit" ajax="true" render="texto_notaAdicional2,bt_insere_ev_adc" process="@this"/>  
+                <mec:commandLink style="vertical-align:middle;" oncomplete="PF('modalConfirmaExclNotaEvolucaoWG').show();" rendered="#{item.pendente eq 'P' or (item.servidor.id eq atenderPacientesAgendadosController.servidorLogadoSemFimVinculo.id)}" title="#{messages.LABEL_EXCLUIR}" styleClass="silk-icon silk-delete" ajax="true" process="@this"> 
+                  <f:setPropertyActionListener target="#{atenderPacientesAgendadosController.notaAdicionalEvolucoes}" value="#{item}" for="command"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_NOTA_ADICIONAL}"/> 
+                </f:facet>  
+                <h:outputText id="descricaoNEV" value="#{item.descricao}"/>  
+                <p:tooltip for="descricaoNEV">#{messages.TITLE_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_STATUS}: #{row.pendente.descricao} 
+                  <br clear="none"/> #{messages.TITLE_ATENDER_PACIENTES_AGENDADOS_ATENDIMENTO_CRIADO}: #{row.servidor.pessoaFisica.nome}
+                </p:tooltip> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </aghu:linha>
+      </p:tab> 
+    </p:accordionPanel>  
+    </aghu:panelGeral>
+	<p:dialog width="450" height="200" modal="true" resizable="false" widgetVar="modalExcluirAnamneseWG">
+		<f:facet name="header">
+			<h:outputText value="#{messages.LABEL_EXCLUIR_ANAMNESE}" />
+		</f:facet> #{messages.TITLE_EXCLUIR_ANAMNESE} 
+	     	<br clear="none" /> #{messages.TITLE_CONFIRMA_EXCLUIR_ANAMNESE} 
+	     	<br clear="none" />
+		<br clear="none" />
+		<br clear="none" />
+		<aghu:acao>
+			<mec:commandButton 
+				value="#{messages.LABEL_SIM}" oncomplete="PF('modalExcluirAnamneseWG').hide();"
+				action="#{atenderPacientesAgendadosController.excluirAnamneseSalvarEvolucao}"
+				process="@this, texto_evolucao" profile="ok" ajax="true" render="aba2,aba3"/>
+			<mec:commandButton value="#{messages.LABEL_NAO}"
+				onclick="PF('modalExcluirAnamneseWG').hide();" profile="cancel"
+				ajax="true" process="@this" />
+		</aghu:acao>
+	</p:dialog>
+    <p:dialog id="modalConfirmaExclEvolucao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmaExclEvolucaoWG"> 
+      <f:facet name="header"> 
+        <h:outputText value="#{messages.LABEL_EXCLUIR_EVOLUCAO}"/> 
+      </f:facet> #{messages.LABEL_EXCLUIR_CONFIRMA} #{messages.LABEL_EXCLUIR_EVOLUCAO}? 
+      <br clear="none"/>  
+      <br clear="none"/>  
+      <br clear="none"/>  
+      <h:panelGroup> 
+        <mec:commandButton action="#{atenderPacientesAgendadosController.excluirEvolucao}" oncomplete="PF('modalConfirmaExclEvolucaoWG').hide();" value="#{messages.LABEL_SIM}" profile="ok" ajax="true" render="aba2,aba3" process="@this"/>  
+        <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmaExclEvolucaoWG').hide();" profile="cancel" ajax="true" process="@this"/> 
+      </h:panelGroup> 
+    </p:dialog>  
+    <p:dialog id="modalConfirmaExclNotaEvolucao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmaExclNotaEvolucaoWG"> 
+      <f:facet name="header"> 
+        <h:outputText value="#{messages.LABEL_EXCLUIR_NOTA_ADICIONAL}"/> 
+      </f:facet> #{messages.LABEL_EXCLUIR_CONFIRMA} #{messages.LABEL_EXCLUIR_NOTA_ADICIONAL}? 
+      <br clear="none"/>  
+      <br clear="none"/>  
+      <br clear="none"/>  
+      <h:panelGroup> 
+        <mec:commandButton action="#{atenderPacientesAgendadosController.excluirItemAdicionalEvolucao}" oncomplete="PF('modalConfirmaExclNotaEvolucaoWG').hide();" value="#{messages.LABEL_SIM}" profile="ok" ajax="true" render="texto_notaAdicional2_output,bt_insere_ev_adc,listNotasAdicionais2" process="@this"/>  
+        <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmaExclNotaEvolucaoWG').hide();" profile="cancel" ajax="true" process="@this"/> 
+      </h:panelGroup> 
+    </p:dialog> 
+  </ui:composition> 
+</html>

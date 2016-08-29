@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_CONVENIO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{conveniosPacienteController.preparaInicioConvenioPaciente}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{conveniosPacienteController}"
+			ignoreEnter="true" />
+		<style xml:space="preserve">
+		.marcado {
+			background-color: #D9D9F3;
+		}
+		</style>
+		<h:form prependId="false" id="conveniosPacienteForm">
+			<aghu:panelGeral id="ffdl_prontuario" legend="Paciente">
+				<p:outputPanel id="cabecalho" layout="inline">
+					<aghu:linha>
+						<mec:inputText readonly="true"
+							label="#{messages.LABEL_PRONTUARIO}" maxlength="9"
+							style="#{conveniosPacienteController.getStyleProntuario()}"
+							value="#{conveniosPacienteController.paciente.prontuario}"
+							size="10" id="prontuario" />
+						<mec:inputText label="#{messages.LABEL_CODIGO}" size="10"
+							maxlength="9" readonly="true"
+							value="#{conveniosPacienteController.paciente.codigo}"
+							id="codigo" />
+						<mec:inputText readonly="true" size="100"
+							label="#{messages.LABEL_NOME}" required="true"
+							value="#{conveniosPacienteController.paciente.nome}" id="nome" />
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputText readonly="true" label="#{messages.LABEL_NOME_MAE}"
+							size="50" maxlength="50" required="true"
+							value="#{conveniosPacienteController.paciente.nomeMae}"
+							id="nome_mae" />
+						<mec:inputTextData readonly="true"
+							label="#{messages.LABEL_DATA_NASCIMENTO}" size="10"
+							maxlength="10" required="true"
+							value="#{conveniosPacienteController.paciente.dtNascimento}"
+							id="data_nasc" tipo="data" />
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			<aghu:panelGeral id="conveniosPacienteTable"
+				legend="#{messages.LEGEND_FIELDSET_CONV}">
+				<p:outputPanel layout="inline">
+					<aghu:linha>
+						<h:outputText value="#{messages.NENHUM_CONVENIO_ENCONTRADO}"
+							rendered="#{empty conveniosPacienteController.planosPaciente}" />
+						<mec:serverDataTable
+							rendered="#{not empty conveniosPacienteController.planosPaciente}"
+							list="#{conveniosPacienteController.planosPaciente}"
+							scrollable="true">
+							<c:set var="_convenioPaciente" value="#{item}" />
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ACAO}" />
+								</f:facet>
+								<mec:commandLink title="#{messages.LABEL_EDITAR}"
+									action="#{conveniosPacienteController.editarPlanoPaciente(_convenioPaciente)}"
+									profile="edit" ajax="true"
+									disabled="#{not mf:hasPermission(securityController, 'paciente,alterar') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}" />
+								<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+									action="#{conveniosPacienteController.removerPlanoPaciente(_convenioPaciente)}"
+									profile="delete"
+									disabled="#{not mf:hasPermission(securityController, 'paciente,alterar') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_CONVENIO}" />
+								</f:facet>
+								<h:outputText
+									value="#{_convenioPaciente.convenio.convenioSaude.codigo} - #{_convenioPaciente.convenio.convenioSaude.descricao}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_PLANO}" />
+								</f:facet>
+								<h:outputText
+									value="#{_convenioPaciente.convenio.id.seq} - #{_convenioPaciente.convenio.descricao}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_MATRICULA}" />
+								</f:facet>
+								<h:outputText value="#{_convenioPaciente.matricula}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_CRIADO_EM}" />
+								</f:facet>
+								<h:outputText value="#{_convenioPaciente.criadoEm}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ENCERRADO_EM}" />
+								</f:facet>
+								<h:outputText value="#{_convenioPaciente.encerradoEm}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ATIVO}" />
+								</f:facet>
+								<h:outputText value="#{_convenioPaciente.situacao.descricao}" />
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:linha>
+				</p:outputPanel>
+				<aghu:linha>
+					<mec:commandButton value="Adicionar" id="bt_preparaplano"
+						disabled="#{not mf:hasPermission(securityController,'paciente,alterar') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}"
+						action="#{conveniosPacienteController.prepararAdicionarPlanoPaciente}"
+						profile="add" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton block="true" value="#{messages.LABEL_GRAVAR}"
+					id="bt_confirmar"
+					disabled="#{not mf:hasPermission(securityController, 'paciente,alterar') or mf:hasPermission(securityController,'permissaoDesabilitar,disabled')}"
+					action="#{conveniosPacienteController.confirmar}" profile="ok" />
+				<mec:commandButton value="#{messages.LABEL_CANCELAR}"
+					action="#{conveniosPacienteController.cancelar}" immediate="true"
+					profile="cancel" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

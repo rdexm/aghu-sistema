@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_CADASTRO_NECESSIDADES}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaNecessidadesPaginatorController}"/>  
+      <h:form prependId="false" id="formProfissionaisAtuantes"> 
+        <aghu:panelGeral legend="#{messages.TITLE_CADASTRO_NECESSIDADES_PESQUISA}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="codigo" value="#{pesquisaNecessidadesPaginatorController.codigoNecessidade}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_NECESSIDADE}" maxlength="3" size="6"/>  
+            <mec:inputText label="#{messages.LABEL_DESC_NECESSIDADE_CIRURGICA}" size="31" maxlength="120" title="#{messages.TITLE_DESC_NECESSIDADE_CIRURGICA}" value="#{pesquisaNecessidadesPaginatorController.descricaoNecessidade}" style="text-transform:uppercase" id="descricao"/>  
+            <mec:suggestionBox id="sbUnidadeExecutora" label="#{messages.LABEL_UNIDADE_EXECUTORA_EXAMES_NECESS}" title="#{messages.TITLE_UNIDADE_EXECUTORA_EXAMES_NECESS}" suggestionAction="obterUnidadeExecutora" descricaoInput="seq" descricaoLabel="descricao" maxlength="30" block="true" width="500" controller="#{pesquisaNecessidadesPaginatorController}" value="#{pesquisaNecessidadesPaginatorController.unidadeExecutora}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu id="ativoInativo" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_NECESSIDADE}" value="#{pesquisaNecessidadesPaginatorController.situacaoNecessidade}"/>  
+            <mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_REQUER_DESCRICAO}" id="requerDescricao" value="#{pesquisaNecessidadesPaginatorController.requerDescricao}" title="#{messages.TITLE_REQUER_DESCRICAO}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisaNecessidadesPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{pesquisaNecessidadesPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" rendered="#{pesquisaNecessidadesPaginatorController.exibirBotaoNovo and mf:hasPermission(securityController,'necessidadeCirurgica,executar') }" action="#{pesquisaNecessidadesPaginatorController.iniciarInclusao}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formListaNecessidades"> 
+        <mec:serverDataTable dataModel="dataModel" value="#{pesquisaNecessidadesPaginatorController}" rendered="#{pesquisaNecessidadesPaginatorController.dataModel.pesquisaAtiva}" id="tabelaNecessidades" controller="#{pesquisaNecessidadesPaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column rendered="#{mf:hasPermission(securityController,'necessidadeCirurgica,executar')}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink action="#{pesquisaNecessidadesPaginatorController.editar(_item)}" title="#{messages.LABEL_EDITAR}" profile="edit"/>  
+            <mec:commandLink id="excluirItem" title="#{messages.LABEL_EXCLUIR}" ignoreDupResponses="true" oncomplete="PF('modalConfirmacaoExclusaoWG').show();;" styleClass="silk-icon silk-delete" ajax="true" process="@this"> 
+              <f:setPropertyActionListener target="#{pesquisaNecessidadesPaginatorController.itemExclusao}" value="#{_item}" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.seq}" style="text-transform:uppercase"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESC_NECESSIDADE_CIRURGICA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.descricao}" style="text-transform:uppercase"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_UNIDADE_EXECUTORA}"/> 
+            </f:facet>  
+            <h:outputText rendered="#{not empty _item.aghUnidadesFuncionais}" value="#{_item.aghUnidadesFuncionais.seq} - #{_item.aghUnidadesFuncionais.descricao}" style="text-transform:uppercase"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.situacao.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_REQUER_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.indExigeDescSolic ? messages.LABEL_SIM : messages.LABEL_NAO}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO_NECESSIDADE}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <mec:commandButton id="excluir" value="#{messages.LABEL_SIM}" action="#{pesquisaNecessidadesPaginatorController.excluir}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" id="bt_cancelarExcluir" profile="cancel" ajax="true"> 
+              <f:setPropertyActionListener target="#{pesquisaNecessidadesPaginatorController.itemExclusao}" value="#{null}" for="command"/> 
+            </mec:commandButton> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

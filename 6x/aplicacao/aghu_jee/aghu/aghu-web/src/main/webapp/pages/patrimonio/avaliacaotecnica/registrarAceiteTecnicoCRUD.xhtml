@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_REGISTRAR_ACEITE_TECNICO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{registrarAceiteTecnicoController.iniciar}"/>
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+	 <mec:pageConfig controller="#{registrarAceiteTecnicoController}" ignoreEnter="true" />
+		  <h:form prependId="false" id="formGeral">
+		  <script type="text/javascript" xml:space="preserve">
+			 jQuery(document).ready(function() {	
+				 jQuery('label[id^=statusAceito]').css("display", "none");
+					function gerenciarPercetualValor(){
+						var txPercetual1 = jq('#inputPercentual:inputPercentual:inputId_input')
+						var txValor1 = jq('#inputValor:inputValor:inputId_input');
+						if (txPercetual1.val() != ""){
+							if($.isNumeric(jq('#inputPercentual:inputPercentual:inputId_input').val())){
+								txValor1.prop("disabled",true);
+								txValor1.removeClass("ui-state-disabled");
+							}
+						}
+						else{
+							txValor1.val("");
+							txValor1.prop("disabled",false);
+							txValor1.addClass("ui-state-disabled");
+						}						
+					}
+					
+					jq('#inputPercentual:inputPercentual:inputId_input').keypress(function() {
+						gerenciarPercetualValor();
+					});	
+					jq('#inputPercentual:inputPercentual:inputId_input').keyup(function() {
+						gerenciarPercetualValor();
+					});	
+					
+					function gerenciarValorPercetual(){
+						var txPercetual2 = jq('#inputPercentual:inputPercentual:inputId_input')
+						var txValor2 = jq('#inputValor:inputValor:inputId_input');
+						if(txValor2.val() != ""){
+							if($.isNumeric(jq('#inputValor:inputValor:inputId_input').val())){
+								txPercetual2.prop("disabled",true);
+								txPercetual2.removeClass("ui-state-disabled");
+							}
+						}
+						else{
+							txPercetual2.val("");
+							txPercetual2.prop("disabled",false);
+							txPercetual2.addClass("ui-state-disabled");
+						}
+					}	
+					
+					jq('#inputValor:inputValor:inputId_input').keypress(function() {
+						gerenciarValorPercetual();
+					});	
+					jq('#inputValor:inputValor:inputId_input').keyup(function() {
+						gerenciarValorPercetual();
+					});	
+				});
+			</script>
+			<aghu:panelGeral legend="#{messages.TITLE_REGISTRAR_ACEITE_TECNICO}">
+				<aghu:linha>
+					<mec:suggestionBox id="sgbRecItem" required="#{param['validarRequiredGravar'] or param['validarRequiredFinalizarCertificar']}" 
+						label="#{messages.LABEL_RECEBIMENTO_ITEM}" requiredFake="#{!param['validarRequiredGravar']}"
+						title="#{messages.TITLE_RECEBIMENTO_ITEM}"
+						descricaoInput="nrpSeq" descricaoLabel="nroItem"  
+						suggestionAction="listarItemRecebimento" var="recebimento"
+						posSelectionAction="carregarConsultasPosteriores"
+						posDeleteAction="limparCampos" size="9" render="formGeral"
+						itemValue="#{recebimento}" maxlength="9" width="350px"
+						descricaoLimite="50" cache="false" readonly="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+						controller="#{registrarAceiteTecnicoController}"
+						value="#{registrarAceiteTecnicoController.avaliacaoTecnica.itemRecebProvisorio}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_RECEBIMENTO}</b>
+							</f:facet> 
+							#{recebimento.nrpSeq}
+	              	    </p:column>
+						<p:column style="max-width: 100px; min-width:99px; overflow: hidden;">
+							<f:facet name="header">
+								<b>#{messages.LABEL_ITEM}</b>
+							</f:facet> 
+							#{recebimento.nroItem}
+	                    </p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+				<br clear="none" />
+				<br clear="none" />
+			   	<aghu:linha>
+					<aghu:panelGeral legend="#{messages.TITLE_BEM_PERMANENTE}">
+							<p:dataTable id="table_bem_permanente" var="item"
+										 rowKey="#{item.pbpSeq}" scrollable="true" scrollHeight="150" 
+										 selection="#{registrarAceiteTecnicoController.itensDevolucaoSelecionados}"
+										 emptyMessage="Nenhum registro encontrado!"
+										 value="#{registrarAceiteTecnicoController.devBemPermanDataModel}">
+								<p:column selectionMode="multiple"
+										style="width:5%; text-align: center !important; vertical-align: center !important; " />	
+								<p:column style="text-align: left;">
+									<f:facet name="header">
+										<h:outputText id="lbl_detalhamento" value="#{messages.LABEL_DETALHAMENTO}" />
+									</f:facet>
+									<h:outputText value="#{item.pbpDetalhamento}" rendered="#{(fn:length(item.pbpDetalhamento) le 100)}"/>
+									<h:outputText value="#{fn:substring(item.pbpDetalhamento,0,97)}..." rendered="#{(fn:length(_examesPendentes.situacaoCodigoDescricao) gt 100)}"/>  
+									<p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{(fn:length(item.pbpDetalhamento) gt 100)}"> 
+						              <h:outputText value="#{item.pbpDetalhamento}" />
+						            </p:tooltip>
+								</p:column>
+								<p:column style="text-align: left;">
+									<f:facet name="header">
+										<h:outputText id="lbl_nroPatrimonio" value="#{messages.LABEL_NRO_PATRIMONIO}" title="#{messages.TITLE_NRO_PATRIMONIO}" />
+									</f:facet>
+									<h:outputText value="#{item.pbpNrBem}" />
+								</p:column>
+								<p:column style="text-align: left;">
+									<f:facet name="header">
+										<h:outputText id="lbl_nroSerie" value="#{messages.LABEL_NRO_SERIE}" title="#{messages.TITLE_NRO_SERIE}" /> 
+									</f:facet>
+									<h:outputText value="#{item.pbpNrSerie}" />
+								</p:column>
+							</p:dataTable>
+					  </aghu:panelGeral>
+				  </aghu:linha>
+				  <br clear="none" />
+				  <aghu:linha>
+					<aghu:panelGeral legend="#{messages.TITLE_STATUS_ACEITE}" style="width:150px; height:70px; float:left;">
+						<mec:selectOneRadio id="statusAceito" enum="DominioAceiteTecnico"  posicaoLabel="acima" showLabel="false"
+							 required="#{param['validarRequiredFinalizarCertificar']}" label="#{messages.TITLE_STATUS_ACEITE}"
+							 readonly="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+							 value="#{registrarAceiteTecnicoController.avaliacaoTecnica.indStatus}" >
+							 <p:ajax event="change" update="@(#panelCampos1) @(#panelCampos2) @(#marcaModeloPanel)" process="@this" />
+						 </mec:selectOneRadio> 
+					</aghu:panelGeral>
+					<h:panelGroup id="panelCampos1">
+						<mec:inputNumero id="vidaUtil" size="6" maxlength="3" label="#{messages.LABEL_VIDA_UTIL}" required="#{registrarAceiteTecnicoController.avaliacaoTecnica.indStatus.toString() eq 'A' and !param['validarRequiredAdicionar'] and !param['validarEditar'] and !param['validarRequiredGravar']}" 
+										 readonly="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+										 title="#{messages.HIT_VIDA_UTIL}" value="#{registrarAceiteTecnicoController.avaliacaoTecnica.vidaUtil}"   />
+										 
+						<mec:inputTextData label="#{messages.LABEL_DATA_INICIO_GARANTIA}" tipo="data" title="#{messages.HIT_DATA_INICIO_GARANTIA}"
+								readonly="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+								required="#{registrarAceiteTecnicoController.avaliacaoTecnica.indStatus.toString() eq 'A' and !param['validarRequiredAdicionar'] and !param['validarEditar'] and !param['validarRequiredGravar']}"
+								size="10" maxlength="10" value="#{registrarAceiteTecnicoController.avaliacaoTecnica.dataInicioGarantia}" id="dtInicio"  />
+								
+					   	<mec:inputNumero id="tempoGarantia" size="6" maxlength="3" label="#{messages.LABEL_TEMPO_GARANTIA}" 
+					   			 readonly="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+								 required="#{registrarAceiteTecnicoController.avaliacaoTecnica.indStatus.toString() eq 'A' and !param['validarRequiredAdicionar'] and !param['validarEditar'] and !param['validarRequiredGravar']}"
+								 value="#{registrarAceiteTecnicoController.avaliacaoTecnica.tempoGarantia}"  title="#{messages.HIT_TEMPO_GARANTIA}"  />
+					</h:panelGroup>
+				  </aghu:linha>
+				  <br clear="none" />
+				  <br clear="none" />
+				  <aghu:linha>
+					 <h:panelGroup id="marcaModeloPanel"> 
+						<mec:suggestionBox id="sgbMarca" label="#{messages.LABEL_MARCA}" descricaoInput="codigo" 
+							required="#{registrarAceiteTecnicoController.avaliacaoTecnica.indStatus.toString() eq 'A' and !param['validarRequiredAdicionar'] and !param['validarEditar'] and !param['validarRequiredGravar']}" 
+						    descricaoLabel="descricao" size="9"	suggestionAction="listarMarcaComercialPorCodigoDescricao" 
+						    var="marca"	itemValue="#{marca}" maxlength="9" width="350px" posDeleteAction="refreshFromMarca"
+							readonly="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+							descricaoLimite="30" cache="false" controller="#{registrarAceiteTecnicoController}"
+							value="#{registrarAceiteTecnicoController.avaliacaoTecnica.marcaComercial}"
+							render="marcaModeloPanel" >
+							<p:column style="max-width: 100px; min-width:99px; overflow: hidden;">
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> 
+								#{marca.codigo}
+		                    </p:column>
+		                    <p:column style="max-width: 100px; min-width:99px; overflow: hidden;">
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> 
+								#{marca.descricao}
+		                    </p:column>
+						</mec:suggestionBox>
+						<mec:suggestionBox id="sgbModelo"
+							label="#{messages.LABEL_MODELO}" title="#{messages.TITLE_MODELO_ACEITE}"
+							descricaoLimite="30"
+							descricaoInput="id.seqp" descricaoLabel="descricao" size="9"
+							suggestionAction="listarMarcaModeloPorCodigoDescricao" var="modelo"
+							itemValue="#{modelo}" maxlength="9" width="350px" cache="false"
+							controller="#{registrarAceiteTecnicoController}"
+							value="#{registrarAceiteTecnicoController.avaliacaoTecnica.marcaModelo}"
+							readonly="#{registrarAceiteTecnicoController.avaliacaoTecnica.marcaComercial eq null or registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}">
+							<p:column style="max-width: 100px; min-width:99px; overflow: hidden;">
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> 
+								#{modelo.id.seqp}
+		                    </p:column>
+		                    <p:column style="max-width: 100px; min-width:99px; overflow: hidden;">
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> 
+								#{modelo.descricao}
+		                    </p:column>
+						</mec:suggestionBox>
+					</h:panelGroup> 
+				</aghu:linha>
+				<br clear="none" />
+				<br clear="none" />
+			 	<aghu:linha>
+			 	<h:panelGroup id="panelCampos2">
+					   <mec:inputTextArea id="textAreaDescricaoMaterial" label="#{messages.LABEL_DESCRICAO_MATERIAL}"  maxlength="250"
+					         required="#{registrarAceiteTecnicoController.avaliacaoTecnica.indStatus.toString() eq 'A' and !param['validarRequiredAdicionar'] and !param['validarEditar'] and !param['validarRequiredGravar'] or registrarAceiteTecnicoController.campoDescricaoVazio}"
+						     disabled="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+							 value="#{registrarAceiteTecnicoController.avaliacaoTecnica.descricaoMaterial}" cols="60" rows="5"/> 
+						
+				       <mec:inputTextArea id="textAreaJustificativa" label="#{messages.LABEL_JUSTIFICATIVA}"   maxlength="250"
+					         required="#{registrarAceiteTecnicoController.avaliacaoTecnica.indStatus.toString() eq 'R' and !param['validarRequiredAdicionar'] and !param['validarEditar'] and !param['validarRequiredGravar'] or registrarAceiteTecnicoController.campoJustificativaVazio}"
+						     disabled="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+							 value="#{registrarAceiteTecnicoController.avaliacaoTecnica.justificativa}" cols="60" rows="5"/> 
+
+				</h:panelGroup>
+				</aghu:linha>
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:linha>
+					<aghu:panelGeral legend="#{messages.TITLE_SUGESTAO_DESMEMBRAMENTO}">
+						<aghu:linha>
+							<mec:inputText label="#{messages.LABEL_DESCRICAO}" required="#{param['validarRequiredAdicionar']}"
+											 requiredFake="#{!param['validarRequiredAdicionar']}"
+											 size="70" maxlength="100" value="#{registrarAceiteTecnicoController.desmembramento.descricao}"
+											 readonly="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+											 style="text-transform:uppercase" id="inputDescricao"/>
+											 
+							<p:outputPanel id="panelPercentual">
+								<mec:inputNumero id="inputPercentual" label="#{messages.LABEL_PERCENTUAL}" title="#{messages.HINT_PERCENTUAL_ACEITE_TECNICO}"
+												 rendered="#{registrarAceiteTecnicoController.desmembramento.tipoValor.toString() ne 'V'}"
+												 required="#{param['validarRequiredAdicionar'] and !param['validarEditar'] and !param['validarRequiredGravar'] and !param['validarRequiredFinalizarCertificar']}"
+												 requiredFake="true"
+												 readonly="#{(registrarAceiteTecnicoController.desmembramento.valor ne null and registrarAceiteTecnicoController.desmembramento.tipoValor.toString() ne 'P') or registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+												 value="#{registrarAceiteTecnicoController.desmembramento.percentual}"
+												 size="5" maxlength="3">
+												 <p:ajax event="change" update="@(#panelValor)" process="@this" />
+								</mec:inputNumero>
+								
+								<mec:inputNumero id="inputPercentualDisabled" label="#{messages.LABEL_PERCENTUAL}" readonly="true" size="5"
+												 rendered="#{registrarAceiteTecnicoController.desmembramento.tipoValor.toString() eq 'V'}"/>
+								
+							</p:outputPanel>
+							<p:outputPanel id="panelValor">
+								<mec:inputNumero id="inputValor" label="#{messages.LABEL_VALOR}" title="#{messages.HINT_VALOR_ACEITE_TECNICO}"
+												 rendered="#{registrarAceiteTecnicoController.desmembramento.tipoValor.toString() ne 'P'}"
+												 required="#{param['validarRequiredAdicionar'] and !param['validarRequiredGravar'] and !param['validarRequiredFinalizarCertificar']}"
+												 requiredFake="true"
+												 readonly="#{(registrarAceiteTecnicoController.desmembramento.percentual ne null and registrarAceiteTecnicoController.desmembramento.tipoValor.toString() ne 'V') or registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+												 value="#{registrarAceiteTecnicoController.desmembramento.valor}"
+												 size="15" converter="#{bigDecimalConverter}"
+												 maxlength="9"
+												 inteiros="7" decimais="2" thousandSeparator="." decimalSeparator=",">
+												 <p:ajax event="change" update="@(#panelPercentual)" process="@this" />
+								</mec:inputNumero>
+								
+								<mec:inputNumero id="inputValorDisabled" label="#{messages.LABEL_VALOR}" readonly="true" size="15"
+												 rendered="#{registrarAceiteTecnicoController.desmembramento.tipoValor.toString() eq 'P'}"/>
+								
+							</p:outputPanel>
+							
+							<aghu:acao newLine="false">
+								<mec:commandButton id="bt_adicionar_Comp" value="#{messages.LABEL_ADICIONAR}"
+								  rendered="#{!registrarAceiteTecnicoController.modoEdicaoDesmebramento and registrarAceiteTecnicoController.permissaoManter}"
+								  disabled="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+								  action="#{registrarAceiteTecnicoController.adicionarDesmembramento}" process="@this"
+								  profile="add">
+									<f:param name="validarRequiredAdicionar" value="true"/>
+								</mec:commandButton>
+						    	<mec:commandButton id="bt_editar_Comp" value="#{messages.LABEL_EDITAR_COMPONENTE}" 
+								  rendered="#{registrarAceiteTecnicoController.modoEdicaoDesmebramento and registrarAceiteTecnicoController.permissaoManter}" 
+								  action="#{registrarAceiteTecnicoController.adicionarDesmembramento}" process="@this"
+								  profile="ok">
+									<f:param name="validarRequiredAdicionar" value="true"/>
+								</mec:commandButton>
+								<mec:commandButton id="bt_cancelar_Comp" value="#{messages.LABEL_CANCELAR_COMPONENTE}" 
+								  rendered="#{registrarAceiteTecnicoController.modoEdicaoDesmebramento and registrarAceiteTecnicoController.permissaoManter}" 
+								  action="#{registrarAceiteTecnicoController.cancelarAlteracao}" process="@this"
+								  profile="cancel"/>
+							</aghu:acao>
+						</aghu:linha>
+						<aghu:linha>			
+							<mec:serverDataTable id="tabelaDesmembramento" selection="itemDesmembramentoGridSelecionado"
+											 	 list="#{registrarAceiteTecnicoController.listaDesmembramento}"
+											  	 controller="#{registrarAceiteTecnicoController}"
+									scrollable="true" scrollHeight="80"> 
+								<c:set var="item" value="#{item}" />
+								<p:column styleClass="first-column auto-adjust" headerText="#{messages.LABEL_ACAO}" exportable="false">
+									<mec:commandLink id="lnkEditar" profile="edit" 
+										title="#{messages.TITLE_EDITAR}" rendered="#{registrarAceiteTecnicoController.permissaoManter and item.seq ne registrarAceiteTecnicoController.desmembramento.seq}" 
+										disabled="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+										action="#{registrarAceiteTecnicoController.preAlterarDesmembramento}">
+										<f:param name="validarEditar" value="true"/>
+										<f:setPropertyActionListener
+											target="#{registrarAceiteTecnicoController.itemDesmembramentoSelecionado}"
+											value="#{item}" for="command" />
+									</mec:commandLink>
+									<mec:commandLink id="linkExcluir" title="#{messages.TITLE_EXCLUIR}" styleClass="silk-icon silk-delete"	
+										action="#{registrarAceiteTecnicoController.preExcluirDesmembramento}" ajax="true" process="@this"
+										disabled="#{registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.chefe or registrarAceiteTecnicoController.itemCertificado}"
+										rendered="#{registrarAceiteTecnicoController.permissaoManter}" >
+										<f:setPropertyActionListener
+										 	target="#{registrarAceiteTecnicoController.itemDesmembramentoSelecionado}"
+										  	value="#{item}" for="command" />
+									</mec:commandLink>
+								</p:column>
+								<p:column style="text-align: left;" sortBy="#{item.descricao}">
+									<f:facet name="header">
+										<h:outputText id="lbl_descricao" value="#{messages.LABEL_DESCRICAO}" />
+									</f:facet>
+									<h:outputText value="#{item.descricao}" />
+								</p:column>
+								<p:column style="text-align: left;" sortBy="#{item.percentual}">
+									<f:facet name="header">
+										<h:outputText id="lbl_percentual" value="#{messages.LABEL_PERCENTUAL}" />
+									</f:facet>
+									<h:outputText value="#{item.percentual}%" rendered="#{item.percentual ne null}" />
+								</p:column>
+								
+								<p:column style="text-align: left;" sortBy="#{item.valor}">
+									<f:facet name="header">
+										<h:outputText id="lbl_valor" value="#{messages.LABEL_VALOR}" />
+									</f:facet>
+									<h:outputText value="#{item.valor}" >
+										<f:convertNumber pattern="#,###,##0.00" />
+									</h:outputText>
+								</p:column>
+							</mec:serverDataTable>
+						</aghu:linha>
+						<div style="float:right;">
+							<aghu:linha>
+							    <h:outputText style="float:left; margin-right:5px;" id="inputValorBemText" value="#{messages.LABEL_VALOR_BEM_PERMANENTE_RS}" />	
+								<mec:inputNumero id="inputValorBem" style="margin-top:-25px;"
+                                             	 readonly="true"  size="15"
+                                             	 value="#{registrarAceiteTecnicoController.valorBem}"
+                                             	 inteiros="13" decimais="2" thousandSeparator="." decimalSeparator=","/>
+							
+								<h:outputText id="inputTotalText" value="#{messages.LABEL_TOTAL_RS}" style="float:left; margin-right:5px;" />
+								<mec:inputNumero id="inputTotal"  style="margin-top:-25px;"
+                                             	 readonly="true"  size="15" converter="#{bigDecimalConverter}"
+                                             	 value="#{registrarAceiteTecnicoController.total}"
+                                             	 inteiros="13" decimais="2" thousandSeparator="." decimalSeparator=","/>
+							</aghu:linha>
+						</div>
+					</aghu:panelGeral>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<br clear="none" />
+			<aghu:acao>
+					<mec:commandButton id="bt_gravar" disabled="#{registrarAceiteTecnicoController.disableBotaoGravar and registrarAceiteTecnicoController.itemFinalizado and !registrarAceiteTecnicoController.itemCertificado or registrarAceiteTecnicoController.itemFinalizado or registrarAceiteTecnicoController.itemCertificado}"
+						value="#{messages.LABEL_GRAVAR}" profile="ok"
+						action="#{registrarAceiteTecnicoController.gravar}"> 
+						<f:param name="validarRequiredGravar" value="true"/>
+					</mec:commandButton>
+					<mec:commandButton id="bt_finalizar" disabled="#{registrarAceiteTecnicoController.disableBotaoFinalizar or registrarAceiteTecnicoController.itemFinalizado or registrarAceiteTecnicoController.itemCertificado or !registrarAceiteTecnicoController.permissaoFinalizar}"
+						value="#{messages.LABEL_FINALIZAR}" profile="ok"
+						action="#{registrarAceiteTecnicoController.finalizar}"> 
+						<f:param name="validarRequiredFinalizarCertificar" value="true"/>
+					</mec:commandButton>
+					<mec:commandButton id="bt_certificar" disabled="#{registrarAceiteTecnicoController.disableBotaoCertificar or registrarAceiteTecnicoController.itemCertificado or !registrarAceiteTecnicoController.permissaoCertificar or registrarAceiteTecnicoController.avaliacaoTecnica.indSituacao.toString() eq 'F' and !registrarAceiteTecnicoController.chefe}"
+						value="#{messages.LABEL_CERTIFICAR}" profile="ok"
+						action="#{registrarAceiteTecnicoController.certificar}"> 
+						<f:param name="validarRequiredFinalizarCertificar" value="true"/>
+					</mec:commandButton>
+					<mec:commandButton id="bt_visualizarImpressao" disabled="#{registrarAceiteTecnicoController.disableBotaoVisualizar}" 
+						value="#{messages.LABEL_VISUALIZAR_IMPRESSAO}" profile="view" immediate="true"
+						action="#{registrarAceiteTecnicoController.visualizarImpressao}">
+						<f:param name="validarRequiredFinalizarCertificar" value="true"/>
+					</mec:commandButton>
+					<p:commandButton id="bt_anexarArquivo" disabled="#{!registrarAceiteTecnicoController.anexarArquivo}"
+						action="#{registrarAceiteTecnicoController.anexarArquivos}"
+						value="#{messages.LABEL_ANEXAR_ARQUIVOS_ACEITE_TECNICO}"
+						styleClass="button-acao bt_cinza" title="#{messages.TITLE_ANEXAR_ARQUIVOS_ACEITE_TECNICO}"
+						>
+						<f:param name="validarRequiredFinalizarCertificar" value="true"/>
+					</p:commandButton>
+						
+					<mec:backButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" title="" action="#{registrarAceiteTecnicoController.voltar}"
+									immediate="true" ajax="true" process="@this"/> 
+			</aghu:acao>
+		</h:form>
+		<p:dialog id="modalExclusaoDesmembramento" width="480" height="120" modal="true" resizable="false" widgetVar="modalExclusaoDesmembramentoWG">
+			<f:facet name="header">
+				<h:outputText id="title_modalExcluir" value="#{messages.TITLE_EXCLUSAO_DESMEMBRAMENTO}" />
+			</f:facet>
+			 <h:form>
+				<h:panelGroup id="panelModalExcluirDesmembramento">
+					<h:outputText id="alertaConfimarExclusao" value="#{messages.CASCA_MENSAGEM_CONFIRMACAO_EXCLUSAO}" />
+					<br clear="none" />
+					<br clear="none" />
+					<br clear="none" />
+					<mec:commandButton id="bt_sim" 
+						value="#{messages.LABEL_SIM}" render="tabelaDesmembramento, inputTotal"
+						action="#{registrarAceiteTecnicoController.excluirDesmembramento}"
+						oncomplete="PF('modalExclusaoDesmembramentoWG').hide();return false;"
+						profile="ok" ajax="true" process="@this" />
+					<mec:commandButton id="cancelaAlteracaoTecnico" 
+						value="#{messages.LABEL_NAO}"
+						onclick="PF('modalExclusaoDesmembramentoWG').hide();return false;"
+						profile="cancel" ajax="true" process="@this" />
+				</h:panelGroup>
+			  </h:form>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

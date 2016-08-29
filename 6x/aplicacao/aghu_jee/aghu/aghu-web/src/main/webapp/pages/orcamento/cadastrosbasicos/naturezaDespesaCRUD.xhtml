@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['LABEL_CADASTRAR_NATUREZA_DESPESA']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{naturezaDespesaController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{naturezaDespesaController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formNaturezaDespesa"> 
+        <aghu:panelGeral legend="#{messages['LABEL_CADASTRAR_NATUREZA_DESPESA']}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestionGrupoNatureza" label="#{messages.LABEL_GRUPO_NATUREZA_DESPESA}" title="#{messages.TITLE_NOME_GRUPO_NATUREZA_DESPESA}" width="900" readonly="#{naturezaDespesaController.visualizacaoRegistro or naturezaDespesaController.alteracaoRegistro}" suggestionAction="pesquisarGrupoNaturezaPorCodigoEDescricao" posSelectionAction="atualizarCodNat" posDeleteAction="atualizarCodNat" descricaoInput="codigo" descricaoLabel="descricao" maxlength="68" required="true" controller="#{naturezaDespesaController}" value="#{naturezaDespesaController.naturezaDespesa.grupoNaturezaDespesa}" render="fdCodNat"> 
+              <p:column>#{item.codigo}</p:column>  
+              <p:column>#{item.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <mec:inputNumero id="fdCodNat" required="true" maxlength="2" size="7" label="#{messages.LABEL_CODIGO_NATUREZA}" title="#{messages.TITLE_CODIGO_NATUREZA}" value="#{naturezaDespesaController.naturezaDespesa.id.codigo}" readonly="#{naturezaDespesaController.visualizacaoRegistro or naturezaDespesaController.alteracaoRegistro}">
+              <p:ajax event="change" process="@this" listener="#{naturezaDespesaController.validarCodigoJaUtilizado()}"/> 
+            </mec:inputNumero>  
+            <mec:inputText id="descNat" value="#{naturezaDespesaController.naturezaDespesa.descricao}" label="#{messages.LABEL_DESCRICAO_NATUREZA_DESPESA_LIST}" title="#{messages.TITLE_DESCRICAO_NATUREZA_DESPESA}" style="text-transform:uppercase;" required="true" maxlength="60" size="60" readonly="#{naturezaDespesaController.visualizacaoRegistro or (not naturezaDespesaController.listaSolCompras.isEmpty()) or (not naturezaDespesaController.listaSolServico.isEmpty())}"/>
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero id="numeroPI"  maxlength="2" size="7" label="#{messages.LABEL_DETALHAMENTO_PI}" title="#{messages.TITLE_DETALHAMENTO_PI}" value="#{naturezaDespesaController.naturezaDespesa.codClassifNatureza}" readonly="#{naturezaDespesaController.visualizacaoRegistro}"/>
+            <mec:selectOneMenu id="situacaoNatureza" enum="DominioSituacao" noSelectionOption="false" required="true" label="#{messages.LABEL_SITUACAO_NATUREZA}" title="#{messages.TITLE_SITUACAO_NATUREZA}" value="#{naturezaDespesaController.naturezaDespesa.indSituacao}" readonly="#{naturezaDespesaController.visualizacaoRegistro}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar" action="#{naturezaDespesaController.confirmaGravacao}" limitToList="naturezaDespesaController.alteracaoRegistro == true" value="#{messages.LABEL_GRAVAR}" eventsQueue="changeQueue" rendered="#{naturezaDespesaController.visualizacaoRegistro == false  and   mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" profile="ok" ajax="true" render="panelModalAlterar"/>
+          <mec:commandButton immediate="true" profile="back" value="#{messages.LABEL_CANCELAR}" action="#{naturezaDespesaController.cancelar}"/>
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelModalAlterar" layout="inline"> 
+        <p:dialog id="modalConfirmacaoAlterar" width="400" height="150" rendered="#{naturezaDespesaController.existeSolCompras or naturezaDespesaController.existeSolServico}" modal="true" resizable="false" widgetVar="modalConfirmacaoAlterarWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_CONFIRMAR_ALTERACAO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{naturezaDespesaController.existeSolCompras ? messages.MENSAGEM_NATUREZA_DESPESA_M07 : messages.MENSAGEM_NATUREZA_DESPESA_M08} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalAlteracao"> 
+              <mec:commandButton id="bt_gravarsim"  action="#{naturezaDespesaController.gravar()}" value="#{messages.LABEL_SIM}" oncomplete="PF('modalConfirmacaoAlterarWG').hide();" profile="search" ajax="true"/>
+              <mec:commandButton id="bt_naoalt" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoAlterarWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        <h:form rendered="#{naturezaDespesaController.existeSolCompras or naturezaDespesaController.existeSolServico}"> 
+          <script xml:space="preserve">
+					PF('modalConfirmacaoAlterarWG').show();;
+				</script> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

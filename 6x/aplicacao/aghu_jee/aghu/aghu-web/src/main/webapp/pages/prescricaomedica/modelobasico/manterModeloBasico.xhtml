@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_CADASTRAR_MODELO_BASICO_PRESCRICAO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterModeloBasicoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterModeloBasicoController}" ignoreEnter="true"/>  
+      <h:form prependId="false" method="post" name="formManterModeloBasico"> 
+        <pe:remoteCommand name="excluir"> 
+          <pe:assignableParam name="param1" assignTo="#{manterModeloBasicoController.modeloBasicoSeq}"/> 
+        </pe:remoteCommand>  
+        <p:outputPanel id="usuarioPanel" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LEGENDA_PROFISSIONAL}"> 
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_USUARIO}" size="50" readonly="true" id="nome" value="#{manterModeloBasicoController.servidor.pessoaFisica.nome}"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:outputPanel id="formularios" layout="inline"> 
+        <p:outputPanel id="formulariosInclusao" rendered="#{not manterModeloBasicoController.alterar}" layout="inline"> 
+          <h:form prependId="false" id="formModeloBasicoInclusao"> 
+            <aghu:panelGeral legend="#{messages.LEGENDA_MODELO_BASICO_PRESCRICAO}"> 
+              <aghu:linha> 
+                <mec:inputText label="#{messages.LABEL_DESCRICAO_MODELO}" id="descricaoi" size="100" maxlength="60" required="true" value="#{manterModeloBasicoController.modeloBasico.descricao}" style="text-transform:uppercase" title="#{messages.TITULO_DESCRICAO_MODELO_BASICO}"/>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_MODELO_PUBLICO}" title="#{messages.TITLE_MODELO_PUBLICO}" rendered="#{mf:hasPermission(securityController, 'modeloBasicoPublico,tornarPublico')}" id="publicoInsert" value="#{manterModeloBasicoController.modeloBasico.indPublico}"/> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:acao> 
+              <mec:commandButton id="adicionar" value="#{messages.LABEL_GRAVAR}" action="#{manterModeloBasicoController.salvar}" profile="ok"/>  
+              <mec:commandButton id="copiar" value="#{messages.LABEL_COPIAR_MODELO}" immediate="true" action="#{manterModeloBasicoController.copiarModelo}" icon="aghu-icon-copy"/>  
+              <mec:commandButton id="limpar_i" value="#{messages.LABEL_LIMPAR}" action="#{manterModeloBasicoController.limpar}" styleClass="bt_cinza" ajax="true" render="formularios" process="@this" profile="clear"/>
+              <mec:commandButton id="cancelar_i" value="#{messages.LABEL_VOLTAR} " immediate="true" action="#{manterModeloBasicoController.getOrigem()}"  rendered="#{not empty manterModeloBasicoController.getOrigem()}"  profile="back"/>  
+            
+            </aghu:acao> 
+          </h:form> 
+        </p:outputPanel>  
+        <p:outputPanel id="formulariosAlteracao" rendered="#{manterModeloBasicoController.alterar}" layout="inline"> 
+          <h:form prependId="false" id="formModeloBasicoAlteracao"> 
+            <aghu:panelGeral legend="#{messages.LEGENDA_MODELO_BASICO_PRESCRICAO}"> 
+              <aghu:linha> 
+                <mec:inputText label="#{messages.LABEL_CODIGO}" size="5" readonly="true" id="codigo" value="#{manterModeloBasicoController.modeloBasico.seq}"/>  
+                <mec:inputText label="#{messages.LABEL_DESCRICAO}" size="100" maxlength="60" required="true" value="#{manterModeloBasicoController.modeloBasico.descricao}" id="descricaoa" style="text-transform:uppercase"/>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_MODELO_PUBLICO}" title="#{messages.TITLE_MODELO_PUBLICO}" rendered="#{mf:hasPermission(securityController, 'modeloBasicoPublico,tornarPublico')}" id="publicoEdit" value="#{manterModeloBasicoController.modeloBasico.indPublico}"/> 
+              </aghu:linha> 
+            </aghu:panelGeral>  
+            <aghu:acao> 
+              <mec:commandButton id="gravar" value="#{messages.LABEL_GRAVAR}" action="#{manterModeloBasicoController.salvar}" profile="ok"/>  
+              <mec:commandButton id="limpar_a" value="#{messages.LABEL_LIMPAR}" immediate="true" action="#{manterModeloBasicoController.limpar}" render="formularios" styleClass="bt_cinza" profile="clear"/> 
+              <mec:commandButton id="cancelar_a" value="#{messages.LABEL_VOLTAR} " immediate="true" action="#{manterModeloBasicoController.getOrigem()}"  rendered="#{not empty manterModeloBasicoController.getOrigem()}"  profile="back"/>  
+            
+            </aghu:acao> 
+          </h:form> 
+        </p:outputPanel> 
+      </p:outputPanel>  
+      <h:form prependId="false" id="resultados"> 
+        <mec:serverDataTable id="modelosBasicoTable" onRowMouseOver="this.style.backgroundColor='#F1F1F1'" onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'" list="#{manterModeloBasicoController.modelos}" scrollable="true" scrollHeight="230"> 
+          <c:set var="_modelo" value="#{item}"/>  
+          <p:column sortable="false" styleClass="first-column"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink id="bt_visualizar" action="#{manterModeloBasicoController.visualizarItens()}" title="#{messages.LABEL_VISUALIZAR_ITENS_PRESCR_MED}" styleClass=" silk-page-white-text-edit silk-icon"> 
+              <f:setPropertyActionListener target="#{manterItensModeloBasicoController.seqModelo}" value="#{_modelo.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="bt_editar" action="#{manterModeloBasicoController.editar(_modelo.seq)}" title="#{messages.LABEL_EDITAR}" profile="edit" ajax="true" render="formularios" process="@this"/>
+			<mec:commandLink id="bt_excluir" immediate="true"
+				title="#{messages.LABEL_EXCLUIR}"
+				onclick="excluir('#{_modelo.seq}');"
+				action="#{manterModeloBasicoController.excluir(_modelo.seq)}"
+				profile="delete" process="@this" render="modelosBasicoTable"/>
+			</p:column>  
+          <p:column sortable="true" sortBy="#{_modelo.seq}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_modelo.seq}"/> 
+          </p:column>  
+          <p:column sortable="true" sortBy="#{_modelo.descricao}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_modelo.descricao}"/> 
+          </p:column>  
+          <p:column rendered="#{mf:hasPermission(securityController, 'modeloBasicoPublico,tornarPublico')}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_MODELO_PUBLICO}"/> 
+            </f:facet>  
+            <h:outputText value="Sim" rendered="#{_modelo.indPublico == true}"/>  
+            <h:outputText value="Não" rendered="#{_modelo.indPublico == false}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+    </ui:define> 
+  </ui:composition> 
+</html>

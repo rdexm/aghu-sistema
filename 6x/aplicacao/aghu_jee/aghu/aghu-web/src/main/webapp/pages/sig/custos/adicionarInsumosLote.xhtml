@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_COPIAR_ATIVIDADE}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{adicionarInsumosEmLoteController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{adicionarInsumosEmLoteController}"/>  
+      <h:form prependId="false" id="formularioEquipamentoLote"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISA_INSUMO}"> 
+          <aghu:linha> 
+            <mec:inputText id="nome" value="#{adicionarInsumosEmLoteController.atividade.nome}" label="#{messages.LABEL_NOME_ATIVIDADE_GRID}" title="#{messages.TITLE_NOME_NOVA_ATIVIDADE}" required="true" readonly="true" size="117" maxlength="360" caixaAlta="false"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText id="nomeInsumo" value="#{adicionarInsumosEmLoteController.nomeInsumo}" label="#{messages.LABEL_NOME_INSUMO}" title="#{messages.TITLE_NOME_INSUMO}" size="117" maxlength="60" caixaAlta="false" required="true"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" process="nome , codigoEquipamento , nomeEquipamento " ajaxSingle="true" action="#{adicionarInsumosEmLoteController.pesquisar}" render="tblistaEquipamentos, formListaEquipamentoLote, utilizacaoInsumoLote" styleClass="bt_cinza" profile="search"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <aghu:panelGeral id="utilizacaoInsumoLote" rendered="#{not empty adicionarInsumosEmLoteController.listAtividadeInsumos}"  legend="#{messages.LABEL_UTILIZACAO_INSUMO}"> 
+              <h:panelGrid columns="2" border="0"> 
+                <h:column> 
+                  <aghu:panelGeral legend="#{messages.LABEL_ESPECIFICA}"> 
+                    <aghu:linha> 
+                      <mec:inputNumero id="qtdUtilizada" label="#{messages.LABEL_QTD_UTILIZADA}" title="#{messages.TITLE_QTD_UTILIZADA_LOTE}" value="#{adicionarInsumosEmLoteController.atividadeInsumos.qtdeUso}" inteiros="10" decimais="5"/>  
+                      <p:outputPanel id="panelUnidadeMedidaInsumo" layout="inline"> 
+                        <mec:field id="cboUnidadeMedidaInsumo" name="cboUnidadeMedidaInsumo" label="#{messages.LABEL_UNIDADE}" title="#{messages.TITLE_UNIDADE_INSUMO_ATIVIDADE_LOTE}"> 
+                          <p:selectOneMenu value="#{adicionarInsumosEmLoteController.codigoUnidadeMedida}" styleClass="ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all"> 
+                            <f:selectItem itemLabel="#{mf:getDefaultValue(noSelectionLabel,'Selecione')}" itemValue=""/>  
+                            <f:selectItems value="#{adicionarInsumosEmLoteController.listarItensUnidadeMedida()}"/>  
+                            <p:ajax event="change" process="@this" listener="#{adicionarInsumosEmLoteController.alterarUnidadeMedida}"/> 
+                          </p:selectOneMenu> 
+                        </mec:field> 
+                      </p:outputPanel> 
+                    </aghu:linha> 
+                  </aghu:panelGeral> 
+                </h:column>  
+                <h:column> 
+                  <aghu:panelGeral legend="#{messages.LABEL_VIDA_UTIL}"> 
+                    <aghu:linha> 
+                      <mec:inputNumero id="qtdProdutos" label="#{messages.LABEL_QTD_PRODUTOS}" title="#{messages.TITLE_QTD_PRODUTOS_LOTE}" maxlength="4" value="#{adicionarInsumosEmLoteController.atividadeInsumos.vidaUtilQtde}"/>  
+                      <mec:field name="labelOu"> 
+                        <br clear="none"/> ou
+                      </mec:field>  
+                      <mec:inputNumero id="tempoDuracao" label="#{messages.LABEL_TEMPO_INSUMO_ATIVIDADE}" title="#{messages.TITLE_TEMPO_INSUMO_ATIVIDADE_LOTE}" maxlength="4" value="#{adicionarInsumosEmLoteController.atividadeInsumos.vidaUtilTempo}"/>  
+                      <mec:selectOneMenu id="cboUnidadeMedidaUtil" label="#{messages.LABEL_UNIDADE}" title="#{messages.TITLE_UNIDADE_TEMPO_INSUMO_ATIVIDADE_LOTE}" value="#{adicionarInsumosEmLoteController.atividadeInsumos.direcionadores}" items="#{adicionarInsumosEmLoteController.listarDirecionador()}" ajaxValidation="false" itemLabel="nome" itemsType="entity"/> 
+                    </aghu:linha> 
+                  </aghu:panelGeral> 
+                </h:column> 
+              </h:panelGrid> 
+            </aghu:panelGeral>
+          </aghu:linha>   
+          <p:outputPanel id="formListaInsumoLote" rendered="#{adicionarInsumosEmLoteController.ativo}" layout="inline"> 
+            <mec:serverDataTable id="tblistaInsumos" list="#{adicionarInsumosEmLoteController.listAtividadeInsumos}" scrollable="true"> 
+              <c:set var="insumo" value="#{item}"/>  
+              <p:column  styleClass="first-column auto-adjust" rendered="#{not empty adicionarInsumosEmLoteController.listAtividadeInsumos}"> 
+                <f:facet name="header"> 
+                  <p:selectBooleanCheckbox name="marcadorLote" id="marcadorLote" value="#{adicionarInsumosEmLoteController.marcouTodos}"> 
+                    <p:ajax event="change" update="@(#formListaInsumoLote) @(#panelUnidadeMedidaInsumo)" process="@this" listener="#{adicionarInsumosEmLoteController.selecionaLote}"/> 
+                  </p:selectBooleanCheckbox> 
+                </f:facet>  
+                <p:selectBooleanCheckbox value="#{insumo.selected}"> 
+                  <p:ajax event="change" update="@(#panelUnidadeMedidaInsumo)" process="@this" listener="#{adicionarInsumosEmLoteController.selectedAdicionarInsumoAtividade(insumo)}"/> 
+                </p:selectBooleanCheckbox> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{insumo.material.codigo}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_NOME}"/> 
+                </f:facet>  
+                <h:outputText value="#{insumo.material.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CUSTO_MEDIO_INSUMO}"/> 
+                </f:facet>  
+                <h:outputText value="#{adicionarInsumosEmLoteController.efetuarCalculoCustoMedioMaterial(insumo)}"> 
+                  <f:convertNumber type="currency" currencySymbol="" maxFractionDigits="2" minFractionDigits="2"/> 
+                </h:outputText> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao id="fsetAlteracao">
+			<mec:commandButton id="btn_gravar" value="#{messages.LABEL_INCLUIR}"
+				action="#{adicionarInsumosEmLoteController.adicionar}"
+				process="@this, suggestMaterial, cboSitMaterial, qtdUtilizada, cboUnidadeMedidaInsumo, qtdProdutos, tempoDuracao, cboUnidadeMedidaUtil, nomeInsumo"
+				rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}"
+				profile="ok" ajax="true" />
+			<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+				action="#{adicionarInsumosEmLoteController.cancelar}"
+				rendered="true"
+				process="@this, nome, codigoEquipamento,nomeEquipamento"
+				ajax="true" render="tblistaEquipamentos, formListaEquipamentoLote"
+				styleClass="bt_cinza" profile="back" />
+		</aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition> 
+    <p:outputPanel id="tabelaMonitorizacao" layout="inline"> 
+      <aghu:acao>
+    	<mec:commandButton 
+    		disabled="#{realizarAcolhimentoPacienteController.tudoDesabilitado}" 
+    		id="adicionarControles" 
+    		profile="add" 
+    		rendered="#{mf:hasPermission(securityController,'/controlepaciente/manterControlesPaciente.xhtml,render') and listarControlesPacienteController.isUnidadeFuncionalValida(null)}"
+    		value="#{messages.LABEL_NOVO}" action="#{realizarAcolhimentoPacienteController.manterControlesPaciente}">
+			<f:setPropertyActionListener target="#{manterControlesPacienteController.pacCodigo}" value="#{realizarAcolhimentoPacienteController.pacCodigo}" for="command"/>
+			<f:setPropertyActionListener target="#{manterControlesPacienteController.trgSeq}" value="#{realizarAcolhimentoPacienteController.trgSeq}" for="command"/>
+			<f:setPropertyActionListener target="#{manterControlesPacienteController.unfSeq}" value="#{realizarAcolhimentoPacienteController.mamTriagemVO.unfSeq}" for="command"/>
+			<f:setPropertyActionListener target="#{manterControlesPacienteController.voltarPara}" value="realizarAcolhimentoCRUD" for="command"/>
+		</mec:commandButton>
+		</aghu:acao> 
+    </p:outputPanel>
+    <br /><br />
+     <p:outputPanel id="tableVisualizaRegistros" layout="inline">  
+       <mec:serverDataTable 
+       		width="100%" 
+       		id="tabelaVisualizacaoRegistrosM" controller="listarControlesPacienteController"
+       		rendered="#{not empty listarControlesPacienteController.listaRegistrosControleMn}" 
+       		list="#{listarControlesPacienteController.listaRegistrosControleMn}" 
+       		scrollable="true"
+       		scrollHeight="70">  
+         <c:set var="_listaM" value="#{item}"/> 
+         <p:column styleClass="first-column auto-adjust" style="white-space:nowrap;">  
+           <f:facet name="header">  
+             <h:outputText value="#{messages.CASCA_LABEL_ACOES}" style="font-weight:bold; color:#000000;"/>  
+           </f:facet>   
+           <mec:commandLink 
+           		id="deleteLimiteM" 
+           		disabled="#{realizarAcolhimentoPacienteController.tudoDesabilitado}" 
+           		rendered="#{mf:hasPermission(securityController,'visualizarRegistrosControlePaciente,excluir')}" 
+           		title="#{messages.CASCA_LABEL_EXCLUIR}" 
+           		action="#{listarControlesPacienteController.excluir()}" 
+           		profile="delete" 
+           		ajax="true" 
+           		render="tableVisualizaRegistros" 
+           		process="@this">
+				<f:setPropertyActionListener target="#{listarControlesPacienteController.seqHorarioControle}" value="#{_listaM.horarioSeq}" for="command"/>
+        	</mec:commandLink>  
+	    	<mec:commandLink
+	    		id="manterControles"
+				disabled="#{realizarAcolhimentoPacienteController.tudoDesabilitado}"
+				styleClass="silk-icon silk-controles-paciente-adicionar"
+				rendered="#{mf:hasPermission(securityController,'/controlepaciente/manterControlesPaciente.xhtml,render') and listarControlesPacienteController.isUnidadeFuncionalValida(_listaM.unfSeq) and not realizarAcolhimentoPacienteController.tudoDesabilitado}"
+				action="#{realizarAcolhimentoPacienteController.manterControlesPaciente}">
+				<f:setPropertyActionListener target="#{manterControlesPacienteController.pacCodigo}" value="#{_listaM.pacCodigo}" for="command"/>
+				<f:setPropertyActionListener target="#{manterControlesPacienteController.trgSeq}" value="#{_listaM.trgSeq}" for="command"/>
+				<f:setPropertyActionListener target="#{manterControlesPacienteController.unfSeq}" value="#{_listaM.unfSeq}" for="command"/>
+				<f:setPropertyActionListener target="#{manterControlesPacienteController.atendimentoSeq}" value="#{_listaM.atdSeq}" for="command"/>
+				<f:setPropertyActionListener target="#{manterControlesPacienteController.horarioSeq}" value="#{_listaM.horarioSeq}" for="command"/>
+				<f:setPropertyActionListener target="#{manterControlesPacienteController.voltarPara}" value="realizarAcolhimentoCRUD" for="command"/>
+			</mec:commandLink>
+         </p:column>   
+         <p:column sortable="false" width="80">  
+           <f:facet name="header">  
+             <h:outputText value="#{messages.LABEL_HORARIOS}" style="font-weight:bold; color:#000000;"/>  
+           </f:facet>  
+		   <!-- coluna com anotacao: destaque em amarelo e com title da anotacao e local de atendimento -->
+           <p:outputPanel layout="inline">  
+             <h:outputText value="#{_listaM.dataHoraMedicao}" title="#{_listaM.anotacoesHorario}">  
+               <f:convertDateTime pattern="dd/MM/yy HH:mm"/>  
+             </h:outputText>  
+           </p:outputPanel>  
+         </p:column>   
+		 <!-- montar as colunas dinamicamente -->
+         <p:columns value="#{listarControlesPacienteController.listaItensControleMn}" var="_colunaM" columnIndexVar="ind" id="_colunaM#{ind}" sortable="false">   
+           <f:facet name="header">  
+             <h:outputText value="#{_colunaM.sigla}" title="#{_colunaM.descricaoUnidadeMedicaGrupo}"/>  
+           </f:facet>   
+		   <!-- coluna dentro do limite de normalidade -->
+           <p:outputPanel rendered="#{not _listaM.limite[ind]}" layout="inline">  
+             <div style="text-align: center !important;">  
+               <p:outputPanel rendered="#{listarControlesPacienteController.apresentaToolTip(_listaM.valor[ind])}" layout="inline">  
+                 <h:outputText value="#{listarControlesPacienteController.mostrarValorFormatado(_listaM.valor[ind])}" title="#{_listaM.valor[ind]}"/>  
+               </p:outputPanel>   
+               <p:outputPanel rendered="#{!listarControlesPacienteController.apresentaToolTip(_listaM.valor[ind])}" layout="inline">  
+                 <h:outputText value="#{listarControlesPacienteController.mostrarValorFormatado(_listaM.valor[ind])}"/>  
+               </p:outputPanel>  
+             </div>  
+           </p:outputPanel>   
+		   <!-- coluna fora do limite de normalidade: destaque em vermelho e tooltip -->
+           <p:outputPanel rendered="#{_listaM.limite[ind]}" layout="inline">  
+             <p:outputPanel styleClass="scrollTable_selected_red">  
+               <div style="text-align: center !important;">  
+                 <p:outputPanel rendered="#{listarControlesPacienteController.apresentaToolTip(_listaM.valor[ind])}" layout="inline">  
+                   <h:outputText value="#{listarControlesPacienteController.mostrarValorFormatado(_listaM.valor[ind])}" title="#{_listaM.valor[ind]}"/>  
+                 </p:outputPanel>   
+                 <p:outputPanel rendered="#{!listarControlesPacienteController.apresentaToolTip(_listaM.valor[ind])}" layout="inline">  
+                   <h:outputText value="#{listarControlesPacienteController.mostrarValorFormatado(_listaM.valor[ind])}"/>  
+                 </p:outputPanel>   
+                 <p:tooltip rendered="#{_listaM.limite[ind]}" direction="bottom-right" styleClass="tooltip" layout="block">  
+                   <h:outputText value="#{_colunaM.sigla} #{messages.MENSAGEM_FORA_LIMITE_NORMALIDADE}"/>  
+                 </p:tooltip>  
+               </div>
+             </p:outputPanel>
+           </p:outputPanel>
+         </p:columns>
+         <p:column sortable="false" width="350">  
+           <f:facet name="header">#{messages.LABEL_ANOTACOES}</f:facet>   
+           <h:outputText value="#{_listaM.anotacoes}" title="#{_listaM.anotacoes}"/>  
+         </p:column>  
+       </mec:serverDataTable>  
+     </p:outputPanel>      
+  </ui:composition>
+</html>

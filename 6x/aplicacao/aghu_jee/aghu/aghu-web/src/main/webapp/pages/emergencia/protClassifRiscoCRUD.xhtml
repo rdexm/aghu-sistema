@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PROT_CLASSIF_RISCO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{protClassifRiscoController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <!-- FILTRO PARA PESQUISA DE PROTOCOLOS DE CLASSIFICAÇÃO DE RISCO -->  
+        <aghu:panelGeral legend="#{messages.LABEL_PROT_CLASSIF_RISCO_PESQUISAR}" id="panelDados"> 
+          <aghu:linha> 
+            <mec:inputText id="descricao" label="#{messages.LABEL_PROT_CLASSIF_RISCO_DESCRICAO}" title="#{messages.TITLE_PROT_CLASSIF_RISCO_DESCRICAO}" value="#{protClassifRiscoController.descricao}" maxlength="50" size="75"></mec:inputText>  
+            <mec:selectOneMenu id="indSituacao" label="#{messages.LABEL_PROT_CLASSIF_RISCO_SITUACAO}" title="#{messages.TITLE_PROT_CLASSIF_RISCO_SITUACAO}" value="#{protClassifRiscoController.indSituacao}" enum="DominioSituacao"></mec:selectOneMenu> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <!-- BOTÕES DE AÇÃO DA PESQUISA DE PROTOCOLOS DE CLASSIFICAÇÃO DE RISCO -->  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{protClassifRiscoController.pesquisar}" profile="search"></mec:commandButton>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{protClassifRiscoController.limparPesquisa}" profile="clear"></mec:commandButton> 
+        </aghu:acao> 
+      </h:form>  
+      <!-- LISTAGEM DA PESQUISA DE PROTOCOLOS DE CLASSIFICAÇÃO DE RISCO -->  
+      <p:outputPanel id="panelProtClassifRisc" layout="inline"> 
+        <p:outputPanel id="panelProtClassifRiscInterno" rendered="#{protClassifRiscoController.pesquisaAtiva}" layout="inline"> 
+          <aghu:panelGeral legend="#{messages.LABEL_PROT_CLASSIF_RISCO}"> 
+            <!-- ADIÇÃO DE PROTOCOLO NOVO -->  
+            <h:form prependId="false" id="formProtClassifRisco"> 
+              <aghu:linha> 
+                <mec:inputText id="cadDescricao" label="#{messages.LABEL_PROT_CLASSIF_RISCO_DESCRICAO_CAD}" title="#{messages.TITLE_PROT_CLASSIF_RISCO_DESCRICAO_CAD}" value="#{protClassifRiscoController.cadDescricao}" maxlength="50" size="75" required="true"></mec:inputText>  
+                <mec:selectBooleanCheckbox id="cadIndSituacao" label="#{messages.LABEL_PROT_CLASSIF_RISCO_SITUACAO_CAD}" title="#{messages.TITLE_PROT_CLASSIF_RISCO_SITUACAO_CAD}" value="#{protClassifRiscoController.cadIndSituacao}"></mec:selectBooleanCheckbox>  
+                <mec:selectBooleanCheckbox id="cadIndPermiteChecagem" label="#{messages.LABEL_PROT_CLASSIF_RISCO_PERMITE_CHECAGEM_CAD}" title="#{messages.TITLE_PROT_CLASSIF_RISCO_PERMITE_CHECAGEM_CAD}" value="#{protClassifRiscoController.cadIndPermiteChecagem}"></mec:selectBooleanCheckbox>  
+                <mec:commandButton value="#{messages.LABEL_ADICIONAR}" id="bt_adicionarProtClassifRisco" action="#{protClassifRiscoController.adicionarProtClassifRisco}" disabled="#{!protClassifRiscoController.permissaoManter}" style="margin-top:18px;" profile="add" ajax="true" render="panelProtClassifRisc"></mec:commandButton> 
+              </aghu:linha> 
+            </h:form>  
+            <!-- LISTAGEM -->  
+            <h:form prependId="false" id="formProtClassifRiscoList"> 
+              <aghu:linha> 
+                <p:outputPanel id="panelListaProtClassifRisco" layout="inline"> 
+                  <p:outputPanel id="panelListaProtClassifRiscoInterno" styleClass="tabela-hachurada" layout="inline"> 
+                    <p:outputPanel layout="block" style="width: 100%; height: auto;"> 
+                      <mec:serverDataTable id="tabelaProtClassifRisco" list="#{protClassifRiscoController.dataModel}" controller="#{protClassifRiscoController}" scrollHeight="auto" selection="selecao"> 
+                        <c:set var="item" value="#{item}"/>
+                        <p:column headerText="#{messages.LABEL_ACAO}" style="width: 7%; white-space:nowrap;" styleClass="first-column auto-adjust" exportable="false"> 
+                          <mec:commandLink id="ativarInativar" rendered="#{protClassifRiscoController.permissaoManter and not protClassifRiscoController.getBoolDominioSituacao(item.indBloqueado)}" action="#{protClassifRiscoController.ativarInativarProtClassifRisco}" title="#{protClassifRiscoController.getBoolDominioSituacao(item.indSituacao) ? messages.LABEL_PROT_CLASSIF_RISCO_DESATIVAR : messages.LABEL_PROT_CLASSIF_RISCO_ATIVAR}" styleClass="#{protClassifRiscoController.getBoolDominioSituacao(item.indSituacao) ? 'silk-icon silk-activate' : 'silk-icon silk-desactive'}" ajax="true" render="formProtClassifRiscoList" process="@this"> 
+                            <f:setPropertyActionListener target="#{protClassifRiscoController.mamProtClassifRisco}" value="#{item}" for="command"/> 
+                          </mec:commandLink>  
+                          <mec:commandLink id="permitirBloquearChecagem" rendered="#{protClassifRiscoController.permissaoManter and not protClassifRiscoController.getBoolDominioSituacao(item.indBloqueado)}" action="#{protClassifRiscoController.permitirBloquearChecagemProtClassifRisco}" title="#{protClassifRiscoController.getBoolDominioSituacao(item.indPermiteChecagem) ? messages.LABEL_PROT_CLASSIF_RISCO_NAO_PERMITIR_CHECAGEM : messages.LABEL_PROT_CLASSIF_RISCO_PERMITIR_CHECAGEM}" styleClass="#{protClassifRiscoController.getBoolDominioSituacao(item.indPermiteChecagem) ? 'silk-icon silk-checagem-lote' : 'silk-icon silk-checagem-lote-off'}" ajax="true" render="formProtClassifRiscoList" process="@this"> 
+                            <f:setPropertyActionListener target="#{protClassifRiscoController.mamProtClassifRisco}" value="#{item}" for="command"/> 
+                          </mec:commandLink>  
+                          <mec:commandLink id="irFluxograma" rendered="#{protClassifRiscoController.usuarioTemPermissao('visualizarFluxogramaDosProtocolosClassificacaoRisco', 'pesquisar') or protClassifRiscoController.usuarioTemPermissao('manterFluxogramaDosProtocolosClassificacaoRisco', 'gravar')}" action="#{protClassifRiscoController.irFluxograma}" title="#{messages.LABEL_FLUXOGRAMAS}" styleClass="silk-icon silk-fluxograma-co" ajax="true" render="formProtClassifRiscoList" process="@this"> 
+                            <f:setPropertyActionListener target="#{fluxogramaProtClassifRiscoController.mamProtClassifRisco}" value="#{item}" for="command"/>  
+                            <f:setPropertyActionListener target="#{fluxogramaProtClassifRiscoController.botaoVoltar}" value="true" for="command"/> 
+                          </mec:commandLink>  
+                          <mec:commandLink id="excluir" action="#{protClassifRiscoController.excluir()}" rendered="#{protClassifRiscoController.permissaoManter and not protClassifRiscoController.getBoolDominioSituacao(item.indBloqueado)}" title="#{messages.CASCA_LABEL_EXCLUIR}" profile="delete" ajax="true" process="@this" render="tabelaProtClassifRisco"> 
+                            <f:setPropertyActionListener target="#{protClassifRiscoController.mamProtClassifRisco}" value="#{item}" for="command"/> 
+                          </mec:commandLink>
+						</p:column>
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_PROT_CLASSIF_RISCO_DESCRICAO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{item.descricao}"/> 
+                        </p:column>  
+                        <p:column style="text-align:center; width: 100px;"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_PROT_CLASSIF_RISCO_ATIVO}"/> 
+                          </f:facet>  
+                          <h:outputText styleClass="silk-icon silk-checked" rendered="#{protClassifRiscoController.getBoolDominioSituacao(item.indSituacao)}"/> 
+                        </p:column>  
+                        <p:column style="text-align:center; width: 100px;"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_PROT_CLASSIF_RISCO_BLOQUEADO}"/> 
+                          </f:facet>  
+                          <h:outputText styleClass="silk-icon silk-checked" rendered="#{protClassifRiscoController.getBoolDominioSituacao(item.indBloqueado)}"/> 
+                        </p:column>  
+                        <p:column style="text-align:center; width: 100px;"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_PROT_CLASSIF_RISCO_PERMITE_CHECAGEM}"/> 
+                          </f:facet>  
+                          <h:outputText styleClass="silk-icon silk-checked" rendered="#{protClassifRiscoController.getBoolDominioSituacao(item.indPermiteChecagem)}"/> 
+                        </p:column> 
+                      </mec:serverDataTable>  
+                    </p:outputPanel> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </h:form> 
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition>
+</html>

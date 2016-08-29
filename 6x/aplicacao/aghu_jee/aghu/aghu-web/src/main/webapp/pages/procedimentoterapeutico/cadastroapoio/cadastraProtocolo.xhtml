@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.TITLE_TIPOS_SESSOES_TERAPEUTICAS} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+		<style>
+			.ui-button-text-only .ui-button-text {
+				padding: 0.3em 2em !important;
+			}
+			.medicamento-domiciliar-disabled {
+				background-position:-16px 0px !important;  
+			}
+			.medicamento-domiciliar-enabled {
+				background-position:0px 0px !important;  
+			}
+		</style>
+	</ui:define>
+	 <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cadastrarProtocoloController.inicio}"/> 
+      </f:metadata> 
+    </ui:define> 
+	<ui:define name="body">
+		<mec:pageConfig controller="#{cadastrarProtocoloController}" ignoreEnter="true" />
+		<h:form prependId="false" id="formPesquisar">
+			<aghu:panelGeral legend="#{cadastrarProtocoloController.novaVersao ? messages.LABEL_DESCRICAO_PROTOCOLO : messages.LABEL_CADASTRAR_PROTOCOLO}">
+				<aghu:linha>
+				    <mec:selectOneMenu id="tpSessao" itemLabel="descricao" 
+				    		readonly="#{cadastrarProtocoloController.seqProtocolo != null or cadastrarProtocoloController.modoVisualizacao or cadastrarProtocoloController.copiarProtocolo}"
+				    		label="#{messages.LABEL_TIPOS_SESSAO_PROTOCOLO}" 
+				    		title="#{messages.TITLE_TIPOS_SESSAO_PROTOCOLO}" 
+				    		requiredFake="true" style="width: 130px !important;"
+				    		items="#{cadastrarProtocoloController.listarTipoSessao()}" 
+				    		value="#{cadastrarProtocoloController.itemSelecionado}"/> 
+								
+					<mec:inputText id="protocolo"
+							readonly="#{(!cadastrarProtocoloController.obterSituacaoProtocoloSelecionado() and cadastrarProtocoloController.seqProtocolo != null) or (cadastrarProtocoloController.modoVisualizacao) or (cadastrarProtocoloController.novaVersao)}"
+							label="#{messages.LABEL_DESCRICAO_PROTOCOLO}"
+							title="#{messages.TITLE_DESCRICAO_PROTOCOLO}"
+							value="#{cadastrarProtocoloController.descrProtocolo}"
+							requiredFake="true" maxlength="120" size="70" style="text-transform:uppercase">
+							<p:ajax event="blur" process="@this" update="@(#protocolo)"/>
+					</mec:inputText>
+					<mec:inputNumero id="versao"
+						label="#{messages.LABEL_VERSAO_PROTOCOLO}"
+						title="#{messages.TITLE_VERSAO_PROTOCOLO}"
+						value="#{cadastrarProtocoloController.versao}"
+						required="true" readonly="true"
+						maxlength="3" size="15" 
+						disabled="#{cadastrarProtocoloController.modoVisualizacao}"/>
+		
+					<mec:inputNumero id="qtdCiclo"
+						label="#{messages.LABEL_QUANTIDADE_CICLOS_PROTOCOLO}"
+						title="#{messages.TITLE_QUANTIDADE_CICLOS_PROTOCOLO}"
+						value="#{cadastrarProtocoloController.qtdCiclo}"
+						maxlength="3" size="15"
+						readonly="#{cadastrarProtocoloController.modoVisualizacao}"/>
+						
+					<mec:selectOneMenu id="situacao"
+						rendered="#{cadastrarProtocoloController.seqProtocolo == null or cadastrarProtocoloController.novaVersao or cadastrarProtocoloController.modoVisualizacao}"
+						label="#{messages.LABEL_SITUACAO_PROTOCOLO}"
+						title="#{messages.TITLE_SITUACAO_PROTOCOLO}"
+						enum="DominioSituacaoProtocolo" style="width:85px;"
+						required="true" readonly="true"
+						value="#{cadastrarProtocoloController.situacaoProtocolo}"
+						disabled="#{cadastrarProtocoloController.modoVisualizacao or cadastrarProtocoloController.novaVersao}" />
+						
+					<mec:selectOneMenu id="situacao2"
+						rendered="#{cadastrarProtocoloController.seqProtocolo != null and !(cadastrarProtocoloController.novaVersao) and !cadastrarProtocoloController.modoVisualizacao}"
+                        label="#{messages.LABEL_SITUACAO_PROTOCOLO}"
+                        title="#{messages.TITLE_SITUACAO_PROTOCOLO}"
+                        items="#{cadastrarProtocoloController.verificaSituacaoProtocolo()}"
+                        itemLabel="descricaoSingular" requiredFake="true"
+                        value="#{cadastrarProtocoloController.situacaoProtocolo}"
+                        readonly="#{cadastrarProtocoloController.modoVisualizacao}"/>
+									
+				</aghu:linha>
+			</aghu:panelGeral>
+		<aghu:linha></aghu:linha>
+		<aghu:acao> 
+	      <mec:commandButton 
+          		value="#{messages.LABEL_GRAVAR_PROTOCOLO}" 
+          		id="bt_gravar" 
+          		disabled="#{cadastrarProtocoloController.modoVisualizacao}"
+          		action="#{cadastrarProtocoloController.gravar}" profile="ok" render="formLista"/>  
+         
+          <mec:commandButton 
+          		id="bt_cancelar" 
+          		value="#{messages.LABEL_CANCELAR_PROTOCOLO}" 
+          		rendered="#{!cadastrarProtocoloController.modoVisualizacao}"
+          		action="#{cadastrarProtocoloController.cancelar}" 
+         		profile="cancel" immediate="true" 
+         		render="formPesquisar"/> 
+         		
+         <mec:commandButton 
+          		id="bt_voltar" 
+          		rendered="#{cadastrarProtocoloController.modoVisualizacao}"
+          		value="#{messages.LABEL_VOLTAR}" 
+          		action="#{cadastrarProtocoloController.cancelar}" 
+         		profile="back" immediate="true" 
+         		render="formPesquisar"/> 
+       </aghu:acao> 
+	</h:form>
+	
+	<br/>
+	
+	<h:form prependId="false" id="formListar" rendered="#{cadastrarProtocoloController.seqVersaoProtocoloSessao != null}">
+		      <script type="text/javascript">
+              	function ajustarParaResolucao() {
+                 	setTimeout(function() {
+                     jq('#tabela').css("width", screen.width - 60);                     
+                 	}, 200);
+               	}
+              	ajustarParaResolucao();
+       		  </script>
+			<aghu:panelGeral id="panelListaTratamento" legend="#{messages.LABEL_ITENS_PROTOCOLO}">
+				<p:outputPanel  id="tabela"> 
+				<aghu:linha>
+				 <aghu:column type="table" >
+					   <mec:serverDataTable id="tabelaListaTratamento" list="#{cadastrarProtocoloController.listaProtocoloMedicamentosVO}"
+					   		 scrollable="true" selection="parametroSelecionadoAux"  controller="#{cadastrarProtocoloController}" > 
+			              <c:set var="tratamento" value="#{item}"/>  
+			              <p:column style="width:60px; text-align:center !important;"> 
+			                <f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ACAO}" />
+							</f:facet>
+							
+							<mec:commandLink id="link_excluir" title="#{messages.TITLE_BOTAO_EXCLUIR_TRATAMENTO}" 
+							profile="delete" ajax="true" render="formListar" action="#{cadastrarProtocoloController.excluirTratamento}" 
+							rendered="#{(!tratamento.indSolucao and tratamento.pcuSeq == null and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')) and (!cadastrarProtocoloController.modoVisualizacao)}"> 
+			                  <f:setPropertyActionListener for="command" target="#{cadastrarProtocoloController.parametroSelecionadoAux}" value="#{tratamento}"/> 
+			                </mec:commandLink>
+							
+							<h:outputText id="link_excluir_d" title="#{messages.TITLE_BOTAO_EXCLUIR_TRATAMENTO}" styleClass="silk-icon silk-delete-disabled"
+							rendered="#{(!tratamento.indSolucao and tratamento.pcuSeq == null and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')) and (cadastrarProtocoloController.modoVisualizacao)}" /> 
+							
+							<mec:commandLink id="link_editar" disabled="#{cadastrarProtocoloController.modoVisualizacao}" title="#{messages.TITLE_BOTAO_EDITAR_MEDICAMENTO}" action="#{cadastrarProtocoloController.editarTratamento}" styleClass="silk-pencil silk-icon" rendered="#{!tratamento.indSolucao and tratamento.pcuSeq == null and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')}"> 
+									<f:setPropertyActionListener for="command" target="#{cadastrarProtocoloController.parametroSelecionadoAux}" value="#{tratamento}"/> 
+							</mec:commandLink>							
+			                			                 
+   			                <mec:commandLink id="link_excluir_solucao" title="#{messages.TITLE_BOTAO_EXCLUIR_TRATAMENTO}"
+   			                	ajax="true" render="formListar" profile="delete" action="#{cadastrarProtocoloController.excluirSolucao}" 
+   			                	rendered="#{(tratamento.indSolucao and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')) and (!cadastrarProtocoloController.modoVisualizacao)}" 
+   			                	styleClass="silk-delete silk-icon" >
+  			                	<f:setPropertyActionListener for="command" target="#{cadastrarProtocoloController.seqProtocoloExclusaoSolucao}" value="#{tratamento.ptmSeq}"/>
+		                	</mec:commandLink>
+   			                
+   			                <h:outputText id="link_excluir_solucao_d" title="#{messages.TITLE_BOTAO_EXCLUIR_TRATAMENTO}" styleClass="silk-icon silk-delete-disabled" 
+   			                	rendered="#{(tratamento.indSolucao and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')) and (cadastrarProtocoloController.modoVisualizacao)}" />
+		                	
+		                	<mec:commandLink id="link_editar_solucao" disabled="#{cadastrarProtocoloController.modoVisualizacao}" title="#{messages.TITLE_BOTAO_EDITAR_SOLUCAO}" profile="edit" action="#{cadastrarProtocoloController.editarSolucao(tratamento)}" rendered="#{tratamento.indSolucao and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')}"> 
+			                  	<f:setPropertyActionListener target="#{cadastroSolucaoProtocoloController.isEdicao}" value="true" for="command"/>
+			                  	<f:setPropertyActionListener target="#{cadastroSolucaoProtocoloController.habilitarAdicionar}" value="true" for="command"/>
+			                  	<f:setPropertyActionListener target="#{cadastroSolucaoProtocoloController.codSolucao}" value="#{tratamento.ptmSeq}" for="command"/>
+			                  	<f:setPropertyActionListener target="#{cadastroSolucaoProtocoloController.codVersaoProtocoloSessao}" value="#{cadastrarProtocoloController.parametroSelecionado.seqVersaoProtocoloSessao}" for="command"/>
+			                </mec:commandLink> 
+		                			                	
+		                	<mec:commandLink id="link_excluir_cuidados" profile="delete" ajax="true"
+		                	render="formListar" title="#{messages.LABEL_EXCLUIR}" action="#{cadastrarProtocoloController.excluirCuidados}" 
+		                	rendered="#{(tratamento.pcuSeq != null and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')) and (!cadastrarProtocoloController.modoVisualizacao)}">
+		                		<f:setPropertyActionListener target="#{cadastrarProtocoloController.seqCuidadoExclusao}" value="#{tratamento.pcuSeq}" for="command"/>
+		                	</mec:commandLink>
+		                	
+		                	<h:outputText id="link_excluir_cuidados_d" styleClass="silk-icon silk-delete-disabled" title="#{messages.LABEL_EXCLUIR}"
+		                	rendered="#{(tratamento.pcuSeq != null and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')) and (cadastrarProtocoloController.modoVisualizacao)}"/> 
+			                   
+			                <mec:commandLink id="link_editar_cuidados" disabled="#{cadastrarProtocoloController.modoVisualizacao}" title="#{messages.TITLE_BOTAO_EDITAR_CUIDADO}" profile="edit" action="#{cadastrarProtocoloController.editarCuidados(tratamento.pcuSeq)}" rendered="#{tratamento.pcuSeq != null and mf:hasPermission(securityController,'admPesquisaProtocolos,executar')}"/>
+			                
+			                <mec:commandLink id="link_detalhamento" rendered="#{cadastrarProtocoloController.exibeLupa}" title="#{messages.LABEL_DETALHAMENTO}" profile="view" action="#{cadastrarProtocoloController.visualizarItens(tratamento)}"/>			                
+			                
+			              </p:column>  
+			              <p:column style="width:20px;"> 
+			                <f:facet name="header"> 
+			                  <h:outputText value="#{messages.LABEL_ORDEM_TRATAMENTO}" title="#{messages.TITLE_ORDEM_TRATAMENTO}"/> 
+			                </f:facet>  
+			             	<h:outputText value="#{tratamento.ordem}" /> 
+			              </p:column>  
+			              <p:column style="width:285px;"> 
+			                <f:facet name="header"> 
+			                  <h:outputText value="#{messages.LABEL_ITENS_PROTOCOLO}" title="#{messages.TITLE_ITENS_PROTOCOLO_TRATAMENTO}"/> 
+			                </f:facet>  
+			              	<h:outputText id="descricaoGrid" value="#{(tratamento.ptmDescricao.length() &gt; 40) ? fn:substring(tratamento.ptmDescricao,0,40) : tratamento.ptmDescricao}#{(tratamento.ptmDescricao.length() &gt; 40) ? '...' : '' }"
+			                			  title="#{(tratamento.ptmDescricao.length() &gt; 40) ? tratamento.ptmDescricao: null}" rendered="#{!tratamento.indSolucao}"/>
+
+			              	<h:outputText id="descricaoGridSolucao" value="#{(tratamento.ptmDescricao.length() &gt; 40) ? fn:substring(tratamento.ptmDescricao,0,40) : tratamento.ptmDescricao}#{(tratamento.ptmDescricao.length() &gt; 40) ? '...' : '' }"
+			              		rendered="#{tratamento.indSolucao}" />
+			                <p:tooltip id="tooltipSolucao" 
+	                			for="descricaoGridSolucao" direction="bottom-left" styleClass="tooltip" layout="block"
+						    	style="max-width:600px; word-wrap: break-word;" rendered="#{tratamento.indSolucao and cadastrarProtocoloController.buscarTooltipSolucao(tratamento).length() gt 0}">
+			                	<h:outputText id="labelDescSolucao" value="#{cadastrarProtocoloController.buscarTooltipSolucao(tratamento)}" /> 
+							</p:tooltip>
+							<mec:commandLink id="linkModalSolucao" styleClass="silk-icon silk-medicamentos" ajax="true"
+								action="#{cadastrarProtocoloController.carregarModalSolucao(tratamento)}" 
+								rendered="#{tratamento.indSolucao}" render="modalSolucao, tabelaListaSolucao, formModalSolucao" >
+								<f:setPropertyActionListener for="command" target="#{cadastrarProtocoloController.parametroModalSolucao}" value="#{tratamento}"/>
+							</mec:commandLink>
+							<h:outputText id="descricaoCuidado" value="#{cadastrarProtocoloController.obterDescricaoTruncada(tratamento.descricaoCuidadoUsual, 40)}" 
+								rendered="#{not empty tratamento.pcuSeq}" />
+							<p:tooltip id="toolTipDescricaoCuidado" 
+	                			for="descricaoCuidado" direction="bottom-left" styleClass="tooltip" layout="block"
+						    	style="width:600px; word-wrap: break-word;" trackMouse="true" 
+						    	rendered="#{not empty tratamento.descricaoCuidadoUsual and tratamento.descricaoCuidadoUsual.length() gt 40}">
+			                		<h:outputText id="labelDescCuidado" value="#{tratamento.descricaoCuidadoUsual}" /> 
+							</p:tooltip>
+			              </p:column>  
+			              <p:column style="width:100px;"> 
+			                <f:facet name="header"> 
+			                  <h:outputText value="#{messages.LABEL_DOSE_TRATAMENTO}"/> 
+			                </f:facet>  
+			                <h:outputText value="#{tratamento.dose}"/> 
+			              </p:column>  
+			             <p:column style="width:80px;"> 
+			                <f:facet name="header"> 
+			                  <h:outputText value="#{messages.LABEL_VIA_TRATAMENTO}"/> 
+			                </f:facet>  
+			                <h:outputText id="descricaoVia" value="#{cadastrarProtocoloController.obterDescricaoTruncada(tratamento.descricaoVia,10)}" 
+			                	rendered="#{not empty tratamento.descricaoVia and tratamento.descricaoVia.length() gt 10 and not empty tratamento.ptmSeq and not tratamento.indSolucao}" />
+			                <p:tooltip id="toolTipDescricaoVia" 
+	                			for="descricaoVia" direction="bottom-left" styleClass="tooltip" layout="block"
+						    	style="width:600px; word-wrap: break-word;" trackMouse="true" 
+						    	rendered="#{not empty tratamento.descricaoVia and tratamento.descricaoVia.length() gt 10 and not empty tratamento.ptmSeq and not tratamento.indSolucao}">
+			                		<h:outputText id="labelDescVia" value="#{tratamento.descricaoVia}" /> 
+							</p:tooltip>
+							<h:outputText id="descricaoViaAux" value="#{tratamento.descricaoVia}" rendered="#{not empty tratamento.descricaoVia and tratamento.descricaoVia.length() le 10 and not empty tratamento.ptmSeq and not tratamento.indSolucao}" />
+							<h:outputText id="siglaVia" value="#{tratamento.siglaVia}" rendered="#{not empty tratamento.ptmSeq and tratamento.indSolucao}" />
+			              </p:column> 
+			             <p:column style="width:100px;"> 
+			                <f:facet name="header"> 
+			                  <h:outputText value="#{messages.LABEL_APRAZAMENTO_TRATAMENTO}"/> 
+			                </f:facet>  
+			                <h:outputText value="#{(cadastrarProtocoloController.obterAprazamentoGrid(tratamento).length() &gt; 10) ? fn:substring(cadastrarProtocoloController.obterAprazamentoGrid(tratamento),0,10) : cadastrarProtocoloController.obterAprazamentoGrid(tratamento)}#{(cadastrarProtocoloController.obterAprazamentoGrid(tratamento).length() &gt; 10) ? '...' : '' }"
+			                			  title="#{(cadastrarProtocoloController.obterAprazamentoGrid(tratamento).length() &gt; 10) ? cadastrarProtocoloController.obterAprazamentoGrid(tratamento) : null}"/>
+			              </p:column> 
+			              		              
+			             <p:column style="width:40px;"> 
+			                <f:facet name="header"> 
+			                  <h:outputText value="#{messages.LABEL_TEMPO_TRATAMENTO}" title="#{messages.TITLE_TEMPO_TRATAMENTO}"/> 
+			                </f:facet>  
+			                <h:outputText value="#{tratamento.tempo}">
+								<f:convertDateTime pattern="HH:mm"/> 
+							</h:outputText>
+			              </p:column>
+			              <c:forEach var="i" begin="1" end="#{cadastrarProtocoloController.diasTratamento}" >						    
+							<p:column style="width:30px;">								
+								<f:facet name="header"> 									
+									<h:outputText value="D #{i}"/> 								
+								</f:facet>
+								<center>
+									<mec:commandLink id="linkCelulaVazia" action="#{cadastrarProtocoloController.fazerCheckCelula(tratamento, i)}" block="true" style="vertical-align: middle;"
+										styleClass="silk-blank silk-icon" disabled="#{cadastrarProtocoloController.modoVisualizacao or cadastrarProtocoloController.copiarProtocolo}" rendered="#{!cadastrarProtocoloController.renderizarCheck(tratamento, i) and !tratamento.renderizaAzul}" />
+										
+									<mec:commandLink id="linkVerde" action="#{cadastrarProtocoloController.editarTratamentoDia(tratamento, i)}" block="true" style="vertical-align: middle;"
+										styleClass="#{tratamento.styleCelulaDia}"  rendered="#{cadastrarProtocoloController.renderizarCheck(tratamento, i)}" disabled="#{cadastrarProtocoloController.copiarProtocolo}" >
+											<f:setPropertyActionListener for="command" target="#{cadastrarProtocoloController.isDiaModificado}" value="true"/> 
+									</mec:commandLink>
+										
+									<mec:commandLink id="linkAzul" action="#{cadastrarProtocoloController.editarTratamentoDia(tratamento, i)}" block="true" style="vertical-align: middle;"
+										styleClass="#{tratamento.styleCelulaDia}"  rendered="#{tratamento.renderizaAzul}" disabled="#{cadastrarProtocoloController.copiarProtocolo}">
+											<f:setPropertyActionListener for="command" target="#{cadastrarProtocoloController.isDiaModificado}" value="true"/> 
+									</mec:commandLink>
+								</center>
+							</p:column>						  
+						  </c:forEach> 
+			           </mec:serverDataTable> 
+					  </aghu:column>
+					 <aghu:column type="button" >
+						<p:outputPanel  id="tabelaAcao"> 
+			     	
+						 <mec:commandButton 
+				          		value="#{messages.LABEL_INCLUIR_MEDICAMENTO}"
+								rendered="#{cadastrarProtocoloController.seqVersaoProtocoloSessao != null}"								
+				          		id="bt_medicamento" 
+				          		disabled="#{cadastrarProtocoloController.modoVisualizacao or cadastrarProtocoloController.habilitarVersaoCopiarProtocolo or not mf:hasPermission(securityController,'admPesquisaProtocolos,executar')}"
+				             	action="#{cadastrarProtocoloController.pagIncluiMedicamento}" styleClass="bt_cinza" /> 
+				         
+				         <mec:commandButton 
+          						value="#{messages.LABEL_INCLUIR_SOLUCAO}" 
+          						id="bt_sol" styleClass="bt_cinza"
+          						disabled="#{cadastrarProtocoloController.modoVisualizacao or cadastrarProtocoloController.habilitarVersaoCopiarProtocolo or not mf:hasPermission(securityController,'admPesquisaProtocolos,executar')}"
+          						action="#{cadastrarProtocoloController.editarSolucao(null)}">
+   						</mec:commandButton>
+   						
+   						<mec:commandButton 
+				          		value="#{messages.LABEL_BT_CUIDADOS}"
+								rendered="#{cadastrarProtocoloController.seqVersaoProtocoloSessao != null}"								
+				          		id="bt_cuidados" 
+				          		disabled="#{cadastrarProtocoloController.modoVisualizacao or cadastrarProtocoloController.habilitarVersaoCopiarProtocolo or not mf:hasPermission(securityController,'admPesquisaProtocolos,executar')}"
+				          		action="#{cadastrarProtocoloController.cadastrarCuidados}" styleClass="bt_cinza" />
+				         
+				         <mec:commandButton
+								style="background-position: left center !important;background-repeat: no-repeat !important;background-image:url('../../../resources/img/icons/bt_sobe.png') !important;"
+				          		value="#{messages.LABEL_MOVER_PARA_CIMA}" block="true"
+								rendered="#{cadastrarProtocoloController.seqVersaoProtocoloSessao != null}"								
+				          		id="bt_mover_cima" process="@this, @(#tabelaListaTratamento)" render="@(#panelListaTratamento)"
+				          		disabled="#{cadastrarProtocoloController.modoVisualizacao}"
+				          		action="#{cadastrarProtocoloController.moverParaCima}" styleClass="bt_cinza" />
+				       					  
+				          <mec:commandButton 
+								style="background-position: left center !important;background-repeat: no-repeat !important;background-image:url('../../../resources/img/icons/bt_desce.png') !important;"
+				          		value="#{messages.LABEL_MOVER_PARA_BAIXO}" block="true"
+								rendered="#{cadastrarProtocoloController.seqVersaoProtocoloSessao != null}"								
+				          		id="bt_mover_baixo" process="@this, @(#tabelaListaTratamento)" render="@(#panelListaTratamento)"
+				          		disabled="#{cadastrarProtocoloController.modoVisualizacao}"
+				          		action="#{cadastrarProtocoloController.moverParaBaixo}" styleClass="bt_cinza" /> 
+						</p:outputPanel> 
+		       		</aghu:column>
+				</aghu:linha>
+				</p:outputPanel> 
+			</aghu:panelGeral>
+		</h:form>
+	        
+    	<p:dialog id="modalExcluirSolucao" width="400" height="150" modal="true" resizable="false" widgetVar="modalExcluirSolucaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CONFIRMAR_EXCLUSAO_SOLUCAO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_CONFIRMAR_EXCLUSAO_SOLUCAO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalExcluirSolucao"> 
+              <mec:commandButton id="bt_excluir_modal_solucao_sim"
+              		value="#{messages.LABEL_SIM}"  block="true" 
+              		action="#{cadastrarProtocoloController.excluirSolucao}" 
+              		onclick="PF('modalExcluirSolucaoWG').hide();" 
+              		process="@this" render="formListar"/>  
+              <mec:commandButton id="bt_excluir_modal_solucao_nao"
+              		value="#{messages.LABEL_NAO}" 
+              		onclick="PF('modalExcluirSolucaoWG').hide();" 
+                  	profile="cancel"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>
+
+		<p:dialog id="modalSolucao" width="750" height="300" modal="true" resizable="false" widgetVar="modalSolucaoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{cadastrarProtocoloController.tituloModalSolucao}" />
+				</h:panelGroup>
+			</f:facet>
+	        <br clear="none"/>  
+			<h:form prependId="false" id="formModalSolucao">
+				<aghu:linha>
+					<mec:serverDataTable id="tabelaListaSolucao"
+						list="#{cadastrarProtocoloController.listaMedicamentos}"
+						scrollHeight="200" scrollable="true"
+						controller="#{cadastrarProtocoloController}">
+						<c:set var="_solucao" value="#{item}" />
+						<p:column style="width:30% !important;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DESCRICAO_MEDICAMENTO_SOLUCAO_GRID}" />
+							</f:facet>
+							<h:outputText value="#{_solucao.vdmDescricao}" />
+						</p:column>
+
+						<p:column style="width:30px !important;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DOSE_SOLUCAO}" />
+							</f:facet>
+							<div align="right">
+								<h:outputText value="#{_solucao.pimDose}" >
+									<f:convertNumber minFractionDigits="0" maxFractionDigits="4" maxIntegerDigits="11" type="currency" currencySymbol="" />
+								</h:outputText>
+							</div>
+						</p:column>
+
+						<p:column style="width:30px !important;" >
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_UNIDADE_SOLUCAO}" />
+							</f:facet>
+							<h:outputText value="#{_solucao.dosagem.seqUnidade}" />
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:commandButton value="#{messages.LABEL_OK}"
+						onclick="PF('modalSolucaoWG').hide();" id="btOkModalSolucao"
+						profile="ok" ajax="true" />
+				</aghu:linha>
+			</h:form>
+		</p:dialog>
+
+		<h:form prependId="false" id="formModalExcluirCuidados">
+		    <p:dialog id="modal_excluir_cuidado" width="400" height="160"
+				autosized="false" resizeable="false"
+				modal="true" resizable="false" 
+				widgetVar="modal_excluir_cuidado">
+				<f:facet name="header">
+					<h:outputText id="headerModalExcluirCuidado" value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText id="msgConfirmExcluirCuidado" value="#{messages.LABEL_EXCLUSAO_CUIDADOS_PROTOCOLO}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="btSimConfirmExcluirCuidado" value="#{messages.CASCA_LABEL_SIM}" action="#{cadastrarProtocoloController.excluirCuidados}"
+						oncomplete="PF('modal_excluir_cuidado').hide();" profile="ok" ajax="true" render="@(#formListar)" process="@this" />
+					<mec:commandButton id="btNaoConfirmExcluirCuidado" value="#{messages.CASCA_LABEL_NAO}" onclick="PF('modal_excluir_cuidado').hide(); return false;"
+						profile="cancel" ajax="true" />
+				</aghu:acao>
+			</p:dialog>
+		</h:form>
+		
+		
+		<h:form prependId="false" id="formModalExcluirMedicamento">
+		    <p:dialog id="modal_excluir_medicamento" width="400" height="160"
+				autosized="false" resizeable="false"
+				modal="true" resizable="false" 
+				widgetVar="modal_excluir_medicamento">
+				<f:facet name="header">
+					<h:outputText id="headerModalExcluirMedicamento" value="#{messages.CASCA_LABEL_EXCLUSAO}" />
+				</f:facet>
+				<br clear="none" />
+				<h:outputText id="msgConfirmExcluirMedicamento" value="#{messages.MENSAGEM_EXCLUSAO_TRATAMENTO}" />
+				<br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<aghu:acao>
+					<mec:commandButton id="btSimConfirmExcluirMedicamento" value="#{messages.CASCA_LABEL_SIM}" action="#{cadastrarProtocoloController.excluirTratamento}"
+						oncomplete="PF('modal_excluir_medicamento').hide();" profile="ok"  ajax="true" render="@(#formListar)" process="@this" />
+					<mec:commandButton id="btNaoConfirmExcluirMedicamento" value="#{messages.CASCA_LABEL_NAO}" onclick="PF('modal_excluir_medicamento').hide(); return false;"
+						profile="cancel" ajax="true" />
+				</aghu:acao>
+			</p:dialog>
+		</h:form>
+</ui:define>
+</ui:composition>
+</html>

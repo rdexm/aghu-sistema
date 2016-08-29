@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_IDENTIFICACAO_CADAVER} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroCadaverPaginatorController}"/>  
+      <h:form prependId="false" id="formDadosCadCtrlQualidade"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISA_IDENTIFICACAO_CADAVER}"> 
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO_AEL_CADAVER}" size="10" maxlength="9" value="#{cadastroCadaverPaginatorController.filtros.seq}" id="seq"/>  
+            <mec:inputText value="#{cadastroCadaverPaginatorController.filtros.nome}" label="#{messages.LABEL_NOME}" title="#{messages.TITLE_NOME_AEL_CADAVER}" size="134" maxlength="100" style="text-transform:uppercase" id="nome"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputTextData id="dtNascimento" label="#{messages.LABEL_DATA_NASC}" title="#{messages.TITLE_NASCIMENTO_AEL_CADAVER}" value="#{cadastroCadaverPaginatorController.filtros.dtNascimento}" tipo="data"/>  
+            <mec:inputTextData id="dthrRemocao" label="#{messages.LABEL_DATA_REMOCAO}" title="#{messages.TITLE_REMOCAO_AEL_CADAVER}" value="#{cadastroCadaverPaginatorController.filtros.dthrRemocao}" tipo="data"/>  
+            <mec:inputText value="#{cadastroCadaverPaginatorController.filtros.causaObito}" label="#{messages.LABEL_CAUSA_OBITO}" title="#{messages.TITLE_CAUSA_OBITO_AEL_CADAVER}" size="115" maxlength="240" style="text-transform:uppercase" id="causaObito"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_COD_CONVENIO_FAT}" title="#{messages.TITLE_CONVENIO_AEL_CADAVER}" size="10" maxlength="3" readonly="#{cadastroCadaverPaginatorController.filtros != null and cadastroCadaverPaginatorController.filtros.convenioSaudePlano != null}" value="#{cadastroCadaverPaginatorController.convenioId}" id="codigoConvenio"> 
+              <p:ajax event="blur" bypassUpdates="false" process="@this"/> 
+            </mec:inputNumero>  
+            <mec:inputNumero 
+              id="codigoPlano"
+              label="#{messages.LABEL_COD_PLANO_FAT}" title="#{messages.TITLE_PLANO_AEL_CADAVER}"
+              size="8" maxlength="2" 
+              converter="#{javax.faces.Byte}" 
+              readonly="#{cadastroCadaverPaginatorController.filtros != null and cadastroCadaverPaginatorController.filtros.convenioSaudePlano != null}" 
+              value="#{cadastroCadaverPaginatorController.planoId}"> 
+              <p:ajax event="change" bypassUpdates="false" update="@(#codigoConvenio) @(#codigoPlano) @(#suggestion_plano)" process="@this" listener="#{cadastroCadaverPaginatorController.escolherPlanoConvenio()}"/> 
+            </mec:inputNumero>  
+            <mec:suggestionBox id="suggestion_plano" label="#{messages.LABEL_CONVENIO_PLANO}" title="#{messages.TITLE_DESCRICA_CONVENIO_PLANO_CADAVER}" width="800" size="116" maxlength="40" converter="#{fatConvenioSaudePlanoConverter}" descricaoInput="descricaoPlanoConvenio" suggestionAction="pesquisarConvenioSaudePlanos" posSelectionAction="atribuirPlano" posDeleteAction="atribuirPlano" controller="#{cadastroCadaverPaginatorController}" value="#{cadastroCadaverPaginatorController.filtros.convenioSaudePlano}" render="codigoConvenio,codigoPlano}"> 
+              <p:column>#{item.convenioSaude.descricao} - #{item.descricao}</p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" rendered="#{mf:hasPermission(securityController,'cadastrarCadaver,pesquisar')}" action="#{cadastroCadaverPaginatorController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+          <mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}" action="#{cadastroCadaverPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{cadastroCadaverPaginatorController.inserir}" rendered="#{cadastroCadaverPaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'cadastrarCadaver,executar')}" profile="add"/> 
+        </aghu:linha> 
+      </h:form>  
+      <h:form prependId="false" id="formListarCadCtrlQualidade"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaCadCtrlQualidade" controller="#{cadastroCadaverPaginatorController}"> 
+          <c:set var="_item" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaCadCtrlQualidade_link_editar" profile="edit" title="editar" action="#{cadastroCadaverPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{cadastroCadaverController.aelDadosCadaver}" value="#{_item}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{cadastroCadaverPaginatorController.selecionado}" value="#{_item}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaCadCtrlQualidade_link_remover" profile="delete" title="excluir" action="#{cadastroCadaverPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{cadastroCadaverPaginatorController.selecionado}" value="#{_item}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item[seq]}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.seq}"/> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item[nome]}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NOME}"/> 
+            </f:facet>  
+            <p:outputPanel rendered="#{(_item.nome.length() gt 20)}" layout="inline"> 
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{_item.nome}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{fn:substring(_item.nome,0,20)}"/>  
+              <h:outputText value=" ..."/> 
+            </p:outputPanel>  
+            <p:outputPanel rendered="#{(_item.nome.length() le 20)}" layout="inline"> 
+              <h:outputText value="#{_item.nome}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item[dtNascimento]}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_NASC}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.dtNascimento}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item[raca]}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_RACA}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.raca.descricao}"/> 
+          </p:column>  
+          <p:column block="true" style="text-align:center;" sortBy="#{item[grupoSanguineo]}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_GRUPO_SANG}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.grupoSanguineo}"/> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item[dthrRemocao]}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DATA_REMOCAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_item.dthrRemocao}"> 
+              <f:convertDateTime pattern="dd/MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item[causaObito]}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CAUSA_OBITO}"/> 
+            </f:facet>  
+            <p:outputPanel rendered="#{_item.causaObito.length() gt 20}" layout="inline"> 
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{_item.causaObito}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{fn:substring(_item.causaObito,0,20)}"/>  
+              <h:outputText value=" ..."/> 
+            </p:outputPanel>  
+            <p:outputPanel rendered="#{_item.causaObito.length() le 20}" layout="inline"> 
+              <h:outputText value="#{_item.causaObito}"/> 
+            </p:outputPanel> 
+          </p:column>  
+          <p:column block="true" sortBy="#{item[convenioSaudePlano]}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CONVENIO_PLANO}"/> 
+            </f:facet>  
+            <c:set xmlns:c="http://java.sun.com/jstl/core" var="conv" value="#{_item.convenioSaude.descricao} - #{_item.convenioSaudePlano.descricao}"></c:set>  
+            <p:outputPanel rendered="#{conv.length() gt 20}" layout="inline"> 
+              <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                <h:outputText value="#{conv}"/> 
+              </p:tooltip>  
+              <h:outputText value="#{fn:substring(conv,0,20)}"/>  
+              <h:outputText value=" ..."/> 
+            </p:outputPanel>  
+            <p:outputPanel rendered="#{conv.length() le 20}" layout="inline"> 
+              <h:outputText value="#{conv}"/> 
+            </p:outputPanel> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

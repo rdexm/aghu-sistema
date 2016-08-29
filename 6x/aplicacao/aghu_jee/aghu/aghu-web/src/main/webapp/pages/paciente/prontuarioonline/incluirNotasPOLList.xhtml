@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">
+   
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_INCLUIR_NOTAS_POL']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>
+      
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{incluirNotasPOLController}" />
+        
+      <h:form prependId="false" id="resultados"> 
+        <aghu:panelGeral legend="#{messages.LABEL_NOTAS_POL} - #{incluirNotasPOLController.paciente.prontuario} - #{incluirNotasPOLController.paciente.nome}">
+         
+          <aghu:linha id="btnsAcoes" > 
+              <mec:commandButton id="btn_adicionar" action="#{incluirNotasPOLController.limparIncluirNota}" 
+              	oncomplete="PF('modalIncluirWG').show();" value="#{messages.LABEL_NOTAS_POL_NOVA_NOTA}" disabled="#{!incluirNotasPOLController.botaoAdicionar}" 
+              	ajax="true" /> 
+          </aghu:linha>
+            
+          <aghu:linha id="panelResultados" > 
+              <mec:serverDataTable dataModel="dataModel" rowKeyVar="itemRowKey" value="#{incluirNotasPOLController}" 
+              	id="tabela_resultados" controller="#{incluirNotasPOLController}" selection="registroSelecionado" render="outTextoNota"> 
+                <c:set var="registroCorrente" value="#{item}"/>
+                  
+                <p:column style="width:50px"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOTAS_POL_DATA}"/> 
+                  </f:facet>  
+                  <h:outputText id="tabela_data" value="#{registroCorrente.dthrValida}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column style="width:auto;"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOTAS_POL_PROFISSIONAL}" /> 
+                  </f:facet>  
+                  <h:outputText title="#{registroCorrente.nomeConsProf}" 
+                  	value="#{fn:substring(registroCorrente.nomeConsProf, 0, 40)}"/> 
+                </p:column>  
+                
+                <p:column style="width:40px" exportable="false">
+                   <f:facet name="header"> 
+                   		<h:outputText value="#{messages.ACAO}" /> 
+                  </f:facet>  
+                  <mec:commandLink id="bt_diagnosticos" title="#{messages.LABEL_DIAGNOSTICOS}" action="#{incluirNotasPOLController.abrirDiagnosticos}" 
+                  	rendered="#{incluirNotasPOLController.botaoDiagnosticos}" styleClass=" silk-page silk-icon"> 
+                    <f:setPropertyActionListener target="#{diagnosticosPacienteController.pacCodigo}" value="#{incluirNotasPOLController.paciente.codigo}" for="command"/>  
+                    <f:setPropertyActionListener target="#{diagnosticosPacienteController.voltarPara}" value="pol-nota" for="command"/> 
+                  </mec:commandLink>
+                    
+                  <mec:commandLink title="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" id="bt_visualizar_relatorio" 
+                  	action="#{incluirNotasPOLController.visualizaRelatorioIncluirNotasPol}" ajaxSingle="true" styleClass=" silk-printer silk-icon"> 
+                    <f:setPropertyActionListener target="#{incluirNotasPOLController.seqMamNotaAdicionalEvolucoes}" value="#{registroCorrente.seq}" for="command"/>
+                  </mec:commandLink>  
+                  <mec:commandLink title="#{messages.LABEL_EXCLUIR}" id="bt_excluir_relatorio" oncomplete="PF('modalExcluirWG').show();" 
+                  	rendered="#{incluirNotasPOLController.permiteExcluirNotaAdicionalEvolucao}" profile="delete" ajax="true" render="panelResultados" process="@this"/> 
+                </p:column> 
+              </mec:serverDataTable>
+             
+          </aghu:linha>
+            
+          <aghu:linha id="outTextoNota"> 
+              <mec:inputTextArea id="textoNota" label="#{messages.LABEL_NOTAS_POL_DESCRICAO}" 
+              	value="#{incluirNotasPOLController.registroSelecionado.descricao}" rows="8" cols="84" disabled="true"/> 
+          </aghu:linha> 
+           
+       </aghu:panelGeral> 
+	</h:form>
+	  
+    <p:dialog id="modalIncluir" style="text-align:center;" height="330" resizeable="false" moveable="true" width="500" 
+    	modal="true" resizable="false" widgetVar="modalIncluirWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_NOTAS_POL_INCLUIR}"/> 
+        </f:facet>  
+        <h:form id="formIncluirNota" prependId="false"> 
+          <aghu:div>
+	          <aghu:linha> 
+	            <mec:inputTextArea id="modalIncluirNota" requiredFake="true" label="#{messages.LABEL_NOTAS_POL_DESCRICAO}" 
+	            	title="#{messages.TITLE_NOTAS_POL_TEXTO}" value="#{incluirNotasPOLController.textoIncluiNota}" cols="60" rows="10" maxlength="4000"/> 
+	          </aghu:linha>  
+	          <br />  
+	          <aghu:acao> 
+	            <mec:commandButton id="bt_gravar" value="#{messages.LABEL_BOTAO_GRAVAR}" action="#{incluirNotasPOLController.incluir}" profile="ok" style="float:left" 
+	            	ajax="true" render="panelResultados, formIncluirNota"/>  
+	            <mec:commandButton id="bt_cancelar" action="#{incluirNotasPOLController.limparIncluirNota}" value="#{messages.LABEL_BOTAO_CANCELAR}" oncomplete="PF('modalIncluirWG').hide();" profile="cancel" ajax="true" render="modalIncluir"/> 
+	          </aghu:acao>
+			</aghu:div>
+        </h:form> 
+      </p:dialog>
+        
+      <p:dialog id="modalExcluir" style="text-align:center;" height="350" resizeable="false" moveable="true" width="500" 
+      	modal="true" resizable="false" widgetVar="modalExcluirWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_NOTAS_POL_EXCLUIR}"/> 
+        </f:facet>  
+        <h:form id="formJustificativaExclusao" prependId="false">
+	        <aghu:div>
+				<aghu:linha > 
+				  <mec:inputTextArea id="modalJustExclusao" requiredFake="true" label="#{messages.LABEL_NOTAS_POL_JUSTIFICATIVA}" 
+				  	title="#{messages.TITLE_NOTAS_POL_JUSTIFICATIVA}" value="#{incluirNotasPOLController.registroSelecionado.justExclusao}" cols="60" rows="10" maxlength="1000"/> 
+				</aghu:linha>  
+				<br/>  
+				<aghu:acao> 
+				  <mec:commandButton id="bt_gravarEx" value="#{messages.LABEL_BOTAO_GRAVAR}" action="#{incluirNotasPOLController.gravarJustificarExclusao}" profile="ok" 
+				  ajax="true" render="panelResultados, outTextoNota, formJustificativaExclusao" style="float:left"/>  
+				  <mec:commandButton id="bt_cancelarEx" value="#{messages.LABEL_BOTAO_CANCELAR}" action="#{incluirNotasPOLController.limparJustificativaExclusao}" oncomplete="PF('modalExcluirWG').hide();" profile="cancel" ajax="true" render="panelResultados, outTextoNota, modalExcluir"/> 
+				</aghu:acao>
+			</aghu:div>	 
+        </h:form> 
+      </p:dialog>
+       
+    </ui:define> 
+  </ui:composition> 
+</html>

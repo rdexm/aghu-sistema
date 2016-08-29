@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_SESSOES_TERAPEUTICAS_QUIMIO_POL} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{sessoesQuimioPOLController}"/>  
+      <ui:fragment rendered="#{mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"> 
+        <aghu:panelGeral legend="#{messages.TITLE_SESSOES_TERAPEUTICAS_QUIMIO_POL}"> 
+          <aghu:linha> 
+            <div class="div-alerta"> 
+              <h:outputText value="#{messages.LABEL_USUARIO_SEM_PERMISSAO_VISUALIZAR_DADOS}"/> 
+            </div> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </ui:fragment>  
+      <h:form prependId="false" id="formdataTable" rendered="#{!mf:hasPermission(securityController,'acessoAdminPOL,acessar')}"> 
+        <aghu:panelGeral legend="#{messages.TITLE_SESSOES_TERAPEUTICAS_QUIMIO_POL}"> 
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_DATA_INICIO_QUIMIO_POL}" title="Data Inicio" size="11" maxlength="10" styleclass="suggestion_input" readonly="true" value="#{sessoesQuimioPOLController.dtInicio}" id="dtInicio" tipo="data"/>  
+            <mec:inputTextData label="#{messages.LABEL_DATA_FIM_QUIMIO_POL}" title="Data Fim" size="11" maxlength="10" styleclass="suggestion_input" readonly="true" value="#{sessoesQuimioPOLController.dtFim}" id="dtFim" tipo="data"/>  
+            <mec:inputText label="#{messages.LABEL_RESPONSAVEL_QUIMIO_POL}" title="Responsavel" size="50" maxlength="50" styleclass="suggestion_input" readonly="true" value="#{sessoesQuimioPOLController.responsavel}" id="responsavel"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_COD_CID_QUIMIO_POL}" size="8" maxlength="8" styleclass="suggestion_input" readonly="true" value="#{sessoesQuimioPOLController.codigoCid}" id="codigoCid"/>  
+            <mec:inputTextArea label="#{messages.LABEL_DESC_CID_QUIMIO_POL}" cols="63" rows="2"
+             disabled="true" value="#{sessoesQuimioPOLController.descricaoCid}" id="descricaoCid"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:serverDataTable dataModel="dataModel" value="#{sessoesQuimioPOLController}" id="tabela_resultados" controller="#{sessoesQuimioPOLController}"> 
+              <c:set var="_sessaoQuimioterapia" value="#{item}"/>  
+              <p:column id="columnProtocolo"> 
+                <f:facet name="header"> 
+                  <h:outputText styleClass="headerText" value="#{messages.LABEL_PROTOCOLO_QUIMIO_POL}"/> 
+                </f:facet>  
+                <h:outputText value="#{_sessaoQuimioterapia.titulo}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_sumario_presc" value="#{messages.LABEL_BOTAO_SUMARIO_PRESC_QUIMIO_POL}" 
+          					 action="#{sumarioQuimioPOLController.gerarListaDatas(sessoesQuimioPOLController.seqTratamentoTerQuimio, sessoesQuimioPOLController.pacCodigo, sessoesQuimioPOLController.atdSeq)}" 
+          					 ajax="true" render="modalSumarioQuimio" styleClass="bt_cinza"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:dialog id="sumarioQuimioModal" width="400" height="350" resizeable="false" modal="true" resizable="false" widgetVar="sumarioQuimioModalWG" closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.TITLE_SUMARIO_LISTA_SESSOES_QUIMIO}"/> 
+        </f:facet>  
+        <h:form prependId="false" id="modalSumarioQuimio"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PERIODOS_PRONTUARIO}"> 
+            <aghu:linha> 
+              <mec:serverDataTable id="i_sumario_result" rowKeyVar="rkv" list="#{sumarioQuimioPOLController.listQuinzenaQuimio}" scrollable="true" scrollHeight="215"> 
+                <c:set var="vo" value="#{item}"/>  
+                <p:column style="text-align:center;vertical-align:middle;"> 
+                  <h:selectBooleanCheckbox id="check" value="#{vo.selected}"> 
+                    <p:ajax event="click" update="@(#i_sumario_result) @(#panelBtnVisualizaQuinzenas) @(#msgErroSelecaoQuinzenaPanel)" process="@this" listener="#{sumarioQuimioPOLController.validaSelecaoQuinzena(vo.idx)}"/> 
+                  </h:selectBooleanCheckbox> 
+                </p:column>  
+                <p:column style="text-align:center"> 
+                  <h:outputText value="#{vo.dtInicio}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column style="text-align:center"> 
+                  <h:outputText value="#{vo.dtFim}"> 
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:linha> 
+            <p:outputPanel id="msgErroSelecaoQuinzenaPanel" layout="inline"> 
+              <h:outputText value="#{messages.MSG_SELECAO_QUINZENA_SESSOES_TERAPEUTICAS}" style="color:red;" id="msgErroSelecaoQuinzena" rendered="#{sumarioQuimioPOLController.qtdeMaxQuinzenaSelecionada}"/> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:acao> 
+            <p:outputPanel id="panelBtnVisualizaQuinzenas" layout="inline"> 
+            	<mec:commandButton value="#{messages.LABEL_VISUALIZAR_IMPRESSAO}" action="#{sumarioQuimioPOLController.gerarVisualizacaoRelatorio}" disabled="#{!sumarioQuimioPOLController.quinzenaSelecionada}" onclick="PF('loadDialogWG').show();;" id="btnVisualizaQuinzenas" styleClass=" icon-see-print bt_cinza"/>
+            </p:outputPanel>
+          </aghu:acao> 
+        </h:form> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

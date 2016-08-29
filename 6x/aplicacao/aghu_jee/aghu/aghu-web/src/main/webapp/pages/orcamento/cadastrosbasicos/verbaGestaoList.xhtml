@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml">z 
+    <ui:define name="head"> 
+      <title>#{messages['LABEL_PESQUISAR_VERBA_GESTAO']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{verbaGestaoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages['LABEL_PESQUISAR_VERBA_GESTAO']}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestionVerbaGestao" label="#{messages.LABEL_VERBA_GESTAO}" title="#{messages.TITLE_DESCRICAO_CODIGO_VERBA_GESTAO}" width="550" suggestionAction="pesquisarVerbaGestaoPorCodigoOuDescricao" descricaoInput="seq" descricaoLabel="descricao" maxlength="60" controller="#{verbaGestaoPaginatorController}" value="#{verbaGestaoPaginatorController.verbaGestao}"> 
+              <p:column>#{item.seq}</p:column>  
+              <p:column>#{item.descricao}</p:column>  
+              <p:column>#{item.situacao.descricao}</p:column> 
+            </mec:suggestionBox>  
+            <mec:inputText id="descricao" value="#{verbaGestaoPaginatorController.descricaoVerba}" label="#{messages.LABEL_DESCRICAO}" title="#{messages.TITLE_DESCRICAO_VERBA_GESTAO}" maxlength="60" size="50" required="false" readonly="#{visualizar}" style="text-transform:uppercase" removerCaratersEspeciais="true"/>  
+            <mec:selectOneMenu id="situacao" value="#{verbaGestaoPaginatorController.situacao}" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_VERBA_GESTAO}" enum="DominioSituacao"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:selectOneMenu id="convenio" value="#{verbaGestaoPaginatorController.convenio}" label="#{messages.LABEL_CONVENIO}" title="#{messages.TITLE_CONVENIO_VERBA_GESTAO}" enum="DominioSimNao"/>  
+            <mec:inputText id="nroInterno" readonly="false" label="#{messages.LABEL_NUMERO_INTERNO}" title="#{messages.TITLE_PESQUISA_NUMERO_INTERNO_VERBA_GESTAO}" size="9" maxlength="10" value="#{verbaGestaoPaginatorController.nroInterno}"/>  
+            <mec:inputNumero id="numSiafiSiconv" readonly="false" label="#{messages.LABEL_SIAFI_SICONV}" title="#{messages.TITLE_PESQUISA_SIAFI_SICONV}" size="12" maxlength="6" value="#{verbaGestaoPaginatorController.nroConvSiafi}"/>  
+            <mec:inputText id="planoInterno" value="#{verbaGestaoPaginatorController.planoInterno}" label="#{messages.LABEL_PLANO_INTERNO}" title="#{messages.TITLE_PLANO_INTERNO_LIST}" maxlength="12" size="12" style="text-transform:uppercase" readonly="#{visualizar}" removerCaratersEspeciais="true"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{verbaGestaoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{verbaGestaoPaginatorController.limparPesquisa}" profile="clear"/>  
+          <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" rendered="#{verbaGestaoPaginatorController.dataModel.pesquisaAtiva and mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" action="#{verbaGestaoPaginatorController.inserir}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="form_lista_itens"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaVerbas" controller="#{verbaGestaoPaginatorController}"> 
+          <c:set var="verba" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+            <mec:commandLink id="tabelaVerbas_link_editar" profile="edit" title="editar" action="#{verbaGestaoPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{verbaGestaoController.verbaSeq}" value="#{verba.seq}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{verbaGestaoPaginatorController.selecionado}" value="#{verba}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaVerbas_link_remover" profile="delete" title="excluir" action="#{verbaGestaoPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{verbaGestaoPaginatorController.selecionado}" value="#{verba}"/> 
+            </mec:commandLink>  
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>  
+            <mec:commandLink id="bt_visualizar" title="#{messages.VISUALIZAR_VERBA_GESTAO}" action="#{verbaGestaoPaginatorController.editar}" immediate="true" rendered="#{!mf:hasPermission(securityController,'cadastrarApoioFinanceiro,gravar')}" styleClass=" silk-zoom silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{verbaGestaoController.verbaSeq}" value="#{verba.seq}" for="command"/>  
+              <f:setPropertyActionListener target="#{verbaGestaoController.visualizar}" value="#{true}" for="command"/>  
+              <f:setPropertyActionListener target="#{verbaGestaoController.emAlteracao}" value="#{false}" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_VERBA_GESTAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{verba.seq} - #{verba.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{verba.situacao.getDescricao()}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CONVENIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{(verba.indConvEspecial)?(messages.LABEL_IND_CONVENIO_ESPECIAL_S):(messages.LABEL_IND_CONVENIO_ESPECIAL_N)}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_NUMERO_INTERNO}"/> 
+            </f:facet>  
+            <h:outputText value="#{verba.nroInterno}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SIAFI_SICONV}"/> 
+            </f:facet>  
+            <h:outputText value="#{verba.nroConvSiafi}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_EXERCICIO}"/> 
+            </f:facet>  
+            <h:outputText value="#{verba.anoExercicio}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PLANO_INTERNO}"/> 
+            </f:facet>  
+            <h:outputText value="#{verba.indDetPi}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

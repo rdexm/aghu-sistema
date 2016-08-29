@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages['TITLE_CONSULTAR_AF']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisaAutorizacaoFornecimentoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisaAutorizacaoFornecimentoPaginatorController}"/>  
+      <h:form prependId="false" id="pesquisaFrm"> 
+        <aghu:panelGeral legend="#{messages.TITLE_CONSULTAR_AF}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="numeroAf" label="#{messages.LABEL_CONS_NUMERO_AF}" title="#{messages.TITLE_CONS_NUMERO_AF}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.numeroAf}" size="10" maxlength="6"/>  
+            <mec:inputNumero id="numeroComplemento" label="#{messages.LABEL_CONS_CP}" title="#{messages.TITLE_CONS_CP}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.numeroComplemento}" size="10" maxlength="6"/>  
+            <mec:selectOneMenu id="situacaoAf" enum="DominioSituacaoAutorizacaoFornecimento" label="#{messages.LABEL_SITUACAO_PESQUISA_AF}" title="#{messages.TITLE_SITUACAO_AF}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.situacaoAf}" readonly="#{(pesquisaAutorizacaoFornecimentoPaginatorController.vencida != null) or (pesquisaAutorizacaoFornecimentoPaginatorController.pendente != null)}">
+                 <p:ajax event="change" update="@this" process="@this"/>
+            </mec:selectOneMenu>  
+            <mec:suggestionBox label="#{messages.LABEL_SUGGESTION_FORNECEDOR_AF}" title="#{messages.TITLE_SUGGESTION_FORNECEDOR_AF}" suggestionAction="pesquisarFornecedores" descricaoInput="numero" descricaoLabel="cnpjRazaoSocial" width="650" maxlength="60" required="false" id="sbFornecedor" controller="#{pesquisaAutorizacaoFornecimentoPaginatorController}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.fornecedor}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CNPJ}</b> 
+                </f:facet> #{item.cnpjCpf}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_TIPO}</b> 
+                </f:facet> #{item.tipoFornecedor}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_RAZAO_SOCIAL}</b> 
+                </f:facet> #{item.razaoSocial}
+              </p:column> 
+            </mec:suggestionBox>
+            <mec:selectOneMenu id="af_pendente" enum="DominioSimNao" label="#{messages.LABEL_PENDENTE_PESQUISA_AF}" title="#{messages.TITLE_PENDENTE_PESQUISA_AF}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.pendente}" readonly="#{(pesquisaAutorizacaoFornecimentoPaginatorController.vencida != null)}">
+              <p:ajax event="change" eventsQueue="changeQueue" update="@(#af_vencida) @(#situacaoAf)" process="@this" listener="#{pesquisaAutorizacaoFornecimentoPaginatorController.atualizarCombos(0)}"/>
+            </mec:selectOneMenu>
+            <mec:selectOneMenu id="af_vencida" enum="DominioSimNao" label="#{messages.LABEL_VENCIDA_PESQUISA_AF}" title="#{messages.TITLE_VENCIDA_PESQUISA_AF}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.vencida}" readonly="#{(pesquisaAutorizacaoFornecimentoPaginatorController.pendente != null)}">
+              <p:ajax event="change" eventsQueue="changeQueue" update="@(#af_pendente) @(#situacaoAf)" process="@this" listener="#{pesquisaAutorizacaoFornecimentoPaginatorController.atualizarCombos(1)}"/>
+            </mec:selectOneMenu>
+          </aghu:linha>  
+
+          <aghu:linha> 
+            <mec:suggestionBox id="modalidadeSb" label="#{messages.LABEL_MODALIDADE_COMPRA}" title="#{messages.TITLE_MODALIDADE_COMPRA}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarModalidades" controller="#{pesquisaAutorizacaoFornecimentoPaginatorController}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.modalidadeCompra}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}" style="font-weight: bold;"/> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu id="andamentoAf" enum="DominioAndamentoAutorizacaoFornecimento" label="#{messages.LABEL_ANDAMENTO_AF}" title="#{messages.TITLE_ANDAMENTO_AF}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.andamentoAf}">
+               <p:ajax event="change" update="@this" process="@this"/>
+            </mec:selectOneMenu>   
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_GESTOR_AF}" title="#{messages.TITLE_GESTOR_PESQ_AF}" width="500" descricaoInput="id.matricula" descricaoLabel="pessoaFisica.nome" suggestionAction="listarServidores" id="suggestionServGestor" controller="#{pesquisaAutorizacaoFornecimentoPaginatorController}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.servidorGestor}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_VINCULO_PARAM_AUTORIZACAO_SC}</b> 
+                </f:facet> #{item.id.vinCodigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_MATRICULA}</b> 
+                </f:facet> #{item.id.matricula}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_NOME_PARAM_AUTORIZACAO_SC}</b> 
+                </f:facet> #{item.pessoaFisica.nome}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu id="tipoFiltro" enum="DominioTipoFiltroAutorizacaoFornecimento" label="#{messages.LABEL_TIPO_AF}" title="#{messages.TITLE_TIPO_AF}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.tipoFiltroAf}"> 
+              <p:ajax event="change" update="@(#panelCodigoFiltro) @(#panelSuggestionMaterial) @(#panelSuggestionServico) @this" process="@this" listener="#{pesquisaAutorizacaoFornecimentoPaginatorController.verificarFiltro()}"/> 
+            </mec:selectOneMenu>  
+            <p:outputPanel id="panelCodigoFiltro"> 
+              <mec:inputNumero id="codigoFiltro" label="#{messages.LABEL_CODIGO_FILTRO}" title="#{messages.TITLE_CODIGO_FILTRO}" rendered="#{pesquisaAutorizacaoFornecimentoPaginatorController.mostraFiltroSimples}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.codigoFiltroAf}" size="10" maxlength="6"/> 
+            </p:outputPanel>  
+            <p:outputPanel id="panelSuggestionMaterial"> 
+              <mec:suggestionBox id="suggestionMaterial" label="#{messages.LABEL_MATERIAL_SOL_COMPR}" title="#{messages.TITLE_MATERIAL_SOL_COMPR}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="listarMateriais" width="650" required="true" rendered="#{pesquisaAutorizacaoFornecimentoPaginatorController.mostraSuggestionMaterial}" controller="#{pesquisaAutorizacaoFornecimentoPaginatorController}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.material}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_NOME}</b> 
+                  </f:facet>  
+                  <h:outputText value="#{(item.nome.length() &gt; 40) ? fn:substring(item.nome,0,40) : item.nome}#{(item.nome.length() &gt; 40) ? '...' : '' }" title="#{(item.nome.length() &gt; 40) ? item.nome : ''}"/> 
+                 </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet>                   
+                    <h:outputText  value="#{(item.descricao.length() &gt; 40) ? fn:substring(item.descricao,0,40) : item.descricao}#{(item.descricao.length() &gt; 40) ? '...' : '' }" title="#{(item.descricao.length() &gt; 40) ? pesquisaAutorizacaoFornecimentoPaginatorController.descricaoSplited(item.getDescricaoSplited(70)): ''}" itemEscaped="false"/> 
+                 </p:column> 
+              </mec:suggestionBox>  
+              <p:tooltip  id="materialToolTip" for="panelSuggestionMaterial" mode="ajax" disabled="#{empty pesquisaAutorizacaoFornecimentoPaginatorController.material}">  
+                <h:outputText value="#{messages.LABEL_NOME}: #{pesquisaAutorizacaoFornecimentoPaginatorController.material.nome}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.LABEL_DESCRICAO}: #{pesquisaAutorizacaoFornecimentoPaginatorController.material.descricao}" rendered="#{not empty pesquisaAutorizacaoFornecimentoPaginatorController.material.descricao}"/> 
+              </p:tooltip> 
+            </p:outputPanel>  
+            <p:outputPanel id="panelSuggestionServico"> 
+              <mec:suggestionBox label="#{messages.LABEL_SERVICO_SOL_SERVICO}" title="#{messages.TITLE_SERVICO_SOL_SERVICO_CAD}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="listarServicosAtivos" rendered="#{pesquisaAutorizacaoFornecimentoPaginatorController.mostraSuggestionServico}" required="true" width="400" id="servico" controller="#{pesquisaAutorizacaoFornecimentoPaginatorController}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.servico}"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.codigo}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_NOME}</b> 
+                  </f:facet> #{item.nome}
+                </p:column> 
+              </mec:suggestionBox> 
+            </p:outputPanel>  
+            <mec:inputNumero id="numeroContrato" label="#{messages.LABEL_NUMERO_CONTRATO_PESQ_AF}" title="#{messages.TITLE_NUMERO_CONTRATO_PESQ_AF}" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.numeroContrato}" size="10" maxlength="6"/>  
+            <p:outputPanel id="panelData">
+				<mec:inputTextData id="cdPeriodoInicioAut"
+					label="#{messages.LABEL_PERIODO_CONTRATO_AF}"
+					title="#{messages.TITLE_PERIODO_CONTRATO_AF}"
+					value="#{pesquisaAutorizacaoFornecimentoPaginatorController.dataInicioContrato}">
+				</mec:inputTextData>
+				<div  class="aghu-boxinput" style="padding-top: 25px;">				
+					<p:outputPanel styleClass="aghu-lineinput">
+						<p:outputLabel styleClass="aghu-lineinput" value="Até"/>
+					</p:outputPanel>			
+				</div>	
+				<mec:inputTextData id="cdPeriodoFimAut"
+					value="#{pesquisaAutorizacaoFornecimentoPaginatorController.dataFimContrato}">
+				</mec:inputTextData>
+			</p:outputPanel>
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{pesquisaAutorizacaoFornecimentoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{pesquisaAutorizacaoFornecimentoPaginatorController.limpar(true)}" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form id="gridPesquisaForm" prependId="false"> 
+        <p:outputPanel id="gridPesquisaPanel"> 
+          <mec:serverDataTable dataModel="dataModel" id="gridPesquisa" value="#{pesquisaAutorizacaoFornecimentoPaginatorController}" controller="#{pesquisaAutorizacaoFornecimentoPaginatorController}"> 
+            <c:set var="_item" value="#{item}"/>  
+            <p:column style="white-space: nowrap"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink id="lnkEditarAf" action="#{pesquisaAutorizacaoFornecimentoPaginatorController.redirecionarAutorizacaoFornecimentoCrud}" title="#{messages.TITLE_EDITAR_AF}" rendered="#{mf:hasPermission(securityController,'gerarAF,gravar')}" immediate="true" profile="edit"> 
+                <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.voltarParaUrl}" value="pesquisaAutorizacaoFornecimentoList" for="command"/>  
+                <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.numeroAf}" value="#{_item.propostaFornecedor.id.lctNumero}" for="command"/>  
+                <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.numeroComplemento}" value="#{_item.nroComplemento}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="visualizarLink1" action="#{pesquisaAutorizacaoFornecimentoPaginatorController.redirecionarAutorizacaoFornecimentoCrud}" immediate="true" rendered="#{mf:hasPermission(securityController,'consultarAF,visualizar') and not mf:hasPermission(securityController,'gerarAF,gravar')}" styleClass=" silk-zoom silk-icon"> 
+                <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.voltarParaUrl}" value="pesquisaAutorizacaoFornecimentoList" for="command"/>  
+                <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.numeroAf}" value="#{_item.propostaFornecedor.id.lctNumero}" for="command"/>  
+                <f:setPropertyActionListener target="#{autorizacaoFornecimentoController.numeroComplemento}" value="#{_item.nroComplemento}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="lnkEditarItensAf" action="#{pesquisaAutorizacaoFornecimentoPaginatorController.redirecionarPesquisarItemAutFornecimento}" title="#{messages.TITLE_EDITAR_ITENS_AF}" immediate="true" rendered="#{mf:hasPermission(securityController,'consultarAF,visualizar')}" styleClass=" silk-lista-consultar silk-icon"> 
+                <f:setPropertyActionListener target="#{pesquisaItemAutFornecimentoController.numeroAf}" value="#{_item.propostaFornecedor.id.lctNumero}" for="command"/>
+                <f:setPropertyActionListener target="#{pesquisaItemAutFornecimentoController.numeroComplemento}" value="#{_item.nroComplemento}" for="command"/>  
+                <f:setPropertyActionListener target="#{pesquisaItemAutFornecimentoController.voltarParaUrl}" value="pesquisaAutorizacaoFornecimentoList" for="command"/> 
+              </mec:commandLink> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_NRO_AF}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.propostaFornecedor.id.lctNumero}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_COMPLEMENTO_AF}" title="#{messages.TITLE_GRID_COMPLEMENTO_AF}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.nroComplemento}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_SEQ_AF}" title="#{messages.TITLE_GRID_SEQ_AF}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.sequenciaAlteracao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_SITUACAO_AF}"/> 
+              </f:facet>  
+              <h:outputText id="situacao" value="#{_item.situacao}"/>  
+              <p:tooltip for="situacao" style="width:300px;"> 
+                <h:outputText value="#{_item.situacao.getDescricao().toUpperCase()}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_MODALIDADE_COMPRA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.propostaFornecedor.licitacao.modalidadeLicitacao.descricao}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_FORNECEDOR}"/> 
+              </f:facet>  
+              <h:outputText id="fornecedor" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.obterStringTruncada(_item.propostaFornecedor.fornecedor.razaoSocial,30)}"/>  
+              <p:tooltip for="fornecedor" style="width:300px;"> 
+                <h:outputText value="#{messages.LABEL_CNPJ_CPF_FORNEC}: #{pesquisaAutorizacaoFornecimentoPaginatorController.obterDocFormatado(_item.propostaFornecedor.fornecedor)}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{_item.propostaFornecedor.fornecedor.razaoSocial}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_MODALIDADE_EMPENHO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.modalidadeEmpenho.descricao.toUpperCase()}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_VENCTO_CONTRATO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_item.dtVenctoContrato}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_GESTOR_AF}"/> 
+              </f:facet>  
+              <h:outputText id="gestor" value="#{pesquisaAutorizacaoFornecimentoPaginatorController.obterStringTruncada(_item.servidorGestor.pessoaFisica.nome,30)}"/>  
+              <p:tooltip for="gestor" style="width:300px;"> 
+                <h:outputText value="#{messages.LABEL_NOME}: #{_item.servidorGestor.id.matricula} - #{_item.servidorGestor.pessoaFisica.nome}"/>  
+                <h:outputText value="#{messages.LABEL_GRID_RAMAL}: #{_item.servidorGestor.ramalTelefonico.numeroRamal}"/> 
+              </p:tooltip> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_GRID_ANDAMENTO_AF}"/> 
+              </f:facet>  
+              <h:graphicImage id="andamento" style="text-align:center;" value="/resources/img/icons/#{pesquisaAutorizacaoFornecimentoPaginatorController.obterNomeImagem(_item)}"/>  
+              <p:tooltip for="andamento" style="width:300px;"> 
+                <h:outputText value="#{pesquisaAutorizacaoFornecimentoPaginatorController.obterAndamento(_item).getDescricao()}"/> 
+              </p:tooltip> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_voltar" rendered="#{pesquisaAutorizacaoFornecimentoPaginatorController.mostrarBotaoVoltar}" immediate="true" action="#{pesquisaAutorizacaoFornecimentoPaginatorController.voltar}" value="#{messages.LABEL_VOLTAR}" styleClass="bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

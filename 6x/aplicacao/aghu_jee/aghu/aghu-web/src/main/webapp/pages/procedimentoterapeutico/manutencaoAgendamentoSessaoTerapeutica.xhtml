@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_ALTERAR_CICLO_PACIENTE}</title>
+		<style xml:space="preserve">
+</style>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{manutencaoAgendamentoSessaoTerapeuticaController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manutencaoAgendamentoSessaoTerapeuticaController}" ignoreEnter="true" />
+		<h:form prependId="false" id="formPrincipal">
+			<!-- Painel principal -->
+			<aghu:panelGeral id="panelAgendarSessao" legend="#{messages.TITLE_MODIFICAR_AGENDAMENTO}">
+
+				<!-- Linha 1: Tipo de Sessão -->
+				<aghu:linha>
+					<mec:selectOneMenu id="tipoSessao" label="#{messages.LABEL_TIPO_SESSAO}" title="#{messages.TITLE_TIPO_SESSAO_MANUTENCAO}" items="#{manutencaoAgendamentoSessaoTerapeuticaController.pesquisarTipoSessao()}" itemLabel="descricao"
+						value="#{manutencaoAgendamentoSessaoTerapeuticaController.tipoSessao}" readonly="#{manutencaoAgendamentoSessaoTerapeuticaController.agendaDetalhada}" required="true"/>
+				</aghu:linha>
+
+				<!-- Linha 2: Pesquisa fonética -->
+				<aghu:linha>
+					<aghu:panelGeral id="panelAlterarHorarios" legend="#{messages.LABEL_PACIENTE}">
+						<p:outputPanel id="panelFonetica">
+							<mec:pesquisaPaciente id="pesquisaFonetica" valueChangeListener="#{manutencaoAgendamentoSessaoTerapeuticaController.pesquisaPaciente}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.paciente}" render="formPrincipal" required="true"
+								readonly="#{manutencaoAgendamentoSessaoTerapeuticaController.agendaDetalhada}" posDeleteAction="#{manutencaoAgendamentoSessaoTerapeuticaController.limparListas}" />
+							<br clear="none" />
+							<mec:commandButton id="pesquisaFonetica_botao" value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" readonly="false" action="paciente-pesquisaPacienteComponente" styleClass="bt_cinza icon-pesquisa-fonetica" profile="search"
+								rendered="#{not manutencaoAgendamentoSessaoTerapeuticaController.agendaDetalhada}">
+								<f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="procedimentoterapeutico-manutencaoAgendamentoSessaoTerapeutica" for="command" />
+								<f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" value="false" for="command" />
+								<f:setPropertyActionListener target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" value="false" for="command" />
+								<f:setPropertyActionListener target="#{pesquisaPacienteController.exibirBotaoIncluirPacienteCirurgico}" value="false" for="command" />
+								<f:param name="cid" value="#{javax.enterprise.context.conversation.id}" />
+	
+							</mec:commandButton>
+						</p:outputPanel>
+						
+						<br/>
+						<br/>
+						<!-- Linha 3: Painel Alterar Horários / Dados do Paciente -->
+<aghu:panelGeral id="panelHorariosPaciente" legend="#{messages.LABEL_CICLOS_AGENDADOS}">
+							<aghu:linha>
+								<mec:serverDataTable id="listaAlterarHorarios" controller="#{manutencaoAgendamentoSessaoTerapeuticaController}" rowKeyVar="_horarioId" list="#{manutencaoAgendamentoSessaoTerapeuticaController.listaAlterarHorarios}" scrollable="true" selection="horarioSelecionado"
+									scrollHeight="75">
+									<c:set var="_horario" value="#{item}" />
+		
+									<p:ajax event="rowSelect" listener="#{manutencaoAgendamentoSessaoTerapeuticaController.pesquisarDiasPrescricao}" update="@(#panelDiasAgendados)" />
+		
+									<!-- Coluna Ação -->
+									<p:column id="colunaAcao" width="5%">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACAO}" />
+										</f:facet>
+		
+										<!-- Excluir Horário -->
+										<mec:commandLink id="excluirHorario" title="#{messages.LABEL_EXCLUIR_CICLO}" action="#{manutencaoAgendamentoSessaoTerapeuticaController.chamarModalJustificativaCiclo(_horario)}" styleClass="silk-icon silk-delete" ignoreDupResponses="true" process="@this"
+											render="modalJustificativa, listaAlterarHorarios" />
+		
+									</p:column>
+		
+									<!-- Coluna Data Sugerida -->
+									<p:column width="10%">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_DATA_SUGERIDA}" />
+										</f:facet>
+										<h:outputText value="#{_horario.dataSugerida}">
+											<f:convertDateTime pattern="dd/MM/yyyy" />
+										</h:outputText>
+									</p:column>
+		
+									<!-- Coluna Ciclo -->
+									<p:column width="10%">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_CICLO}" />
+										</f:facet>
+										<h:outputText value="#{_horario.ciclo == null ? _horario.cicloReserva : _horario.ciclo}" />
+									</p:column>
+		
+									<!-- Coluna Protocolo -->
+									<p:column width="30%">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_PROTOCOLO_MANUTENCAO}" />
+										</f:facet>
+										<h:outputText id="txt_horario_protocolo" value="#{manutencaoAgendamentoSessaoTerapeuticaController.obterHint(_horario.protocolo, 15)}" />
+										<p:tooltip for="txt_horario_protocolo" direction="bottom-right" 
+										styleClass="tooltip" layout="block" rendered="#{_horario.protocolo.length() > 15}">
+										<h:outputText id="hint_horario_protocolo" value="#{_horario.protocolo}"/>
+										</p:tooltip>
+									</p:column>
+		
+									<!-- Coluna Responsável -->
+									<p:column width="45%">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_RESPONSAVEL}" />
+										</f:facet>
+										<h:outputText value="#{_horario.responsavel == null ? _horario.responsavel1 : _horario.responsavel}" />
+									</p:column>
+		
+								</mec:serverDataTable>
+							</aghu:linha>
+						</aghu:panelGeral>
+
+						<!-- Linha 3: Painel Dias Agendados -->
+						<aghu:linha>
+							<aghu:panelGeral id="panelDiasAgendados" legend="#{messages.LABEL_DIAS_AGENDADOS}">
+								<mec:serverDataTable id="listaDiasAgendados" controller="#{manutencaoAgendamentoSessaoTerapeuticaController}" rowKeyVar="_diaId" list="#{manutencaoAgendamentoSessaoTerapeuticaController.listaDiasAgendados}" scrollable="true" scrollHeight="100" selection="diaSelecionado">
+									<c:set var="_dia" value="#{item}" />
+		
+									<!-- Coluna Ação -->
+									<p:column id="colunaAcao" width="55">
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACAO}" />
+										</f:facet>
+		
+										<!-- Excluir Dia -->
+										<mec:commandLink id="excluirDia" title="#{messages.LABEL_EXCLUIR_DIA}" action="#{manutencaoAgendamentoSessaoTerapeuticaController.chamarModalJustificativaDia(_dia)}" styleClass="silk-icon silk-delete" ignoreDupResponses="true" process="@this" render="modalJustificativa" />
+		
+										<!-- Transferir Dia -->
+										<mec:commandLink id="transferirDia" title="#{messages.LABEL_TRANSFERIR_DIA}" action="#{manutencaoAgendamentoSessaoTerapeuticaController.chamarModalTransferenciaDia(_dia)}" styleClass="silk-icon silk-arrow-refresh" ignoreDupResponses="true" ajax="true" process="@this"
+											rendered="#{manutencaoAgendamentoSessaoTerapeuticaController.ativarTransferirDia}" render="modalTransferirDia,modalTransferirDiaWG, listaDiasAgendados" />
+		
+									</p:column>
+		
+									<!-- Coluna Dia -->
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_DIA}" />
+										</f:facet>
+										<h:outputText value="#{_dia.dia}" />
+									</p:column>
+		
+									<!-- Coluna Tempo -->
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_TEMPO}" />
+										</f:facet>
+										<h:outputText value="#{_dia.tempo}">
+											<f:convertDateTime pattern="HH:mm" />
+										</h:outputText>
+									</p:column>
+		
+		
+									<!-- Coluna Data e Hora de inicio -->
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_DATA_HORA_INICIO_MANUTENCAO}" />
+										</f:facet>
+										<h:outputText value="#{_dia.dataInicio}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+										</h:outputText>
+									</p:column>
+		
+									<!-- Coluna Data e Hora de fim -->
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_DATA_HORA_FIM_MANUTENCAO}" />
+										</f:facet>
+										<h:outputText value="#{_dia.dataFim}">
+											<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+										</h:outputText>
+									</p:column>
+		
+									<!-- Coluna Sala -->
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_SALA}" />
+										</f:facet>
+										<h:outputText value="#{_dia.sala}" />
+									</p:column>
+		
+									<!-- Coluna Acomodação -->
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACOMODACAO}" />
+										</f:facet>
+										<h:outputText value="#{_dia.acomodacao}" />
+									</p:column>
+		
+								</mec:serverDataTable>
+							</aghu:panelGeral>
+						</aghu:linha>
+					</aghu:panelGeral>
+				</aghu:linha>
+			</aghu:panelGeral>
+
+			<!-- Ação Voltar-->
+			<aghu:acao>
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{manutencaoAgendamentoSessaoTerapeuticaController.voltar}" ajax="true" immediate="true" profile="back" block="true" rendered="#{manutencaoAgendamentoSessaoTerapeuticaController.agendaDetalhada}" />
+			</aghu:acao>
+
+		</h:form>
+
+		<!-- MODAIS -->
+
+		<!-- Modal Justificativa Exclusão -->
+		<p:dialog id="modalJustificativa" width="560" height="410" modal="true" resizable="false" widgetVar="modalJustificativaWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{manutencaoAgendamentoSessaoTerapeuticaController.exclusaoCiclo ? messages.LABEL_EXCLUIR_CICLO : messages.LABEL_EXCLUIR_DIA}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalJustificativa">
+					<p:outputPanel id="modalJustificativaPanel" layout="inline">
+						<!-- Motivo -->
+						<aghu:linha>
+							<mec:suggestionBox id="motivo" label="#{messages.LABEL_MOTIVO}" title="#{manutencaoAgendamentoSessaoTerapeuticaController.exclusaoCiclo ? messages.TITLE_MODAL_MOTIVO_CICLO : messages.TITLE_MODAL_MOTIVO_DIA}" controller="#{manutencaoAgendamentoSessaoTerapeuticaController}"
+								suggestionAction="pesquisarMotivo" value="#{manutencaoAgendamentoSessaoTerapeuticaController.motivo}" descricaoInput="seq" descricaoLabel="descricao" maxlength="60" width="100" var="row" itemValue="#{row}" requiredFake="true">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{row.seq}
+			               </p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet> #{row.descricao}
+			               </p:column>
+							</mec:suggestionBox>
+
+						</aghu:linha>
+
+						<!-- Justificativa -->
+						<aghu:linha>
+							<mec:inputTextArea id="justificativa" label="#{messages.LABEL_JUSTIFICATIVA}" title="#{manutencaoAgendamentoSessaoTerapeuticaController.exclusaoCiclo ? messages.TITLE_MODAL_JUSTIFICATIVA_CICLO : messages.TITLE_MODAL_JUSTIFICATIVA_DIA}" cols="80" rows="20"
+								style="min-width:500px; max-width:500px"
+								value="#{manutencaoAgendamentoSessaoTerapeuticaController.justificativa}" maxlength="3000" requiredFake="true" />
+						</aghu:linha>
+					</p:outputPanel>
+
+					<aghu:linha>
+						<mec:commandButton id="justificativa_bt_gravar" value="#{messages.LABEL_GRAVAR}" action="#{manutencaoAgendamentoSessaoTerapeuticaController.gravarJustificativa}" profile="ok" ajax="true" process="@this,motivo,justificativa" render="formPrincipal" block="true" />
+						<mec:commandButton id="justificativa_bt_cancelar" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalJustificativaWG').hide();" ajax="true" profile="cancel" immediate="true" block="true" />
+					</aghu:linha>
+
+
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+
+
+		<!-- Modal Remarcar Ciclo -->
+		<p:dialog id="modalRemarcarCiclo" width="400" height="100" modal="true" resizable="false" widgetVar="modalRemarcarCicloWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.LABEL_REMARCAR_CICLO}" />
+				</h:panelGroup>
+			</f:facet>
+			#{messages.LABEL_REMARCAR_CICLO} 
+			 <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalRemarcarCiclo">
+					<aghu:linha>
+						<!-- Integração com a Estória #41696 -->
+						<mec:commandButton id="confirmar_bt_sim" value="#{messages.LABEL_SIM}" action="procedimentoterapeutico-agendamentoSessao" oncomplete="PF('modalJustificativaWG').hide();PF('modalRemarcarCicloWG').hide();" profile="ok" render="formPrincipal" block="true">
+							<f:setPropertyActionListener target="#{agendamentoSessaoController.manutencaoAgendamento}" value="true" for="command" />
+							<f:setPropertyActionListener target="#{agendamentoSessaoController.tipoSessao}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.parametrosAgendamentoSessoes.tipoSessao}" for="command" />
+							<f:setPropertyActionListener target="#{agendamentoSessaoController.paciente}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.parametrosAgendamentoSessoes.paciente}" for="command" />
+							<f:setPropertyActionListener target="#{agendamentoSessaoController.prescricao}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.parametrosAgendamentoSessoes.prescricao}" for="command" />
+							<f:setPropertyActionListener target="#{agendamentoSessaoController.acomodacao}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.parametrosAgendamentoSessoes.acomodacao}" for="command" />
+							<f:setPropertyActionListener target="#{agendamentoSessaoController.sala}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.parametrosAgendamentoSessoes.sala}" for="command" />
+						</mec:commandButton>
+
+						<mec:commandButton id="confirmar_bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalJustificativaWG').hide();PF('modalRemarcarCicloWG').hide();" ajax="true" profile="cancel" immediate="true" render="formPrincipal" block="true" />
+					</aghu:linha>
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+
+		<!-- Modal Transferir Dia -->
+		<p:dialog id="modalTransferirDia" width="450" height="105" modal="true" resizable="false" widgetVar="modalTransferirDiaWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.LABEL_TRANSFERIR_DIA}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalTransferirDia">
+					<p:outputPanel id="modalTransferirDiaPanel" layout="inline">
+						<aghu:linha>
+							<!-- Data -->
+							<mec:inputTextData id="transferirDiaData" label="#{messages.LABEL_DATA}" title="#{messages.TITLE_DATA_TRANSFERENCIA}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.transferenciaDia.dataTransferencia}" tipo="data" requiredFake="true" />
+							<!-- Turno -->
+							<mec:selectOneMenu id="transferirDiaTurno" label="#{messages.LABEL_TURNO}" title="#{messages.TITLE_SELECIONE_TURNO_AGENDAMENTO}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.transferenciaDia.turno}" enum="DominioTurnoTodos" requiredFake="true" noSelectionOption="false" />
+							<!-- Acomodação -->
+							<mec:selectOneMenu id="transferirDiaAcomodacao" label="#{messages.LABEL_ACOMODACAO}" title="#{messages.TITLE_SELECIONE_ACOMODACAO_AGENDAMENTO}" value="#{manutencaoAgendamentoSessaoTerapeuticaController.transferenciaDia.acomodacao}" enum="DominioTipoLocal" requiredFake="true"
+								noSelectionOption="false" />
+						</aghu:linha>
+						<aghu:linha>
+							<p:outputLabel id="labelIntervalo" value="#{manutencaoAgendamentoSessaoTerapeuticaController.transferenciaDia.restricaoDatas}" />
+						</aghu:linha>
+						<aghu:linha />
+					</p:outputPanel>
+					<aghu:linha>
+						<mec:commandButton id="transferirDia_bt_gravar" value="#{messages.LABEL_GRAVAR}" action="#{manutencaoAgendamentoSessaoTerapeuticaController.transferirDia}" profile="ok" ajax="true" process="@this,transferirDiaData,transferirDiaTurno,transferirDiaAcomodacao,labelIntervalo"
+							render="formPrincipal" block="true" />
+						<mec:commandButton id="transferirDia_bt_cancelar" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalTransferirDiaWG').hide();" ajax="true" immediate="true" profile="cancel" block="true" />
+					</aghu:linha>
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">
+		  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+    	<style>
+    		.ui-selectonemenu label.ui-selectonemenu-label {
+    			padding-top: 3px !important;
+    			padding-left: 3px !important;
+    		}
+    		
+    		.textArea{
+    			position:absolute; 
+    			top:0px; 
+    			right:0px; 
+    			margin:2px 0px !important;;
+    		}
+    	</style>
+      <title>#{messages.LABEL_MANTER_RESULTADO_EXAME}</title> 
+    </ui:define>
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cadastroResultadosNotaAdicionalController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroResultadosNotaAdicionalController}" ignoreEnter="true"/>
+      <h:form id="formResultado" prependId="false">
+        <aghu:panelGeral legend="#{messages.LABEL_MANTER_RESULTADO_EXAME}"> 
+          <aghu:linha> 
+            <mec:inputText id="nomePaciente" 
+            		label="#{messages.LABEL_NOME_PACIENTE}" 
+            		value="#{cadastroResultadosNotaAdicionalController.pacienteVO.nomePaciente}" 
+            		size="70" 
+            		readonly="true"/>  
+            <mec:inputText id="solicitacap" 
+            		label="#{messages.LABEL_SOLICITACAO}" 
+            		value="#{cadastroResultadosNotaAdicionalController.solicitacaoExameSeq}" 
+            		readonly="true" 
+            		size="22"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText id="exame" 
+            		label="#{messages.LABEL_EXAME}" 
+            		value="#{cadastroResultadosNotaAdicionalController.descricaoCompletaExame}" 
+            		size="103" 
+            		readonly="true"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>
+        <aghu:panelGeral legend="#{messages.LABEL_DIGITACAO_RESULTADO}"> 
+          <aghu:linha> 
+            <p:tabView id="panelMain" prependId="false" dynamic="true"> 
+              <p:tab id="aba1" 
+              		title="#{messages.LABEL_RESULTADO}" 
+              		rendered="#{mf:hasPermission(securityController,'preencherLaudoExames,executar')}"> 
+                <aghu:linha>
+                  	<p:outputPanel style="width:50%;float:left;padding:10px" rendered="#{cadastroResultadosNotaAdicionalController.exigeResponsavel}"> 
+		                  <aghu:panelGeral legend="#{messages.TITLE_RESPONSAVEL_LIBERACAO}"> 
+		                       <mec:suggestionBox id="servidorPac" 
+		                  		var="row" itemValue="#{row}"
+	                          	label="#{messages.LABEL_NOME_SERVIDOR}" 
+	                      		title="#{messages.TITLE_SERVIDOR_LIBERACAO}" 
+	                      		descricaoInput="nroRegConselho"
+	                      		descricaoLabel="nome" 
+	                      		width="500" maxlength="15" size="30"                       		 
+	                      		suggestionAction="suggestionServidor"
+	                      		posSelectionAction="selecionarServidorLiberacao"
+	                      		posDeleteAction="limparServidorLiberacao"
+	                      		controller="#{cadastroResultadosNotaAdicionalController}" 
+	                      		value="#{cadastroResultadosNotaAdicionalController.servidorLiberacaoVO}"> 
+		                    <p:column> 
+		                      <f:facet name="header"> 
+		                        <b>#{messages.LABEL_NRO_REG_CONSELHO_SERV_LIBERACAO}</b> 
+		                      </f:facet>  
+		                      <h:outputText value="#{row.nroRegConselho}"/> 
+		                    </p:column>  
+		                    <p:column> 
+		                      <f:facet name="header"> 
+		                        <b>#{messages.LABEL_NOME}</b> 
+		                      </f:facet>  
+		                      <h:outputText value="#{row.nome}"/> 
+		                    </p:column> 
+		                  </mec:suggestionBox>
+		                  </aghu:panelGeral>  
+                        </p:outputPanel>
+                        <p:outputPanel style="width:40%;float:right;padding:10px" >
+	               		  <aghu:panelGeral id="panelDocumentoAnexo" rendered="#{mf:hasPermission(securityController,'anexarDocLaudoAutomatic,executar') and cadastroResultadosNotaAdicionalController.permiteAnexarDocumento}" 
+	                                       legend="#{messages.TITLE_DOCUMENTO_EM_ANEXO}"> 
+								<p:fileUpload id="upload" 
+											  label="#{messages.TITLE_UPLOAD_DOCUMENTO}" 
+											  fileUploadListener="#{cadastroResultadosNotaAdicionalController.listenerUploadArquivoLaudo}"
+											  value="#{cadastroResultadosNotaAdicionalController.uploadedFile}" 
+											  rendered="#{!cadastroResultadosNotaAdicionalController.isDocumentoAnexado()}" 
+											  allowTypes="/(\.|\/)(pdf)$/"
+											  fileLimit="1"
+											  sizeLimit="10000000"
+											  uploadLabel="#{messages.LABEL_CARREGAR}"
+											  cancelLabel="#{messages.LABEL_CANCELAR}"
+											  style="width:480px;"
+											  mode="advanced" dragDropSupport="true"
+											  invalidFileMessage="Somente arquivos .pdf são aceitos."
+											  invalidSizeMessage="Somente arquivos com até 10Mb são aceitos."
+											  update="upload,panelDocumentoAnexo" 
+											  auto="true"  />
+								
+							    <p:outputPanel layout="block" style="align:center"> 
+							      <mec:commandLink id="btVisualizar" 
+							                       title="#{messages.TITLE_VISUALIZAR_DOCUMENTO_EM_ANEXO}" 
+							                       action="#{cadastroResultadosNotaAdicionalController.visualizarDocumentoAnexo()}"
+							                       rendered="#{mf:hasPermission(securityController,'anexarDocLaudoAutomatic,executar') and cadastroResultadosNotaAdicionalController.isDocumentoAnexado()}" 
+							                       disabled="#{not mf:hasPermission(securityController,'anexarDocLaudoAutomatic,executar')}" 
+							                       styleClass=" silk-zoom silk-icon"> 
+							        <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSoeSeq}" value="#{cadastroResultadosNotaAdicionalController.solicitacaoExameSeq}" for="command"/>  
+							        <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.iseSeqp}" value="#{cadastroResultadosNotaAdicionalController.itemSolicitacaoExameSeq}" for="command"/>  
+							        <f:setPropertyActionListener target="#{visualizacaoResultadoExameController.voltarPara}" value="exames-resultadoNotaAdicional" for="command"/> 
+							      </mec:commandLink>  
+							      <mec:commandLink title="#{messages.TITLE_DOWNLOAD_DOCUMENTO}" 
+							                       action="#{cadastroResultadosNotaAdicionalController.downloadArquivoLaudo()}" 
+							                       rendered="#{mf:hasPermission(securityController,'anexarDocLaudoAutomatic,executar') and cadastroResultadosNotaAdicionalController.isDocumentoAnexado()}" 
+							      		           render="panelDocumentoAnexo" 
+							      		           styleClass="silk-attach silk-icon"/>  
+							      <mec:commandLink title="#{messages.LABEL_EXCLUSAO_DOCUMENTO}"
+							                       rendered="#{mf:hasPermission(securityController,'anexarDocLaudoAutomatic,executar') and cadastroResultadosNotaAdicionalController.isDocumentoAnexado()}" 					                       
+							                       onclick="PF('modalConfirmacaoExclusaoWG').show();return false;" 
+							      		           styleClass="silk-delete silk-icon" ajax="true"/> 
+							    </p:outputPanel> 
+					      </aghu:panelGeral> 
+				      </p:outputPanel>
+                
+                  <p:outputPanel id="panelDesenho" style="#{cadastroResultadosNotaAdicionalController.exigeResponsavel ? 'margin-top: 120px' : ''}"> 
+					<c:forEach var="_desenhoMascaraExame" items="#{cadastroResultadosNotaAdicionalController.desenhosMascarasExamesVO}">  
+					  <p:outputPanel binding="#{_desenhoMascaraExame.formularioDinamicoPanel}" /> 
+				    </c:forEach> 
+                  </p:outputPanel> 
+                 </aghu:linha>
+                <p:outputPanel id="panelBotoes">
+	                <aghu:acao>
+	                  <mec:commandButton id="btn_salvar_results" 
+	                  		rendered="#{not cadastroResultadosNotaAdicionalController.mostrarMensagemLiberar 
+	                    	               				and not mf:hasPermission(securityController,'desabilitarLiberarResultadoExame,desabilita')}" 
+	       	               	disabled="#{not mf:hasPermission(securityController,'liberarResultadoExame,executar')}" 
+	       	               	value="#{messages.LABEL_GRAVAR}" 
+	       	               	action="#{cadastroResultadosNotaAdicionalController.gravarResultadosLiberarLiberacaoAutomatica}" 
+	       	               	render="modalValidacaoValoresNormalidade"
+	       	               	ajax="true"
+	       	               	profile="ok">
+	                  </mec:commandButton>
+		              <mec:commandButton id="btn_salvar_results_Sem_liberar" 
+		                 	rendered="#{mf:hasPermission(securityController,'desabilitarLiberarResultadoExame,desabilita')}" 
+	                    	disabled="#{not mf:hasPermission(securityController,'liberarResultadoExame,executar')}"  
+	           	            value="#{messages.LABEL_GRAVAR}" 
+	           	            action="#{cadastroResultadosNotaAdicionalController.gravarResultadosNaoLiberar()}" 
+	           	            profile="ok"/>
+		              <mec:commandButton id="btn_salvar_confirm_liberar" 
+	           	            value="#{messages.LABEL_GRAVAR}" 
+	       	                disabled="#{not mf:hasPermission(securityController,'liberarResultadoExame,executar')}"  
+	       	               	action="#{cadastroResultadosNotaAdicionalController.getValidatorOuModalLiberar}"
+	        	           	rendered="#{cadastroResultadosNotaAdicionalController.mostrarMensagemLiberar and not mf:hasPermission(securityController,'desabilitarLiberarResultadoExame,desabilita') and not mf:hasPermission(securityController, 'NaoLiberaResultado ,salvar')}" 
+	       	               	profile="ok" ajax="true" process="@form" update="@this"/>
+		              <mec:commandButton id="bt_liberar" 
+		                   	value="#{messages.LABEL_LIBERAR}" 
+		                    rendered="#{not mf:hasPermission(securityController,'desabilitarLiberarResultadoExame,desabilita')}"
+							disabled="#{mf:hasPermission(securityController,'NaoLiberaResultado,salvar')}"
+		                   	action="#{cadastroResultadosNotaAdicionalController.liberarExame}" 
+		                   	profile="ok"/>
+		              <mec:commandButton id="btn_anular_confirm_liberar" 
+		                	value="#{messages.LABEL_ANULAR_RESULTADO}" 
+		                   	disabled="#{not mf:hasPermission(securityController,'anularResultadoExame,executar')}" 
+		                   	onclick="PF('modalConfirmacaoAnulacaoWG').show();return false;" 
+		                   	profile="ok"/>
+		              <mec:commandButton value="#{messages.LABEL_RESULTADO_PADRAO_EXAME}" 
+	                    	disabled="#{not mf:hasPermission(securityController,'consultarNotaAdicionalResultExame,pesquisar')}" 
+	                    	onclick="PF('modalResultPadraoWG').show();"
+	                    	action="#{cadastroResultadosNotaAdicionalController.carregarListaResultadosPadrao}" 
+	                    	ajax="true" proces="@this"
+	                    	render="panelResultPadrao" 
+	                    	styleClass="bt_cinza"/>
+					  <mec:commandButton id="bt_print_buttonView"
+							value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+							action="#{cadastroResultadosNotaAdicionalController.visualizarRelatorio}"
+							profile="view" onclick="PF('loadDialogWG').show()" ajax="true" process="@form" render="@this @(#loadDialogWG)" oncomplete="PF('loadDialogWG').hide()"/>
+					  <mec:commandButton id="bt_print_buttonPrint"
+							value="#{messages.LABEL_IMPRIMIR}"
+							action="#{cadastroResultadosNotaAdicionalController.imprimirRelatorio}"
+							profile="print" onclick="PF('loadDialogWG').show()"  ajax="true" process="@form" render="@this @(#loadDialogWG)" oncomplete="PF('loadDialogWG').hide()"/>
+	                </aghu:acao> 
+                </p:outputPanel>
+              </p:tab>  
+              <p:tab id="aba2" 
+                     title="#{messages.LABEL_NOTA_ADICIONAL}"
+                     rendered="#{cadastroResultadosNotaAdicionalController.mostraNotasAdicionais and mf:hasPermission(securityController,'consultarNotaAdicionalResultExame,pesquisar')}"> 
+				<aghu:panelGeral id="panelNotaAdicional" > 
+                  <aghu:linha> 
+                    <div> 
+                      <div> 
+                        <mec:inputTextArea id="notaAdicional" 
+                        		cols="100" rows="6" 
+                        		label="#{messages.LABEL_NOTA_ADICIONAL}" 
+                        		title="#{messages.TITLE_NOTA_ADICIONAL}" 
+                        		size="125" 
+                        		value="#{cadastroResultadosNotaAdicionalController.notaAdicionalTexto}" 
+                        		readonly="#{not mf:hasPermission(securityController,'incluirNotaAdicional,executar')}" 
+                        		removerCaratersEspeciais="false" 
+                        		maxlength="4000"/> 
+                      </div>  
+                      <div style="text-align: left; vertical-align: top; padding-top: 23px;"> 
+                        <mec:commandButton id="btn_salvar" 
+                        		rendered="#{mf:hasPermission(securityController,'incluirNotaAdicional,executar')}" 
+                                value="#{messages.LABEL_GRAVAR}" 
+                                action="#{cadastroResultadosNotaAdicionalController.gravarNotaAdicional}" 
+                                profile="ok"/> 
+                      </div> 
+                    </div> 
+                  </aghu:linha>
+                  <aghu:linha> 
+                    <mec:serverDataTable id="tbNotasAdicionais" 
+                    		list="#{cadastroResultadosNotaAdicionalController.notasAdicionais}" 
+                    		scrollable="true"> 
+                      <c:set var="item" value="#{item}"/> 
+                      <p:column width="15%"> 
+                        <f:facet name="header" width="15%"> 
+                          <h:outputText value="#{messages.LABEL_DATA}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.criadoEm}"> 
+                          <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                        </h:outputText> 
+                      </p:column>  
+                      <p:column width="35%"> 
+                        <f:facet name="header" width="35%"> 
+                          <h:outputText value="#{messages.LABEL_CRIADO_POR}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.servidor.pessoaFisica.nome}"/> 
+                      </p:column>  
+                      <p:column width="50%"> 
+                        <f:facet name="header" width="50%"> 
+                          <h:outputText value="#{messages.LABEL_NOTA_ADICIONAL}"/> 
+                        </f:facet>  
+                        <h:outputText value="#{item.notasAdicionais}"/> 
+                      </p:column> 
+                    </mec:serverDataTable> 
+                  </aghu:linha> 
+                </aghu:panelGeral>
+              </p:tab>
+            </p:tabView> 
+          </aghu:linha> 
+        </aghu:panelGeral>
+        <aghu:acao> 
+          <mec:backButton id="bt_voltar" 
+          		value="#{messages.LABEL_VOLTAR}" 
+				rendered="#{not empty cadastroResultadosNotaAdicionalController.voltarPara and cadastroResultadosNotaAdicionalController.voltarPara ne 'pol-consultarExames'}" 
+				action="#{cadastroResultadosNotaAdicionalController.voltar}" 
+				profile="back"/>
+          <mec:backButton id="bt_voltarPOL" value="#{messages.LABEL_VOLTAR}" formId="dynamic_form" 
+				rendered="#{cadastroResultadosNotaAdicionalController.voltarPara eq 'pol-consultarExames'}" 
+				action="#{cadastroResultadosNotaAdicionalController.voltar}" profile="back"/> 
+        </aghu:acao> 
+	    <p:dialog id="modalConfirmacao" 
+	    	width="400" height="150" 
+	    	modal="true"
+				resizable="false" widgetVar="modalConfirmacaoWG">
+		  <f:facet name="header">
+			<h:outputText value="#{messages.LABEL_LIBERACAO_RESULTADO}" />
+		  </f:facet> #{messages.LABEL_LIBERACAO_RESULTADO_PERGUNTA}
+		  <br clear="none" />
+		  <br clear="none" />
+		  <br clear="none" />
+		  <h:panelGroup>
+			<h:form prependId="false" id="formModalConfirmacao">
+			  <aghu:acao>
+			    <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}"
+						onclick="PF('modalConfirmacaoWG').hide()"
+						action="#{cadastroResultadosNotaAdicionalController.gravarResultadosLiberar}"
+						ajax="true"
+						render="modalValidacaoValoresNormalidade"
+						profile="ok">
+					</mec:commandButton>
+					<mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}"
+						onclick="PF('modalConfirmacaoWG').hide()"
+						action="#{cadastroResultadosNotaAdicionalController.gravarResultadosNaoLiberar}"
+						profile="cancel">
+					</mec:commandButton>
+			  </aghu:acao>
+			</h:form>
+		  </h:panelGroup>
+		</p:dialog>
+		<p:dialog id="modalConfirmacaoAnulacao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoAnulacaoWG"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ANULACAO_RESULTADO}"/> 
+            </f:facet> #{messages.LABEL_ANULACAO_RESULTADO_PERGUNTA} 
+            <br/><br/><br/>
+            <h:panelGroup> 
+            <h:form prependId="false" id="formModalConfirmacaoAnulacao"> 
+              <mec:commandButton id="bt_sim_anula" 
+            		value="#{messages.LABEL_SIM}" 
+            	    action="#{cadastroResultadosNotaAdicionalController.anularResultadoExame}" 
+            	    profile="ok" 
+            	    ajax="true" 
+            	    process="@this" 
+            	    onclick="PF('modalConfirmacaoAnulacaoWG').hide();"/>  
+              <mec:commandButton id="bt_nao_anula" 
+            		value="#{messages.LABEL_NAO}" 
+            	    action="#{cadastroResultadosNotaAdicionalController.naoAnularResultadoExame}" 
+            	    onclick="PF('modalConfirmacaoAnulacaoWG').hide();" 
+            	    profile="cancel" 
+            	    render="@(#panelBotoes) @(#panelDocAnexo) @(#panelDocumentoAnexo)"
+            	    ajax="true" 
+            	    process="@this"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>
+        
+        <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO_DOCUMENTO}"/> 
+          </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_DOCUMENTO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalExclusao"> 
+              <mec:commandButton id="bt_excluir" 
+            		value="#{messages.LABEL_SIM}"                                                                         
+                    action="#{cadastroResultadosNotaAdicionalController.removerDocumentoLaudo}"
+                    onclick="PF('modalConfirmacaoExclusaoWG').hide();"
+                    profile="ok"
+                    render="@(#panelDocumentoAnexo)" 
+                    ajax="true"
+                    process="@this"/>  
+                    
+              <mec:commandButton id="bt_cancelarExcluir"
+                    value="#{messages.LABEL_NAO}" 
+                    onclick="PF('modalConfirmacaoExclusaoWG').hide();"                                 
+                    profile="cancel" 
+                    ajax="true"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>
+        
+      </h:form>
+      
+      <p:dialog id="modalExamesConsultados" 
+      		visible="#{cadastroResultadosNotaAdicionalController.exibeModalConsultados}" 
+      		width="600" height="200" 
+      		modal="true" resizable="false" 
+      		widgetVar="modalExamesConsultadosWG" 
+      		closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_ITENS_CONSULTADOS}"/> 
+        </f:facet>  
+        <p:outputPanel style="width:580px; height:180px;"> 
+          <h:form prependId="false">
+            <mec:serverDataTable id="tabelaItensConsultados" 
+            		rowKeyVar="_itemId" 
+  					list="#{cadastroResultadosNotaAdicionalController.listaItemSolicConsultado}" 
+  					scrollable="true" 
+  					scrollHeight="180"> 
+              <c:set var="_itemExameConsultado" value="#{item}"/>  
+              <p:column width="20%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CONSULTADO_EM}"/> 
+                </f:facet>  
+                <h:outputText value="#{_itemExameConsultado.criadoEm}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column width="10%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_VINCULO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_itemExameConsultado.vinculo}"/> 
+              </p:column>  
+              <p:column width="10%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_MATRICULA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_itemExameConsultado.matricula}"/> 
+              </p:column>  
+              <p:column width="60%"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_NOME}"/> 
+                </f:facet>  
+                <h:outputText value="#{_itemExameConsultado.servidor}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </h:form>
+        </p:outputPanel> 
+      </p:dialog>  
+      
+      <p:dialog id="modalResultPadrao" 
+      		width="660" 
+            height="270" 
+            modal="true" 
+            resizable="false" 
+            widgetVar="modalResultPadraoWG" 
+            closable="true"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.LABEL_SELECIONE_RESULTADO_PADRAO}"/> 
+        </f:facet>
+        <aghu:panelGeral id="panelResultPadraoGeral" legend="#{messages.LABEL_RESULTADO_PADRAO_CADASTRADOS}" style="width:600px; height:250px;"> 
+          <aghu:linha> 
+            <h:form prependId="false" id="formResulPadrao"> 
+              <p:outputPanel id="panelResultPadrao" layout="inline"> 
+                <mec:serverDataTable id="tabelaResultPadrao" 
+                		list="#{cadastroResultadosNotaAdicionalController.listaResultadosPadrao}" 
+                		scrollable="true"> 
+                  <c:set var="item" value="#{item}"/>  
+                  <p:column style="width:20px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink title="#{messages.LABEL_SELECIONAR}"
+                    		         action="#{cadastroResultadosNotaAdicionalController.carregarResultadoPadrao}"
+                    		         oncomplete="PF('modalResultPadraoWG').hide();"
+                    		         styleClass=" silk-ativo silk-icon">   
+                      <f:setPropertyActionListener target="#{cadastroResultadosNotaAdicionalController.resultPadSeq}" value="#{item.seq}" for="command"/>
+                    </mec:commandLink>  
+                  </p:column>  
+                  <p:column style="width:250px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_RESULTADO_PADRAO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.descricao}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </h:form> 
+          </aghu:linha> 
+        </aghu:panelGeral>
+      </p:dialog>   
+    </ui:define>  
+  </ui:composition> 
+</html>

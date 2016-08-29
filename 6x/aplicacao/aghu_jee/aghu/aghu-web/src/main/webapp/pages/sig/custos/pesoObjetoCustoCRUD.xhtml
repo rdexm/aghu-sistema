@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_CADASTRAR_PESO_OBJETO_CUSTO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesoObjetoCustoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesoObjetoCustoController}"/>  
+      <h:form prependId="false" id="formularioGrupoOcupacao"> 
+        <aghu:panelGeral legend="#{messages.LABEL_CADASTRAR_PESO_OBJETO_CUSTO}"> 
+          <aghu:linha> 
+            <mec:inputText id="centroCusto" value="#{pesoObjetoCustoController.nomeCentroCusto}" label="#{messages.LABEL_CENTRO_CUSTO}" size="70" readonly="true"/> 
+          </aghu:linha>  
+          <aghu:linha id="linhaTipoRateio"> 
+            <mec:selectOneRadio id="tipoRateio" enum="DominioTipoRateio" label="#{messages.LABEL_CONFIGURAR_RATEIO_POR}" 
+            	title="#{messages.TITLE_CONFIGURAR_RATEIO_POR}" value="#{pesoObjetoCustoController.tipoRateio}" 
+            	required="true" readonly="#{not mf:hasPermission(securityController,'editarPesoObjetoCusto,editar')}"> 
+              	<p:ajax event="change" update="@(#panelFormularioObjetoCusto) @(#linhaTipoRateio)" process="@this"/>
+            </mec:selectOneRadio> 
+          </aghu:linha>  
+          <aghu:linha id="panelFormularioObjetoCusto" >
+                <aghu:panelGeral legend="#{messages.LABEL_PAINEL_OBJETOS_CUSTO}" rendered="#{pesoObjetoCustoController.exibirCamposObjetosCusto}"> 
+                  <aghu:linha> 
+                    <mec:selectOneMenu id="direcionador" label="#{messages.LABEL_DIRECIONADOR_RATEIO}" title="#{messages.TITLE_DIRECIONADOR_RATEIO}" itemLabel="nome" items="#{pesoObjetoCustoController.listarDirecionadores()}" required="true" value="#{pesoObjetoCustoController.direcionador}" readonly="#{not mf:hasPermission(securityController,'editarPesoObjetoCusto,editar')}"> 
+                      <p:ajax event="change" update="@(#panelTabelaObjetosCustos)" process="@this"/> 
+                    </mec:selectOneMenu> 
+                  </aghu:linha>  
+                  <aghu:linha id="panelTabelaObjetosCustos">
+                     <mec:serverDataTable id="tabelaCargos" scrollHeight="400" rendered="#{pesoObjetoCustoController.exibirTabelaObjetosCusto}" list="#{pesoObjetoCustoController.listaObjetoCustoCentroCusto}" scrollable="true"> 
+                       <c:set var="item" value="#{item}"/>  
+                       <p:column> 
+                         <f:facet name="header"> 
+                           <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                         </f:facet>  
+                         <mec:commandLink title="#{messages.LABEL_VISUALIZAR}" action="#{pesoObjetoCustoController.visualizarObjetoCusto}" immediate="true" styleClass=" silk-zoom silk-icon" ajax="true"> 
+                           <f:setPropertyActionListener target="#{manterObjetosCustoController.seqObjetoCustoVersao}" value="#{pesoObjetoCustoController.seqObjetoCustoVersao}" for="command"/>  
+                           <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{true}" for="command"/>  
+                           <f:setPropertyActionListener target="#{manterObjetosCustoController.retornarPaginaPesoObjetoCustoCRUD}" value="#{true}" for="command"/> 
+                         </mec:commandLink> 
+                       </p:column>  
+                       <p:column> 
+                         <f:facet name="header"> 
+                           <h:outputText value="#{messages.LABEL_NOME}"/> 
+                         </f:facet>  
+                         <h:outputText value="#{item.sigObjetoCustoVersoes.sigObjetoCustos.nome}"/> 
+                       </p:column>  
+                       <p:column> 
+                         <f:facet name="header"> 
+                           <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                         </f:facet>  
+                         <h:outputText value="#{item.sigObjetoCustoVersoes.indSituacao.descricao}"/> 
+                       </p:column>  
+                       <p:column rendered="#{pesoObjetoCustoController.exibirColunaValorAtual}"> 
+                         <f:facet name="header"> 
+                           <h:outputText value="#{messages.LABEL_VALOR_ATUAL}"/> 
+                         </f:facet>  
+                         <h:outputText value="#{pesoObjetoCustoController.buscarValorInteiroMapeamentoTabelaSUS(item.sigObjetoCustoVersoes.sigObjetoCustos.seq)}"/> 
+                       </p:column>  
+                       <p:column> 
+                         <f:facet name="header"> 
+                           <h:outputText value="#{messages.LABEL_VALOR_NOVO}"/> 
+                         </f:facet>  
+                         <!-- <mec:inputNumero id="valorAjustado" label="" showLabel="false" value="#{item.sigObjetoCustoVersoes.sigObjetoCustos.sigObjetoCustoPesos.valorInteiro}" bypassUpdates="false" size="4" readonly="#{not mf:hasPermission(securityController,'editarPesoObjetoCusto,editar')}"/>  -->
+                       	 <pe:inputNumber 
+                       	 	id="valorAjustado" 
+                       	 	value="#{item.sigObjetoCustoVersoes.sigObjetoCustos.sigObjetoCustoPesos.valorInteiro}" 
+                       	 	size="4" readonly="#{not mf:hasPermission(securityController,'editarPesoObjetoCusto,editar')}"
+                       	 	decimalPlaces="0"/>
+                       </p:column> 
+                     </mec:serverDataTable> 
+                  </aghu:linha> 
+                </aghu:panelGeral> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="btn_gravar_1" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'editarPesoObjetoCusto,editar') and pesoObjetoCustoController.voltarPaginaManterObjetoCusto}" action="#{pesoObjetoCustoController.gravar}" profile="ok"> 
+            <f:setPropertyActionListener target="#{manterObjetosCustoController.seqObjetoCustoVersao}" value="#{pesoObjetoCustoController.seqObjetoCustoVersao}" for="command"/>  
+            <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{false}" for="command"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="btn_gravar_2" value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'editarPesoObjetoCusto,editar')  and not pesoObjetoCustoController.voltarPaginaManterObjetoCusto}" action="#{pesoObjetoCustoController.gravar}" profile="ok"/>  
+          <mec:commandButton id="bt_cancelar_1" value="#{messages.LABEL_CANCELAR}" immediate="true" rendered="#{pesoObjetoCustoController.voltarPaginaManterObjetoCusto}" action="#{pesoObjetoCustoController.cancelar}" profile="cancel"> 
+            <f:setPropertyActionListener target="#{manterObjetosCustoController.seqObjetoCustoVersao}" value="#{pesoObjetoCustoController.seqObjetoCustoVersao}" for="command"/>  
+            <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{false}" for="command"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="bt_cancelar_2" value="#{messages.LABEL_CANCELAR}" immediate="true" rendered="#{not pesoObjetoCustoController.voltarPaginaManterObjetoCusto}" action="#{pesoObjetoCustoController.cancelar}" profile="cancel"/> 
+        </aghu:acao> 
+      </h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

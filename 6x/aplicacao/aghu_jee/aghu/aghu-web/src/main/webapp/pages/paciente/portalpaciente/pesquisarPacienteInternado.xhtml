@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>Pesquisar Paciente Internado :: AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{pacienteInternadoAbaInicialController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{pacienteInternadoAbaInicialController}" />
+		<h:form prependId="false" id="formPesquisa">
+			<style>
+			#listaPaciente {
+				height: 250px;
+				overflow-x: hidden;
+				overflow-y: auto;
+			}
+			
+			#gridPacientes tr {
+				height: 25px;
+			}
+			</style>
+			<aghu:panelGeral id="pnlCamposPesquisa"
+				legend="#{messages.LABEL_PESQUISAR_PACIENTE_INTERNADO}">
+				<aghu:linha
+					rendered="#{!pacienteInternadoAbaInicialController.exibeInfoPaciente}">
+					<mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}"
+						size="9" maxlength="10"
+						title="#{messages.TITLE_PRONTUARIO_PORTAL_PESQ}"
+						value="#{pacienteInternadoAbaInicialController.prontuario}"
+						id="prontuario" />
+					<mec:inputText label="#{messages.LABEL_LEITO}"
+						title="#{messages.TITLE_LEITO_PORTAL_PESQ}" size="15"
+						maxlength="14" id="leito"
+						value="#{pacienteInternadoAbaInicialController.leito}" />
+				</aghu:linha>
+				<aghu:linha
+					rendered="#{pacienteInternadoAbaInicialController.exibeInfoPaciente}">
+					<h:outputText
+						value="#{pacienteInternadoAbaInicialController.nomePaciente}, #{pacienteInternadoAbaInicialController.atendimento.paciente.idadeFormat}" />
+					<h:outputText
+						value=" - Prontuário: #{pacienteInternadoAbaInicialController.atendimento.paciente.prontuario}" />
+					<h:outputText
+						value=", Leito: #{pacienteInternadoAbaInicialController.atendimento.leito.leitoID}" />
+					<br />
+					<h:outputText
+						value="#{pacienteInternadoAbaInicialController.textoServicoMedico}" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:selectOneMenu id="categoriaProfissional"
+						style="width: 200px !important;"
+						enum="DominioCategoriaProfissionalPortalPaciente"
+						label="#{messages.LABEL_CATEGORIA_PROFISSIONAL}"
+						title="#{messages.TITLE_CAT_PROFISSIONAL_PORTAL_PESQ}"
+						noSelectionLabel="#{messages.LABEL_TODOS_PROFISSIONAIS}"
+						value="#{pacienteInternadoAbaInicialController.categoria}">
+						<p:ajax event="change" listener="#{pacienteInternadoAbaInicialController.selecionarCategoria}" process="@this"  ajax="true" />
+					</mec:selectOneMenu>
+					<mec:inputTextData id="data" label="#{messages.LABEL_DATA}"
+						title="#{messages.TITLE_DATA_PORTAL_PESQ}"
+						value="#{pacienteInternadoAbaInicialController.data}" tipo="data"
+						size="10" />
+					<mec:inputTextData id="inicioAtendimento"
+						label="#{messages.LABEL_INICIO_ATENDIMENTO}"
+						value="#{pacienteInternadoAbaInicialController.atendimento.dthrInicio}"
+						tipo="data" size="10" readonly="true" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton value="#{messages.LABEL_PESQUISAR}"
+					id="bt_pesquisar" style="align:left"
+					action="#{pacienteInternadoAbaInicialController.pesquisarAbas}"
+					profile="search" render="@(#formDiagnosticos) @(#formPaciente)" 
+					process="@(#formPesquisa)" />
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					block="true" requestDelay="2000"
+					action="#{pacienteInternadoAbaInicialController.limpar}"
+					render="formPesquisa panelAbas" ajax="true" process="@this" profile="clear" />
+			</aghu:acao>
+		</h:form>
+
+		<p:outputPanel id="panelAbas" layout="inline">
+			<aghu:linha>
+				<p:tabView id="tabPanelAbas" dynamic="true" immediate="true"
+					activeIndex="#{pacienteInternadoAbaInicialController.selectedTab}"
+					prependId="false">
+					<p:ajax event="tabChange"
+						listener="#{pacienteInternadoAbaInicialController.tabChange}"
+						process="@this, @(#formPesquisa), @(#tabPanelAbas)"/>
+					<p:tab id="aba1" labelWidth="200px" immediate="true"
+						title="#{messages.LABEL_DIAGNOSTICOS}">
+						<ui:include src="abaDiagnostico.xhtml" />
+					</p:tab>
+					<p:tab id="aba2" labelWidth="200px" immediate="true"
+						title="#{messages.LABEL_ANAMNESE}">
+						<ui:include src="/pages/paciente/portalpaciente/abaAnamnese.xhtml" />
+					</p:tab>
+					<p:tab id="aba3" labelWidth="200px" disabled="true"
+						immediate="true" title="#{messages.LABEL_EVOLUCAO}">
+					</p:tab>
+					<p:tab id="aba4" labelWidth="200px" disabled="true"
+						immediate="true" title="#{messages.LABEL_PRESCRICAO}">
+					</p:tab>
+					<p:tab id="aba5" labelWidth="200px" disabled="true"
+						immediate="true" title="#{messages.LABEL_EDUCACAO}">
+					</p:tab>
+				</p:tabView>
+			</aghu:linha>
+		</p:outputPanel>
+
+		<p:dialog id="modalSelecionaPaciente" width="450" height="300"
+			modal="true" resizable="false" widgetVar="modalSelecionaPacienteWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText
+						value="#{messages.TITLE_SELECAO_PACIENTE_INTERNADO} #{pacienteInternadoAbaInicialController.leito}" />
+				</h:panelGroup>
+			</f:facet>
+			<h:form id="formPaciente" prependId="false">
+				<p:outputPanel id="listaPaciente">
+					<mec:serverDataTable id="gridPacientes" widgetVar="gridPacientesWG"
+						controller="#{pacienteInternadoAbaInicialController}"
+						rowKeyVar="row"
+						list="#{pacienteInternadoAbaInicialController.listaPaciente}"
+						selection="pacienteSelecionado">
+						<c:set var="item" value="#{item}" />
+						<p:ajax event="rowSelect" process="@this" />
+						<p:column style="width:400px">
+							<f:facet name="header" style="width:400px">
+								<h:outputText value="#{messages.LABEL_PACIENTE}" />
+							</f:facet>
+							<h:outputText value="#{item.prontuario} - #{item.nome}" />
+						</p:column>
+					</mec:serverDataTable>
+				</p:outputPanel>
+				<br />
+				<aghu:acao>
+					<mec:commandButton value="#{messages.LABEL_SELECIONAR}" ajax="true"
+						action="#{pacienteInternadoAbaInicialController.selecionarPaciente()}"
+						process="@(#formPaciente)" render="@(#pnlCamposPesquisa) @(#formDiagnosticos)"
+						immediate="true" styleClass="bt_cinza" profile="ok" />
+					<mec:commandButton value="#{messages.LABEL_CANCELAR}" ajax="true"
+						action="#{pacienteInternadoAbaInicialController.fecharSelecaoPaciente()}"
+						render="@(#formPaciente)"
+						immediate="true" styleClass="bt_cinza" profile="cancel" />
+				</aghu:acao>
+			</h:form>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+		<ui:define name="head">
+			<title>#{messages.LABEL_COMORBIDADES}</title>
+		</ui:define>
+		<ui:define name="metadata"> 
+          <f:metadata> 
+            <f:viewAction action="#{incluirComorbidadePacienteController.iniciar()}"/> 
+          </f:metadata> 
+        </ui:define>
+		<ui:define name="body">
+			<mec:pageConfig controller="#{incluirComorbidadePacienteController}" ignoreEnter="true"/>
+				<aghu:panelGeral legend="#{messages.LABEL_VINCULAR_COMORBIDADE_PACIENTE}">
+				<br />
+				<h:form prependId="false" id="dados_paciente">			
+					<aghu:panelGeral legend="#{messages.LABEL_DADOS_DO_PACIENTE}">
+					  <aghu:linha> 
+						<mec:inputTextProntuario id="prontuario" readonly="true" size="10" label="#{messages.LABEL_PRONTUARIO}" 
+						value="#{incluirComorbidadePacienteController.pacienteTransplanteMedulaOsseaVO.prontuario}" />  
+						
+						<mec:inputText id="codigo" readonly="true" size="10" label="#{messages.LABEL_CODIGO}" 
+							value="#{incluirComorbidadePacienteController.pacienteTransplanteMedulaOsseaVO.aipPacientes.codigo}" />
+						
+						<mec:inputText id="nomPaciente" readonly="true" size="55" label="#{messages.LABEL_NOME}" 
+						value="#{incluirComorbidadePacienteController.pacienteTransplanteMedulaOsseaVO.nome}" style="text-transform:uppercase"/>
+						
+						<mec:inputText id="tipo" readonly="true" size="30" label="#{messages.LABEL_TIPO}" 
+							value="#{incluirComorbidadePacienteController.pacienteTransplanteMedulaOsseaVO.tipo}" />
+						
+						<mec:inputText id="situacao" readonly="true" size="30" label="#{messages.LABEL_SITUACAO}" 
+						value="#{incluirComorbidadePacienteController.pacienteTransplanteMedulaOsseaVO.situacao.retornarDescricaoCompleta()}" />
+					  </aghu:linha>
+					</aghu:panelGeral>
+				</h:form>
+				<br />
+	        	<h:form prependId="false" id="add_comorbidade">
+			        <aghu:panelGeral legend="#{messages.LABEL_COMORBIDADES_INCLUIDAS}">
+			          <aghu:linha> 
+		            	<mec:suggestionBox id="comorbidade" label="#{messages.LABEL_COMORBIDADE}" title="#{messages.TITLE_ADD_COMORBIDADE_AO_PACIENTE}"
+							size="65" suggestionAction="pesquisarComorbidade" descricaoInput="seq" descricaoLabel="concatDescricao" maxlength="65" 
+							descricaoLimite="65" controller="#{incluirComorbidadePacienteController}" value="#{incluirComorbidadePacienteController.mtxComorbidade}" 
+							styleClass="noAdjust">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{item.seq}
+	               			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.concatDescricao}
+	               			</p:column>
+						</mec:suggestionBox>
+						<br />
+						<mec:commandButton id="bt_add" value="#{messages.LABEL_ADICIONAR}" action="#{incluirComorbidadePacienteController.adicionar()}" 
+						profile="add" render="@form"/>
+			          </aghu:linha>
+			          <aghu:linha>
+						  <br />
+				          <mec:serverDataTable id="lista" selection="mtxComorbidadeSelect" paginatorAlwaysVisible="false" scrollable="true"
+				          controller="#{incluirComorbidadePacienteController}" list="#{incluirComorbidadePacienteController.listaComorbidade}">
+				            <c:set var="item" value="#{item}"/>
+				            <p:column headerText="#{messages.LABEL_ACAO}" styleClass="first-column auto-adjust" exportable="false">
+				              <mec:commandLink id="lista_link_remover" title="#{messages.TITLE_EXCLUIR}" action="#{incluirComorbidadePacienteController.remover(item)}"
+				              styleClass="silk-icon silk-delete" ajax="true" render="@form"/>
+				            </p:column>
+				            <p:column>
+				              <f:facet name="header">
+				                <h:outputText value="#{messages.LABEL_COMORBIDADE}"/>
+				              </f:facet>
+			                  <p:overlayPanel id="hintDescricao" for="descricao" showEvent="mouseover" hideEvent="mouseout"	
+							  	rendered="#{(item.concatDescricao).length() > 70}">
+								<h:outputText value="#{item.concatDescricao}" />
+							  </p:overlayPanel>
+							  <h:outputText id="descricao" value="#{incluirComorbidadePacienteController.obterHint(item.concatDescricao, 70)}" />
+				            </p:column> 
+				            <p:column style="width:15%;">
+				              <f:facet name="header">
+				                <h:outputText value="#{messages.LABEL_ESCORE}"/>
+				              </f:facet>
+							  <center><h:outputText id="escore" value="#{item.escore}" /></center>
+				            </p:column>
+				          </mec:serverDataTable>
+			          </aghu:linha>
+			        </aghu:panelGeral>
+					<br />
+			        <aghu:acao>
+						<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" action="#{incluirComorbidadePacienteController.gravar()}" profile="ok" />
+						<mec:commandButton id="bt_cancelar" value="#{messages.LABEL_CANCELAR}"
+						action="#{incluirComorbidadePacienteController.voltarPagPesquisa()}" process="@this" profile="cancel" />
+					</aghu:acao>				
+
+		      </h:form>
+			<br />
+		</aghu:panelGeral>
+		</ui:define>
+	</ui:composition>
+</html>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_SINONIMO_EXAME}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{sinonimoExamePaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{sinonimoExamePaginatorController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formSinonimos">
+          <p:outputPanel id="panelSinonimos" layout="inline" styleClass="aghu-panel-geral">
+          <aghu:panelGeral legend="#{messages.LABEL_MANTER_SINONIMO_EXAME}">
+            <aghu:linha> 
+              <mec:inputText id="sigla" label="#{messages.LABEL_SIGLA}" value="#{sinonimoExamePaginatorController.exame.sigla}" readonly="true" size="5" maxlength="5" styleclass="suggestion_input" style="text-transform:uppercase"/>  
+              <mec:inputText id="exame" label="Exame" value="#{sinonimoExamePaginatorController.exame.descricao}" readonly="true" size="60" maxlength="100" styleclass="suggestion_input" style="text-transform:uppercase"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText id="sinonimo" label="#{messages.LABEL_SINONIMO_EXAME}" size="110" maxlength="100" title="#{messages.TITLE_SINONIMO_EXAME}" value="#{sinonimoExamePaginatorController.sinonimo.nome}" required="true" style="text-transform:uppercase" readonly="#{not mf:hasPermission(securityController,'manterSinonimosExame,executar')}"/>  
+              <mec:selectOneMenu id="ativoInativo" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_SITUACAO_SINONIMO}" value="#{sinonimoExamePaginatorController.sinonimo.indSituacao}" required="true" readonly="#{not mf:hasPermission(securityController,'manterSinonimosExame,executar')}"/> 
+            </aghu:linha>
+          </aghu:panelGeral>
+          </p:outputPanel>
+          <br clear="none"/>
+          <p:outputPanel id="panelBotoes" layout="inline">
+          <aghu:acao>
+            <mec:commandButton id="bt_salvar" value="#{(empty sinonimoExamePaginatorController.sinonimo.id.seqp) ? (messages.LABEL_GRAVAR) : ('Alterar')}" rendered="#{mf:hasPermission(securityController,'manterSinonimosExame,executar')}" block="true" action="#{sinonimoExamePaginatorController.confirmar}" profile="ok" style="float:left;" />
+            <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" immediate="true" action="#{sinonimoExamePaginatorController.voltar}" profile="back"/>
+            <mec:commandButton id="bt_cancelarEdic" value="#{messages.LABEL_CANCELAR_EDICAO}" rendered="#{mf:hasPermission(securityController,'manterSinonimosExame,executar') and not empty sinonimoExamePaginatorController.sinonimo.id.seqp}" action="#{sinonimoExamePaginatorController.cancelarEdicao}" profile="cancel" immediate="true" render="panelSinonimos,panelBotoes,outPanelListaSinonimosExames" ajax="true" process="@this"  style="float:left;"/>
+          </aghu:acao>
+          </p:outputPanel>
+        <p:outputPanel id="outPanelListaSinonimosExames" layout="inline">
+            <mec:serverDataTable dataModel="dataModel" id="tabelaSinonimosExames" value="#{sinonimoExamePaginatorController}" controller="#{sinonimoExamePaginatorController}" columnToggler="false">
+          <c:set var="_sinonimo" value="#{item}"/>  
+          <p:column rendered="#{mf:hasPermission(securityController,'manterSinonimosExame,executar')}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_ACAO}"/> 
+            </f:facet>
+            
+						<mec:commandLink title="#{messages.LABEL_EDITAR}" ajax="true"
+							rendered="#{_sinonimo.id.seqp ne 1 and sinonimoExamePaginatorController.sinonimo.id.seqp ne _sinonimo.id.seqp}"
+							profile="edit" process="@this" render="panelSinonimos,panelBotoes,outPanelListaSinonimosExames">
+							<f:setPropertyActionListener
+								target="#{sinonimoExamePaginatorController.sinonimo}"
+								value="#{_sinonimo}" for="command" />
+						</mec:commandLink>
+						
+						
+						<mec:commandLink immediate="true" rendered="#{_sinonimo.id.seqp ne 1 and sinonimoExamePaginatorController.sinonimo.id.seqp ne _sinonimo.id.seqp}" title="#{messages.LABEL_EXCLUIR}" action="#{sinonimoExamePaginatorController.excluir}" render="outPanelListaSinonimosExames" profile="delete" ajax="true"> 
+              <f:setPropertyActionListener target="#{sinonimoExamePaginatorController.sinonimoRemover}" value="#{_sinonimo}" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_sinonimo.id.seqp}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SINONIMO_EXAME}"/> 
+            </f:facet>  
+            <h:outputText value="#{_sinonimo.nome}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_sinonimo.indSituacao.descricao}"/> 
+          </p:column> 
+        </mec:serverDataTable>
+        </p:outputPanel>
+    </h:form>
+    </ui:define> 
+  </ui:composition> 
+</html>

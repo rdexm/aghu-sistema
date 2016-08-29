@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component">
+	  
+  <ui:composition template="/WEB-INF/templates/casca_template.xhtml">
+   
+    <ui:define name="head"> 
+      <title>AGHU - Aplicativo de Gestão para Hospitais Universitários</title> 
+    </ui:define>  
+
+
+	<ui:remove> TOP MENU </ui:remove>    
+    <ui:define name="menu_esquerda">
+        <nav id="cascamenuprincipal" class="amazonmenu">
+	        <ul class="casca-menu-component">
+	        	<ui:repeat var="menu" value="#{menuController.listaMenus}">
+	        		<h:outputText value="#{menu.html}" escape="false"/>
+	        	</ui:repeat>
+	        </ul>
+        </nav>
+	          
+		<p:commandLink id="polMenu" styleClass="casca-menu-top casca-menu-pol" rendered="#{menuController.ativaPOL}" onclick="return false;">           
+			<div class="casca-menu-ico">     
+				<span class="icon icon-folder-open"></span>
+			</div>
+			<span class="casca-menu-text">POL</span>            		
+		</p:commandLink> 
+		<p:overlayPanel id="polPanel" dynamic="true" for="polMenu" showEffect="fade" 
+			hideEffect="fade" styleClass="pol-menu-panel" widgetVar="polPanelWG" >			
+			<span class="casca-pontaborda"></span>
+			<h:outputText value="Prontuário:" styleClass="pol-menu-label" />
+			<p:inputText id="prontuarioInput" label="Prontuário (POL)"
+				dir="RTL" size="10" maxlength="10" value="#{arvorePOLController.prontuario}"
+				onfocus="jQuery(this).priceFormat({limit:8,centsLimit: 1});"
+				converter="prontuarioConverter" autocomplete="off">
+				<p:ajax event="change" listener="#{arvorePOLController.addPOLPaciente}" oncomplete="PF('polPanelWG').hide();tab.openPOL(true);" 
+					update="casca_menu_form:prontuarioInput"/>
+			</p:inputText>	
+			<br/>
+			<br/>
+		
+			<p:commandLink action="#{arvorePOLController.pesquisaPOL}" ajax="true" process="@this" oncomplete="PF('polPanelWG').hide();tab.openPOL(true);">
+				<h:outputText value="Pesquisa Avançada" />
+			</p:commandLink>
+		</p:overlayPanel>
+
+        <c:if test="#{menuController.ativaPOL}">			
+			<p:commandButton id="button_pol_id" action="#{arvorePOLController.addPOLPaciente}" oncomplete="PF('polPanelWG').hide();tab.openPOL(true);" 
+				update="casca_menu_form:prontuarioInput" style="display:none;" />         
+			<p:defaultCommand target="button_pol_id"  />
+		</c:if>
+			
+    </ui:define>
+      
+    <ui:define name="menu_direita">    
+        <h:commandLink id="bt_info" styleClass="casca-menu-top casca-menu-sair" 
+			onclick="session.desativaSessionOnUnload();"
+			action="#{loginController.logoutAndRedirect}" >
+            	<div class="casca-menu-ico">        
+                	<span class="icon icon-exit"></span>
+            	</div>
+			<span class="casca-menu-text">Sair</span>
+		</h:commandLink>
+    
+        <!-- Pesquisa de funcionalidade foi remivida daqui -->    
+        
+    </ui:define>
+      
+      
+	<ui:remove> CONTEÚDO </ui:remove>      
+    <ui:define name="conteudo">
+    
+	  <ui:remove> PENDÊNCIAS </ui:remove>               
+	  <ui:include src="pendencias.xhtml" />
+	  
+	  <ui:remove> COMO UTILIZAR </ui:remove>
+	  <ui:include src="comoUtilizar.xhtml" />    
+    
+      <aghu:div id="casca_tabs" styleClass="easyui-tabs casca-tabs" > 
+        <aghu:div title="Início" styleClass="overflow:hidden;">
+          	<ui:include src="home.xhtml" />	
+        </aghu:div> 
+      </aghu:div>
+    </ui:define>  
+    
+    <ui:define name="rodapeEsquerdo">
+		<span class="icon icon-clock"/>
+    	<div id="tempoSessao" style="float:left" /> 
+      
+    </ui:define> 
+
+    <ui:define name="rodapeDireito">
+		<span class="icon icon-user"/>
+		<h:outputText value="#{menuController.servidor != null ? menuController.servidor.pessoaFisica.nome : menuController.usuario.nome}" style="font-weight:bold;"/> 
+    </ui:define> 
+  </ui:composition> 
+</html>

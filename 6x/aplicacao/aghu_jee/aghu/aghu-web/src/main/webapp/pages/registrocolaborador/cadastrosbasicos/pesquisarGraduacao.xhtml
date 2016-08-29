@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_GRADUACOES}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{graduacaoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisarGraduacoes"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_GRADUACOES}"> 
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_PESQUISA_CODIGO_GRADUACAO}" maxlength="5" size="5" value="#{graduacaoPaginatorController.codigoPesquisaGraduacao}" id="codigo"/>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO}" maxlength="300" size="100" value="#{graduacaoPaginatorController.descricaoPesquisaGraduacao}" style="text-transform:uppercase" 
+            	title="#{messages.TITLE_PESQUISA_DESCRICAO_GRADUACAO}" id="descricao"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_TIPO}" value="#{graduacaoPaginatorController.tipoPesquisaGraduacao}" title="#{messages.TITLE_PESQUISA_TIPO_GRADUACAO}" id="tipo"> 
+              <f:selectItem itemLabel="CCC" itemValue="CCC"/>  
+              <f:selectItem itemLabel="CSC" itemValue="CSC"/> 
+            </mec:selectOneMenu> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox label="#{messages.LABEL_CONSELHO}" title="#{messages.TITLE_PESQUISA_CONSELHO_GRADUACAO}" converter="#{rapConselhosProfissionaisConverter}" descricaoInput="sigla" descricaoLabel="nome" width="500" suggestionAction="pesquisarConselhosPorDescricao" id="conselho" controller="#{graduacaoPaginatorController}" value="#{graduacaoPaginatorController.conselhoPesquisaGraduacao}"> 
+              <p:column>#{item.sigla}</p:column>  
+              <p:column>#{item.nome}</p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu label="#{messages.LABEL_IND_SITUACAO}" enum="DominioSituacao" value="#{graduacaoPaginatorController.situacaoPesquisaGraduacao}" title="#{messages.TITLE_PESQUISA_SITUACAO_GRADUACAO}" id="situacao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{graduacaoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{graduacaoPaginatorController.limpar}" profile="clear"/>  
+          <mec:commandButton id="bt_cadastrar" rendered="#{graduacaoPaginatorController.dataModel.pesquisaAtiva}" value="#{messages.LABEL_NOVO}" action="#{graduacaoPaginatorController.inserir}" profile="add"/> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formGraduacoes"> 
+        <mec:serverDataTable dataModel="dataModel" id="tabelaGraduacoes" controller="#{graduacaoPaginatorController}"> 
+          <c:set var="_graduacao" value="#{item}"/>  
+          <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false" width="30px;"> 
+            <mec:commandLink id="tabelaGraduacoes_link_editar" profile="edit" title="editar" action="#{graduacaoPaginatorController.editar}"> 
+              <f:setPropertyActionListener target="#{graduacaoController.rapTipoQualificacao}" value="#{_graduacao}" for="command"/>  
+              <f:setPropertyActionListener for="command" target="#{graduacaoPaginatorController.selecionado}" value="#{_graduacao}"/> 
+            </mec:commandLink>  
+            <mec:commandLink id="tabelaGraduacoes_link_remover" profile="delete" title="excluir" action="#{graduacaoPaginatorController.excluir}"> 
+              <f:setPropertyActionListener for="command" target="#{graduacaoPaginatorController.selecionado}" value="#{_graduacao}"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column width="50px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_graduacao.codigo}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_graduacao.descricao}"/> 
+          </p:column>  
+          <p:column width="50px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TIPO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_graduacao.tipoQualificacao}"/> 
+          </p:column>  
+          <p:column width="100px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CONSELHO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_graduacao.conselhoProfissional.getSigla()}"/> 
+          </p:column>  
+          <p:column width="100px;"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{_graduacao.indSituacao.getDescricao()}"/> 
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

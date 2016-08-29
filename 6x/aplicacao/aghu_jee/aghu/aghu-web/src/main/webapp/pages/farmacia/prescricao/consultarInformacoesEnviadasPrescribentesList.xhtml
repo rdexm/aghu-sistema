@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LEGENDA_LABEL_INFORMACAO_ENVIADA_PRESCRIBENTE}</title>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{informacaoEnviadaPrescribenteController}" />
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral
+				legend="#{messages.LEGENDA_LABEL_INFORMACAO_ENVIADA_PRESCRIBENTE}">
+				<aghu:linha>
+					<mec:inputTextProntuario id="iprontuario"
+						label="#{messages.LABEL_PRONTUARIO}"
+						title="#{messages.TITLE_PRONTUARIO_}"
+						value="#{informacaoEnviadaPrescribenteController.filtro.prontuario}"
+						maxlength="15" size="12">
+					</mec:inputTextProntuario>
+					<mec:suggestionBox id="sbUnidadeFuncional"
+						label="#{messages.LABEL_UNIDADE_FUNCIONAL}"
+						title="#{messages.TITLE_UNIDADE_FUNCIONAL_P}" descricaoInput="seq"
+						descricaoLabel="descricao"
+						posSelectionAction="preencherfiltroUnidadeFuncional"
+						suggestionAction="consultaUnidadefuncional" width="500"
+						controller="#{informacaoEnviadaPrescribenteController}"
+						value="#{informacaoEnviadaPrescribenteController.unidadeFuncional}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.seq}
+                          </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.descricao}
+                          </p:column>
+					</mec:suggestionBox>
+					<mec:inputTextData label="#{messages.LABEL_CRIADO_EM}" size="7"
+						title="#{messages.TITLE_CRIADO_EM}"
+						value="#{informacaoEnviadaPrescribenteController.filtro.criadoEm}"
+						id="data_criada" tipo="data" />
+					<mec:selectOneMenu id="idvisto" label="#{messages.LABEL_VISTO}"
+						title="#{messages.TITLE_VISTO}" enum="DominioSimNao" size="15"
+						value="#{informacaoEnviadaPrescribenteController.variavelCombo}">
+						<p:ajax event="change" process="@this" />
+					</mec:selectOneMenu>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton value="#{messages.LABEL_PESQUISAR}"
+					id="bt_pesquisar"
+					action="#{informacaoEnviadaPrescribenteController.pesquisar}"
+					styleClass="bt_cinza" profile="search" />
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar"
+					action="#{informacaoEnviadaPrescribenteController.limparPesquisa}"
+					styleClass="bt_cinza" ajax="true" profile="clear" process="@this"
+					render="formPesquisa, formInformacaoEnviadaPrescribente" />
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formInformacaoEnviadaPrescribente">
+			<aghu:panelGeral legend="#{messages.LABEL_INFORMACOES_ENVIADAS}"
+				rendered="#{informacaoEnviadaPrescribenteController.dataModel.pesquisaAtiva}">
+				<p:outputPanel id="listaPanel">
+					<mec:serverDataTable dataModel="dataModel"
+						id="tabelaInformacaoEnviadaPrescribenteController"
+						controller="#{informacaoEnviadaPrescribenteController}"
+						selection="filtroSelection">
+						<c:set var="_informacaoPrescribente" value="#{item}" />
+						<p:column style="width:5%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ACAO}" />
+							</f:facet>
+							<mec:commandLink
+								action="#{informacaoEnviadaPrescribenteController.visualizar(_informacaoPrescribente)}"
+								title="#{messages.LABEL_VISUALIZAR}"
+								styleClass=" silk-zoom silk-icon">
+								<f:setPropertyActionListener
+									target="#{enviarInformacaoPrescribenteController.codigoRequest}"
+									value="#{_informacaoPrescribente.seq}" for="command" />
+								<f:setPropertyActionListener
+									target="#{enviarInformacaoPrescribenteController.modoVisualizacao}"
+									value="true" for="command" />
+								<f:setPropertyActionListener
+									target="#{enviarInformacaoPrescribenteController.modoEdicao}"
+									value="false" for="command" />
+								<f:setPropertyActionListener
+									target="#{enviarInformacaoPrescribenteController.transicaoTela}"
+									value="true" for="command" />
+								<f:setPropertyActionListener
+									target="#{enviarInformacaoPrescribenteController.telaOrigem}"
+									value="/pages/farmacia/prescricao/consultarInformacoesEnviadasPrescribentesList.xhtml"
+									for="command" />
+							</mec:commandLink>							
+						</p:column>
+						<p:column style="width:10%" >
+							<f:facet name="header" >
+								<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+							</f:facet>
+							<h:outputText value="#{_informacaoPrescribente.prontuario}" title="#{_informacaoPrescribente.prontuario}">
+							</h:outputText>
+						</p:column>
+						<p:column style="width:20%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_PACIENTE}" />
+							</f:facet>
+							<h:outputText
+							  value="#{(_informacaoPrescribente.pacNome.length() &gt; 20) ? fn:substring(_informacaoPrescribente.pacNome,0,20) : _informacaoPrescribente.pacNome}#{(_informacaoPrescribente.pacNome.length() &gt; 20) ? '...' : '' }" style="float:left;"
+							  title="#{(_informacaoPrescribente.pacNome.length() &gt; 20) ? (_informacaoPrescribente.pacNome) : '' }"  >							  
+							</h:outputText>
+						</p:column>
+						<p:column style="width:30%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_UNIDADE_FUNCIONAL}" />
+							</f:facet>
+							<h:outputText
+							    value="#{_informacaoPrescribente.seqUnidadesFuncionais} - #{(_informacaoPrescribente.descUnidadesFuncionais.length() &gt; 30) ? fn:substring(_informacaoPrescribente.descUnidadesFuncionais,0,30) : _informacaoPrescribente.descUnidadesFuncionais}#{(_informacaoPrescribente.descUnidadesFuncionais.length() &gt; 30) ? '...' : '' }" style="float:left;"
+							    title="#{(_informacaoPrescribente.descUnidadesFuncionais.length() &gt; 30) ? fn:substring(_informacaoPrescribente.seqUnidadesFuncionais,0,60).concat(' - ').concat(_informacaoPrescribente.descUnidadesFuncionais) : '' }" >
+							</h:outputText>
+						</p:column>
+						<p:column style="width:20%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_RESPONSAVEL}" />
+							</f:facet>
+							<h:outputText 
+							  value="#{(_informacaoPrescribente.responsavel.length() &gt; 20) ? fn:substring(_informacaoPrescribente.responsavel,0,20) : _informacaoPrescribente.responsavel}#{(_informacaoPrescribente.responsavel.length() &gt; 20) ? '...' : '' }" style="float:left;"
+							  title="#{(_informacaoPrescribente.responsavel.length() &gt; 20) ? (_informacaoPrescribente.responsavel) : '' }">
+							</h:outputText>
+						</p:column>
+						<p:column style="width:10%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_CRIADO_EM}" />
+							</f:facet>
+							<h:outputText value="#{_informacaoPrescribente.criadoEm}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</p:column>
+						<p:column style="width:5%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_VISTO}" />
+							</f:facet>
+							<h:outputText
+								styleClass="silk-icon  #{_informacaoPrescribente.indInfVerificada ? 'silk-ativo' : 'silk-inativo'}" />
+						</p:column>
+					</mec:serverDataTable>
+				</p:outputPanel>
+			</aghu:panelGeral>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

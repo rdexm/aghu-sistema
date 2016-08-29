@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Registrar Nascimentos :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroNascimentosController}"/>  
+      <p:outputPanel id="panelTudo"> 
+        <h:form prependId="false" id="formRegistrarNascimento"> 
+          <aghu:panelGeral legend="Registrar Nascimentos"> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO_MAE}" id="prontuario" size="9" title="#{messages.TITLE_PRONTUARIO_INTERNACAO}" value="#{cadastroNascimentosController.prontuarioMae}" required="true"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="btnPesquisa" block="true" value="#{messages.LABEL_PESQUISAR}" action="#{cadastroNascimentosController.pesquisar}" profile="search" />  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{cadastroNascimentosController.limparCampos}" immediate="true" profile="clear" ajax="true" render="panelTudo" process="@this"/> 
+          </aghu:acao>
+        </h:form>
+			<aghu:panelGeral id="prontuarioMaeListPanel">
+				<p:outputPanel id="prontuarioMaeList"
+					rendered="#{cadastroNascimentosController.pesquisou}">
+					<p:dataTable id="prontuarioMaeDataTable"
+						value="#{cadastroNascimentosController.listaProntuarioMae}"
+						scrollable="true" draggableColumns="false" var="_prontuarioMae"
+						styleClass="ui-datatable ui-widget ui-datatable-scrollable aghu-server-datatable  ui-datatable-resizable"
+						emptyMessage="Nenhum registro encontrado!">
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_LEITO}" />
+							</f:facet>
+							<h:outputText value="#{_prontuarioMae.leito.leitoID}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_PRONTUARIO}" />
+							</f:facet>
+							<h:outputText value="#{_prontuarioMae.prontuario}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_NOME}" />
+							</f:facet>
+							<h:outputText value="#{_prontuarioMae.paciente.nome}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DATA_INTERNACAO}" />
+							</f:facet>
+							<h:outputText value="#{_prontuarioMae.internacao.dthrInternacao}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputText>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_MEDICO}" />
+							</f:facet>
+							<h:outputText
+								value="#{_prontuarioMae.internacao.servidorProfessor.pessoaFisica.nome}" />
+						</p:column>
+					</p:dataTable>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			<aghu:panelGeral id="panelCadastro" legend="Dados do Recém-Nascido" rendered="#{not empty cadastroNascimentosController.listaProntuarioMae}" > 
+            <h:form prependId="false" id="formDadosRecemNascido"> 
+              
+                <mec:inputTextData label="#{messages.TITLE_DATA_RECEM_NASCIDO}" title="#{messages.LABEL_DATA_RECEM_NASCIDO}" required="true" id="dataNascimento" value="#{cadastroNascimentosController.dataNascimento}" tipo="data"/>  
+                <mec:inputText id="horaNascimento" label="#{messages.LABEL_HORA_RECEM_NASCIDO}" size="5" maxlength="5" required="true" datePattern="HH:mm" onkeypress="formatar( this , '99:99' , event )" title="#{messages.TITLE_HORA_RECEM_NASCIDO}" incluirMascaraHora="true" value="#{cadastroNascimentosController.horaNascimento}" ajaxValidation="false"/>  
+                <mec:selectOneMenu id="sexo" label="#{messages.LABEL_SEXO_RECEM_NASCIDO}" enum="DominioSexo" title="#{messages.TITLE_SEXO_RECEM_NASCIDO}" required="true" value="#{cadastroNascimentosController.recemNascido.sexoBiologico}"/>
+                <mec:selectOneMenu id="cor" label="#{messages.LABEL_COR_RECEM_NASCIDO}" enum="DominioCor" title="#{messages.TITLE_COR_RECEM_NASCIDO}" required="true" value="#{cadastroNascimentosController.recemNascido.cor}"   />
+                <mec:suggestionBox id="professor" width="600" label="#{messages.LABEL_CONSELHO_PROFISSIONAL}" title="#{messages.TITLE_LABEL_CRM_PROFESSOR_INT}" descricaoInput="nroRegConselho" descricaoLabel="nome" suggestionAction="pesquisarConselhoRegional" required="true" controller="#{cadastroNascimentosController}" value="#{cadastroNascimentosController.professorPesq}"> 
+                  <p:column> 
+                    <f:facet name="header">#{messages.LABEL_NOME}</f:facet> #{item.nome}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <aghu:acao style="padding: 21px 0px 0px 0px !important"> 
+                  <mec:commandButton id="btAdicionarItemRecemNascido" action="#{cadastroNascimentosController.adicionarItemRecemNascido}" value="#{messages.LABEL_ADICIONAR}" profile="add" ajax="true" render="panelRecemNascidosTemporarios,tabelaRecemNascidosDecorate,panelCadastro,btSalvarRecemNascidos" disabled="#{mf:hasPermission(securityController, 'paciente,somenteLeitura')}"/>  
+                </aghu:acao>  
+              
+            </h:form>  
+            <h:form prependId="false" id="formRecemNascidosTemporarios"> 
+              <p:outputPanel id="panelRecemNascidosTemporarios"> 
+              <div style="width: 100%; margin-top: 10px; max-height:150px; overflow-y: auto;">               
+                  <mec:serverDataTable width="100%" id="tabelaRecemNascidosDecorate" list="#{cadastroNascimentosController.listaRecemNascidos}" 
+                  scrollable="false" draggableColumns="false"> 
+                    <c:set var="_itemRecemNascido" value="#{item}"/>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink id="link_excluir_rn" title="#{messages.LABEL_EXCLUIR}" action="#{cadastroNascimentosController.excluirItemRecemNascido(itemRecemNascido)}" profile="delete" ajax="true" render="panelRecemNascidosTemporarios"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_NOME}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemRecemNascido.nome}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_DATA_NASCIMENTO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemRecemNascido.dtNascimento}"> 
+                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                      </h:outputText> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_SEXO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemRecemNascido.sexoBiologico.descricao}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_COR}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_itemRecemNascido.cor.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable>
+                  </div>                 
+              </p:outputPanel> 
+            </h:form> 
+             <h:form prependId="false" id="formGravar"> 
+	            <aghu:acao> 
+	              <mec:commandButton process="@this" id="btSalvarRecemNascidos" action="#{cadastroNascimentosController.salvarRecemNascidos}" value="#{messages.LABEL_GRAVAR}" profile="ok" render="panelRecemNascidosTemporarios,panelRecemNascidosCadastrados" disabled="#{mf:hasPermission(securityController, 'paciente,somenteLeitura')}" style="margin-top:10px"/> 
+	            </aghu:acao> 
+	          </h:form> 
+          </aghu:panelGeral>  
+         
+     	<aghu:panelGeral  id="panelRecemNascidoCadastro" legend="Recém-Nascido(s) cadastrado(s)" rendered="#{cadastroNascimentosController.pesquisou == true}" style="margin-top:30px; height:auto !important"> 
+	          <aghu:linha style="height:auto !important">
+		          <div style="width: 100%; margin-top: 10px; max-height:150px; overflow-y: auto;">  
+		            <mec:serverDataTable width="100%" id="tabelaRecemNascidosCadastradosDecorate" 
+		            list="#{cadastroNascimentosController.listaRecemNascidosCadastrados}" scrollable="false"
+		            draggableColumns="false" > 
+		              <c:set var="_itemRecemNascidoCadastrado" value="#{item}"/>  
+		              <p:column> 
+		                <f:facet name="header"> 
+		                  <h:outputText value="#{messages.LABEL_PRONTUARIO_VIRTUAL}"/> 
+		                </f:facet>  
+		                <h:outputText value="#{_itemRecemNascidoCadastrado.paciente.prontuario}"/> 
+		              </p:column>  
+		              <p:column> 
+		                <f:facet name="header"> 
+		                  <h:outputText value="#{messages.LABEL_NOME}"/> 
+		                </f:facet>  
+		                <h:outputText value="#{_itemRecemNascidoCadastrado.paciente.nome}"/> 
+		              </p:column>  
+		              <p:column> 
+		                <f:facet name="header"> 
+		                  <h:outputText value="#{messages.LABEL_DATA_NASCIMENTO}"/> 
+		                </f:facet>  
+		                <h:outputText value="#{_itemRecemNascidoCadastrado.paciente.dtNascimento}"> 
+		                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+		                </h:outputText> 
+		              </p:column>  
+		              <p:column> 
+		                <f:facet name="header"> 
+		                  <h:outputText value="#{messages.LABEL_SEXO}"/> 
+		                </f:facet>  
+		                <h:outputText value="#{_itemRecemNascidoCadastrado.paciente.sexoBiologico.descricao}"/> 
+		              </p:column>  
+		              <p:column> 
+		                <f:facet name="header"> 
+		                  <h:outputText value="#{messages.LABEL_COR}"/> 
+		                </f:facet>  
+		                <h:outputText value="#{_itemRecemNascidoCadastrado.paciente.cor.descricao}"/> 
+		              </p:column> 
+		            </mec:serverDataTable> 
+	            </div>
+	          </aghu:linha> 
+        </aghu:panelGeral>
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

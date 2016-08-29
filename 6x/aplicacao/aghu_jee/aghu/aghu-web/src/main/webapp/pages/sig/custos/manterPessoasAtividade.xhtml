@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <aghu:panelGeral> 
+      <p:outputPanel id="panelCamposPessoas" rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" layout="inline"> 
+        <aghu:linha> 
+          <mec:suggestionBox label="#{messages.LABEL_PESSOA_GRUPO_OCUPACAO}" title="#{messages.TITLE_PESSOA_GRUPO_OCUPACAO}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisarGrupoOcupacao" required="true" readonly="#{manterPessoasAtividadeController.edicao}" id="suggestionGrupoOcupacao" controller="#{manterPessoasAtividadeController}" value="#{manterPessoasAtividadeController.sigAtividadePessoas.sigGrupoOcupacoes}"> 
+            <p:column> 
+              <h:outputText value="#{item.seq}"/> 
+            </p:column>  
+            <p:column> 
+              <h:outputText value="#{item.descricao}"/> 
+            </p:column> 
+          </mec:suggestionBox>  
+          <mec:inputNumero value="#{manterPessoasAtividadeController.sigAtividadePessoas.quantidade}" label="#{messages.LABEL_PESSOA_QUANTIDADE}" title="#{messages.TITLE_PESSOA_QUANTIDADE}" size="4" maxlength="3" id="quantidade"/> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <p:outputPanel id="panelTempoPessoas" layout="inline"> 
+            <mec:inputNumero value="#{manterPessoasAtividadeController.sigAtividadePessoas.tempo}" label="#{messages.LABEL_PESSOA_TEMPO}" title="#{messages.TITLE_PESSOA_TEMPO}" size="5" maxlength="4" required="#{empty manterPessoasAtividadeController.sigAtividadePessoas.tempo ? not empty manterPessoasAtividadeController.sigAtividadePessoas.sigDirecionadores : false}" id="tempo"> 
+              <p:ajax event="change" update="@(#panelDirecionadorPessoas) @(#panelTempoPessoas)" process="@this"/> 
+            </mec:inputNumero> 
+          </p:outputPanel>  
+          <p:outputPanel id="panelDirecionadorPessoas" layout="inline"> 
+            <mec:selectOneMenu label="#{messages.LABEL_PESSOA_DIRECIONADOR_TEMPO}" title="#{messages.TITLE_PESSOA_DIRECIONADOR_TEMPO}" itemLabel="nome" value="#{manterPessoasAtividadeController.sigAtividadePessoas.sigDirecionadores}" items="#{manterPessoasAtividadeController.listaDirecionadores}" itemsType="entity" required="#{empty manterPessoasAtividadeController.sigAtividadePessoas.sigDirecionadores ? not empty manterPessoasAtividadeController.sigAtividadePessoas.tempo : false}" id="comboDirecionadorDeTempoPessoa"> 
+              <p:ajax event="change" update="@(#panelDirecionadorPessoas) @(#panelTempoPessoas)" process="@this"/> 
+            </mec:selectOneMenu> 
+          </p:outputPanel>  
+          <mec:selectOneMenu title="#{messages.TITLE_PESSOA_SITUACAO}" label="#{messages.LABEL_PESSOA_SITUACAO}" enum="DominioSituacao" value="#{manterPessoasAtividadeController.sigAtividadePessoas.indSituacao}" noSelectionOption="false" id="comboSituacaoPessoasAtv"/> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <p:outputPanel id="panelBotoesPessoa" layout="inline"> 
+            <mec:commandButton id="bt_adicionar_pessoa" value="#{messages.LABEL_ADICIONAR}" action="#{manterPessoasAtividadeController.adicionarPessoa}" process="@this,suggestionGrupoOcupacao,quantidade,tempo,comboDirecionadorDeTempoPessoa,comboSituacaoPessoasAtv" rendered="#{!manterPessoasAtividadeController.edicao}" profile="add" ajax="true" render="panelTabelaPessoas,panelCamposPessoas"/>  
+            <mec:commandButton id="bt_alterar_pessoa" value="#{messages.LABEL_ALTERAR}" action="#{manterPessoasAtividadeController.gravarPessoa}" process="@this,suggestionGrupoOcupacao,quantidade,tempo,comboDirecionadorDeTempoPessoa,comboSituacaoPessoasAtv" rendered="#{manterPessoasAtividadeController.edicao}" profile="ok" ajax="true" render="panelTabelaPessoas,panelCamposPessoas,panelBotoesPessoa"/>  
+            <mec:commandButton id="bt_cancelarEdic_pessoa" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{manterPessoasAtividadeController.cancelarEdicaoPessoa}" rendered="#{manterPessoasAtividadeController.edicao}" immediate="true" profile="cancel" ajax="true" render="panelCamposPessoas,panelTabelaPessoas" process="@this"/> 
+          </p:outputPanel> 
+        </aghu:linha> 
+      </p:outputPanel>  
+        <aghu:linha id="panelTabelaPessoas"> 
+          <mec:serverDataTable id="tabelaPessoas" rowKeyVar="indPessoa" rendered="#{not empty manterPessoasAtividadeController.listaPessoas}" list="#{manterPessoasAtividadeController.listaPessoas}" scrollable="true">  
+            <p:column rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{manterPessoasAtividadeController.editarPessoa(item, indPessoa)}" rendered="#{not item.emEdicao and not manterPessoasAtividadeController.edicao}" profile="edit" ajax="true" render="panelCamposPessoas,panelBotoesPessoa,panelTabelaPessoas" process="@this"/>  
+              <mec:commandLink rendered="#{not item.emEdicao and manterPessoasAtividadeController.edicao}" title="#{messages.LABEL_EDITAR}" onclick="PF('modalRegistroEmEdicaoEditarWG').show();" profile="edit" ajax="true" process="@this"/>  
+              <h:graphicImage styleClass="silk-icon silk-blank" style="margin:1px; padding:2px" rendered="#{item.emEdicao}"/>  
+              <mec:commandLink rendered="#{not manterPessoasAtividadeController.edicao}" title="#{messages.LABEL_EXCLUIR}" action="#{manterPessoasAtividadeController.excluirPessoa}"  profile="delete" ajax="true" process="@this" render="panelTabelaPessoas"> 
+                <f:setPropertyActionListener target="#{manterPessoasAtividadeController.seqGrupoOcupacaoPessoaExclusao}" value="#{item.sigGrupoOcupacoes.seq}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink rendered="#{manterPessoasAtividadeController.edicao}" title="#{messages.LABEL_EXCLUIR}" onclick="PF('modalRegistroEmEdicaoExcluirWG').show();" styleClass="silk-icon silk-delete" ajax="true" process="@this"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PESSOA_GRUPO_OCUPACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.sigGrupoOcupacoes.descricao}"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PESSOA_QUANTIDADE}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.quantidade}"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PESSOA_TEMPO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.tempoMedio}"/> 
+            </p:column>  
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PESSOA_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{item.indSituacao.descricao}"/> 
+            </p:column> 
+            
+            <p:column style="#{item.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PESSOA_RESTRICOES}"/> 
+              </f:facet>  		
+					
+				<mec:commandLink 
+					id="linkSemRestricoes"
+					value="#{messages.LABEL_SEM_RESTRICOES}" 
+					title="#{messages.TITLE_EDITAR_RESTRICOES}" 
+					rendered="#{fn:length(item.listAtividadePessoaRestricoes) eq 0}"
+					action="#{manterPessoasAtividadeController.editarRestricoes(item)}" 
+					ajax="true" process="@this"
+					oncomplete="PF('modalRestricoesWG').show();"
+					render="panelRestricoes"
+					/> 
+					
+				<mec:commandLink 
+					id="linkRestricoes"
+					value="#{manterPessoasAtividadeController.listarRestricoesComoMensagem(item)}" 
+					title="#{messages.TITLE_EDITAR_RESTRICOES}" 
+					rendered="#{fn:length(item.listAtividadePessoaRestricoes) ne 0}"
+					action="#{manterPessoasAtividadeController.editarRestricoes(item)}" 
+					ajax="true" process="@this"
+					oncomplete="PF('modalRestricoesWG').show();"
+					render="panelRestricoes"
+					/> 
+				
+              		
+            </p:column> 
+            
+          </mec:serverDataTable>  
+          <h:outputText value="#{messages.MENSAGEM_PESSOA_NAO_ENCONTRADA_PARA_ATIVIDADE}" rendered="#{empty manterPessoasAtividadeController.listaPessoas and not mf:hasPermission(securityController,'editarAtividade,editar')}"/> 
+        </aghu:linha> 
+    </aghu:panelGeral>
+    
+     
+     
+  </ui:composition> 
+</html>

@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>Manter Itens do Contrato :: AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{manterItensContratoController.init}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manterItensContratoController}"
+			ignoreEnter="true" />
+		<p:outputPanel id="panel_" layout="inline"
+			styleClass="aghu-panel-geral">
+			
+			<aghu:panelGeral legend="#{messages.LABEL_ITENSCONTRATO_HDR}">
+				<p:outputPanel layout="inline">
+					<p:outputPanel id="hdr">
+						<h:form prependId="false" id="formHdr">
+							<aghu:linha>
+								<mec:inputNumero id="numContrato"
+									label="#{messages.LABEL_NUMERO}"
+									title="#{messages.LABEL_NUMERO}" size="20" readonly="true"
+									value="#{manterItensContratoController.scoContrato.nrContrato}" />
+								<mec:inputText label="#{messages.LABEL_HEADER_CNPJCPF}"
+									title="#{messages.LABEL_HEADER_CNPJCPF}"
+									value="#{manterItensContratoController.getCpfCnpj()}"
+									style="text-transform:uppercase" size="30" readonly="true"
+									id="cpfcnpj" />
+								<mec:inputText label="#{messages.LABEL_HEADER_RAZAO_SOCIAL}"
+									title="#{messages.LABEL_HEADER_RAZAO_SOCIAL}"
+									value="#{manterItensContratoController.scoContrato.fornecedor.razaoSocial}"
+									style="text-transform:uppercase" size="80" readonly="true"
+									id="razaosocial" />
+							</aghu:linha>
+	                    </h:form>     
+					</p:outputPanel>
+				</p:outputPanel>				
+			</aghu:panelGeral>
+			
+			<h:form prependId="false" id="formItensContrato">
+				<aghu:panelGeral legend="#{messages.LABEL_ITENSCONTRATO_BDY}">
+					<aghu:linha>
+						<mec:selectOneRadio label="#{messages.TITLE_TIPO_CADASTRO}"
+							enum="DominioTipoCadastroItemContrato"
+							value="#{manterItensContratoController.tipoCadastro}"
+							title="#{messages.TITLE_TIPO_CADASTRO_HLP}"
+							layout="lineDirection"
+							readonly="#{manterItensContratoController.isEdit || manterItensContratoController.setFieldsToReadonly}"
+							rendered="#{manterItensContratoController.scoContrato.tipoContratoSicon.codigoSicon != 51}"
+							id="tipoCadastro">
+							<p:ajax event="change"
+								update="@(#divInputGeral) @(#divInputMaterial)" process="@this"
+								listener="#{manterItensContratoController.renderizarTela()}" />
+						</mec:selectOneRadio>
+						<p:outputPanel
+							rendered="#{manterItensContratoController.scoContrato.tipoContratoSicon.codigoSicon == 51}"
+							layout="inline">
+							<mec:field name="tpcd_field"
+								label="#{messages.TITLE_TIPO_CADASTRO}"
+								title="#{messages.TITLE_TIPO_CADASTRO_HLP}">
+								<h:selectOneRadio id="tpcd" readonly="true" value="S">
+									<f:selectItem itemLabel="#{messages.LABEL_SRV}" itemValue="S" />
+								</h:selectOneRadio>
+							</mec:field>
+						</p:outputPanel>
+					</aghu:linha>
+					<p:outputPanel id="divInputMaterial" layout="inline">
+						<p:outputPanel id="divSuggMaterial"
+							rendered="#{manterItensContratoController.tipoCadastro == 'M'}"
+							layout="inline">
+							<aghu:linha>
+								<mec:suggestionBox label="#{messages.LABEL_MATERIAL}"
+								    var="mtr" itemValue="#{mtr}"
+									title="#{messages.TITLE_MATERIAL_HLP}" descricaoInput="codigo"
+									size="60" maxlength="45" width="400"
+									readonly="#{manterItensContratoController.setFieldsToReadonly}"
+									required="true" descricaoLabel="nome"
+									suggestionAction="pesquisarMaterial"
+									posSelectionAction="selecionouMaterial" id="suggestionMaterial"
+									controller="#{manterItensContratoController}"
+									value="#{manterItensContratoController.material}" render="und">
+									<p:column>
+										<h:outputText value="#{mtr.codigo}" />
+									</p:column>
+									<p:column>
+										<h:outputText value="#{mtr.nome}" />
+									</p:column>
+								</mec:suggestionBox>
+							</aghu:linha>
+						</p:outputPanel>
+						<aghu:linha>
+							<mec:suggestionBox label="#{messages.LABEL_MARCA}"
+							    var="mrc" itemValue="#{mrc}"
+								title="#{messages.TITLE_MARCA_HLP}" descricaoInput="codigo"
+								rendered="#{manterItensContratoController.tipoCadastro == 'M'}"
+								size="60"
+								readonly="#{manterItensContratoController.setFieldsToReadonly}"
+								maxlength="45" width="400" required="true"
+								descricaoLabel="descricao" suggestionAction="pesquisarMarcas"
+								posSelectionAction="selecionouMarca" id="suggestionMarca"
+								controller="#{manterItensContratoController}"
+								value="#{manterItensContratoController.marca}">
+								<p:column>
+									<h:outputText value="#{mrc.codigo}" />
+								</p:column>
+								<p:column>
+									<h:outputText value="#{mrc.descricao}" />
+								</p:column>
+							</mec:suggestionBox>
+							<mec:suggestionBox label="#{messages.LABEL_SRV}"
+							    var="srv" itemValue="#{srv}"
+								title="#{messages.TITLE_SRV_HLP}" descricaoInput="codigo"
+								size="60"
+								readonly="#{manterItensContratoController.setFieldsToReadonly}"
+								maxlength="45"
+								rendered="#{manterItensContratoController.tipoCadastro == 'S'}"
+								width="400" required="true" descricaoLabel="nome"
+								suggestionAction="pesquisarSrv"
+								posSelectionAction="selecionouSrv" id="suggestionSrv"
+								controller="#{manterItensContratoController}"
+								value="#{manterItensContratoController.servico}">
+								<p:column>
+									<h:outputText value="#{srv.codigo}" />
+								</p:column>
+								<p:column>
+									<h:outputText value="#{srv.nome}" />
+								</p:column>
+							</mec:suggestionBox>
+							<mec:suggestionBox label="#{messages.TITLE_CONV}"
+							    var="cnv" itemValue="#{cnv}"
+								title="#{messages.TITLE_CONV_HLP}" descricaoInput="codigo"
+								size="60"
+								readonly="#{manterItensContratoController.setFieldsToReadonly}"
+								maxlength="45" ajaxSingle="true" width="400"
+								descricaoLabel="descricao" suggestionAction="pesquisarConv"
+								rendered="#{not manterItensContratoController.isEdit}"
+								id="suggestionConv"
+								controller="#{manterItensContratoController}"
+								value="#{manterItensContratoController.convenio}">
+								<p:column>
+									<h:outputText value="#{cnv.codigo}" />
+								</p:column>
+								<p:column>
+									<h:outputText value="#{cnv.descricao}" />
+								</p:column>
+							</mec:suggestionBox>
+						</aghu:linha>
+					</p:outputPanel>
+					<p:outputPanel id="divInputGeral" layout="inline">
+						<aghu:linha>
+							<mec:inputNumero
+								value="#{manterItensContratoController.itemContrato.quantidade}"
+								label="#{messages.LABEL_QTDE}"
+								title="#{messages.LABEL_QTDE_HLP}"
+								readonly="#{manterItensContratoController.setFieldsToReadonly}"
+								size="10" maxlength="5" required="true" id="qtde">
+								<p:ajax event="blur" update="@(#valtot)" process="@this"
+									listener="#{manterItensContratoController.doMultiply}" />
+							</mec:inputNumero>
+							<mec:inputText
+								value="#{manterItensContratoController.itemContrato.unidade}"
+								label="#{messages.TITLE_UNID}"
+								title="#{messages.LABEL_UNID_HLP}" required="true"
+								style="text-transform:uppercase" ajaxSingle="true"
+								maxlenght="20"
+								size="20"
+								readonly="#{manterItensContratoController.tipoCadastro== 'M' || manterItensContratoController.setFieldsToReadonly}"
+								id="und" />
+							<mec:inputNumero
+								value="#{manterItensContratoController.itemContrato.vlUnitario}"
+								label="#{messages.LABEL_VL_UNIT}"
+								title="#{messages.LABEL_VL_UNIT_HLP}"
+								readonly="#{manterItensContratoController.setFieldsToReadonly}"
+								inteiros="13" decimais="2" required="true" id="valunit">
+								<p:ajax event="blur" update="@(#valtot)" process="@this"
+									listener="#{manterItensContratoController.doMultiply}" />
+							</mec:inputNumero>
+							<mec:inputNumero label="#{messages.LABEL_VL_TOT}"
+								title="#{messages.LABEL_VL_TOT_HLP}"
+								value="#{manterItensContratoController.itemContrato.vlTotal}"
+								inteiros="13" decimais="2"
+								required="true" readonly="true" id="valtot" />
+						</aghu:linha>
+					</p:outputPanel>
+				</aghu:panelGeral>
+				<aghu:acao>
+					<mec:commandButton id="bt_adicionarItem"
+						style="margin-top: 3px !important;"
+						value="#{manterItensContratoController.isEdit ? messages.LABEL_BT_EDICAO : messages.LABEL_BT_ADD}"
+						rendered="#{!manterItensContratoController.setFieldsToReadonly}"
+						action="#{manterItensContratoController.gravar}" profile="add" />
+						
+					<mec:commandButton id="bt_cancelarEdicao"
+						style="margin-top: 3px !important;"
+						value="#{messages.LABEL_CANCELAR_EDICAO}"
+						action="#{manterItensContratoController.limpar(false)}"							
+						rendered="#{!manterItensContratoController.setFieldsToReadonly and manterItensContratoController.isEdit}"
+						styleClass="bt_cinza" />				
+
+					<mec:commandButton id="bt_limpar"
+						style="margin-top: 3px !important;"
+						value="#{messages.LABEL_LIMPAR}"
+						action="#{manterItensContratoController.limpar(true)}"
+						immediate="true"		
+						profile="clear"
+						ajax="true"
+						render="divInputGeral, divInputMaterial"
+						rendered="#{!manterItensContratoController.setFieldsToReadonly and !manterItensContratoController.isEdit}"
+						styleClass="bt_cinza" />				
+						
+					<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+						immediate="true" action="#{manterItensContratoController.voltar}"
+						styleClass=" alinha-direita bt_cinza" profile="back">
+						<f:setPropertyActionListener
+							target="#{manterContratoManualController.nrContrato}"
+							value="#{manterItensContratoController.scoContrato.nrContrato}"
+							for="command" />
+					</mec:commandButton>
+				</aghu:acao>
+			</h:form>
+		</p:outputPanel>
+		
+		<h:form prependId="false" id="formItens"
+			rendered="#{not empty manterItensContratoController.itens}">
+			<aghu:linha>
+				<mec:serverDataTable id="tabelaItens" width="80%" rowKeyVar="_key"
+					rendered="#{not empty manterItensContratoController.itens}"
+					list="#{manterItensContratoController.itens}" scrollable="true">
+					<c:set var="_item" value="#{item}" />
+					<p:column width="10%"
+						style="#{_item.seq == manterItensContratoController.itemContrato.seq ? 'background-color:#EEE8AA':''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_GRID_ACOES}" />
+						</f:facet>
+						<mec:commandLink title="#{messages.LABEL_EDITAR}"
+							action="#{manterItensContratoController.editar(_item)}"
+							rendered="#{ (_item.seq != manterItensContratoController.itemContrato.seq) and  (!manterItensContratoController.setFieldsToReadonly)}"
+							profile="edit" />
+						<mec:commandLink
+							rendered="#{manterItensContratoController.setFieldsToReadonly}"
+							action="#{manterItensContratoController.editar(_item)}">
+							<h:graphicImage value="/resources/img/icons/page_white_text.png"
+								style="cursor:pointer"
+								title="#{messages.TOOLTIP_VISUALIZAR_ITEM}" />
+						</mec:commandLink>
+						<mec:commandLink
+							rendered="#{_item.seq == manterItensContratoController.itemContrato.seq and  (!manterItensContratoController.setFieldsToReadonly)}"
+							styleClass=" silk-blank silk-icon" />
+						<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+							onclick="excluirJs(#{_item.seq}); PF('modalConfirmacaoExclusaoSemConvWG').show();;"
+							rendered="#{manterItensContratoController.getGridColumnConvenioTxt(_item) == '--' and not manterItensContratoController.setFieldsToReadonly}"
+							immediate="true" styleClass="silk-icon silk-delete" ajax="true" process="@this" />
+						<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+							onclick="excluirJs(#{_item.seq}); PF('modalConfirmacaoExclusaoWG').show();;"							
+							rendered="#{manterItensContratoController.getGridColumnConvenioTxt(_item) != '--' and not manterItensContratoController.setFieldsToReadonly}"
+							immediate="true" styleClass="silk-icon silk-delete" ajax="true" process="@this" />
+						<mec:commandLink id="cdsConv"
+							action="#{manterItensContratoController.redirectManterConvenioItemContrato}"
+							title="#{messages.TOOLTIP_CADASTRO_CONV}">
+							<h:graphicImage
+								value="/resources/img/icons/convenio_financeiro_cadastrar.png"
+								style="cursor:pointer" title="#{messages.TOOLTIP_CADASTRO_CONV}" />
+							<f:setPropertyActionListener
+								target="#{manterConvenioItemContratoController.iconSeq}"
+								value="#{_item.seq}" for="command" />
+							<f:setPropertyActionListener
+								target="#{manterConvenioItemContratoController.seqContrato}"
+								value="#{manterItensContratoController.scoContrato.seq}"
+								for="command" />
+						</mec:commandLink>
+					</p:column>
+					<p:column sortable="false" width="25%"
+						style="#{_item.seq == manterItensContratoController.itemContrato.seq ? 'background-color:#EEE8AA':''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_GRID_DESC}" />
+						</f:facet>
+						<h:outputText value="#{_item.descricao}" />
+					</p:column>
+					<p:column sortable="false" width="10%"
+						style="#{_item.seq == manterItensContratoController.itemContrato.seq ? 'background-color:#EEE8AA':''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_QTDE}" />
+						</f:facet>
+						<h:outputText value="#{_item.quantidade}" />
+					</p:column>
+					<p:column sortable="false" width="10%"
+						style="#{_item.seq == manterItensContratoController.itemContrato.seq ? 'background-color:#EEE8AA':''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_UNID}" />
+						</f:facet>
+						<h:outputText value="#{_item.unidade}" />
+					</p:column>
+					<p:column sortable="false" width="15%"
+						style="#{_item.seq == manterItensContratoController.itemContrato.seq ? 'background-color:#EEE8AA':''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_VL_UNIT}" />
+						</f:facet>
+						<h:outputText value="#{_item.vlUnitario}">
+							<f:convertNumber type="currency" currencySymbol="R$"
+								maxFractionDigits="2" minFractionDigits="2" groupingUsed="true" />
+						</h:outputText>
+					</p:column>
+					<p:column sortable="false" width="15%"
+						style="#{_item.seq == manterItensContratoController.itemContrato.seq ? 'background-color:#EEE8AA':''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_VL_TOT}" />
+						</f:facet>
+						<h:outputText value="#{_item.vlUnitario * _item.quantidade}">
+							<f:convertNumber type="currency" currencySymbol="R$"
+								maxFractionDigits="2" minFractionDigits="2" groupingUsed="true" />
+						</h:outputText>
+					</p:column>
+					<p:column sortable="false" width="140px"
+						style="#{_item.seq == manterItensContratoController.itemContrato.seq ? 'background-color:#EEE8AA':''}">
+						<f:facet name="header">
+							<h:outputText value="#{messages.LABEL_GRID_CNVS}"
+								style="word-wrap: break-word;" />
+						</f:facet>
+						<mec:commandLink action="#{manterItensContratoController.setPopupItem(_item)}"
+							oncomplete="PF('modalConveniosItemContratoWG').show();;"
+							title="#{messages.CONV_POPUP}"
+							value="#{manterItensContratoController.getGridColumnConvenioTxt(_item)}"
+							rendered="#{manterItensContratoController.getGridColumnConvenioTxt(_item) != '--'}"
+							ajax="true" render="modalConveniosItemContrato" />
+					</p:column>
+				</mec:serverDataTable>
+			</aghu:linha>
+		</h:form>
+		<h:form>
+			<pe:remoteCommand name="excluirJs">
+				<pe:assignableParam name="param1"
+					assignTo="#{manterItensContratoController.itemSeq}" />
+			</pe:remoteCommand>
+		</h:form>
+		<p:dialog id="modalConfirmacaoExclusao" width="400" height="150"
+			modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.TITLE_EXCLUSAO_ITEMCONT}" />
+				</h:panelGroup>
+			</f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_ITEM} 
+        <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalExclusao">
+					<mec:commandButton id="bt_excluir" value="#{messages.LABEL_SIM}"
+						status="commonstatus"
+						action="#{manterItensContratoController.excluirConfirma}"
+						profile="search" />
+					<mec:commandButton id="bt_cancelar" value="#{messages.LABEL_NAO}"
+						onclick="PF('modalConfirmacaoExclusaoWG').hide();"
+						profile="cancel" ajax="true" />
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+		<p:dialog id="modalConfirmacaoExclusaoSemConv" width="400"
+			height="150" modal="true" resizable="false"
+			widgetVar="modalConfirmacaoExclusaoSemConvWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.TITLE_EXCLUSAO_ITEMCONT}" />
+				</h:panelGroup>
+			</f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_ITEM_SEMCONVENIOS} 
+        <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalExclusaoSemConv">
+					<mec:commandButton id="_bt_excluir" value="#{messages.LABEL_SIM}"
+						status="commonstatus"
+						action="#{manterItensContratoController.excluirConfirma}"
+						profile="search" />
+					<mec:commandButton id="_bt_cancelar" value="#{messages.LABEL_NAO}"
+						onclick="PF('modalConfirmacaoExclusaoSemConvWG').hide();"
+						profile="cancel" ajax="true" />
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+		<p:dialog id="modalConveniosItemContrato" width="600" height="400"
+			modal="true" resizable="false"
+			widgetVar="modalConveniosItemContratoWG" closable="true">
+			<f:facet name="header">
+				<h:panelGroup style="width:500px;">
+					<h:outputText value="#{messages.TITLE_MODAL_CONV}" />
+				</h:panelGroup>
+			</f:facet>
+			<p:outputPanel id="popuppanel_hdr" layout="inline"
+				styleClass="aghu-panel-geral">
+
+				<aghu:panelGeral style="width: 500px;"
+					legend="#{messages.TITLE_MODAL_ITENSCONTRATO_HDR}">
+	                <h:form prependId="false" id="formModalConv"> 			
+						<aghu:linha style="width: 500px;">
+							<mec:inputNumero id="numContratoPopup"
+								label="#{messages.LABEL_NUMERO}" title="#{messages.LABEL_NUMERO}"
+								size="20" readonly="true"
+								value="#{manterItensContratoController.scoContrato.nrContrato}" />
+							<mec:inputText label="#{messages.LABEL_HEADER_CNPJCPF}"
+								title="#{messages.LABEL_HEADER_CNPJCPF}"
+								value="#{manterItensContratoController.getCpfCnpj()}"
+								style="text-transform:uppercase" size="30" readonly="true"
+								id="cpfcnpjPopup" />
+							<mec:inputText label="#{messages.LABEL_HEADER_RAZAO_SOCIAL}"
+								title="#{messages.LABEL_HEADER_RAZAO_SOCIAL}"
+								value="#{manterItensContratoController.scoContrato.fornecedor.razaoSocial}"
+								style="text-transform:uppercase ;width:400px" readonly="true"
+								id="razaosocialPopup" />
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputText label="#{messages.LABEL_GRID_DESC}"
+								title="#{messages.LABEL_GRID_DESC}"
+								value="#{manterItensContratoController.popupItem.descricao}"
+								style="text-transform:uppercase;width:300px" readonly="true"
+								id="descItemPopup" />
+							<mec:inputNumero label="#{messages.LABEL_VL_TOT}"
+								title="#{messages.LABEL_VL_TOT}"
+								value="#{manterItensContratoController.popupItem.vlUnitario * manterItensContratoController.popupItem.quantidade}"
+								style="text-transform:uppercase; width:100px" readonly="true" inteiros="8" decimais="2"
+								converter="#{currencyConverter}" styleClass="mascara(decimal)"
+								id="vlTotPopup" />
+						</aghu:linha>
+					</h:form>
+				</aghu:panelGeral>
+			</p:outputPanel>
+			
+			<aghu:panelGeral legend="#{messages.TITLE_MODAL_ITENSCONTRATO_BDY}">
+					<mec:serverDataTable id="popuptabelaItens" rowKeyVar="_key"
+						rendered="#{not empty manterItensContratoController.popupItem.convItensContrato}"
+						list="#{manterItensContratoController.popupItem.convItensContrato}"
+						scrollable="true">
+						<c:set var="pu_item" value="#{item}" />
+						<p:column width="80%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_GRID_DESC}" />
+							</f:facet>
+							<h:outputText
+								value="#{pu_item.fsoConveniosFinanceiro.descricao}" />
+						</p:column>
+						<p:column width="20%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.POPUP_GRID_VLRRATEIO}" />
+							</f:facet>
+							<h:outputText value="#{pu_item.valorRateio}">
+								<f:convertNumber type="currency" currencySymbol="R$"
+									maxFractionDigits="2" minFractionDigits="2"
+									groupingUsed="true" />
+							</h:outputText>
+						</p:column>
+					</mec:serverDataTable>
+			</aghu:panelGeral>
+		 
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

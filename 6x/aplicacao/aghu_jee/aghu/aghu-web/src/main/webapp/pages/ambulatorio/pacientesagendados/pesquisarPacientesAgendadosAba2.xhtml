@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    
+        <mec:serverDataTable id="resultListAb2"  list="#{pesquisarPacientesAgendadosController.pacientesAguardandoList}" scrollable="true" scrollHeight="#{pesquisarPacientesAgendadosController.percPanel}" selection="consultaSelecionadaAba2" controller="#{pesquisarPacientesAgendadosController}" disabled="#{ mf:hasPermission(securityController, 'paciente, somenteLeitura')}">  
+          <p:ajax event="rowSelect" process="@this" update="@(#botoesAcao)" />
+          <p:column style="text-align:center;#{pesquisarPacientesAgendadosController.consultaSelecionada eq item?'background-color:PapayaWhip;':''}" sortBy="#{item.atender}" sortable="true"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_ATENDER}"/> 
+            </f:facet>  
+            
+            <p:outputPanel id="checkid_Ab2" layout="inline">
+	            <p:selectBooleanCheckbox value="#{item.atender}" style="border:0px;vertical-align:middle;" rendered="#{item.controleSituacao ne 'U'}" disabled="#{ mf:hasPermission(securityController, 'paciente, somenteLeitura')}">
+					<p:ajax event="change" 
+						update="@(#checkid_Ab2)" process="@this"
+						listener="#{pesquisarPacientesAgendadosController.atender(item)}" />
+				</p:selectBooleanCheckbox>  
+			</p:outputPanel>
+            
+           	<p:selectBooleanCheckbox id="checkidp_Ab2" style="border:0px;vertical-align:middle;" rendered="#{item.controleSituacao eq 'U'}">
+				<p:ajax event="change"
+					listener="#{pesquisarPacientesAgendadosController.selecionarConsulta(item)}"
+					oncomplete="PF('modalConfirmacaoAtendimentoWG').show();"
+					update="@(#panelConfirmacaoAtendimento)" process="@this" />
+			</p:selectBooleanCheckbox>
+          </p:column>  
+          
+          <p:column sortBy="#{item.dtConsulta}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_HORA_CONS}"/> 
+            </f:facet>  
+            <p:outputPanel id="aba2_hora" layout="block">
+	            <h:outputText value="#{item.dtConsulta}"> 
+	              <f:convertDateTime pattern="HH:mm"/> 
+	            </h:outputText> 
+	        </p:outputPanel>    
+            <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="aba2_hora">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>
+          </p:column>  
+          
+          <p:column sortBy="#{item.controledthrChegada}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_CHEGADA}"/> 
+            </f:facet>  
+            <p:outputPanel id="aba2_chegada" layout="block">
+	            <h:outputText value="#{item.controledthrChegada}"> 
+	              <f:convertDateTime pattern="HH:mm"/> 
+	            </h:outputText>
+            </p:outputPanel>
+            <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="aba2_chegada">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip>
+          </p:column>  
+          
+          <p:column sortBy="#{item.pacienteNome}" sortable="true" style="width:160px;#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)}" > 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PACIENTE}"/> 
+            </f:facet>  
+            <h:outputText style="#{(item.pacienteNroCartaoSaude == null)?'font-weight:bold':''}" id="colunaPaciente" value="#{item.pacienteNome}" title="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_VER_DETALHES}"/>  
+            <p:overlayPanel for="colunaPaciente" hideEvent="mouseout" appendToBody="true">
+             #{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_GRADE}: #{item.gradeSeq} 
+              <br clear="none"/> #{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_ESPECIALIDADE_AGENDA}: #{item.gradeEspNome} 
+              <br clear="none"/> #{messages.LABEL_MANTER_GRADE_AGENDAMENTO_EQUIPE}: #{item.gradeEquipeNome} 
+              <br clear="none"/> #{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PROFISSIONAL}: #{pesquisarPacientesAgendadosController.buscaCons(item)} 
+              <br clear="none"/> #{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_CONVENIO}: #{item.convenioSaudeDescricao} - #{item.convenioDescricao} 
+              <br clear="none"/>  
+              <b>#{(item.pacienteNroCartaoSaude == null)?(messages.MSG_CARTAO_SAUDE):''}</b> 
+              <b>#{(bean.paciente.pacienteNotifGMR)?pesquisarPacientesAgendadosController.obterDescricaoNotifGMR():''}</b>				
+            </p:overlayPanel> 
+          </p:column>  
+          
+          <p:column sortBy="#{item.idade}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_IDADE}"/> 
+            </f:facet> 
+            <p:outputPanel id="aba2_idade" layout="block"> 
+            	<h:outputText value="#{item.idade}"/>
+           	</p:outputPanel>
+            <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="aba2_idade">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip> 
+          </p:column> 
+           
+          <p:column sortBy="#{item.prontuario}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)}"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_PRONTUARIO}"/> 
+            </f:facet>      	 
+          	 <p:outputPanel id="panelPai" layout="inline">
+                  <h:outputText id="prontuario" value="#{item.prontuario}" 
+                 	title="#{pesquisarPacientesAgendadosController.verificarProntuarioVirtual(item.prontuario)}"/>
+                  <mec:commandLink id="LinkProntuarioLista"
+                  		style="float:right;"
+                  		title="#{messages.TITLE_ABRIR_PRONTUARIO_ONLINE}"
+                        rendered="#{not empty item.prontuario and mf:hasPermission(securityController, '/paciente/prontuarioonline/arvorePOL.xhtml,render')}"
+                        onclick="parent.addPOLProntuario(#{item.prontuario})"
+                        styleClass="silk-icon silk-pol16 silk-icon"
+                        ajax="true"
+                  />
+             </p:outputPanel>
+          	 <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="panelPai">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip> 
+          </p:column>  
+          
+          <p:column sortBy="#{item.numero}" sortable="true" style="background-color:#{item.condicaoCorExibica};"> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_CONSULTA}"/> 
+            </f:facet>  
+            <p:outputPanel id="colunaNumero" layout="block"> 
+            	<h:outputText  value="#{item.numero}" title="#{item.condicaoDescricao}"/> 
+           	</p:outputPanel>
+            <p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="colunaNumero">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip> 
+          </p:column> 
+          
+          <p:column sortBy="#{item.gradeEspSigla}" sortable="true" style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)}">
+			<f:facet name="header">
+				<h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_ESPECIALIDADE_AGENDA}" />
+			</f:facet>
+			<p:outputPanel id="id_especialidadeId" layout="block"> 
+				<h:outputText value="#{item.gradeEspSigla}" title="#{item.gradeEspNome}" />		
+			</p:outputPanel>	
+			<p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="id_especialidadeId">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip> 
+			</p:column>
+           
+        	<p:column style="#{pesquisarPacientesAgendadosController.obterEstiloCampos(item)}"> 
+	            <f:facet name="header"> 
+	              <h:outputText value="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_EXCED}"/> 
+	            </f:facet>
+	            <p:outputPanel id="id_excedente" layout="block">   
+	            	<h:graphicImage title="#{messages.TITLE_PESQUISAR_PACIENTES_AGENDADOS_EXCEDENTE}" value="/resources/img/icons/consulta_excedente.png" style="border:0px" rendered="#{item.excedeProgramacao}"/> 
+          		</p:outputPanel>
+          		<p:tooltip mode="ajax" showEvent="click"
+				style="width:300px; word-wrap: break-word;"
+				rendered="#{item.pacienteNotifGMR}"
+				for="id_excedente">
+				<h:outputText value="#{pesquisarPacientesAgendadosController.obterDescricaoNotifGMR()}"/>
+			</p:tooltip> 
+          	</p:column> 
+        </mec:serverDataTable> 
+		
+  </ui:composition> 
+</html>

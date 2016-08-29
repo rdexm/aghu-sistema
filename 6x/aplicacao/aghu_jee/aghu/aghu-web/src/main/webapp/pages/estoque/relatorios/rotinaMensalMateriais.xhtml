@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_ROTINA_MENSAL_MATERIAIS} :: AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{rotinaMensalMateriaisController}" />
+		<h:form prependId="false" id="form_rotinaMensalMateriais" method="post">
+			<aghu:panelGeral legend="#{messages.LEGEND_FIELD_SET_ROTINA_MENSAL_MATERIAIS}">
+				<aghu:linha>
+					<h:panelGroup id="panelCompetencia">
+						<mec:suggestionBox id="sug_competencia"
+							label="#{messages.LABEL_COMPETENCIA}"
+							title="#{messages.TITLE_DATA_COMPETENCIA_ROTINA_MENSAL_MATERIAIS}"
+							descricaoInput="mesAno" maxlength="7" descricaoLabel="mesAno"
+							required="#{rotinaMensalMateriaisController.isCompetenciaObrigatoria()}"
+							suggestionAction="pesquisarDatasCompetenciasMovimentosMateriaisPorMesAno"
+							size="8" controller="#{rotinaMensalMateriaisController}"
+							value="#{rotinaMensalMateriaisController.movimentoMaterial}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_COMPETENCIA}</b>
+								</f:facet>
+								<h:outputText value="#{item.mesAno}">
+									<f:convertDateTime pattern="MM/yyyy" />
+								</h:outputText>
+							</p:column>
+						</mec:suggestionBox>
+					</h:panelGroup>
+					<h:panelGroup id="testefornec">
+						<mec:suggestionBox id="sug_Fornecedor"
+							label="#{messages.LABEL_FORNECEDOR_ROTINA_MENSAL_MATERIAIS}"
+							title="#{messages.TITLE_FORNECEDOR_ROTINA_MENSAL_MATERIAIS}"
+							descricaoInput="numero" descricaoLabel="razaoSocialNomeFantasia"
+							suggestionAction="pesquisarFornecedoresPorNumeroRazaoSocialNomeFantasia"
+							readonly="#{rotinaMensalMateriaisController.isDesabilitarFornecedor()}"
+							width="750" controller="#{rotinaMensalMateriaisController}"
+							value="#{rotinaMensalMateriaisController.fornecedor}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_NUMERO}</b>
+								</f:facet> #{item.numero}
+	                			</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_RAZAO_SOCIAL}</b>
+								</f:facet> #{item.razaoSocial}
+	               				</p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_NOME_FANTASIA}</b>
+								</f:facet> #{item.nomeFantasia}
+	                			</p:column>
+						</mec:suggestionBox>
+					</h:panelGroup>
+					<mec:selectBooleanCheckbox id="chk_resumoIndividual"
+						title="#{messages.TITLE_RESUMO_ROTINA_MENSAL_MATERIAIS}"
+						label="#{messages.LABEL_RESUMO_ROTINA_MENSAL_MATERIAIS}"
+						value="#{rotinaMensalMateriaisController.resumo}"
+						readonly="#{rotinaMensalMateriaisController.isDesabilitarResumo()}" />
+					<h:panelGroup id="panelAgrupar">
+						<mec:selectOneMenu id="agruparPor"
+							value="#{rotinaMensalMateriaisController.agrupar}"
+							label="#{messages.LABEL_AGRUPAR_MATERIAIS}"
+							title="#{messages.TITLE_AGRUPAR_MATERIAIS}"
+							noSelectionOption="false" enum="DominioAgruparRelMensal"
+							readonly="#{rotinaMensalMateriaisController.isDesabilitarResumoGeralMateriais()}" />
+					</h:panelGroup>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:panelGeral
+				legend="#{messages.LEGEND_FIELD_SET_RELATORIOS_ROTINA_MENSAL_MATERIAIS}">
+				<aghu:linha>
+					<mec:selectOneRadio id="rd_relatorios" layout="pageDirection"
+						value="#{rotinaMensalMateriaisController.relatorio}">
+						<f:selectItem id="idItem0" itemDisabled="false"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[0].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[0]}" />
+						<p:ajax event="change"
+							update="@(#panelCompetencia) @(#sug_Fornecedor) @(#resumo) @(#bt_gerar_csv) @(#panelAgrupar)"
+							process="@this"
+							listener="#{rotinaMensalMateriaisController.verificarRelatorioSelecionado}" />
+						<f:selectItem id="idItem1" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[1].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[1]}" />
+						<f:selectItem id="idItem2" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[2].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[2]}" />
+						<f:selectItem id="idItem3" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[3].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[3]}" />
+						<f:selectItem id="idItem4"
+							itemDisabled="#{not mf:hasPermission(securityController,'emitirRelatorioClassificacaoABC,emitir')}"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[4].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[4]}" />
+						<f:selectItem id="idItem5"
+							itemDisabled="#{not mf:hasPermission(securityController, '/estoque/relatorios/rotinaMensalMateriais, render') }"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[5].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[5]}" />
+						<f:selectItem id="idItem6" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[6].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[6]}" />
+						<f:selectItem id="idItem7" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[7].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[7]}" />
+						<f:selectItem id="idItem8" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[8].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[8]}" />
+						<f:selectItem id="idItem9" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[9].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[9]}" />
+						<f:selectItem id="idItem10" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[10].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[10]}" />
+						<f:selectItem id="idItem11" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[11].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[11]}" />
+						<f:selectItem id="idItem12" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[12].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[12]}" />
+						<f:selectItem id="idItem13" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[13].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[13]}" />
+						<f:selectItem id="idItem14" itemDisabled="true"
+							itemLabel="#{rotinaMensalMateriaisController.listarRelatorios()[14].descricao}"
+							itemValue="#{rotinaMensalMateriaisController.listarRelatorios()[14]}" />
+					</mec:selectOneRadio>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_print_buttonView"
+					value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+					action="#{rotinaMensalMateriaisController.print}" profile="view"
+					onclick="PF('loadDialogWG').show()" />
+				<mec:commandButton id="bt_print_buttonPrint"
+					value="#{messages.LABEL_IMPRIMIR}"
+					action="#{rotinaMensalMateriaisController.impressaoDireta}"
+					profile="print" onclick="PF('loadDialogWG').show()" />
+				
+				<p:commandButton id="bt_gerar_csv"
+					value="#{messages.LABEL_EXPORTAR_ARQUIVO_CSV}"
+					disabled="#{rotinaMensalMateriaisController.disableButtonCsv}"
+					actionListener="#{rotinaMensalMateriaisController.gerarCSV}"
+					ajax="false"
+					onclick="PrimeFaces.monitorDownload(function(){PF('loadDialogWG').show();}, function(){PF('loadDialogWG').hide();});"
+					styleClass="bt_cinza button-acao"	
+					icon="icon-download-csv">
+					<p:fileDownload value="#{rotinaMensalMateriaisController.media}" />
+				</p:commandButton>
+				
+				
+				<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+					block="true"
+					action="#{rotinaMensalMateriaisController.limparCampos}"
+					profile="clear" />
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

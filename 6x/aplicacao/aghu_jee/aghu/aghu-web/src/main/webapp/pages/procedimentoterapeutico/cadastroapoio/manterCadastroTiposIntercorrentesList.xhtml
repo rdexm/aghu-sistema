@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_PESQUISAR_TIPOS_INTERCORRENTES} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterCadastroTiposIntercorrentesPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manterCadastroTiposIntercorrentesPaginatorController}" />
+		<h:form prependId="false" id="formPesquisar">
+			<aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_TIPOS_INTERCORRENTES}">
+				<aghu:linha>
+					<mec:inputText id="descricaoPesquisa"
+						label="#{messages.LABEL_DESCRICAO}"
+						value="#{manterCadastroTiposIntercorrentesPaginatorController.descricao}"
+						maxlength="60" size="100" style="text-transform:uppercase" />
+					<mec:selectOneMenu id="situacaoPesquisa"
+						label="#{messages.LABEL_SITUACAO}"
+						enum="DominioSituacao" style="width:85px;"
+						value="#{manterCadastroTiposIntercorrentesPaginatorController.situacao}" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}"
+					action="#{manterCadastroTiposIntercorrentesPaginatorController.pesquisar}"
+					profile="search" />
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}"
+					action="#{manterCadastroTiposIntercorrentesPaginatorController.limpar}"
+					ajax="true"	process="@this"
+					render="formPesquisar, formResultado"
+					profile="clear" />
+				<mec:commandButton id="bt_iniciarInclusao"
+					value="#{messages.LABEL_NOVO}"
+					disabled="#{!mf:hasPermission(securityController, 'manterTipoIntecorrencia, executar')}"
+					rendered="#{manterCadastroTiposIntercorrentesPaginatorController.dataModel.pesquisaAtiva}"
+					action="#{manterCadastroTiposIntercorrentesPaginatorController.inserirEditar}"
+					profile="add" ajax="true" />
+			</aghu:acao>
+		</h:form>
+		<h:form prependId="false" id="formResultado">
+			<p:outputPanel rendered="#{manterCadastroTiposIntercorrentesPaginatorController.dataModel.pesquisaAtiva}" layout="inline">
+				<aghu:panelGeral legend="#{messages.LABEL_LISTA_TIPOS_INTECORRENTES}">
+					<mec:serverDataTable id="tabelaTiposIntercorrentes" dataModel="dataModel"
+							selection="tipoIntercorrenteSelecionado"
+							controller="#{manterCadastroTiposIntercorrentesPaginatorController}">
+						<c:set var="item" value="#{item}" />
+						<p:column styleClass="first-column auto-adjust" style="text-align:left;" headerText="#{messages.LABEL_ACOES}" exportable="false">
+							<mec:commandLink id="tabelaTiposIntercorrentes_link_editar"
+								profile="edit" title="Editar"
+								disabled="#{!mf:hasPermission(securityController, 'manterTipoIntecorrencia, executar')}"
+								action="#{manterCadastroTiposIntercorrentesPaginatorController.inserirEditar}">
+								<f:setPropertyActionListener
+									target="#{manterCadastroTiposIntercorrentesController.tipoIntercorrente}"
+									value="#{item}" for="command" />
+							</mec:commandLink>
+							
+						<mec:commandLink id="tabelaTiposIntercorrentes_historico"
+							 	oncomplete="PF('modalHistoricoIntecorrentesWG').show();"
+								title="#{messages.TITLE_HISTORICO_ALTERACOES_TIPOS_INTERCORRENTES}" 
+							 	styleClass="silk-historico-cirurgias silk-icon"
+							 	ajax="true"
+								render="panelModal, modalHistoricoIntecorrentes, tabelaHistoricoAlteracoes"
+							 	process="@this">
+								<f:setPropertyActionListener
+									value="#{manterCadastroTiposIntercorrentesPaginatorController.historicoIntercorrente(item)}"
+									target="#{manterCadastroTiposIntercorrentesPaginatorController.listaHistoricoTipoIntercorrenciaJn}"
+									for="command" />
+						</mec:commandLink>									
+						</p:column>
+						<p:column style="text-align:left;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+							</f:facet>
+							<h:outputText id="itemDescricao" value="#{item.descricao}" />
+						</p:column>
+						<p:column style="text-align:left; width:10%">
+							<f:facet name="header">
+								<h:outputText id="itemSituacao" value="#{messages.LABEL_ATIVO}" />
+							</f:facet>
+							<h:outputText styleClass="#{item.indSituacao.isAtivo() ? 'silk-ativo' : ''} silk-icon" />
+						</p:column>
+					</mec:serverDataTable>
+				</aghu:panelGeral>
+			</p:outputPanel>
+		</h:form>
+		<p:outputPanel id="panelModal" layout="inline">
+			<ui:include src="/pages/procedimentoterapeutico/cadastroapoio/modalHistoricoTiposIntercorrentes.xhtml"/>			
+		</p:outputPanel> 
+	</ui:define>
+</ui:composition>
+</html>

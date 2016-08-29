@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_MODELO_BASICO_MEDICAMENTO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterMedicamentosModeloBasicoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterMedicamentosModeloBasicoController}"/>  
+      <h:form prependId="false" id="formPesquisar"> 
+        <pe:remoteCommand name="directEdit" update="panelFormulario" actionListener="#{manterMedicamentosModeloBasicoController.editarItem}" process="@this"/>  
+        <aghu:panelGeral legend="#{messages.LABEL_MODELO_BASICO_MEDICAMENTO}"> 
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_DESCRICAO_MODELO}" id="descricao" value="#{manterMedicamentosModeloBasicoController.modeloBasico.descricao}" readonly="true" size="80"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral> 
+          <p:outputPanel id="panelFormulario" layout="inline"> 
+            <aghu:linha> 
+              <p:outputPanel id="panelSugestionItem" layout="inline"> 
+                <mec:suggestionBox  var="medicamento" itemValue="#{medicamento}" id="medicamento" label="#{messages.LABEL_MEDICAMENTO}" title="#{messages.TITLE_MEDICAMENTO_MOD}" required="true" descricaoInput="matCodigo" descricaoLabel="descricaoEditada" suggestionAction="obterMedicamentosVO" posSelectionAction="realizarVerificacoesMedicamento" posDeleteAction="limparCamposRelacionados" width="800" readonly="#{manterMedicamentosModeloBasicoController.altera}" controller="#{manterMedicamentosModeloBasicoController}" value="#{manterMedicamentosModeloBasicoController.medicamentoVO}" render="panelUnidade, panelVia"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{medicamento.descricaoMat}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CONCENTRACAO}</b> 
+                    </f:facet> #{medicamento.getConcentracaoFormatada()}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_UNID}</b> 
+                    </f:facet> #{medicamento.descricaoUnidadeMedica}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_APRES}</b> 
+                    </f:facet> #{medicamento.tprSigla}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_IND_PADR}</b> 
+                    </f:facet> #{medicamento.indPadronizacao ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_EXIGE_JUST}</b> 
+                    </f:facet> #{medicamento.indExigeJustificativa ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DURAC}</b> 
+                    </f:facet> #{medicamento.indExigeDuracaoSolicitada ? 'S' : 'N'}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_IND_ANTIMIC}</b> 
+                    </f:facet> #{medicamento.indAntimicrobiano ? 'S' : 'N'}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelDose" layout="inline">
+				<mec:inputDecimal 
+				    id="dose"
+					label="#{messages.LABEL_DOSE}" 
+					title="#{messages.TITLE_DOSE_MOD}" 
+					required="true"
+					maxlength="15" 
+					value="#{manterMedicamentosModeloBasicoController.itemMedicamento.dose}" />
+				</p:outputPanel>  
+              <p:outputPanel id="panelUnidade" layout="inline"> 
+                <mec:selectOneMenu label="#{messages.LABEL_UNIDADE}" id="unidade" title="#{messages.TITLE_UNIDADE_MOD}" value="#{manterMedicamentosModeloBasicoController.unidadeDosagem}" required="true"> 
+                  <f:converter converterId="vMpmDosagemConverter" for="inputId"/>  
+                  <f:selectItems var="item" itemLabel="#{item.siglaUnidadeMedidaMedica}" value="#{manterMedicamentosModeloBasicoController.listaDosagens}"/> 
+                </mec:selectOneMenu> 
+              </p:outputPanel>
+						<p:outputPanel id="panelVia" layout="inline">
+							<mec:suggestionBox var="via" itemValue="#{via}" id="via" label="#{messages.LABEL_VIA}"
+								title="#{messages.TITLE_VIA_MOD}" required="true"
+								descricaoInput="sigla" descricaoLabel="descricao"
+								suggestionAction="listarViasMedicamento"
+								posSelectionAction="verificarViaAssociadaAoMedicamento"
+								controller="#{manterMedicamentosModeloBasicoController}"
+								value="#{manterMedicamentosModeloBasicoController.modeloBasicoMedicamento.viaAdministracao}"
+								render="panelModalVia">
+								<p:column>#{via.descricao}</p:column>
+								<p:column>#{via.sigla}</p:column>
+							</mec:suggestionBox>
+							<mec:selectBooleanCheckbox
+								label="#{messages.LABEL_TODAS_AS_VIAS}" id="todasAsVias"
+								title="#{messages.TITLE_TODAS_VIAS_MOD}"
+								value="#{manterMedicamentosModeloBasicoController.todasAsVias}">
+								<p:ajax event="change" process="@this" update="@(#via)" />
+							</mec:selectBooleanCheckbox>	
+						</p:outputPanel>
+					</aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelFrequencia" layout="inline"> 
+                <mec:field name="frequencia" inputId="input_frequencia" id="frequencia" required="#{manterMedicamentosModeloBasicoController.verificaRequiredFrequencia()}" label="#{messages.LABEL_FREQUENCIA}" title="#{messages.TITLE_FREQUENCIA}"> 
+                    <pe:inputNumber id="input_frequencia"
+        			value="#{manterMedicamentosModeloBasicoController.frequencia}"
+					required="false"			
+					maxlength="5" 
+					converter="#{javax.faces.Short}"			
+					size="5"
+					decimalSeparator=","
+					thousandSeparator="."					
+					decimalPlaces="0"
+					maxValue="#{mf:gerarMaxValue(5, 0)}">
+                    <p:ajax id="frequenciaSupOnChange" event="change" update="@(#tipoAprazamentoLabelPanel)" process="@this"/> 
+                  </pe:inputNumber> 
+                </mec:field> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelAprazamento" layout="inline"> 
+                <mec:suggestionBox var="aprazamento" itemValue="#{aprazamento}"  id="tipoAprazamento" label="#{messages.LABEL_TIPO_APRAZAMENTO}" title="Selecione um Tipo de Frequência de Aprazamento." required="true" descricaoInput="sigla" externalDescricaoLabel="descricaoTipoFrequenciaAprazamento" labelId="tipoAprazamentoLabelPanel" suggestionAction="buscarTiposFrequenciaAprazamento" posSelectionAction="verificarFrequencia" controller="#{manterMedicamentosModeloBasicoController}" value="#{manterMedicamentosModeloBasicoController.tipoAprazamento}" render="panelFrequencia"> 
+                  <p:column>#{aprazamento.descricao}</p:column>  
+                  <p:column>#{aprazamento.sigla}</p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha>              
+              <mec:selectOneMenu id="diluente"  label="#{messages.LABEL_DILUENTE}" title="#{messages.TITLE_DILUENTE}" style="width: 320px"  value="#{manterMedicamentosModeloBasicoController.diluente}"> 
+                   <f:selectItem itemLabel="Selecione" itemValue=""/>  
+				   <f:selectItems var="itemCombo" itemLabel="#{itemCombo.descricaoMedicamento}" value="#{manterMedicamentosModeloBasicoController.buscarDiluentes()}" />
+				   <f:converter converterId="baseEntityConverter" for="diluente"/>
+               </mec:selectOneMenu>                  
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelVolume" layout="inline">
+                <mec:inputDecimal 
+                		name="fdvolume" 
+                		id="fdvolume"
+                		inteiros="3"
+                		pattern="###.####"
+                		label="#{messages.LABEL_VOLUME_ML}"
+						title="#{messages.TITLE_VOLUME_ML}"                		
+                  		value="#{manterMedicamentosModeloBasicoController.volumeDiluenteMl}"
+                  		required="false"			
+						maxlength="8"
+						size="8" />
+              </p:outputPanel>  
+              <p:outputPanel id="panelCorreEm" layout="inline"> 
+                <mec:field name="correrEm" id="correrEm" label="#{messages.LABEL_CORRER_EM}" inputId="input_correrEm" title="#{messages.TITLE_CORRER_EM_MODELO_BASICO_SOLUCAO}"> 
+                  <pe:inputNumber id="input_correrEm"
+        			value="#{manterMedicamentosModeloBasicoController.modeloBasicoMedicamento.quantidadeHorasCorrer}"
+					required="false"			
+					maxlength="2" 
+					converter="#{javax.faces.Byte}"			
+					size="4"
+					decimalSeparator=","
+					thousandSeparator="."					
+					decimalPlaces="0"
+					maxValue="#{mf:gerarMaxValue(2, 0)}"/>
+                </mec:field> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelCorrerEmUnidade" layout="inline"> 
+                <mec:selectOneMenu enum="DominioUnidadeHorasMinutos" label="#{messages.LABEL_UNIDADE_TEMPO}" id="correrEmUnidade" value="#{manterMedicamentosModeloBasicoController.unidHorasCorrer}" title="#{messages.TITLE_CORRER_EM_UNIDADE}"/> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelvelocidadeInfusao" layout="inline">
+              <mec:inputDecimal 
+                  		name="velinf" id="fdvelinf"
+                  		label="#{messages.LABEL_VELOCIDADE_INFUSAO}"
+                  		value="#{manterMedicamentosModeloBasicoController.modeloBasicoMedicamento.gotejo}"
+						title="#{messages.TITLE_GOTEJO_MOD}"                  		
+                  		required="false"	
+                  		inteiros="3"
+                  		decimais="2"
+                  		pattern="###.##"		
+						size="8" >
+				<p:ajax id="velInfSupOnChange" event="change" update="@(#panelTipoVelocidadeInfusao)" process="@this"/>
+			  </mec:inputDecimal>			
+				
+				<ui:remove>		 
+                <mec:field name="velinf" id="fdvelinf" label="#{messages.LABEL_VELOCIDADE_INFUSAO}" inputId="input_velinf" title="#{messages.TITLE_GOTEJO_MOD}"> 
+                  <pe:inputNumber id="input_velinf"
+        			value="#{manterMedicamentosModeloBasicoController.modeloBasicoMedicamento.gotejo}"
+					required="false"			
+					maxlength="3" 
+					converter="#{bigDecimalConverter}"			
+					size="8"
+					decimalSeparator=","
+					thousandSeparator="."					
+					decimalPlaces="2"
+					maxValue="#{mf:gerarMaxValue(3, 2)}">
+					<p:ajax id="velInfSupOnChange" event="change" update="@(#panelTipoVelocidadeInfusao)" process="@this"/>					
+				  </pe:inputNumber>	
+                </mec:field>
+                </ui:remove> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelTipoVelocidadeInfusao" layout="inline"> 
+                <mec:selectOneMenu label="#{messages.LABEL_UNIDADE_INFUSAO}" title="#{messages.TITLE_TIPO_VELOCIDADE_INFUSAO}" itemLabel="descricao" reRender="panelvelocidadeInfusao" id="tipoVelocidadeInfusao" value="#{manterMedicamentosModeloBasicoController.modeloBasicoMedicamento.tipoVelocidadeAdministracao}" items="#{manterMedicamentosModeloBasicoController.buscarTiposVelocidadeAdministracao()}"/> 
+              </p:outputPanel>  
+              <mec:selectBooleanCheckbox label="#{messages.LABEL_BOMBA_INFUSAO}" title="#{messages.TITLE_BOMBA_INFUSAO}" id="bombaInfusao" value="#{manterMedicamentosModeloBasicoController.indBombaInfusao}"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelInicioAdministracao" layout="inline"> 
+				<mec:inputTextData label="#{messages.LABEL_INICIO_ADM}" title="#{messages.TITLE_INICIO_MOD}"  
+               		value="#{manterMedicamentosModeloBasicoController.horaInicioAdministracao}" id="inicioAdministracao" 
+               		tipo="hora"
+               		size="5" maxlength="5">
+                	<p:ajax event="blur" action="#{manterMedicamentosModeloBasicoController.horaInicioAdministracao}" />
+               </mec:inputTextData>
+              </p:outputPanel>  
+              <p:outputPanel id="panelSeNecessario" layout="inline"> 
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_SE_NECESSARIO}" id="seNecessario" title="#{messages.TITLE_SE_NECESSARIO_MOD}" value="#{manterMedicamentosModeloBasicoController.modeloBasicoMedicamento.indSeNecessario}"/> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelObservacao" layout="inline"> 
+                <mec:inputTextArea cols="120" rows="2" id="observacao" label="#{messages.LABEL_OBSERVACAO}" title="#{messages.TITLE_OBSERVACAO_MEDICAMENTO_MOD}" value="#{manterMedicamentosModeloBasicoController.modeloBasicoMedicamento.observacao}" required="false" maxlength="240" autoResize="false"/> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" bock="true" action="#{manterMedicamentosModeloBasicoController.gravar}" render="panelFormulario,panelTabelaItensMedicamento" profile="ok"/>  
+          <mec:commandButton id="bt_limparItem" value="#{messages.LABEL_LIMPAR}" action="#{manterMedicamentosModeloBasicoController.limpar()}" styleClass="bt_cinza" ajax="true" render="panelFormulario,panelTabelaItensMedicamento" process="@this" profile="clear"/>  
+          <mec:commandButton immediate="true" id="bt_voltar" action="#{manterMedicamentosModeloBasicoController.voltar}" value="#{messages.LABEL_VOLTAR}" title="#{messages.LABEL_VOLTAR}" styleClass=" alinha-direita icon-back bt_cinza" ajax="true" profile="back"/> 
+        </aghu:acao>  
+        <aghu:linha> 
+          <p:outputPanel id="panelTabelaItensMedicamento" layout="inline"> 
+            <p:outputPanel id="reg_lista_medic" rendered="#{not empty manterMedicamentosModeloBasicoController.listaMedicamentos}" layout="inline"> 
+              <mec:serverDataTable id="tabelaItensMedicamentos" list="#{manterMedicamentosModeloBasicoController.listaMedicamentos}" 
+              	scrollable="true" scrollHeight="120"> 
+                <c:set var="_item" value="#{item}"/>  
+                <p:column styleClass="first-column auto-adjus" style="width:60px; #{(_item.id.seq == manterMedicamentosModeloBasicoController.seq)?'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                  </f:facet>  
+                  <mec:commandLink rendered="#{_item.id.seq == manterMedicamentosModeloBasicoController.seq}" id="link_" onclick="return false;" styleClass=" silk-blank silk-icon" ajax="true" render="panelFormulario,panelTabelaItensMedicamento"/>
+					<mec:commandLink id="link_editar"
+						action="#{manterMedicamentosModeloBasicoController.preparaAlterar(_item.id.modeloBasicoPrescricaoSeq, _item.id.seq)}"
+						title="#{messages.LABEL_EDITAR}"
+						rendered="#{_item.id.seq != manterMedicamentosModeloBasicoController.seq}"
+						profile="edit" ajax="true"
+						render="panelFormulario,panelTabelaItensMedicamento"
+						process="@this" />
+					
+					<mec:commandLink id="link_excluir"
+						title="#{messages.LABEL_EXCLUIR}"
+						action="#{manterMedicamentosModeloBasicoController.excluir}"
+						profile="delete" ajax="true" process="@this" render="panelTabelaItensMedicamento, reg_lista_medic, tabelaItensMedicamentos" >
+						<f:setPropertyActionListener target="#{manterMedicamentosModeloBasicoController.modeloBasicoPrescricaoSeqExcluir}" value="#{_item.id.modeloBasicoPrescricaoSeq}" for="command"/>
+						<f:setPropertyActionListener target="#{manterMedicamentosModeloBasicoController.seqExcluir}" value="#{_item.id.seq}" for="command"/>
+					</mec:commandLink>	
+				</p:column>  
+                <p:column width="auto" style="#{(_item.id.seq == manterMedicamentosModeloBasicoController.seq)?'background-color:#EEE8AA':''}"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ITENS_MEDICAMENTO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{manterMedicamentosModeloBasicoController.getDescricaoEditada(_item.id.modeloBasicoPrescricaoSeq, _item.id.seq)}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </p:outputPanel> 
+          </p:outputPanel> 
+        </aghu:linha> 
+      </h:form>  
+      <p:outputPanel id="panelModalVia" layout="inline">
+			<p:dialog id="modalConfirmacaoVia" width="400" height="170"
+				modal="true" resizable="false" widgetVar="modalConfirmacaoViaWG">
+				<!-- rendered="#{manterMedicamentosModeloBasicoController.exibirModal}" -->
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="Confirmação" />
+					</h:panelGroup>
+				</f:facet> #{manterMedicamentosModeloBasicoController.mensagemExibicaoModal} 
+          <br clear="none" />
+				<br clear="none" />
+				<br clear="none" />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalVia">
+						<mec:commandButton name="btOk" value="#{messages.LABEL_OK}"
+							onclick="PF('modalConfirmacaoViaWG').hide();"
+							action="#{manterMedicamentosModeloBasicoController.desabilitarExibicaoModal()}"
+							profile="ok" ajax="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+			<h:form> 
+          <!-- <script xml:space="preserve">
+				PF('modalConfirmacaoViaWG').show();;
+			</script>  -->
+        </h:form> 
+      </p:outputPanel>  
+      <p:dialog id="modalConfirmacaoEdicao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoEdicaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalEdicao"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{manterMedicamentosModeloBasicoController.editarItem}" render="panelFormulario,panelTabelaItensMedicamento" profile="ok"/>  
+            <mec:commandButton id="bt_cancelarEdicao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoEdicaoWG').hide();" action="#{manterMedicamentosModeloBasicoController.cancelarModal}" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

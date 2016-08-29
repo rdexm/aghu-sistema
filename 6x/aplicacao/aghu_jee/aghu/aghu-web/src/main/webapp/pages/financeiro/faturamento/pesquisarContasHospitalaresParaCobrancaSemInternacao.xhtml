@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.PESQUISA_CONTAS_HOSPITALARES_PARA_COBRANCA_SEM_INTERNACAO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController}" ignoreEnter="true"/>  
+      <p:outputPanel id="formularioPesquisaPaciente" layout="inline"> 
+        <h:form prependId="false" id="formPesquisa"> 
+          <aghu:panelGeral legend="#{messages.CONSULTA_CONTA_HOSPITALAR}"> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO_FAT}" title="#{messages.TITLE_PRONTUARIO_FAT_INC}" value="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.paciente.prontuario}" id="prontuarioEdicao"/> 
+              <mec:inputNumero label="#{messages.LABEL_CODIGO_PACIENTE_FAT}" title="#{messages.TITLE_CODIGO_CONSULTA_GRADE}" id="codigo" styleClass="numerico" size="10" maxlength="9" value="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.paciente.codigo}"> 
+                <p:ajax event="change" listener="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.obterPacientePorCodigo()}" update="@(#formularioPesquisaPaciente)"/>
+              </mec:inputNumero>  
+              <mec:inputText size="50" maxlength="50" label="#{messages.LABEL_NOME_PACIENTE_FAT}" readonly="true" value="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.paciente.nome}" id="nome"/>  
+              <aghu:acao newLine="false">
+	            <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" action="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.redirecionarPesquisaFonetica}" styleClass="bt_float icon-pesquisa-fonetica bt_cinza" profile="search" ajax="true"> 
+	              <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="faturamento-pesquisarContasHospitalaresParaCobrancaSemInternacao" for="command"/>  
+	              <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+	            </mec:commandButton> 
+	          </aghu:acao>
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputNumero size="17" maxlength="8" label="#{messages.LABEL_CONTA_HOSPITALAR_FAT}" title="#{messages.TITLE_CONTA_HOSPITALAR_FAT}" value="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.cthSeq}" id="cthSeq"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:linha> 
+            <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.pesquisar}" profile="search" render="panelResultado"/>  
+            <mec:commandButton id="bt_limpar" block="true" value="#{messages.LABEL_LIMPAR}" action="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+            <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_iniciarInclusao" action="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.redirectContasHospitalaresParaCobrancaSemInternacaoNovo}" immediate="true" rendered="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.showNew}" profile="add" ajax="true"> 
+              <f:setPropertyActionListener target="#{contasHospitalaresParaCobrancaSemInternacaoController.pacCodigo}" value="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.paciente.codigo}" for="command"/> 
+            </mec:commandButton> 
+          </aghu:linha> 
+        </h:form>  
+        <h:form prependId="false" id="resultado"> 
+          <aghu:linha> 
+	        <p:outputPanel id="panelResultado" rendered="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+	          <aghu:panelGeral legend="#{messages.CONTAS_HOSPITALARES}"> 
+	            <mec:serverDataTable dataModel="dataModel" id="tabelaContas" controller="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController}" rendered="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.dataModel.pesquisaAtiva}">
+	              <c:set var="_vConta" value="#{item}"/>  
+	              <p:column style="white-space:nowrap;" exportable="false"> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_ACAO}"/>
+	                </f:facet>  
+	                <mec:commandLink action="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.redirectContasHospitalaresParaCobrancaSemInternacao}" immediate="true" title="#{messages.LABEL_EDITAR}" style="padding-bottom: 0px; height:16px;" profile="edit" ajax="true"> 
+	                  <f:setPropertyActionListener target="#{contasHospitalaresParaCobrancaSemInternacaoController.seq}" value="#{_vConta.seq}" for="command"/>  
+	                  <f:setPropertyActionListener target="#{contasHospitalaresParaCobrancaSemInternacaoController.cthSeq}" value="#{_vConta.cthSeq}" for="command"/>  
+	                  <f:setPropertyActionListener target="#{contasHospitalaresParaCobrancaSemInternacaoController.pacCodigo}" value="#{pesquisarContasHospitalaresParaCobrancaSemInternacaoPaginatorController.paciente.codigo}" for="command"/> 
+	                </mec:commandLink> 
+	              </p:column>  
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_CONTA}"/>
+	                </f:facet>  
+	                <h:outputText value="#{_vConta.cthSeq}"/> 
+	              </p:column>  
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_CARATER_INTERNACAO}"/>
+	                </f:facet>  
+	                <h:outputText value="#{_vConta.tipoCaraterInternacao.codSus} - #{_vConta.tipoCaraterInternacao.descricao}"/> 
+	              </p:column>  
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_PROFISSIONAL_RESPONSAVEL}"/>
+	                </f:facet>  
+	                <h:outputText value="#{_vConta.servidor.id.vinCodigo} - #{_vConta.servidor.id.matricula} - #{_vConta.servidor.pessoaFisica.nome}"/> 
+	              </p:column>  
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_DATA_HORA_COMPETENCIA}"/>
+	                </f:facet>  
+	                <h:outputText value="#{_vConta.dataInicial}"> 
+	                  <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm"/> 
+	                </h:outputText> 
+	              </p:column>  
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_DATA_HORA_COMPETENCIA_FIM}"/>
+	                </f:facet>  
+	                <h:outputText value="#{_vConta.dataFinal}"> 
+	                  <f:convertDateTime type="both" pattern="dd/MM/yyyy HH:mm"/> 
+	                </h:outputText> 
+	              </p:column>  
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_UNIDADE_FUNCIONAL}"/>
+	                </f:facet>  
+	                <h:outputText value="#{_vConta.unf.seq} - #{_vConta.unf.descricao}"/> 
+	              </p:column>  
+	              <p:column> 
+	                <f:facet name="header"> 
+	                  <h:outputText value="#{messages.LABEL_SITUACAO}"/>
+	                </f:facet>  
+	                <h:outputText value="#{_vConta.indSituacao.descricao}"/> 
+	              </p:column> 
+	            </mec:serverDataTable> 
+	          </aghu:panelGeral> 
+	        </p:outputPanel> 
+	      </aghu:linha>
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

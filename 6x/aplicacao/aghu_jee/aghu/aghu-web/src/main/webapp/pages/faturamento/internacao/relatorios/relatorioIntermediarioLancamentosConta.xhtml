@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_BOLETIM_INTERMEDIARIO_LANCAMENTOS} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{relatorioIntermediarioLancamentosContaController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{relatorioIntermediarioLancamentosContaController}"/>  
+      <h:form prependId="false" id="Relatorio"> 
+        <aghu:panelGeral legend="#{messages.LABEL_BOLETIM_INTERMEDIARIO_LANCAMENTOS}"> 
+          <aghu:linha> 
+            <p:outputPanel id="formularioPesquisa" layout="inline"> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO_FAT}" title="#{messages.TITLE_LIST_PRONTUARIO_CONTA_HOPS}" styleClass="mask_prontuario" readonly="false" value="#{relatorioIntermediarioLancamentosContaController.prontuario}" id="prontuarioEdicao"> 
+                <p:ajax event="change" actionListener="#{relatorioIntermediarioLancamentosContaController.obterPacientePorProntuario}" update="@(#formularioPesquisa) @(#formularioLista)" process="@this"/> 
+              </mec:inputTextProntuario>  
+              <mec:inputText label="#{messages.LABEL_CODIGO_PACIENTE_FAT}" title="#{messages.TITLE_CODIGO_CONSULTA_GRADE}" styleClass="numerico" size="10" maxlength="9" value="#{relatorioIntermediarioLancamentosContaController.codigo}" id="pacCodigoEdicao"> 
+                <p:ajax event="change" actionListener="#{relatorioIntermediarioLancamentosContaController.obterPacientePorCodigo}" update="@(#formularioPesquisa) @(#formularioLista)" process="@this"/> 
+              </mec:inputText>  
+              <mec:inputText value="#{relatorioIntermediarioLancamentosContaController.nomePaciente}" label="#{messages.LABEL_NOME_PACIENTE}" size="50" style="text-transform:uppercase" readonly="true" id="nome"/>  
+              <br clear="none"/>  
+              <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="ajaxSingle" action="#{relatorioIntermediarioLancamentosContaController.redirecionarPesquisaFonetica}" styleClass="bt_float  icon-pesquisa-fonetica bt_cinza" ajax="true"> 
+                <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" value="faturamento-relatorioIntermediarioLancamentosConta" for="command"/>  
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+              </mec:commandButton> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero value="#{relatorioIntermediarioLancamentosContaController.contaHospitalar}" label="#{messages.LABEL_CONTA_HOSPITALAR}" title="#{messages.TITLE_LIST_CONTA_HOSPITALAR}" size="20" id="contaHospitalar"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{relatorioIntermediarioLancamentosContaController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="limpar" immediate="true" action="#{relatorioIntermediarioLancamentosContaController.limpar}" value="#{messages.LABEL_LIMPAR}" profile="clear" ajax="true" render="Relatorio" process="@this"/> 
+        </aghu:acao>  
+        <p:outputPanel id="formularioLista" layout="inline"> 
+          <h:panelGroup rendered="#{relatorioIntermediarioLancamentosContaController.dataModel.pesquisaAtiva}"> 
+            <mec:serverDataTable dataModel="dataModel" rendered="#{relatorioIntermediarioLancamentosContaController.dataModel.pesquisaAtiva}" id="tabelaContas" controller="#{relatorioIntermediarioLancamentosContaController}"> 
+              <c:set var="_conta" value="#{item}"/>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                </f:facet>  
+                <mec:commandButton id="bt_print_buttonView" value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}" action="#{relatorioIntermediarioLancamentosContaController.visualizarRelatorio}" profile="view" onclick="PF('loadDialogWG').show()">
+                     <f:setPropertyActionListener target="#{relatorioIntermediarioLancamentosContaController.cthSeq}" value="#{_conta.cthSeq}" for="command"/>  
+                     <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+                </mec:commandButton>   
+                <mec:commandButton id="bt_print_buttonPrint" value="#{messages.LABEL_IMPRIMIR}" action="#{relatorioIntermediarioLancamentosContaController.imprimirRelatorio}" profile="print" onclick="PF('loadDialogWG').show()">
+                    <f:setPropertyActionListener target="#{relatorioIntermediarioLancamentosContaController.cthSeq}" value="#{_conta.cthSeq}" for="command"/>  
+                    <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+                </mec:commandButton>  
+                <mec:commandButton value="#{messages.LABEL_GERAR_CSV}" block="true" action="#{relatorioIntermediarioLancamentosContaController.gerarCSV}" profile="download-csv"> 
+                  <f:setPropertyActionListener target="#{relatorioIntermediarioLancamentosContaController.cthSeq}" value="#{_conta.cthSeq}" for="command"/>  
+                  <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+                </mec:commandButton> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CONTA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_conta.cthSeq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_PROCEDIMENTO_REALIZADO}"/> 
+                </f:facet>  
+                <p:outputPanel id="panelToolTipProc" rendered="#{not empty _conta.ssmSolicitado and empty _conta.ssmRealizado}" layout="inline"> 
+                  <h:graphicImage value="/resources/img/icons/error.png" id="ssmDif" style="padding-top: 0px; padding-bottom: 0px; margin-top: 0px; margin-bottom: 0px; height:16px;"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{not empty _conta.ssmSolicitado}"> 
+                    <h:outputText value="#{messages.LABEL_PROCEDIMENTO_SOLICITADO}: #{_conta.ssmSolicitado}"/> 
+                  </p:tooltip> 
+                </p:outputPanel>  
+                <h:outputText value="#{_conta.ssmRealizado}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_AIH_FAT}"/> 
+                </f:facet>  
+                <h:outputText value="#{_conta.aih.nroAih}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_INTERNACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_conta.cthDtIntAdministrativa}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ALTA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_conta.cthDtAltaAdministrativa}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_COMPETENCIA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_conta.competencia}"> 
+                  <f:convertDateTime pattern="MM/yyyy"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_conta.indSituacao.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO_GESTOR}"/> 
+                </f:facet>  
+                <h:outputText value="#{_conta.situacaoSms}"/> 
+              </p:column> 
+            </mec:serverDataTable>  
+            <c:if xmlns:c="http://java.sun.com/jstl/core" test="#{relatorioIntermediarioLancamentosContaController.gerouArquivo}">  
+              <script type="text/javascript" xml:space="preserve">
+							jQuery(document).ready(function(){
+								Document.getElementById('abrirArquivoButton').click();
+							});
+						</script>  
+              <mec:commandButton id="abrirArquivoButton" immediate="true" action="#{relatorioIntermediarioLancamentosContaController.dispararDownload()}" value="Download do arquivo" style="visibility: hidden;" styleClass="bt_cinza"> 
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+              </mec:commandButton> 
+            </c:if> 
+          </h:panelGroup> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

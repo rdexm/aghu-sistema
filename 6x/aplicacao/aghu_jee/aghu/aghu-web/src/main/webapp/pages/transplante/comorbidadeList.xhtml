@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+		<ui:define name="head">
+			<title>#{messages.LABEL_PESQUISAR_COMORBIDADES}</title>
+		</ui:define>
+		<ui:define name="metadata">
+		</ui:define>
+		<ui:define name="body">
+			<mec:pageConfig controller="#{comorbidadePaginatorController}"/>  
+		      <h:form prependId="false" id="campos"> 
+		        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_COMORBIDADES}">
+		          <aghu:linha> 
+	            	<mec:suggestionBox id="doencaCID" label="#{messages.LABEL_DOENCA}" title="#{messages.TITLE_PESQUISAR_DOENCA_COMORBIDADE}" 
+	            	    suggestionAction="pesquisarComorbidade" descricaoInput="seq" descricaoLabel="concatDescricao" maxlength="100" size="100"
+						controller="#{comorbidadePaginatorController}" value="#{comorbidadePaginatorController.mtxComorbidadeDoenca}" styleClass="noAdjust"
+						descricaoLimite = "60">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.seq}
+               			</p:column>
+               			<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.concatDescricao}
+               			</p:column>
+					</mec:suggestionBox>
+					<mec:field>
+						<p:spacer width="50" height="10" />
+					</mec:field>
+		          	<mec:field label="#{messages.LABEL_TIPO}" title="#{messages.TITLE_PESQUISAR_TIPO_COMORBIDADE}">
+			          	 <p:selectManyCheckbox id="menuCheckBox" value="#{comorbidadePaginatorController.listaDomTipoTransplanteSelecionado}" layout="grid" columns="1">
+				            <f:selectItems value="#{comorbidadePaginatorController.listaDomTipoTransplante}" var="tipoCom" itemLabel="#{tipoCom}" itemValue="#{tipoCom}" />
+				        </p:selectManyCheckbox>
+		          	</mec:field>
+					<mec:field>
+						<p:spacer width="50" height="10" />
+					</mec:field>
+		          	<mec:selectOneMenu id="situacao" enum="DominioSituacao" label="#{messages.LABEL_ATIVO}" title="#{messages.TITLE_PESQUISAR_ATIVO_COMORBIDADE}" value="#{comorbidadePaginatorController.situacao}"> 
+		             	<p:ajax event="change" process="@this" /> 
+	              	</mec:selectOneMenu>
+	               </aghu:linha>
+		        </aghu:panelGeral>
+				<br />
+		        <aghu:acao> 
+		          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{comorbidadePaginatorController.pesquisar()}" profile="search"/>  
+		          <mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR}" block="true" action="#{comorbidadePaginatorController.limparPesquisa()}" profile="clear"/>  
+		          <mec:commandButton id="novo" value="#{messages.LABEL_NOVO}" action="#{comorbidadePaginatorController.incluir()}" profile="add" rendered="#{comorbidadePaginatorController.dataModel.pesquisaAtiva}"/> 
+		        </aghu:acao> 
+		      </h:form>
+		      <h:form prependId="false" id="formLista">
+				<br />
+		        <aghu:panelGeral legend="#{messages.LABEL_COMORBIDADES}" rendered="#{comorbidadePaginatorController.dataModel.pesquisaAtiva}">
+		          <mec:serverDataTable id="lista" dataModel="dataModel" selection="mtxComorbidadeSelect" controller="#{comorbidadePaginatorController}">
+		            <c:set var="item" value="#{item}"/>
+		            
+		            <p:column headerText="#{messages.LABEL_ACAO}" styleClass="first-column auto-adjust" exportable="false">
+		              <mec:commandLink id="lista_link_editar" profile="edit" title="#{messages.TITLE_EDITAR}" action="#{comorbidadePaginatorController.editar()}">
+		                <f:setPropertyActionListener for="command" target="#{comorbidadeController.mtxComorbidade}" value="#{item}"/>
+		                <f:setPropertyActionListener for="command" target="#{comorbidadeController.modoEdicao}" value="#{true}"/>
+		              </mec:commandLink>
+		              <mec:commandLink id="lista_link_visualizar" title="#{messages.LABEL_VISUALIZAR}" action="#{comorbidadePaginatorController.editar()}"  styleClass="silk-icon silk-zoom">
+		                <f:setPropertyActionListener for="command" target="#{comorbidadeController.mtxComorbidade}" value="#{item}"/>
+		                <f:setPropertyActionListener for="command" target="#{comorbidadeController.modoVisualizacao}" value="#{true}"/>
+		              </mec:commandLink>
+		            </p:column>
+		            <p:column>
+		              <f:facet name="header">
+		                <h:outputText value="#{messages.LABEL_TIPO}"/>
+		              </f:facet>
+		                <h:outputText value="#{item.tipo.getDescricao()}"/>
+		            </p:column> 
+		            <p:column>
+		              <f:facet name="header">
+		                <h:outputText value="#{messages.LABEL_DOENCA}"/>
+		              </f:facet>
+					  <p:overlayPanel id="hintDescricao" for="descricao" showEvent="mouseover" hideEvent="mouseout"	
+					  	rendered="#{(item.descricao == null ? item.concatDescricao : item.descricao).length() > 70}">
+						<h:outputText value="#{item.descricao == null ? item.concatDescricao : item.descricao}" />
+					  </p:overlayPanel>
+					  <h:outputText id="descricao" value="#{comorbidadePaginatorController.obterHint((item.descricao == null ? item.concatDescricao : item.descricao), 70)}" />
+		            </p:column>
+		            <p:column>
+		              <f:facet name="header">
+		                <h:outputText value="#{messages.LABEL_ATIVO}"/>
+		              </f:facet>
+					  <center>
+						<h:outputText styleClass="silk-icon silk-checked" rendered="#{item.situacao.isAtivo()}"/>
+					  </center>
+		            </p:column>
+		            <p:column>
+		              <f:facet name="header">
+		                <h:outputText value="#{messages.LABEL_ESCORE}"/>
+		              </f:facet>
+		              <h:outputText value="#{item.escore}"/>
+		            </p:column>
+		             <p:column>
+		              <f:facet name="header">
+		                <h:outputText value="#{messages.LABEL_INCLUSAO}"/>
+		              </f:facet>
+		             <h:outputText value="#{item.criadoEm}">
+						 <f:convertDateTime pattern="dd/MM/yyyy"/> 
+					  </h:outputText>
+		            </p:column>
+		          </mec:serverDataTable> 
+		        </aghu:panelGeral>
+		      </h:form>
+		</ui:define>
+	</ui:composition>
+</html>

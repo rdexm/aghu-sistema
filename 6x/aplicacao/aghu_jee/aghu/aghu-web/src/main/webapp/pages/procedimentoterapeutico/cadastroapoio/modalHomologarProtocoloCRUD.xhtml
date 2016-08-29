@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	<ui:composition>
+		<p:dialog id="modalHomologarProtocolo" width="920" height="440" modal="true" resizable="false" widgetVar="modalHomologarProtocoloWG" closable="true" >
+			<f:facet name="header">
+        		<h:outputText value="#{messages.LABEL_HOMOLOGAR_PROTOCOLO}" /> 
+   			</f:facet>
+   			<h:form prependId="false" id="formHomologar">
+   				<aghu:panelGeral id="panelGeral" legend="#{messages.LABEL_HOMOLOGAR_PROTOCOLO}">
+  					<aghu:linha>
+   						<mec:selectOneMenu id="cbTipoSessao1"
+							 requiredFake="true" style="width: 260px !important;"
+							 label="#{messages.LABEL_TIPO_SESSAO}" 
+							 itemLabel="descricao" readonly="true"
+							 value="#{modalHomologarProtocoloCRUDController.tipoSessaoCombo}" 
+							 items="#{modalHomologarProtocoloCRUDController.listaTipoSessao}">
+						</mec:selectOneMenu>
+						
+						<mec:inputText id="inProtocolo" label="#{messages.LABEL_DESCRICAO_PROTOCOLO}" size="80" readonly="true" 
+							value="#{modalHomologarProtocoloCRUDController.protocolo}" style="text-transform:uppercase"/>
+						
+						<mec:selectOneMenu id="cbSituacao1"  label="#{messages.LABEL_SITUACAO}" itemLabel="descricaoSingular" disabled="#{!mf:hasPermission(securityController,'homologarProtocolo,alterar')}" 
+							items="#{modalHomologarProtocoloCRUDController.listaSituacao}" value="#{modalHomologarProtocoloCRUDController.situacao}" required="#{param['validarRequired']}" 
+							title="#{messages.TITLE_SITUACAO_HOMOLOG_PROTOCOLO}" requiredFake="#{!param['validarRequired']}">
+							<p:ajax event="change" process="@(#formHomologar)" update="@(#inJustificativa)"/>
+						</mec:selectOneMenu>
+					</aghu:linha>
+					<aghu:linha>
+	   					<aghu:panelGeral id="panelMedicamentoProtocolo" legend="#{messages.LABEL_MEDICAMENTO_PROTOCOLO}" style="height: 160px; width: 820px;">
+	   						<mec:serverDataTable id="gridMedicamentoProtocolo" controller="#{modalHomologarProtocoloCRUDController}" scrollHeight="100"
+		      				list="#{modalHomologarProtocoloCRUDController.listaMedicamentosProtocolo}" selection="selecionado" scrollable="true">
+		      					<c:set var="item" value="#{item}" />
+		      					<p:column id="colO" style="width:30px;">
+		      						<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_ORDEM_TRATAMENTO}" title="#{messages.TITLE_O}"/>
+									</f:facet>
+									<h:outputText value="#{item.ordem}" />										
+		      					</p:column>
+		      					<p:column id="colC" style="width:30px;">
+		      						<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_C}" title="#{messages.TITLE_C}" />
+									</f:facet>
+									<h:outputText value="#{item.ordemMdtoConcomitante}" />	
+		      					</p:column>
+		      					<p:column id="colMedicamento" style="width:200px;">
+		      						<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_MEDICAMENTO}" />
+									</f:facet>
+									<h:outputText id="outMedicamento" value="#{item.medicamento.length() lt 28 ? item.medicamento : item.medicamento.substring(0,25).concat('...')}" />
+									<p:tooltip for="outMedicamento" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{item.medicamento.length() gt 28}">
+										<h:outputText value="#{item.medicamento}" />
+									</p:tooltip>	
+		      					</p:column>
+		      					<p:column id="colDose" style="width:80px;">
+		      						<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DOSE}" />
+									</f:facet>
+									<h:outputText value="#{item.dose}" />	
+		      					</p:column>
+		      					<p:column id="colVia" style="width:140px;" >
+		      						<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_VIA}"/>
+									</f:facet>
+									<h:outputText id="outVia" value="#{item.via.length() lt 21 ? item.via : item.via.substring(0,18).concat('...')}" />
+									<p:tooltip for="outVia" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{item.via.length() gt 21}">
+										<h:outputText value="#{item.via}" />
+									</p:tooltip>										
+		      					</p:column>
+		      					<p:column id="colApraz" style="width:180px;">
+		      						<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_APRAZAMENTO_TRATAMENTO}" />
+									</f:facet>
+									<h:outputText id="outApraz" value="#{item.obterAprazamento().length() lt 25 ? item.obterAprazamento() : item.obterAprazamento().substring(0,22).concat('...')}" />
+									<p:tooltip for="outApraz" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{item.obterAprazamento().length() gt 25}">
+										<h:outputText value="#{item.obterAprazamento()}" />
+									</p:tooltip>									
+		      					</p:column>
+		      					<p:column id="colNaoPermAlteracao" style="width:80px;">
+		      						<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_NAO_PERMITE_ALTERACAO}" title="#{messages.TITLE_NAO_PERMITE_ALTERACAO}"/>
+									</f:facet>
+									<center>
+										<p:selectBooleanCheckbox rendered="#{modalHomologarProtocoloCRUDController.listaMedicamentosProtocolo.size() gt 0}" id="ckNaoPermAlteracao" 
+											value="#{item.indPermiteAlteracao}" disabled="#{!mf:hasPermission(securityController,'homologarProtocolo,alterar')}"/>
+									</center>	
+		      					</p:column>
+		      				</mec:serverDataTable>
+	   					</aghu:panelGeral>
+   					</aghu:linha>
+   					<aghu:linha>
+   						<mec:inputTextArea id="inJustificativa" label="#{messages.LABEL_JUSTIFICATIVA}" value="#{modalHomologarProtocoloCRUDController.justificativa}" rows="6" cols="161" 
+							requiredFake="#{!param['validarRequired'] and modalHomologarProtocoloCRUDController.situacao.toString().equals('I')}"
+							required="#{modalHomologarProtocoloCRUDController.situacao.toString().equals('I') and param['validarRequired']}"
+   							disabled="#{!mf:hasPermission(securityController,'homologarProtocolo,alterar')}" maxlength="500">
+							<p:ajax event="blur" process="@this" listener="#{modalHomologarProtocoloCRUDController.retirarEspacosEmBranco()}" update="@(#inJustificativa)" />
+						</mec:inputTextArea>
+   					</aghu:linha>
+   				</aghu:panelGeral>
+   				<aghu:linha>
+	   				<aghu:acao>
+	      				<mec:commandButton id="btGravar" value="#{messages.LABEL_GRAVAR}" action="#{modalHomologarProtocoloCRUDController.gravar()}" disabled="#{!mf:hasPermission(securityController,'homologarProtocolo,alterar')}" ajax="true" render="formLista">
+							<f:param name="validarRequired" value="true"/>
+						</mec:commandButton>	      				
+						<mec:commandButton id="btCancelar" value="#{messages.LABEL_CANCELAR}" profile="cancel" action="#{modalHomologarProtocoloCRUDController.exibirConfirmacaoCancelamento()}" ajax="true"/>
+	      			</aghu:acao>
+      			</aghu:linha>
+			    <p:confirmDialog id="cancelarModal" showEffect="bounce" closable="true" width="380" height="80" widgetVar="cancelarModalWG"
+				   	header="#{messages.TITLE_PENDENCIAS_ALTERACAO}" message="#{messages.MSG_CANCELAR_HOMOLOGACAO_PROTOCOLO}" global="true" >
+				       <p:commandButton id="btSim" value="#{messages.LABEL_SIM}" style="margin: 10px" icon="ui-icon-check" styleClass="ui-confirmdialog-yes" onclick="PF('cancelarModalWG').hide();" ajax="true" process="@this" action="#{modalHomologarProtocoloCRUDController.cancelar()}" />
+				       <p:commandButton id="btNao" value="#{messages.LABEL_NAO}" style="margin: 10px" icon="ui-icon-close" styleClass="ui-confirmdialog-no" onclick="PF('cancelarModalWG').hide();" immediate="true" />
+		    	</p:confirmDialog>	
+   			</h:form>
+   		</p:dialog>
+   	</ui:composition>
+</html>

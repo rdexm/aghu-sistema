@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition> 
+      <p:outputPanel id="panelAgendamento" layout="inline"> 
+        <aghu:linha> 
+          <mec:selectOneMenu id="conselho" 
+          		label="#{messages.LABEL_AGENDAMENTO_CONSELHO}" 
+          		title="#{messages.TITLE_AGENDAMENTO_CONSELHO}" 
+          		value="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.conselho}" 
+          		enum="DominioConselho" 
+          		readonly="#{not registrarGestacaoAbaNascimentoController.permManterNascimentos or registrarGestacaoAbaNascimentoController.desabilitarCampos}"> 
+            <p:ajax event="change" process="@this"/> 
+          </mec:selectOneMenu>  
+          <mec:suggestionBox id="profissional" 
+          		width="360" 
+          		label="#{messages.LABEL_AGENDAMENTO_PROFISSIONAL}" 
+          		rendered="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.permManterProfissionalNascimento}" 
+          		title="#{messages.TITLE_AGENDAMENTO_PROFISSIONAL}" 
+          		suggestionAction="pesquisarServidoresConselhoPorSiglaCentroCusto" 
+          		descricaoInput="nroRegConselho" 
+          		descricaoLabel="nome" 
+          		readonly="#{not registrarGestacaoAbaNascimentoController.permManterNascimentos or registrarGestacaoAbaNascimentoController.desabilitarCampos}" 
+          		controller="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController}" 
+          		value="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.rapServidorConselhoVO}"
+          		itemValue="#{itemAgendamentoProf}"
+          		var="itemAgendamentoProf"> 
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_AGENDAMENTO_REGISTRO}</b> 
+              </f:facet> #{itemAgendamentoProf.nroRegConselho}
+            </p:column>
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_AGENDAMENTO_PROFISSIONAL}</b> 
+              </f:facet> #{itemAgendamentoProf.nome}
+            </p:column>
+            <p:column> 
+              <f:facet name="header"> 
+                <b>#{messages.LABEL_AGENDAMENTO_CONSELHO}</b> 
+              </f:facet> #{itemAgendamentoProf.sigla}
+            </p:column>
+          </mec:suggestionBox>  
+          <aghu:acao newLine="false">
+            <mec:commandButton value="#{messages.LABEL_ADICIONAR}" 
+            		id="bt_adicionar_agendamento" 
+            		immediate="true" 
+            		rendered="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.permManterProfissionalNascimento and registrarGestacaoAbaNascimentoController.permManterNascimentos and  not registrarGestacaoAbaNascimentoController.desabilitarCampos}" 
+            		style="float:left; margin-top:18px;" 
+            		action="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.adicionarProfissionalNascimento}" 
+            		render="panelAgendamento, panelListaAgendamento" 
+            		profile="add" 
+            		ajax="true" 
+            		process="@this,panelAgendamento"/>
+          </aghu:acao> 
+        </aghu:linha>  
+        <aghu:linha> 
+          <p:outputPanel id="panelListaAgendamento" layout="block" style="position:relative;"> 
+            <!-- LISTAGEM DE REGISTROS -->  
+            <mec:serverDataTable id="panelListaAgendamento_table" 
+            		rendered="#{not empty registrarGestacaoAbaNascimentoFieldsetAgendamentoController.listaProfissionais}"
+            		controller="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController}" 
+            		list="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.listaProfissionais}" 
+            		scrollable="true" 
+            		scrollHeight="310px"> 
+              <c:set var="itemListaProfissionais" value="#{item}"/>
+              <p:column style="text-align:right; width: 40px;"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.CASCA_LABEL_ACOES}"/> 
+                </f:facet>  
+                <mec:commandLink rendered="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.permManterProfissionalNascimento and registrarGestacaoAbaNascimentoController.permManterNascimentos and not registrarGestacaoAbaNascimentoController.desabilitarCampos}" 
+                		title="#{messages.CASCA_LABEL_EXCLUIR}" 
+              			action="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.excluirProfissionalNascimento}"  
+                		profile="delete"
+                		render="panelAgendamento, panelListaAgendamento" 
+                		ajax="true" 
+                		process="@this"> 
+                  <f:setPropertyActionListener target="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.removerRapServidorConselhoVO}" value="#{itemListaProfissionais}" for="command" /> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_AGENDAMENTO_CONSELHO}"/> 
+                </f:facet>  
+                <h:outputText value="#{itemListaProfissionais.sigla}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_AGENDAMENTO_REGISTRO}"/> 
+                </f:facet>  
+                <h:outputText value="#{itemListaProfissionais.nroRegConselho}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_AGENDAMENTO_PROFISSIONAL}"/> 
+                </f:facet>  
+                <h:outputText value="#{itemListaProfissionais.nome}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </p:outputPanel>  
+        </aghu:linha>  
+        <p:outputPanel id="panelDadosAgendamento" layout="inline"> 
+          <aghu:linha> 
+            <mec:inputTextData id="dthrInicioProcedimento" 
+            		label="#{messages.LABEL_HORA_INICIO_PROCEDIMENTO_NASCIMENTO}" 
+            		title="#{messages.TITLE_HORA_INICIO_PROCEDIMENTO_NASCIMENTO}" 
+            		requiredFake="true" 
+            		value="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.dadosNascimentoSelecionado.dthrInicioProcedimento}" 
+            		readonly="true" 
+            		tipo="datahora" />  
+            <mec:inputText id="tempoProcedimento" 
+            		label="#{messages.LABEL_TEMPO_PROCEDIMENTO_NASCIMENTO}" 
+            		title="#{messages.TITLE_TEMPO_PROCEDIMENTO_NASCIMENTO}" 
+            		size="5" 
+            		maxlength="5" 
+            		onkeypress="formatar(this, '99:99', event)" 
+            		removerCaratersEspeciais="true" 
+            		value="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.dadosNascimentoSelecionado.tempoProcedimento}" 
+            		readonly="true" />  
+            <mec:suggestionBox id="sbEquipe" 
+            		width="400" 
+            		label="#{messages.LABEL_EQUIPE_NASCIMENTO}" 
+            		title="#{messages.TITLE_EQUIPE_NASCIMENTO}" 
+            		readonly="#{not registrarGestacaoAbaNascimentoController.permManterNascimentos or registrarGestacaoAbaNascimentoController.desabilitarCampos}" 
+            		suggestionAction="pesquisarEquipeAtivaCO" 
+            		posSelectionAction="atualizarVOEquipe" 
+            		posDeleteAction="atualizarVOEquipe" 
+            		descricaoInput="seq" 
+            		descricaoLabel="nome" 
+            		controller="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController}" 
+            		value="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.equipe}"
+            		itemValue="#{itemEquipeAtivaCO}"
+            		var="itemEquipeAtivaCO"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO_EQUIPE_NASCIMENTO}</b> 
+                </f:facet> #{itemEquipeAtivaCO.seq}
+              </p:column>
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO_EQUIPE_NASCIMENTO}</b> 
+                </f:facet> #{itemEquipeAtivaCO.nome}
+              </p:column>
+            </mec:suggestionBox>  
+            <mec:suggestionBox id="sbSalaCirurgica" 
+            		width="400" 
+            		label="#{messages.LABEL_SALA_CIRURGICA_NASCIMENTO}" 
+            		title="#{messages.TITLE_SALA_CIRURGICA_NASCIMENTO}" 
+            		readonly="#{not registrarGestacaoAbaNascimentoController.permManterNascimentos or registrarGestacaoAbaNascimentoController.desabilitarCampos}" 
+            		suggestionAction="obterSalasCirurgicasAtivasPorUnfSeqNome" 
+            		posSelectionAction="atualizarVOSala" 
+            		posDeleteAction="atualizarVOSala" 
+            		descricaoInput="seqp" 
+            		descricaoLabel="nome" 
+            		controller="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController}" 
+            		value="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.salaCirurgica}"
+            		itemValue="#{itemSalaCirurgica}"
+            		var="itemSalaCirurgica"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO_EQUIPE_NASCIMENTO}</b> 
+                </f:facet> #{itemSalaCirurgica.seqp}
+              </p:column>
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO_EQUIPE_NASCIMENTO}</b> 
+                </f:facet> #{itemSalaCirurgica.nome}
+              </p:column>
+            </mec:suggestionBox>  
+            <mec:selectOneMenu id="indAcompanhante" 
+            	label="#{messages.LABEL_ACOMPANHANTE_NASCIMENTO}" 
+            	title="#{messages.TITLE_ACOMPANHANTE_NASCIMENTO}" 
+            	value="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.dadosNascimentoSelecionado.mcoNascimento.indAcompanhante}" 
+            	readonly="#{not registrarGestacaoAbaNascimentoController.permManterNascimentos or registrarGestacaoAbaNascimentoController.desabilitarCampos}"> 
+              <f:selectItem itemValue="true" itemLabel="Sim"/>  
+              <f:selectItem itemValue="false" itemLabel="Não"/>  
+              <p:ajax event="change" process="@this" listener="#{registrarGestacaoAbaNascimentoFieldsetAgendamentoController.houveAlteracao()}"/> 
+            </mec:selectOneMenu> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </p:outputPanel> 
+  </ui:composition>
+</html>

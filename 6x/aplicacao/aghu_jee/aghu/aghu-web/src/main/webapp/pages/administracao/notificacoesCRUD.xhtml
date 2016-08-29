@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_NOTIFICACOES_CADASTRAR}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{manterNotificacaoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{manterNotificacaoController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formManterNotificacoes">
+			<aghu:panelGeral legend="#{messages.LABEL_NOTIFICACOES_CADASTRAR}">
+				<aghu:linha>
+
+					<mec:inputText id="descricao"
+						label="#{messages.LABEL_NOTIFICACOES_DESCRICAO}"
+						title="#{messages.TITLE_NOTIFICACOES_DESCRICAO}"
+						readonly="#{manterNotificacaoController.notificacao.seq != null}"
+						value="#{manterNotificacaoController.notificacao.descricao}"
+						size="30" maxlength="60" style="text-transform:uppercase"
+						removerCaratersEspeciais="true" required="true" />
+
+					<mec:selectOneMenu label="#{messages.LABEL_NOTIFICACOES_PROCESSO}"
+						title="#{messages.TITLE_NOTIFICACOES_PROCESSO}" required="true"
+						readonly="#{manterNotificacaoController.notificacao.seq != null}"
+						enum="NotificacaoJobEnum" size="50"
+						enumPath="br.gov.mec.aghu.business.scheduler"
+						value="#{manterNotificacaoController.processo}" id="processo" />
+				</aghu:linha>
+				<aghu:linha>
+					<aghu:panelGeral legend="#{messages.LABEL_NOTIFICACOES_QUANDO}">
+						<aghu:linha>
+							<mec:inputTextData id="aPartirDe"
+								label="#{messages.LABEL_NOTIFICACOES_A_PARTIR_DE}"
+								title="#{messages.TITLE_NOTIFICACOES_A_PARTIR_DE}"
+								required="true"
+								value="#{manterNotificacaoController.notificacao.inicioEm}"
+								tipo="data" />
+							<mec:inputTextData id="hora"
+								label="#{messages.LABEL_NOTIFICACOES_HORA}"
+								title="#{messages.TITLE_NOTIFICACOES_HORA}" required="true"
+								value="#{manterNotificacaoController.notificacao.horarioAgendamento}"
+								tipo="hora" />
+						</aghu:linha>
+						<aghu:linha>
+							<h:panelGrid id="pnlRadioButtonTermino" columns="3"
+								cellpadding="5">
+								<mec:selectOneRadio id="radioTermino"
+									enum="DominioIndTerminoNotificacoes" required="true"
+									value="#{manterNotificacaoController.notificacao.indTerminoNotificacoes}">
+									<p:ajax update="@(#panelTerminoOcorrencias)" process="@this"
+										event="change"
+										listener="#{manterNotificacaoController.atualizarTerminoOcorrencias}" />
+								</mec:selectOneRadio>
+							</h:panelGrid>
+							<p:outputPanel id="panelTerminoOcorrencias">
+								<mec:inputTextData id="termino"
+									label="#{messages.LABEL_NOTIFICACOES_TERMINO}"
+									title="#{messages.TITLE_NOTIFICACOES_TERMINO}" required="true"
+									value="#{manterNotificacaoController.notificacao.terminaEm}"
+									rendered="#{manterNotificacaoController.notificacao.indTerminoNotificacoes eq 'TE'}"
+									tipo="data" />
+								<mec:inputNumero size="15" id="ocorrencias"
+									label="#{messages.LABEL_NOTIFICACOES_OCORRENCIAS}"
+									title="#{messages.TITLE_NOTIFICACOES_OCORRENCIAS}"
+									rendered="#{manterNotificacaoController.notificacao.indTerminoNotificacoes eq 'TA'}"
+									required="true" maxlength="15"
+									value="#{manterNotificacaoController.notificacao.terminaApos}" />
+							</p:outputPanel>
+						</aghu:linha>
+					</aghu:panelGeral>
+				</aghu:linha>
+				<aghu:linha>
+					<aghu:panelGeral
+						legend="#{messages.LABEL_NOTIFICACOES_DESTINATARIOS}">
+						<aghu:linha>
+							<p:outputPanel id="panelDestinatarios">
+								<mec:suggestionBox id="servidor"
+									label="#{messages.LABEL_NOTIFICACOES_SERVIDOR}"
+									title="#{messages.TITLE_NOTIFICACOES_SERVIDOR}"
+									descricaoInput="id.matricula" size="25" maxlength="45"
+									width="500" disabled="false" descricaoLabel="pessoaFisica.nome"
+									suggestionAction="pesquisarServidorContato"
+									posSelectionAction="obtemCelularPessoaFisica"
+									posDeleteAction="limparCelular"
+									controller="#{manterNotificacaoController}"
+									readonly="#{manterNotificacaoController.destinoEmEdicao}"
+									render="cel, panelJqueryMask"
+									value="#{manterNotificacaoController.servidorDestino}">
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_VINCULO}" />
+										</f:facet>
+										<h:outputText value="#{item.id.vinCodigo}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_MATRICULA}" />
+										</f:facet>
+										<h:outputText value="#{item.id.matricula}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_NOME}" />
+										</f:facet>
+										<h:outputText value="#{item.pessoaFisica.nome}" />
+									</p:column>
+								</mec:suggestionBox>
+								<mec:inputText
+									label="#{messages.LABEL_NOTIFICACOES_CELULAR}"
+									title="#{messages.TITLE_NOTIFICACOES_CELULAR_CRUD}"
+									styleClass="celular" size="16" maxlength="16"
+									value="#{manterNotificacaoController.celular}"
+									id="cel">
+									<p:ajax event="change" process="@this" />
+								</mec:inputText>
+									
+								<p:outputPanel style="padding:20px 0px 0px 0px !important">
+									<p:commandButton id="btAdicionar"
+										value="#{messages.LABEL_ADICIONAR}"
+										styleClass="bt_cinza button-acao"
+										style="float:left !important;"
+										icon="aghu-icons-16x16 aghu-icon-circle-plus-aghu"
+										rendered="#{not manterNotificacaoController.destinoEmEdicao}"
+										action="#{manterNotificacaoController.adicionarDestino}"
+										render="panelDestinatarios" update="@form, @(#panelJqueryMask)" immediate="true"
+										process="@this @(#descricao) @(#processo) @(#aPartirDe) @(#hora) @(#radioTermino) @(#termino) @(#ocorrencias)" />
+									<p:commandButton value="#{messages.LABEL_ALTERAR}"
+										id="btAlterarItem" styleClass="bt_cinza button-acao"
+										render="panelDestinatarios" style="float:left !important;"
+										rendered="#{manterNotificacaoController.destinoEmEdicao}"
+										action="#{manterNotificacaoController.alterarDestino}" immediate="true"
+										process="@this @(#descricao) @(#processo) @(#aPartirDe) @(#hora) @(#radioTermino) @(#termino) @(#ocorrencias)"
+										icon="aghu-icons-16x16 aghu-icon-check-aghu" update="@form, @(#panelJqueryMask)" />
+									<p:commandButton value="#{messages.LABEL_CANCELAR_EDICAO}"
+										id="btCancelarEdicaoItem" styleClass="bt_vermelho button-acao"
+										render="panelDestinatarios" style="float:left !important;"
+										rendered="#{manterNotificacaoController.destinoEmEdicao}"
+										action="#{manterNotificacaoController.limparEdicaoDestino}" immediate="true"
+										process="@this @(#descricao) @(#processo) @(#aPartirDe) @(#hora) @(#radioTermino) @(#termino) @(#ocorrencias)"
+										icon="aghu-icons-16x16 aghu-icon-cancel" update="@form, @(#panelJqueryMask)"/>
+								</p:outputPanel>
+							</p:outputPanel>
+						</aghu:linha>
+
+						<mec:serverDataTable id="tabelaDestinos" scrollHeight="150"
+							rendered="#{not empty manterNotificacaoController.notificacaoDestinos}"
+							list="#{manterNotificacaoController.notificacaoDestinos}"
+							scrollable="true">
+							<c:set var="item" value="#{item}" />
+							<p:column styleClass="tdAcao"
+								style="width:60px; white-space:nowrap;">
+								<f:facet name="header" style="white-space:nowrap;">
+									<h:outputText value="#{messages.LABEL_ACAO}" />
+								</f:facet>
+								<mec:commandLink immediate="true" id="editarDestino"
+									title="#{messages.LABEL_EDITAR}"
+									rendered="#{not manterNotificacaoController.destinoEmEdicao}"
+									action="#{manterNotificacaoController.editarDestino(item)}"
+									profile="edit" ajax="true"
+									render="panelDestinatarios, tabelaDestinos, panelJqueryMask" process="@this" />
+								<mec:commandLink id="removerDestino"
+									title="#{messages.LABEL_EXCLUIR}" immediate="true"
+									rendered="#{not manterNotificacaoController.destinoEmEdicao}"
+									action="#{manterNotificacaoController.excluirDestino(item)}"
+									styleClass="silk-icon silk-delete" />
+							</p:column>
+							<p:column>
+								<f:facet name="header" style="white-space:nowrap;">
+									<h:outputText value="#{messages.LABEL_NOTIFICACOES_SERVIDOR}" />
+								</f:facet>
+								<h:outputText value="#{item.nomePessoaFisica}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header" style="white-space:nowrap;">
+									<h:outputText value="#{messages.LABEL_NOTIFICACOES_CELULAR}" />
+								</f:facet>
+								<h:outputText
+									value="#{manterNotificacaoController.formatarCelular(item)}" />
+							</p:column>
+						</mec:serverDataTable>
+					</aghu:panelGeral>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}"
+					ajaxSingle="true" block="true"
+					action="#{manterNotificacaoController.gravar}" profile="ok" />
+				<mec:commandButton id="bt_cancelar"
+					value="#{messages.LABEL_CANCELAR}" immediate="true"
+					action="#{manterNotificacaoController.cancelar}" profile="cancel" />
+			</aghu:acao>
+		</h:form>
+		<script type="text/javascript"
+			src="#{request.contextPath}/js/jquery.mask.js"></script>
+		<p:outputPanel id="panelJqueryMask">
+			<script type="text/javascript">
+				$(function() {
+					jQuery("input.celular")
+							.mask("(99) 9999-9999?9")
+							.focusout(
+									function(event) {
+										var target, phone, element;
+										target = (event.currentTarget) ? event.currentTarget
+												: event.srcElement;
+										phone = target.value.replace(/\D/g, '');
+										element = $(target);
+										element.unmask();
+										if (phone.length > 10) {
+											element.mask("(99) 99999-999?9");
+										} else {
+											element.mask("(99) 9999-9999?9");
+										}
+									});
+				});
+			</script>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

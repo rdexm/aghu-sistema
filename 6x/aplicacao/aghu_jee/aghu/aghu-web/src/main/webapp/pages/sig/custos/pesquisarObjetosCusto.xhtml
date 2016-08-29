@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_OBJETOS_CUSTO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterObjetosCustoPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterObjetosCustoPaginatorController}"/>  
+      <h:form prependId="false" id="formFiltroObjetoCusto"> 
+        <aghu:panelGeral id="panelFiltroObjetoCusto" legend="#{messages.LABEL_PESQUISAR_OBJETOS_CUSTO}"> 
+          <aghu:linha> 
+            <mec:selectOneMenu label="#{messages.LABEL_CENTRO_PRODUCAO}" title="#{messages.TITLE_CENTRO_PRODUCAO}" itemLabel="nome" value="#{manterObjetosCustoPaginatorController.sigCentroProducao}" items="#{manterObjetosCustoPaginatorController.listarCentroProducao()}" id="comboCentroProducao" style="width:308px !important;"> 
+              <p:ajax event="change" process="@this"/> 
+            </mec:selectOneMenu>  
+            <mec:suggestionBox label="#{messages.LABEL_CENTRO_CUSTO_OBJETO_CUSTO}" title="#{messages.TITLE_CENTRO_CUSTO_OBJETO_CUSTO}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarCentroCusto" posDeleteAction="limparCentroCusto" id="suggestionCentroCusto" controller="#{manterObjetosCustoPaginatorController}" value="#{manterObjetosCustoPaginatorController.fccCentroCustos}"> 
+              <p:column> 
+                <h:outputText value="#{item.codigo}"/> 
+              </p:column>  
+              <p:column> 
+                <h:outputText value="#{item.descricao}"/> 
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu title="#{messages.TITLE_SITUACAO_OBJETO_CUSTO}" label="#{messages.LABEL_SITUACAO}" enum="DominioSituacaoVersoesCustos" value="#{manterObjetosCustoPaginatorController.situacao}" id="comboSituacaoPessoasAtv" style="width:100px !important;"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText value="#{manterObjetosCustoPaginatorController.nome}" label="#{messages.LABEL_OBJETO_CUSTO}" title="#{messages.TITLE_PRODUTO_SERVICO}" required="false" size="88" maxlength="200" caixaAlta="false" id="nome"/>  
+            <mec:selectOneMenu title="#{messages.TITLE_TIPO_OBJETO_CUSTO}" label="#{messages.LABEL_TIPO_OBJETO_CUSTO}" enum="DominioTipoObjetoCusto" value="#{manterObjetosCustoPaginatorController.tipoObjetoCusto}" id="comboTipoObjetoCusto" style="width:100px !important;"/>  
+            <mec:selectOneMenu title="#{messages.TITLE_POSSUI_COMPOSICAO}" label="#{messages.LABEL_POSSUI_COMPOSICAO}" enum="DominioSimNao" value="#{manterObjetosCustoPaginatorController.possuiComposicao}" id="comboPossuiComposicao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao id="acaoPesquisaObjetos"> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{manterObjetosCustoPaginatorController.pesquisarObjetoCusto}" styleClass="bt_cinza" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{manterObjetosCustoPaginatorController.limparObjetoCusto}" ajax="true" render="panelFiltroObjetoCusto, formListaObjetoCustoVersoes, acaoPesquisaObjetos" process="@this" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" immediate="true" rendered="#{mf:hasPermission(securityController,'editarObjetoCusto,editar') and manterObjetosCustoPaginatorController.ativo}" action="#{manterObjetosCustoPaginatorController.cadastrarObjetoCusto}" styleClass="bt_cinza" profile="add"> 
+            <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{false}" for="command"/>  
+            <f:setPropertyActionListener target="#{manterObjetosCustoController.naoRecarregar}" value="#{false}" for="command"/> 
+          </mec:commandButton> 
+        </aghu:acao> 
+      </h:form>  
+      <h:form prependId="false" id="formListaObjetoCustoVersoes"> 
+        <mec:serverDataTable dataModel="dataModel" value="#{manterObjetosCustoPaginatorController}" id="tabelaObjetoCustoVersoes" controller="#{manterObjetosCustoPaginatorController}"> 
+          <c:set var="objetoCustoVersao" value="#{item}"/>  
+          <p:column headerText="Ações" exportable="false" style="width:100px;"> 
+            <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{manterObjetosCustoPaginatorController.editar}" immediate="true" rendered="#{mf:hasPermission(securityController,'editarObjetoCusto,editar') and objetoCustoVersao.indSituacao ne 'I'}" profile="edit" ajax="true"> 
+              <f:setPropertyActionListener target="#{manterObjetosCustoPaginatorController.seqObjetoCustoVersao}" value="#{objetoCustoVersao.seq}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.seqObjetoCustoVersao}" value="#{manterObjetosCustoPaginatorController.seqObjetoCustoVersao}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{false}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.naoRecarregar}" value="#{false}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_EDITAR}" immediate="true" rendered="#{mf:hasPermission(securityController,'editarObjetoCusto,editar') and objetoCustoVersao.indSituacao eq 'I'}" oncomplete="PF('modalNaoAlteraInativoWG').show();" profile="edit" ajax="true">
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.seqObjetoCustoVersao}" value="#{objetoCustoVersao.seq}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{true}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.naoRecarregar}" value="#{false}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_NOVA_VERSAO_CONFIRMA}" action="#{manterObjetosCustoPaginatorController.novaVersao(objetoCustoVersao.seq)}" rendered="#{mf:hasPermission(securityController,'editarObjetoCusto,editar')}" styleClass=" silk-adicionar silk-icon" ajax="true" render="mensagemModalNovaVersao"> 
+              <f:setPropertyActionListener target="#{manterObjetosCustoPaginatorController.seqObjetoCustoVersao}" value="#{objetoCustoVersao.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_VISUALIZAR}" action="#{manterObjetosCustoPaginatorController.visualizar}" immediate="true" rendered="#{not mf:hasPermission(securityController,'editarObjetoCusto,editar')}" styleClass=" silk-zoom silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.seqObjetoCustoVersao}" value="#{objetoCustoVersao.seq}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{true}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.naoRecarregar}" value="#{false}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_EXCLUIR}" rendered="#{mf:hasPermission(securityController,'excluirObjetoCusto,excluir') and objetoCustoVersao.indSituacao ne 'A' and objetoCustoVersao.indSituacao ne 'I' }" action="#{manterObjetosCustoPaginatorController.excluirVersaoObjetoCusto}" profile="delete"> 
+              <f:setPropertyActionListener target="#{manterObjetosCustoPaginatorController.seqObjetoCustoVersao}" value="#{objetoCustoVersao.seq}" for="command"/> 
+            </mec:commandLink>  
+            <mec:commandLink title="#{messages.LABEL_EXCLUIR}" rendered="#{mf:hasPermission(securityController,'excluirObjetoCusto,excluir') and objetoCustoVersao.indSituacao eq 'A'}" action="#{manterObjetosCustoPaginatorController.validarExclusaoVersaoObjetoCusto(objetoCustoVersao)}"  profile="delete" ajax="true"/>  
+            <mec:commandLink title="#{messages.LABEL_CONSULTA_HISTORICO_OBJETO_CUSTO}" action="#{manterObjetosCustoPaginatorController.visualizarHistorico}" immediate="true" styleClass=" silk-historico silk-icon" ajax="true"> 
+              <f:setPropertyActionListener target="#{visualizarHistoricoObjetoCustoPaginatorController.seqObjetoCustoVersao}" value="#{objetoCustoVersao.seq}" for="command"/> 
+            </mec:commandLink> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CENTRO_PRODUCAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{objetoCustoVersao.sigObjetoCustoCctsPrincipal.fccCentroCustos.centroProducao.nome}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_CENTRO_CUSTO_OBJETO_CUSTO}"/> 
+            </f:facet>
+          
+            <h:outputText value="#{objetoCustoVersao.sigObjetoCustoCctsPrincipal.fccCentroCustos.codigo}" title="#{objetoCustoVersao.sigObjetoCustoCctsPrincipal.fccCentroCustos.descricao}" rendered="#{fn:length(objetoCustoVersao.listObjetoCustoCcts) eq 1 or objetoCustoVersao.sigObjetoCustos.indTipo eq 'AS'}"/>  
+            <mec:commandLink value="#{objetoCustoVersao.sigObjetoCustoCctsPrincipal.fccCentroCustos.codigo}" title="#{objetoCustoVersao.sigObjetoCustoCctsPrincipal.fccCentroCustos.descricao}" action="#{manterObjetosCustoPaginatorController.visualizarCentrosCusto(objetoCustoVersao.seq)}" oncomplete="PF('modalVisualizarCentrosCustoWG').show();"  rendered="#{fn:length(objetoCustoVersao.listObjetoCustoCcts) gt 1 and objetoCustoVersao.sigObjetoCustos.indTipo eq 'AP' }" ajax="true" process="@this" render="panelModalVisualizarCentrosCusto"> 
+            </mec:commandLink>
+           
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_OBJETO_CUSTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{objetoCustoVersao.sigObjetoCustos.nome}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_VERSAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{objetoCustoVersao.nroVersao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_VIGENCIA}"/> 
+            </f:facet>  
+            <h:outputText value="#{objetoCustoVersao.dataInicio}"> 
+              <f:convertDateTime pattern="MM/yyyy"/> 
+            </h:outputText>  
+            <h:outputText value=" a " rendered="#{not empty objetoCustoVersao.dataFim}"/>  
+            <h:outputText value="#{objetoCustoVersao.dataFim}"> 
+              <f:convertDateTime pattern="MM/yyyy"/> 
+            </h:outputText> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+            </f:facet>  
+            <h:outputText value="#{objetoCustoVersao.indSituacao.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_TIPO_OBJETO_CUSTO}"/> 
+            </f:facet>  
+            <h:outputText value="#{objetoCustoVersao.sigObjetoCustos.indTipo.descricao}"/> 
+          </p:column>  
+          <p:column> 
+            <f:facet name="header"> 
+              <h:outputText value="#{messages.LABEL_POSSUI_COMPOSICAO}"/> 
+            </f:facet>  
+            
+            <h:outputText value="#{manterObjetosCustoPaginatorController.possuiComposicao(objetoCustoVersao)}">
+            	<f:converter converterId="simNaoConverter"/> 
+            </h:outputText>
+          </p:column> 
+        </mec:serverDataTable> 
+      </h:form>  
+      
+      
+      <p:dialog id="modalConfirmacaoAlteracaoAtivoMes" width="400" height="170" modal="true" resizable="false" widgetVar="modalConfirmacaoAlteracaoAtivoMesWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ALTERACAO_OBJETO_CUSTO_VERSAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_ALTERACAO_OBJETO_CUSTO_VERSAO_ATIVO_MES} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalAlteracaoAtivoMes"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_alteracao_ativo_mes" action="#{manterObjetosCustoPaginatorController.continuarAlteracao}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_alteracao_ativo_mes" onclick="PF('modalConfirmacaoAlteracaoAtivoMesWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalNaoAlteraInativo" width="400" height="150" modal="true" resizable="false" widgetVar="modalNaoAlteraInativoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_ALTERACAO_OBJETO_CUSTO_VERSAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_NAO_ALTERA_INATIVO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalNaoAlteraInativo"> 
+            <mec:commandButton value="#{messages.LABEL_OK}" id="bt_ok_visualiza_inativo" action="#{manterObjetosCustoPaginatorController.visualizar}" profile="ok"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoExclusaoVersaoAtiva" width="400" height="170" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoVersaoAtivaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO_OBJETO_CUSTO_VERSAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_VERSAO_ATIVA} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusaoVersaoAtiva"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_exclui_versao_ativa" action="#{manterObjetosCustoPaginatorController.excluirVersaoObjetoCusto}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_exclui_versao_ativa" onclick="PF('modalConfirmacaoExclusaoVersaoAtivaWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoNovaVersao" width="400" height="170" modal="true" resizable="false" widgetVar="modalConfirmacaoNovaVersaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_NOVA_VERSAO_CONFIRMA}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <p:outputPanel id="mensagemModalNovaVersao" layout="inline"> 
+          <h:outputText value="#{manterObjetosCustoPaginatorController.mensagemNovaVersao}"/> 
+        </p:outputPanel>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalNovaVersao"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{manterObjetosCustoPaginatorController.criarNovaVersaoObjetoCusto}" id="bt_sim_nova_versao_ativa" profile="ok"> 
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.visualizar}" value="#{false}" for="command"/>  
+              <f:setPropertyActionListener target="#{manterObjetosCustoController.naoRecarregar}" value="#{false}" for="command"/> 
+            </mec:commandButton>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_nova_versao_ativa" onclick="PF('modalConfirmacaoNovaVersaoWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:outputPanel id="panelModalNaoPossivelCriarVersao" ajaxRendered="true" layout="inline"> 
+        <p:dialog id="modalNaoPossivelCriarVersao" width="400" height="170" modal="true" resizable="false" widgetVar="modalNaoPossivelCriarVersaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_AVISO}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_ERRO_CRIAR_VERSAO_OBJETO_CUSTO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false" id="formModalNaoPossivelCriarVersao"> 
+              <mec:commandButton value="#{messages.LABEL_VOLTAR}" id="bt_voltar_criar_nova_versao_impossivel" onclick="PF('modalNaoPossivelCriarVersaoWG').hide();" styleClass="bt_vermelho icon-back bt_cinza" ajax="true" profile="back"/> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      </p:outputPanel>  
+      
+        <p:dialog id="modalVisualizarCentrosCusto" width="600" height="auto" modal="true" resizable="false" widgetVar="modalVisualizarCentrosCustoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CENTROS_CUSTO}"/> 
+            </h:panelGroup> 
+          </f:facet>
+          <p:outputPanel id="panelModalVisualizarCentrosCusto" ajaxRendered="true" layout="inline">   
+          <p:dataList var="centroCusto" value="#{manterObjetosCustoPaginatorController.listaCentrosCusto}"> 
+            <h:outputText value="#{centroCusto.codigo} - #{centroCusto.descricao}"/> 
+          </p:dataList>  
+          </p:outputPanel>
+          <br clear="none"/>  
+          <h:panelGroup> 
+            <h:form prependId="false"> 
+              <div style="text-align: center;"> 
+                <mec:commandButton id="bt_ok" value="#{messages.LABEL_OK}" onclick="PF('modalVisualizarCentrosCustoWG').hide();; return false;" profile="ok"/> 
+              </div> 
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog> 
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages['LABEL_DIAGNOSTICO']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{diagnosticosEtiologiasCRUDController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{diagnosticosEtiologiasCRUDController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formDadosCabecalho"> 
+        <aghu:panelGeral legend="#{messages['LABEL_DIAGNOSTICO_MANTER_DIAGNOSTICO_ETIOLOGIAS']}"> 
+          <aghu:linha> 
+            <mec:inputText id="grupo" label="#{messages.LABEL_GRUPO_MANTER_DIAGNOSTICO}" value="#{diagnosticosEtiologiasCRUDController.grupo.descricao}" size="50" readonly="true"/>  
+            <mec:inputText id="subGrupo" label="#{messages.LABEL_SUBGRUPO_MANTER_DIAGNOSTICO}" value="#{diagnosticosEtiologiasCRUDController.subGrupo.descricao}" size="50" readonly="true"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText id="diagnostico" label="#{messages.LABEL_DIAGNOSTICO_MANTER_DIAGNOSTICO_ETIOLOGIAS}" value="#{diagnosticosEtiologiasCRUDController.diagnostico.descricao}" size="50" readonly="true"/>  
+            <mec:selectBooleanCheckbox id="situacao" readonly="true" label="#{messages.LABEL_ATIVO}" value="#{diagnosticosEtiologiasCRUDController.diagnosticoSituacao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <h:form prependId="false" id="formListaEtiologias"> 
+        <aghu:panelGeral legend="#{messages['LABEL_ETIOLOGIAS']}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="etiologia" label="#{messages.LABEL_ETIOLOGIA_MANTER_DIAGNOSTICO_ETIOLOGIAS}" title="#{messages.TITLE_ETIOLOGIA_MANTER_DIAGNOSTICO_ETIOLOGIAS}" width="800" breakTo="30" requiredFake="true" descricaoInput="seq" descricaoLabel="descricao" 
+            suggestionAction="pesquisarEtiologias" posDeleteAction="limparPesquisa"  readonly="#{!mf:hasPermission(securityController,'manterEtiologiaPorDiagnostico,alterar')}" rendered="#{diagnosticosEtiologiasCRUDController.diagnosticoSituacao}" 
+            controller="#{diagnosticosEtiologiasCRUDController}" value="#{diagnosticosEtiologiasCRUDController.etiologia}" render="bt_adicionar, acao" > 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_ETIOLOGIA_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectBooleanCheckbox id="situacaoDiagnostico" label="#{messages.LABEL_ATIVO}" title="#{messages.TITLE_SITUACAO_MANTER_DIAGNOSTICO_ETIOLOGIAS}" value="#{diagnosticosEtiologiasCRUDController.situacao}" readonly="#{!mf:hasPermission(securityController,'manterEtiologiaPorDiagnostico, alterar')}" rendered="#{diagnosticosEtiologiasCRUDController.diagnosticoSituacao}"/>  
+            <aghu:acao newLine="false" id="acao"> 
+              <mec:commandButton id="bt_adicionar" value="#{messages.LABEL_ADICIONAR}" action="#{diagnosticosEtiologiasCRUDController.adicionar}" 
+              disabled="#{empty diagnosticosEtiologiasCRUDController.etiologia or !mf:hasPermission(securityController,'manterEtiologiaPorDiagnostico,alterar')}" reRender="formListaEtiologias, modalConfirmacaoExclusao, formModalExclusao" rendered="#{diagnosticosEtiologiasCRUDController.diagnosticoSituacao}" profile="add"/> 
+            </aghu:acao> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:serverDataTable dataModel="dataModel" id="tableResultadosEtiologiasDiagnosticos" controller="#{diagnosticosEtiologiasCRUDController}"> 
+              <c:set var="_diagnosticosEtiologias" value="#{item}"/>  
+              <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                <mec:commandLink id="ativarInativar" immediate="true" title="#{not diagnosticosEtiologiasCRUDController.isAtivo(_diagnosticosEtiologias) ? messages.LABEL_ATIVAR : messages.LABEL_DESATIVAR}" action="#{diagnosticosEtiologiasCRUDController.ativarDesativar(_diagnosticosEtiologias)}" rendered="#{mf:hasPermission(securityController,'manterEtiologiaPorDiagnostico,alterar') and diagnosticosEtiologiasCRUDController.diagnosticoSituacao}" styleClass="#{not diagnosticosEtiologiasCRUDController.isAtivo(_diagnosticosEtiologias) ? ' silk-deactivate' : ' silk-activate'} silk-icon"/>  
+                <mec:commandLink id="tableResultadosEtiologiasDiagnosticos_link_remover" profile="delete" title="excluir" action="#{diagnosticosEtiologiasCRUDController.excluir}" permission="manterEtiologiaPorDiagnostico,alterar"> 
+                  <f:setPropertyActionListener for="command" target="#{diagnosticosEtiologiasCRUDController.etiologiaDiagnosticoSelecionado}" value="#{_diagnosticosEtiologias}"/> 
+                </mec:commandLink>  
+                <mec:commandLink id="diagnosticoCuidado" rendered="#{mf:hasPermission(securityController,'consultarCuidadoPorDiagnostico,visualizar')}" action="#{diagnosticosEtiologiasCRUDController.redirecionarDiagnosticosCuidados}" title="#{messages.LABEL_DIAGNOSTICO_CUIDADO}" styleClass=" silk-arrow-switch silk-icon" ajax="true" process="@this"> 
+                  <f:setPropertyActionListener target="#{diagnosticosCuidadosCRUDController.freSeq}" value="#{_diagnosticosEtiologias.fatRelacionado.seq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{diagnosticosCuidadosCRUDController.indSituacao}" value="#{_diagnosticosEtiologias.situacao}" for="command"/>  
+                  <f:setPropertyActionListener target="#{diagnosticosCuidadosCRUDController.snbGnbSeq}" value="#{_diagnosticosEtiologias.id.dgnSnbGnbSeq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{diagnosticosCuidadosCRUDController.snbSequencia}" value="#{_diagnosticosEtiologias.id.dgnSnbSequencia}" for="command"/>  
+                  <f:setPropertyActionListener target="#{diagnosticosCuidadosCRUDController.sequencia}" value="#{_diagnosticosEtiologias.id.dgnSequencia}" for="command"/>  
+                  <f:setPropertyActionListener target="#{diagnosticosCuidadosCRUDController.cameFrom}" value="diagnosticosEtiologiasCRUD" for="command"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column id="columnCodigo"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_diagnosticosEtiologias.fatRelacionado.seq}"/> 
+              </p:column>  
+              <p:column id="columnDescricao"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ETIOLOGIA_MANTER_DIAGNOSTICO_ETIOLOGIAS}"/> 
+                </f:facet>  
+                <h:outputText value="#{_diagnosticosEtiologias.fatRelacionado.descricao}"/> 
+              </p:column>  
+              <p:column id="columnSituacao"> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_diagnosticosEtiologias.situacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" profile="back"
+           immediate="true" 
+          action="#{diagnosticosEtiologiasCRUDController.cancelar}"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

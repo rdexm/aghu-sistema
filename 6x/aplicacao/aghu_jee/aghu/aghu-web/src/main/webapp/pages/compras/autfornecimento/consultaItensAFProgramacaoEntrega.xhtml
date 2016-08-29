@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+  <ui:define name="head">
+    <title>#{messages.TITLE_ITENS_AF_PROG_ENTREGA}</title>
+  </ui:define>
+  <ui:define name="metadata">
+    <f:metadata>
+      <f:viewAction action="#{consultaItensAFProgramacaoEntregaController.inicio}"/>
+    </f:metadata>
+  </ui:define>
+  <ui:define name="body">
+    <mec:pageConfig controller="#{consultaItensAFProgramacaoEntregaController}"/>
+    <h:form prependId="false" id="formItensAFprogramacaoEntrega">
+      <aghu:panelGeral legend="#{messages.TITLE_ITENS_AF_PROG_ENTREGA}">
+        <aghu:linha style="margin-bottom:10px !important;">
+          <mec:inputText id="nome" value="#{consultaItensAFProgramacaoEntregaController.nroAF}" readonly="true" label="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_NR_AF}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_NR_AF}" maxlength="10" size="15" removerCaratersEspeciais="false"/>
+          <mec:commandButton id="idConsultarAF" style="margin-top:13px !important; margin-left:5px !important;" value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_CONSULTAR_AF}" block="true" action="#{consultaItensAFProgramacaoEntregaController.consultarAF}" styleClass="bt_cinza">
+            <f:setPropertyActionListener target="#{pesquisaAutorizacaoFornecimentoPaginatorController.numeroAf}" value="#{consultaItensAFProgramacaoEntregaController.lctNumero}" for="command"/>
+            <f:setPropertyActionListener target="#{pesquisaAutorizacaoFornecimentoPaginatorController.numeroComplemento}" value="#{consultaItensAFProgramacaoEntregaController.complemento}" for="command"/>
+            <f:setPropertyActionListener target="#{pesquisaAutorizacaoFornecimentoPaginatorController.voltarParaUrl}" value="compras-consultaItensAFProgramacaoEntrega" for="command"/>
+          </mec:commandButton>
+        </aghu:linha>
+        <aghu:linha style="margin-bottom:10px !important;">
+          <mec:selectBooleanCheckbox id="idEntregaProgramada" label="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_ENT_PROG}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_ENT_PROG}" value="#{consultaItensAFProgramacaoEntregaController.isEntregaProgramada}" posicaoLabel="direita">
+            <p:ajax event="click" update="@(#panel_botao_voltar_cancelar)" process="@this" listener="#{consultaItensAFProgramacaoEntregaController.alterarMessagesLabelBotaoVoltarCancelar}"/>
+          </mec:selectBooleanCheckbox>
+        </aghu:linha>
+        <aghu:linha>
+          <mec:serverDataTable id="tabelaListagem" name="tabelaListagem" controller="#{consultaItensAFProgramacaoEntregaController}"
+                               list="#{consultaItensAFProgramacaoEntregaController.listVO}" scrollable="true" selection="itemSelecionado">
+            <c:set var="_item" value="#{item}"/>
+            <p:column>
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ACAO}"/>
+              </f:facet>
+              <mec:commandLink id="idAcaoEstatisca" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_ACOES_ESTATISTICA_CONSUMO}" immediate="true" action="#{consultaItensAFProgramacaoEntregaController.estatisticaConsumo(_item)}" styleClass=" silk-chart-bar silk-icon">
+                <f:setPropertyActionListener target="#{estatisticaConsumoController.voltarPara}" value="compras-consultaItensAFProgramacaoEntrega" for="command"/>
+                <f:setPropertyActionListener target="#{estatisticaConsumoController.codigoMaterial}" value="#{consultaItensAFProgramacaoEntregaController.codMaterial}" for="command"/>
+              </mec:commandLink>
+              <mec:commandLink id="idAcaoExcluir" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_ACOES_EXCLUIR}" immediate="true" action="#{consultaItensAFProgramacaoEntregaController.setItemSelecionado(_item)}" rendered="#{mf:hasPermission(securityController,'planejarEntregasAF, editar') and consultaItensAFProgramacaoEntregaController.excluiProgramacaoExistente(_item)}" oncomplete="{PF('modalConfirmarProgramacaoAutomaticaItemWG').show();;}" styleClass=" silk-programacao-automatica silk-icon" ajax="true" render="panelModalConfirmacaoProgramacaoAutomatica"
+                               process="@this">
+                <f:setPropertyActionListener target="#{consultaItensAFProgramacaoEntregaController.indContrato}" value="#{_item.indContrato}" for="command"/>
+                <f:setPropertyActionListener target="#{consultaItensAFProgramacaoEntregaController.indProgrEntgBloq}" value="#{_item.indProgrEntgBloq}" for="command"/>
+              </mec:commandLink>
+              <mec:commandLink title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_ACOES_PROGRAMAR}" disabled="#{!(mf:hasPermission(securityController,'planejarEntregasAF,editar'))}" action="#{consultaItensAFProgramacaoEntregaController.redirecionarProgramacaoManualParcelasEntregaAF}" styleClass=" silk-programacao-manual silk-icon">
+                <f:setPropertyActionListener target="#{programacaoManualParcelasEntregaAFController.numeroAF}" value="#{_item.lctNumero}" for="command"/>
+                <f:setPropertyActionListener target="#{programacaoManualParcelasEntregaAFController.numeroItem}" value="#{_item.numeroDoItem}" for="command"/>
+                <f:setPropertyActionListener target="#{programacaoManualParcelasEntregaAFController.indExibeFiltros}" value="false" for="command"/>
+                <f:setPropertyActionListener target="#{programacaoManualParcelasEntregaAFController.voltarParaUrl}" value="consultaItensAFProgramacaoEntrega" for="command"/>
+              </mec:commandLink>
+            </p:column>
+            <p:column id="idColumnItem" width="30">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_ITEM}"/>
+              </f:facet>
+              <h:outputText id="idTextItem" value="#{_item.numero}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_ITEM} #{_item.descricaoHint}" readonly="true"/>
+            </p:column>
+            <p:column id="idColumnSituacao">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_SITUACAO}"/>
+              </f:facet>
+              <h:outputText id="idTextSituacao" value="#{_item.indSituacao}" title="#{_item.situacaoDescricao}" readonly="true"/>
+            </p:column>
+            <p:column id="idColumnCodigo">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_CODIGO}"/>
+              </f:facet>
+              <h:outputText id="idTextCodigo" value="#{_item.codigo}" readonly="true"/>
+            </p:column>
+            <p:column id="idColumnMatServico" width="210">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_MAT_SER}"/>
+              </f:facet>
+              <h:outputText id="idTextMatServico" value="#{_item.nome}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_MAT_SER} #{_item.nomeHint}" readonly="true"/>
+            </p:column>
+            <p:column id="idColumnED" width="20">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_ED}"/>
+              </f:facet>
+              <p:outputPanel id="idEstocavelHint" rendered="#{_item.estocavel ne 'S'}" layout="inline">
+                <h:outputText id="idTextED" value="#{_item.estocavel}" title="#{(_item.estocavel eq '') ? ' ':  _item.estocavelHint}"/>
+              </p:outputPanel>
+              <p:tooltip mode="client" rendered="#{_item.estocavel eq 'S'}" direction="bottom-right" styleClass="tooltip" layout="block">
+                <h:outputText value="#{_item.estocavelHint}"/>
+              </p:tooltip>
+            </p:column>
+            <p:column id="idColumnQtdSolic">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_QTD_SOLIC}"/>
+              </f:facet>
+              <h:outputText id="idTextQtdSolic" value="#{_item.qtdeSolicitada}" readonly="true"/>
+            </p:column>
+            <p:column id="idColumnFC" width="20">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_FC}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_FC}"/>
+              </f:facet>
+              <h:outputText id="idTextFC" value="#{_item.fatorConversao}" readonly="true"/>
+            </p:column>
+            <p:column id="idColumnVlUnit">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_VLR_UNI}"/>
+              </f:facet>
+              <h:outputText id="idTextVlUnit" value="#{_item.valorUnitario}" readonly="true">
+                <f:convertNumber pattern="###,##0.00"/>
+              </h:outputText>
+            </p:column>
+            <p:column id="idColumnContrato">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_CONTRATO}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_CONTRATO}"/>
+              </f:facet>
+              <h:selectBooleanCheckbox id="idTextContrato" value="#{_item.indContrato}"/>
+            </p:column>
+            <p:column id="idColumnProgAut">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_PROG_AUT}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_PROG_AUT}"/>
+              </f:facet>
+              <h:selectBooleanCheckbox id="idTextProgAut" value="#{_item.indProgrEntgAuto}">
+                <p:ajax event="change" update="@(#panel_botao_voltar_cancelar)" process="@this" listener="#{consultaItensAFProgramacaoEntregaController.alterarMessagesLabelBotaoVoltarCancelar}"/>
+              </h:selectBooleanCheckbox>
+            </p:column>
+            <p:column id="idColumnAnalise">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_ANALISE}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_ANALISE}"/>
+              </f:facet>
+              <h:selectBooleanCheckbox id="idTextAnalise" value="#{_item.indAnaliseProgrPlanej}">
+                <p:ajax event="change" update="@(#panel_botao_voltar_cancelar)" process="@this" listener="#{consultaItensAFProgramacaoEntregaController.alterarMessagesLabelBotaoVoltarCancelar}"/>
+              </h:selectBooleanCheckbox>
+            </p:column>
+            <p:column id="idColumnProg">
+              <f:facet name="header">
+                <h:outputText value="#{messages.LABEL_ITENS_AF_PROG_ENTREGA_PROG}" title="#{messages.TITLE_ITENS_AF_PROG_ENTREGA_PROG}"/>
+              </f:facet>
+              <h:selectBooleanCheckbox id="idTextProg" value="#{_item.indProgrEntgBloq}">
+                <p:ajax event="change" update="@(#panel_botao_voltar_cancelar)" process="@this" listener="#{consultaItensAFProgramacaoEntregaController.alterarMessagesLabelBotaoVoltarCancelar}"/>
+              </h:selectBooleanCheckbox>
+            </p:column>
+          </mec:serverDataTable>
+        </aghu:linha>
+      </aghu:panelGeral>
+      <aghu:acao>
+        <mec:commandButton id="bt_gravar" block="true" value="#{messages.LABEL_GRAVAR}" action="#{consultaItensAFProgramacaoEntregaController.gravar}" profile="ok"/>
+        <p:outputPanel id="panel_botao_voltar_cancelar" layout="inline">
+          <mec:backButton id="bt_cancelar" styleClass="bt_cancel_edit alinha-direita" value="#{messages.LABEL_CANCELAR_EDICAO}" rendered="#{!consultaItensAFProgramacaoEntregaController.isBotaoVoltar}" action="#{consultaItensAFProgramacaoEntregaController.voltarCancelar}" profile="back"/>
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" rendered="#{consultaItensAFProgramacaoEntregaController.isBotaoVoltar}" action="#{consultaItensAFProgramacaoEntregaController.voltarCancelar}" profile="back"/>
+        </p:outputPanel>
+      </aghu:acao>
+    </h:form>
+    <p:outputPanel id="panelModalConfirmacaoProgramacaoAutomatica" layout="inline">
+      <p:dialog id="modalConfirmarProgramacaoAutomatica" width="400" height="150" rendered="#{mf:hasPermission(securityController,'planejarEntregasAF,editar')}" modal="true" resizable="false" widgetVar="modalConfirmarProgramacaoAutomaticaWG">
+        <f:facet name="header">
+          <h:panelGroup>
+            <h:outputText value="#{messages.LABEL_PROGRAMAR_AUTOMATICA}"/>
+          </h:panelGroup>
+        </f:facet>
+        <h:outputText value="#{messages.CONFIRMACAO_PROGRAMACAO_AF}"/>
+        <br clear="none"/>
+        <br clear="none"/>
+        <br clear="none"/>
+        <h:panelGroup>
+          <h:form prependId="false" id="formModalConfirmarProgramacaoAutomatica">
+            <mec:commandButton id="bt_sim_modalConfirmarProgramacaoAutomatica" value="#{messages.LABEL_SIM}" block="true" action="#{pesqusarPlanjProgrEntregaItensAfController.getProgramacaoAutomatica}" profile="search"/>
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmarProgramacaoAutomaticaWG').hide();; return false;" id="bt_nao_modalConfirmarProgramacaoAutomatica" profile="cancel" ajax="true"/>
+          </h:form>
+        </h:panelGroup>
+      </p:dialog>
+    </p:outputPanel>
+
+  </ui:define>
+</ui:composition>
+</html>

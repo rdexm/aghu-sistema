@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">
+  <ui:define name="head">
+    <title>#{messages['TITLE_PESQUISAR_AUT_FORN_PARA_PROG']} :: #{messages['NOME_ABREVIADO_PROJETO']}</title>
+    <style xml:space="preserve">
+        	input[type=radio] {
+        		margin-bottom: 1px;
+        		vertical-align: text-bottom !important;
+        	}
+        </style>
+  </ui:define>
+  <ui:define name="metadata">
+    <f:metadata>
+      <f:viewAction action="#{excluirProgramacaoEntregaItensAfController.pesquisar}" render="pnlFiltros"/>
+    </f:metadata>
+  </ui:define>
+  <ui:define name="body">
+    <mec:pageConfig controller="#{excluirProgramacaoEntregaItensAfController}"/>
+    <h:form prependId="false" id="pesquisaFrm">
+      <aghu:panelGeral id="pnlFiltros" legend="#{messages.TITLE_EXCLUIR_PROGRAMACAO_AF}">
+        <aghu:linha>
+          <mec:inputText id="numeroAf" label="#{messages.LABEL_CONS_NUMERO_AF}" title="#{messages.TITLE_CONS_NUMERO_AF}" readonly="true" value="#{excluirProgramacaoEntregaItensAfController.numeroLicitacao}" size="7" maxlength="7" converter="#{javax.faces.Integer}"/>
+          <mec:inputText id="numeroComplemento" label="#{messages.LABEL_CONS_CP_AUT_PROG}" title="#{messages.TITLE_CONS_CP_AUT_PROG}" readonly="true" value="#{excluirProgramacaoEntregaItensAfController.complemento}" size="3" maxlength="3" converter="#{javax.faces.Short}"/>
+          <mec:inputText id="fornecedor" label="#{messages.LABEL_FORNECEDOR}" title="#{messages.LABEL_FORNECEDOR}" value="#{excluirProgramacaoEntregaItensAfController.cgc} - #{excluirProgramacaoEntregaItensAfController.razaoSocial}" readonly="true" size="50" maxlength="120"/>
+        </aghu:linha>
+        <aghu:linha>
+          <mec:selectOneRadio id="radioSelecaoTipoExclusao" layout="pageDirection" value="#{excluirProgramacaoEntregaItensAfController.tipoExclusao}">
+            <f:converter converterId="dominioConverter" for="inputId"/>
+            <f:selectItems var="item" itemLabel="#{item.descricao}" value="#{excluirProgramacaoEntregaItensAfController.tipoExclusaoLabels}"/>
+            <p:ajax event="change" update="@(#panelItensAf)" process="@this" listener="#{excluirProgramacaoEntregaItensAfController.pesquisar}"/>
+          </mec:selectOneRadio>
+        </aghu:linha>
+
+      </aghu:panelGeral>
+      <p:outputPanel id="panelItensAf">
+        <p:outputPanel id="panelFiltros" rendered="#{excluirProgramacaoEntregaItensAfController.exclusaoItens}" layout="inline" styleClass="aghu-panel-geral">
+          <aghu:panelGeral legend="#{messages.TITLE_EXCLUIR_PROGRAMACAO_ITENS_AF}">
+
+            <mec:serverDataTable id="tabelaItensAf" name="tabelaItensAf" rendered="#{ fn:length(excluirProgramacaoEntregaItensAfController.listaItensProgramacao) &gt; 0}" disabled="#{!excluirProgramacaoEntregaItensAfController.exclusaoItens}" list="#{excluirProgramacaoEntregaItensAfController.listaItensProgramacao}" scrollable="true"
+                                 controller="#{excluirProgramacaoEntregaItensAfController}">
+              <c:set var="_item" value="#{item}"/>
+              <p:column width="2%">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_ACAO_EXCLUSAO}"/>
+                </f:facet>
+                <h:selectBooleanCheckbox id="#{_item.numeroItem}_#{rowkey}" value="#{_item.selecionado}" />
+              </p:column>
+              <p:column id="idSituacao" width="2%">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_SITUACAO_EXCLUSAO}" title="Situação"/>
+                </f:facet>
+                <h:outputText value="#{_item.situacao}" />
+                <p:tooltip  for="idSituacao" rendered="#{not empty _item.situacao}" direction="top-right"   styleClass="tooltip" layout="block">
+                  <h:outputText value="#{_item.situacao} - #{_item.situacao.descricao}"/>
+                </p:tooltip>
+              </p:column>
+              <p:column width="40%">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_MATERIAL_SERVICO_EXCLUSAO}"/>
+                </f:facet>
+                <h:outputText value="#{_item.colunaDescricaoMat}"/>
+              </p:column>
+              <p:column  width="5%">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_UNIDADE_EXCLUSAO}"/>
+                </f:facet>
+                <h:outputText value="#{_item.unidade.codigo}"/>
+              </p:column>
+              <p:column  width="5%">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_QUANTIDADE_SOLICITADA_EXCLUSAO}"/>
+                </f:facet>
+                <h:outputText value="#{_item.quantidadeSolicitada}"/>
+              </p:column>
+              <p:column  width="5%">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_QUANTIDADE_RECEBIDA_EXCLUSAO}" />
+                </f:facet>
+                <h:outputText value="#{_item.quantidadeRecebida}"/>
+              </p:column>
+              <p:column  width="5%">
+                <f:facet name="header">
+                  <h:outputText value="#{messages.LABEL_VALOR_UNITARIO_EXCLUSAO}"/>
+                </f:facet>
+                <h:outputText value="#{_item.valorFormatado}">
+                </h:outputText>
+              </p:column>
+            </mec:serverDataTable>
+
+          </aghu:panelGeral>
+        </p:outputPanel>
+      </p:outputPanel>
+      <aghu:linha>
+        <div style="float:left">
+          <mec:commandButton id="exclui_itens_af" value="#{messages.LABEL_EXCLUIR}" action="#{excluirProgramacaoEntregaItensAfController.processar}" styleClass="bt_vermelho icon-trash bt_cinza"/>
+        </div>
+        <div style="float:right">
+          <mec:commandButton id="volta_exclusao_af" value="#{messages.LABEL_VOLTAR}" style="float:right" action="#{excluirProgramacaoEntregaItensAfController.voltar}" styleClass="bt_vermelho icon-back bt_cinza" profile="back"/>
+        </div>
+      </aghu:linha>
+    </h:form>
+  </ui:define>
+</ui:composition>
+</html>

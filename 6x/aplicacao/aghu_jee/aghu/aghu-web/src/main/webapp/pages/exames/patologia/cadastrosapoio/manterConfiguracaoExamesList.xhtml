@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_CONFIGURACAO_EXAMES} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterConfiguracaoExamesPaginatorController.inicializaUnidadeExecutora}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterConfiguracaoExamesPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_CONFIGURACAO_EXAMES}"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="sbIdentificacaoUnidade" label="#{messages.LABEL_UNID_EXEC}" title="#{messages.TITLE_DESCRICAO_UNID_EXEC_SUGGESTION}" suggestionAction="obterAghUnidadesFuncionaisExecutoras" width="500" descricaoInput="seq" posSelectionAction="persistirIdentificacaoUnidadeExecutora" posDeleteAction="persistirIdentificacaoUnidadeExecutoraNula" descricaoLabel="seqAndarAlaDescricao" maxlength="30" required="true" block="true" controller="#{manterConfiguracaoExamesPaginatorController}" value="#{manterConfiguracaoExamesPaginatorController.unidadeExecutora}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputNumero id="codigoConfigExame" label="#{messages.LABEL_CODIGO_CONFIG_EXAME_LIST}" title="#{messages.TITLE_CODIGO_CONFIG_EXAME_LIST}" value="#{manterConfiguracaoExamesPaginatorController.consulta.seq}" maxlength="5" size="6"/>  
+            <mec:inputText id="siglaConfigExameParaLaudo" label="#{messages.LABEL_SIGLA}" style="text-transform:uppercase" title="#{messages.TITLE_SIGLA_CONFIG_EXAME_LAUDO}" value="#{manterConfiguracaoExamesPaginatorController.consulta.sigla}" maxlength="3" size="6" emptyStringToNull="true"/>  
+            <mec:inputText id="nomeConfigExameParaLaudo" style="text-transform:uppercase" label="#{messages.LABEL_NOME_CONFIG_EXAME_LAUDO_LIST}" title="#{messages.TITLE_NOME_CONFIG_EXAME_LAUDO_LIST}" value="#{manterConfiguracaoExamesPaginatorController.consulta.nome}" maxlength="50" size="60" emptyStringToNull="true"/>  
+            <mec:selectOneMenu id="situacaoConfigExame" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO_CONFIG_EXAME_LIST}" title="#{messages.TITLE_SITUACAO_CONFIG_EXAME_LIST}" value="#{manterConfiguracaoExamesPaginatorController.consulta.situacao}"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{manterConfiguracaoExamesPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{manterConfiguracaoExamesPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" action="#{manterConfiguracaoExamesPaginatorController.inserir}" immediate="true" rendered="#{mf:hasPermission(securityController,'manterConfiguracaoExames,executar') and manterConfiguracaoExamesPaginatorController.dataModel.pesquisaAtiva}" profile="add" ajax="true"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="listagem" rendered="#{manterConfiguracaoExamesPaginatorController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+        <aghu:panelGeral legend="#{messages.TITLE_LISTA_CONFIGURACAO_EXAMES}"> 
+          <h:form prependId="false" id="formLista"> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaConfigExames" controller="#{manterConfiguracaoExamesPaginatorController}"> 
+              <c:set var="_item" value="#{item}"/>  
+              <p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+                <mec:commandLink id="tabelaConfigExames_link_editar" profile="edit" title="editar" action="#{manterConfiguracaoExamesPaginatorController.editar}"> 
+                  <f:setPropertyActionListener target="#{manterConfiguracaoExamesController.configExame}" value="#{_item}" for="command"/>  
+                  <f:setPropertyActionListener for="command" target="#{manterConfiguracaoExamesPaginatorController.selecionado}" value="#{_item}"/> 
+                </mec:commandLink>  
+                <mec:commandLink id="tabelaConfigExames_link_remover" profile="delete" title="excluir" action="#{manterConfiguracaoExamesPaginatorController.excluir}" rendered="#{mf:hasPermission(securityController,'manterConfiguracaoExames,executar')}"> 
+                  <f:setPropertyActionListener for="command" target="#{manterConfiguracaoExamesPaginatorController.selecionado}" value="#{_item}"/> 
+                </mec:commandLink>  
+                <mec:commandLink action="#{manterConfiguracaoExamesController.manterCaracteristicaMaterialAnalise}" title="#{messages.LABEL_SECOES}" styleClass=" silk-table silk-icon" rendered="#{mf:hasPermission(securityController,'manterCaracteristicaMaterialAnalise,pesquisar')}"> 
+                  <f:setPropertyActionListener target="#{manterCaracteristicaMaterialAnaliseController.lu2Seq}" value="#{_item.seq}" for="command"/> 
+                </mec:commandLink> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.seq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_ULTIMO_NUMERO_GERADO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.ultimoNumero}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SIGLA}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.sigla}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_NOME_CONFIG_EXAME_PARA_LAUDO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.nome}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+                </f:facet>  
+                <h:outputText value="#{_item.situacao.descricao}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </h:form> 
+        </aghu:panelGeral> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

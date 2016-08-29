@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_ESCALA_PREVIA_DEFINITIVA}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{solicitarEscalaCirurgicaPaginatorController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{solicitarEscalaCirurgicaPaginatorController}"/>  
+      <p:outputPanel id="panelTodo" layout="inline"> 
+        <h:form prependId="false" id="formPesqResultados"> 
+          <aghu:panelGeral legend="#{messages.TITLE_ESCALA_PREVIA_DEFINITIVA}"> 
+            <aghu:linha> 
+              <mec:suggestionBox id="sbUnidadeFuncional" label="#{messages.LABEL_UNIDADE_FUNCIONAL}" title="#{messages.TITLE_UNIDADE_FUNCIONAL_ESCALA_CIRURGICA}" suggestionAction="obterUnidadeFuncional" descricaoInput="seq" descricaoLabel="descricao" maxlength="30" required="true" block="true" width="500" posSelectionAction="pesquisar" posDeleteAction="limpar" onkeypress="return disableEnterKey(event);" controller="#{solicitarEscalaCirurgicaPaginatorController}" value="#{solicitarEscalaCirurgicaPaginatorController.unidadeFuncional}" render="panelTodo"> 
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_CODIGO}</b> 
+                  </f:facet> #{item.seq}
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <b>#{messages.LABEL_DESCRICAO}</b> 
+                  </f:facet> #{item.descricao}
+                </p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <p:outputPanel id="panelLista" rendered="#{solicitarEscalaCirurgicaPaginatorController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_CONTROLE_ESCALA_CIRURGICA}"> 
+            <h:form prependId="false" id="formCadastroEscalaCirurgica"> 
+              <aghu:linha> 
+                <mec:inputTextData label="#{messages.LABEL_DATA_ESCALA}" title="#{messages.TITLE_DATA_ESCALA}" id="dataEscala" required="true" value="#{solicitarEscalaCirurgicaPaginatorController.dataEscala}" tipo="data"/>  
+                <mec:selectOneMenu id="tipoEscala" enum="DominioTipoEscala" noSelectionOption="false" label="#{messages.LABEL_TIPO}" value="#{solicitarEscalaCirurgicaPaginatorController.tipoEscala}" title="#{messages.TITLE_TIPO_ESCALA}"/>  
+                <aghu:acao id="panelBtAdicionar" newLine="false"> 
+                  <mec:commandButton id="btGravarItem" value="#{messages.LABEL_ADICIONAR}" rendered="#{mf:hasPermission(securityController,'escalaCirurgicaExecutar,executar')}" action="#{solicitarEscalaCirurgicaPaginatorController.gravar}" profile="add"/> 
+                </aghu:acao> 
+              </aghu:linha> 
+            </h:form>  
+            <aghu:linha> 
+              <h:form prependId="false" id="formListaCidsPorEquipe"> 
+                <mec:serverDataTable dataModel="dataModel" value="#{solicitarEscalaCirurgicaPaginatorController}" rendered="#{solicitarEscalaCirurgicaPaginatorController.dataModel.pesquisaAtiva}" id="tabela" controller="#{solicitarEscalaCirurgicaPaginatorController}"> 
+                  <c:set var="item" value="#{item}"/>  
+                  <p:column style="width:110px;"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                    </f:facet>  
+                    <mec:commandLink immediate="true" title="#{messages.LABEL_DEFINIR_ESCALA}" rendered="#{mf:hasPermission(securityController,'escalaCirurgicaExecutar,executar') and item.tipoEscala eq 'P'}" action="#{solicitarEscalaCirurgicaPaginatorController.atualizar(item)}" styleClass=" silk-alterar-escala-cirurgica silk-icon"/>  
+                    <mec:commandLink id="excluirItem" title="#{messages.LABEL_EXCLUIR}" ignoreDupResponses="true" action="#{solicitarEscalaCirurgicaPaginatorController.excluir}" profile="delete" render="formListaCidsPorEquipe" ajax="true" process="@this" rendered="#{mf:hasPermission(securityController,'escalaCirurgicaExecutar,executar')}"> 
+                      <f:setPropertyActionListener target="#{solicitarEscalaCirurgicaPaginatorController.itemExclusao}" value="#{item}" for="command"/> 
+                    </mec:commandLink>  
+                    <mec:commandLink immediate="true" title="#{messages.LABEL_RELATORIO_ESCALA_CIRURGICA}" action="#{solicitarEscalaCirurgicaPaginatorController.print(item,false)}" rendered="#{mf:hasPermission(securityController,'escalaCirurgias,executar')}" styleClass=" silk-escala-cirurgias silk-icon"/>  
+                    <mec:commandLink immediate="true" title="#{messages.LABEL_RELATORIO_ESCALA_CIRURGICA_SIMPLES}" action="#{solicitarEscalaCirurgicaPaginatorController.print(item,true)}" rendered="#{mf:hasPermission(securityController,'escalaSimplesCirurgias,executar')}" styleClass=" silk-escala-simples silk-icon"/>  
+                    <mec:commandLink immediate="true" title="#{messages.LABEL_ESCALA_DE_CIRURGIAS}" action="#{solicitarEscalaCirurgicaPaginatorController.print(item)}" rendered="#{mf:hasPermission(securityController,'escalaCirurgiasAGHU,executar')}" styleClass=" silk-escala-cirurgias silk-icon"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_ESCALA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.id.dtEscala}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_TIPO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.tipoEscala.descricao}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_DATA_HORA_GERACAO_ESCALA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.dthrGeracaoEscala}"> 
+                      <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_VINCULO}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.rapServidores.id.vinCodigo}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_MATRICULA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.rapServidores.id.matricula}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{item.rapServidores.pessoaFisica.nome}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </h:form> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </p:outputPanel>  
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

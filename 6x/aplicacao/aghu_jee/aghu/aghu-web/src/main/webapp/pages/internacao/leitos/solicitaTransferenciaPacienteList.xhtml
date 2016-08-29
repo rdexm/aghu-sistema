@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Pesquisa de Solicitação de transferência de pacientes :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{solicitarTransferenciaPacientePaginatorController.inicioPesquisa}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{solicitarTransferenciaPacientePaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="Pesquisar Solicitação de Transferência de Pacientes"> 
+          <aghu:linha> 
+            <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" size="9" maxlength="8" title="#{messages.TITLE_PRONTUARIO_INTERNACAO}" value="#{solicitarTransferenciaPacientePaginatorController.prontuario}" id="prontuarioPesq"/>  
+            <mec:inputText label="#{messages.LABEL_NOME_PACIENTE}" readonly="true" size="75" value="#{solicitarTransferenciaPacientePaginatorController.nomePaciente}" id="nomePac"/> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:inputText label="#{messages.LABEL_LEITO}" title="Digite o código do leito do paciente para efetuar a pesquisa por este campo." value="#{solicitarTransferenciaPacientePaginatorController.leitoID}" size="14" maxlength="14" id="leitoID"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" action="#{solicitarTransferenciaPacientePaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{solicitarTransferenciaPacientePaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_novo" action="#{solicitarTransferenciaPacientePaginatorController.iniciarInclusao}" rendered="#{(solicitarTransferenciaPacientePaginatorController.internacao != null and solicitarTransferenciaPacientePaginatorController.internacao.dthrAltaMedica == null)}" profile="add"/>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" id="bt_cancelar" rendered="#{solicitarTransferenciaPacientePaginatorController.cameFrom != null and solicitarTransferenciaPacientePaginatorController.cameFrom != ''}" action="#{solicitarTransferenciaPacientePaginatorController.cancelarPesquisaSolicitarTransferenciaPaciente}" profile="cancel"/> 
+        </aghu:acao>  
+        <p:outputPanel id="solTransfPac_lista" layout="inline"> 
+          <p:outputPanel id="msgSolTransfPac" layout="block" style="text-align:center; margin:0 auto; background-color:yellow; width: 450px;"> 
+            <h:outputText value="#{solicitarTransferenciaPacientePaginatorController.mensagem}"/> 
+          </p:outputPanel>  
+          <mec:serverDataTable id="id_tabelaSolTransPac" title="#{messages.TITLE_QUARTO_ENCONTRADOS}" dataModel="dataModel" controller="#{solicitarTransferenciaPacientePaginatorController}"> 
+            <c:set var="_solTranfPac" value="#{item}"/>  
+            <p:column  styleClass="first-column auto-adjust" width="30" exportable="false"> 
+              <f:facet name="header"> 
+                <h:outputText value="Ações"/> 
+              </f:facet>  
+              <mec:commandLink title="#{messages.LABEL_DETALHAR}" action="#{solicitarTransferenciaPacientePaginatorController.solicitarTransferenciaPaciente(_solTranfPac.seq)}" styleClass=" silk-book silk-icon" ajax="true"/>  
+              <mec:commandLink limitTolist="true" onclick="cancelar('#{_solTranfPac.seq}');" title="#{messages.LABEL_CANCELAR}" oncomplete="PF('modalConfirmarCanWG').show();;" rendered="#{(_solTranfPac.indSitSolicLeito == 'P') and _solTranfPac.internacao.dthrAltaMedica == null}" styleClass=" silk-cancel silk-icon" ajax="true" render="panelConfirmar" process="@this"/> 
+            </p:column>  
+            <p:column width="50"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.indSitSolicLeito.descricao}"/> 
+            </p:column>  
+            <p:column width="100"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_INTERNACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.internacao.dthrInternacao}"> 
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column width="80"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACOMODACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.acomodacoes.descricao}"/> 
+            </p:column>  
+            <p:column width="40"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_INFECCAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.indLeitoIsolamento.descricao}"/> 
+            </p:column>  
+            <p:column width="60"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ESPC}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.especialidades.sigla}"/> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PROFESSOR}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.servidorProfessor.pessoaFisica.nome}"/> 
+            </p:column>  
+            <p:column width="130"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_UNIDADE_SOLICITANTE}"/> 
+              </f:facet>  
+              <h:outputText value="#{solicitarTransferenciaPacientePaginatorController.getUnidadeFuncionalInternacao(_solTranfPac.internacao)}"/> 
+            </p:column>  
+            <p:column width="60"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.internacao.paciente.prontuario}"> 
+                <f:converter converterId="prontuarioConverter"/> 
+              </h:outputText> 
+            </p:column>  
+            <p:column> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PACIENTE}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.internacao.paciente.nome}"/> 
+            </p:column>  
+            <p:column width="70"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SEXO}"/> 
+              </f:facet>  
+              <h:outputText value="#{_solTranfPac.internacao.paciente.sexoBiologico.descricao}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form> 
+        <pe:remoteCommand name="cancelar"> 
+          <pe:assignableParam name="param1" assignTo="#{solicitarTransferenciaPacientePaginatorController.solicitacaoSeq}"/> 
+        </pe:remoteCommand> 
+      </h:form>  
+      <p:outputPanel id="panelConfirmar" layout="inline"> 
+        <p:dialog id="modalConfirmarCan" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmarCanWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_CANCELAMENTO_SOL_TRANSF_PAC}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_CONFIRMACAO_CANCELAMENTO_SOL_TRANSF_PAC} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <aghu:acao> 
+            <h:form prependId="false" id="formModalRecuperar"> 
+              <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_bloquear2" action="#{solicitarTransferenciaPacientePaginatorController.cancelarSol}" profile="ok"/>  
+              <mec:commandButton id="bt_cancelar2" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmarCanWG').hide();" profile="cancel" ajax="true"/> 
+            </h:form> 
+          </aghu:acao> 
+        </p:dialog> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_EQUIPAMENTO_CRUD_EQUIPAMENTO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{equipamentosDiagnosticoTerapeuticoCRUDController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{equipamentosDiagnosticoTerapeuticoCRUDController}" ignoreEnter="true"/>  
+      <p:outputPanel id="panelTodo" layout="inline"> 
+        <h:form prependId="false" id="formEquipamento"> 
+          <aghu:panelGeral legend="#{messages.LABEL_EQUIPAMENTO_CRUD_EQUIPAMENTO}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="codigo" label="#{messages.LABEL_EQUIPAMENTO_CRUD_CODIGO}" size="5" readonly="true" value="#{equipamentosDiagnosticoTerapeuticoCRUDController.equipamento.seq}"/>  
+              <mec:inputText id="descricao" required="true" label="#{messages.LABEL_EQUIPAMENTO_CRUD_DESCRICAO}" title="#{messages.TITLE_EQUIPAMENTO_CRUD_DESCRICAO}" style="text-transform:uppercase" size="100" maxlength="100" value="#{equipamentosDiagnosticoTerapeuticoCRUDController.equipamento.descricao}" readonly="#{not mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}"/>  
+              <mec:selectBooleanCheckbox id="ativo" label="#{messages.LABEL_EQUIPAMENTO_CRUD_ATIVO}" title="#{messages.TITLE_EQUIPAMENTO_CRUD_ATIVO}" value="#{equipamentosDiagnosticoTerapeuticoCRUDController.equipamentoAtivo}" readonly="#{not mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}"> 
+                <p:ajax event="change" immediate="true" update="@(#motivoInativacao)" process="@this" listener="#{equipamentosDiagnosticoTerapeuticoCRUDController.limparMotivoInativacao}"/>  
+                <p:ajax update="@(#motivoInativacao)" event="change"/> 
+              </mec:selectBooleanCheckbox> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText id="enderecoImagens" label="#{messages.LABEL_EQUIPAMENTO_CRUD_ENDERECO_IMAGENS}" title="#{messages.TITLE_EQUIPAMENTO_CRUD_ENDERECO_IMAGENS}" style="text-transform:uppercase" size="120" removerCaratersEspeciais="false" maxlength="120" value="#{equipamentosDiagnosticoTerapeuticoCRUDController.equipamento.patchImagens}" readonly="#{not mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText id="motivoInativacao" label="#{messages.LABEL_EQUIPAMENTO_CRUD_MOTIVO_INATIVACAO}" title="#{messages.TITLE_EQUIPAMENTO_CRUD_MOTIVO_INATIVACAO}" style="text-transform:uppercase" size="120" maxlength="120" value="#{equipamentosDiagnosticoTerapeuticoCRUDController.equipamento.motivoInat}" readonly="#{not mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar') or equipamentosDiagnosticoTerapeuticoCRUDController.equipamentoAtivo}"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_gravar_equipamento" 
+            		value="#{messages.LABEL_GRAVAR}" 
+            		ajaxSingle="true" 
+            		disabled="#{!mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}" 
+            		action="#{equipamentosDiagnosticoTerapeuticoCRUDController.gravarEquipamento}" profile="ok"/>  
+            <mec:commandButton id="bt_voltar" 
+            		value="#{messages.LABEL_VOLTAR}" 
+            		profile="back" 
+            		immediate="true" 
+            		action="#{equipamentosDiagnosticoTerapeuticoCRUDController.voltar}"/> 
+          </aghu:acao> 
+        </h:form>  
+        
+        <p:outputPanel rendered="#{equipamentosDiagnosticoTerapeuticoCRUDController.exibirCamposInclusao}" layout="inline" styleClass="aghu-panel-geral"> 
+
+	      <!-- Painel Diagnostico Terapeutico -->
+          <aghu:panelGeral legend="#{messages.LABEL_EQUIPAMENTO_CRUD_PROCEDIMENTO_DIAGNOSTICO_TERAPEUTICO}"> 
+            <h:form prependId="false" id="formProcedimentoDiagnosticoTerapeutico"> 
+              <p:outputPanel id="panelManterEquipeProcTer" rendered="#{mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}" layout="inline"> 
+                <aghu:linha> 
+                  <mec:suggestionBox width="300" id="suggestionEquipPorProc" label="#{messages.LABEL_EQUIPAMENTO_CRUD_PROCEDIMENTO_DIAGNOSTICO_TERAPEUTICO}" 
+                  title="#{messages.TITLE_EQUIPAMENTO_CRUD_PROCEDIMENTO_DIAGNOSTICO_TERAPEUTICO}" suggestionAction="listarProcedimentoDiagnosticoTerapeutico" 
+                  descricaoInput="seq" descricaoLabel="descricao" posSelectionAction="ativaBotaoGravarProcedimentoDiagnosticoTerapeutico" 
+                  posDeleteAction="desativaBotaoGravarProcedimentoDiagnosticoTerapeutico" controller="#{equipamentosDiagnosticoTerapeuticoCRUDController}" 
+                  value="#{equipamentosDiagnosticoTerapeuticoCRUDController.procDiagTerap}" 
+                  render="bt_gravar_procedimento_diagnostico_terapeutico, formProcedimentoDiagnosticoTerapeutico"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_EQUIPAMENTO_CRUD_CODIGO}</b> 
+                      </f:facet> #{item.seq}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_EQUIPAMENTO_CRUD_TEMPO_MINIMO}</b> 
+                      </f:facet> #{item.tempoMinimo} min.
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_EQUIPAMENTO_CRUD_DESCRICAO}</b> 
+                      </f:facet> #{item.descricao}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <div id="panelBtAdicionarProcedimento" style="float:left; margin-top:18px; margin-left:0px"> 
+                    <mec:commandButton id="bt_gravar_procedimento_diagnostico_terapeutico" 
+                    		value="#{messages.LABEL_GRAVAR}" 
+                    		disabled="#{equipamentosDiagnosticoTerapeuticoCRUDController.botaoGravarProcedimentoDiagnosticoTerapeutico or 
+                    		equipamentosDiagnosticoTerapeuticoCRUDController.procDiagTerap == null or !mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}" 
+                    		action="#{equipamentosDiagnosticoTerapeuticoCRUDController.gravarPdtEquipPorProc}" 
+                    		profile="ok"/> 
+                  </div> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <aghu:linha> 
+                <div style="width:100%; max-height:200px;  overflow-y:auto; padding-bottom: 4px; margin: 2px;" id="myDiv2"> 
+                  <mec:serverDataTable id="tabelaProcedimentoDiagnosticoTerapeutico" 
+                  		name="tabelaProcedimentoDiagnosticoTerapeutico" 
+                  		list="#{equipamentosDiagnosticoTerapeuticoCRUDController.listPdtEquipPorProc}" scrollable="false"> 
+                    <c:set var="_item" value="#{item}"/>  
+                    <p:column rendered="#{mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}" id="outputTextAcao"/> 
+                      </f:facet>  
+                      <mec:commandLink id="deleteButtonProcedimentoDiagnosticoTerapeutico" 
+                      		action="#{equipamentosDiagnosticoTerapeuticoCRUDController.excluirProcedimentoDiagnosticoTerapeutico(_item)}" 
+                      		title="#{messages.LABEL_EXCLUIR}" profile="delete" ajax="true" process="@this" render="tabelaProcedimentoDiagnosticoTerapeutico"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_EQUIPAMENTO_CRUD_CODIGO}" id="outputTextLabelCodigo"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.pdtProcDiagTerap.seq}" id="outputTextSeq"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_EQUIPAMENTO_CRUD_DESCRICAO}" id="outputTextLabelDescricao"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.pdtProcDiagTerap.descricao}" id="outputTextDescricao"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </div> 
+              </aghu:linha> 
+            </h:form> 
+          </aghu:panelGeral>  
+          
+          <!-- Painel de Instrumentos -->
+          <h:form prependId="false" id="formInstrumento"> 
+            <aghu:panelGeral legend="#{messages.LABEL_EQUIPAMENTO_CRUD_INSTRUMENTOS}"> 
+              <p:outputPanel id="panelManterProcDiagTer" rendered="#{mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}" layout="inline"> 
+                <aghu:linha> 
+                  <mec:suggestionBox width="300" id="suggestionInstrumentos" label="#{messages.LABEL_EQUIPAMENTO_CRUD_INSTRUMENTO}" 
+                  	title="#{messages.TITLE_EQUIPAMENTO_CRUD_INSTRUMENTOS}" suggestionAction="listarInstrumentos" descricaoInput="seq" 
+                  	descricaoLabel="descricao" posSelectionAction="ativaBotaoGravarInstrumentos" posDeleteAction="desativaBotaoGravarInstrumentos" 
+                  	controller="#{equipamentosDiagnosticoTerapeuticoCRUDController}" value="#{equipamentosDiagnosticoTerapeuticoCRUDController.instrumental}" 
+                  	render="bt_gravar_Instrumento, formInstrumento"> 
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_EQUIPAMENTO_CRUD_CODIGO}</b> 
+                      </f:facet> #{item.seq}
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <b>#{messages.LABEL_EQUIPAMENTO_CRUD_DESCRICAO}</b> 
+                      </f:facet> #{item.descricao}
+                    </p:column> 
+                  </mec:suggestionBox>  
+                  <div id="panelBtAdicionarInstrumento" style="float:left; margin-top:18px; margin-left:36px"> 
+                    <mec:commandButton id="bt_gravar_Instrumento" value="#{messages.LABEL_GRAVAR}" 
+                    disabled="#{equipamentosDiagnosticoTerapeuticoCRUDController.botaoGravarInstrumentos or equipamentosDiagnosticoTerapeuticoCRUDController.instrumental == null or !mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}" 
+                    action="#{equipamentosDiagnosticoTerapeuticoCRUDController.gravarPdtInstrPorEquip}" profile="ok"/> 
+                  </div> 
+                </aghu:linha> 
+              </p:outputPanel>  
+              <aghu:linha> 
+                <div style="width:100%; max-height:200px;  overflow-y:auto; padding-bottom: 4px; margin: 2px;" id="myDiv1"> 
+                  <mec:serverDataTable 
+                  		id="tabelaInstrumento" 
+                  		name="tabelaInstrumento" 
+                  		list="#{equipamentosDiagnosticoTerapeuticoCRUDController.listInstrPorEquip}" 
+                  		scrollable="false">
+                  		 
+                    <c:set var="_item" value="#{item}"/>  
+                    <p:column rendered="#{mf:hasPermission(securityController,'manterEquipamentosPDT,atualizar')}"> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                      </f:facet>  
+                      <mec:commandLink id="deleteButtonInstrumento" 
+                      		action="#{equipamentosDiagnosticoTerapeuticoCRUDController.excluirInstrumento(_item)}" 
+                      		title="#{messages.LABEL_EXCLUIR}" profile="delete" ajax="true" render="tabelaInstrumento"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_EQUIPAMENTO_CRUD_CODIGO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.pdtInstrumental.seq}"/> 
+                    </p:column>  
+                    <p:column> 
+                      <f:facet name="header"> 
+                        <h:outputText value="#{messages.LABEL_EQUIPAMENTO_CRUD_DESCRICAO}"/> 
+                      </f:facet>  
+                      <h:outputText value="#{_item.pdtInstrumental.descricao}"/> 
+                    </p:column> 
+                  </mec:serverDataTable> 
+                </div> 
+              </aghu:linha> 
+            </aghu:panelGeral> 
+          </h:form> 
+        </p:outputPanel>  
+        
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

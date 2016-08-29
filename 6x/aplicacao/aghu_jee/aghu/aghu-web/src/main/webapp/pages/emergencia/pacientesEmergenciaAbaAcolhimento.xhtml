@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"> 
+    <!-- LISTAGEM DE PACIENTES EMERGENCIA -->  
+    <p:outputPanel id="pacientesAcolhimentoList" layout="inline">
+	      <mec:serverDataTable id="resultListAcolhimento" 
+	      list="#{listaPacientesEmergenciaPaginatorController.pacientesAcolhimentoList}" 
+	      rowClasses="scrollTable_row1" 
+	      controller="#{listaPacientesEmergenciaPaginatorController}" 
+	      scrollable="true" 
+	      scrollHeight="auto"
+	      selection="selecaoAcolhimento">
+	        <c:set var="item" value="#{item}"/>
+	        <p:column style="width:54px;" styleClass="first-column auto-adjust" exportable="false"> 
+	          <f:facet name="header">#{messages.LABEL_ACAO_PAC_EMERG_ACOLHIMENTO}</f:facet>
+				<mec:commandLink id="classificar_id"
+					title="#{messages.LABEL_REALIZAR_ACOLHIMENTO_PAC_EMERG_ACOLHIMENTO}"
+					action="#{listaPacientesEmergenciaPaginatorController.realizarAcolhimento(item.trgSeq, item.codigo)}"
+					rendered="#{listaPacientesEmergenciaPaginatorController.permRealizarAcolhimento or listaPacientesEmergenciaPaginatorController.permVisualizarAcolhimento}"
+					styleClass="silk-icon silk-acolhimento" ajax="true"
+					style="float: left" />
+				<mec:commandLink id="adicionarControles"
+					title="#{messages.LABEL_TOOLTIP_MANTER_CONTROLE}"
+					styleClass="silk-icon silk-controles-paciente-adicionar"
+					action="#{listaPacientesEmergenciaPaginatorController.manterControlesPaciente()}"
+					rendered="#{!listaPacientesEmergenciaPaginatorController.verificarExisteSinalVitalPorPaciente(item.codigo) and mf:hasPermission(securityController,'/controlepaciente/manterControlesPaciente.xhtml,render') and listaPacientesEmergenciaPaginatorController.unidadeInformatizada}"
+					ajax="true"
+					style="float: left">
+					<f:setPropertyActionListener target="#{manterControlesPacienteController.pacCodigo}" value="#{item.codigo}" for="command" />
+					<f:setPropertyActionListener target="#{manterControlesPacienteController.trgSeq}" value="#{item.trgSeq}" for="command" />	
+					<f:setPropertyActionListener target="#{manterControlesPacienteController.unfSeq}" value="#{listaPacientesEmergenciaPaginatorController.mamUnidAtendem.unfSeq}" for="command" />
+					<f:setPropertyActionListener target="#{manterControlesPacienteController.voltarPara}" value="listarPacientesEmergenciaAbaAcolhimento" for="command" />
+			 	</mec:commandLink>
+				<mec:redirectCommandLink id="VisualizarControles"
+					styleClass="silk-icon silk-controles-paciente-visualizar"
+					keepTab="true"
+					title="#{messages.LABEL_TOOLTIP_VISUALIZAR_CONTROLE}"
+					params="pacienteSelecionado=#{item.codigo};trgSeq=#{item.trgSeq};unfSeq=#{listaPacientesEmergenciaPaginatorController.mamUnidAtendem.unfSeq};voltarPara=emergencia-listaPacientesEmergencia;param_cid=#{javax.enterprise.context.conversation.id}"
+					url="/aghu/pages/controlepaciente/visualizarRegistrosControle.xhtml"
+					rendered="#{listaPacientesEmergenciaPaginatorController.verificarExisteSinalVitalPorPaciente(item.codigo) and mf:hasPermission(securityController,'/controlepaciente/visualizarRegistrosControle.xhtml,render')}"
+					style="float: left" />
+				<mec:commandLink id="bt_reimpressao_pulseira" 
+	          	title="#{messages.LABEL_REIMPRESSAO_PULSEIRA_PAC_EMERG}" 
+	          		action="#{listaPacientesEmergenciaPaginatorController.reimpressaoPulseira(item.codigo)}" 
+	          		status="commonstatus" styleClass="silk-icon silk-reimprimir-pulseira" ajax="true" process="@this" style="float: left">
+	          </mec:commandLink>
+	        </p:column> 
+	        <p:column style="background-color:#{listaPacientesEmergenciaPaginatorController.colorirTabela(item)} !important; width:80px;" sortBy="#{item.prontuario}" sortable="true"> 
+	          <f:facet name="header"> 
+	            <h:outputText value="#{messages.LABEL_PRONTUARIO_PAC_EMERG_ACOLHIMENTO}"/> 
+	          </f:facet>  
+	          <h:outputText value="#{listaPacientesEmergenciaPaginatorController.obterProntuarioFormatado(item.prontuario)}"/> 
+	          <mec:commandLink title="Abrir prontuário de #{item.nome} - #{listaPacientesEmergenciaPaginatorController.obterProntuarioFormatado(item.prontuario)}"
+				style="float:right;padding: 0px 4px;"
+				rendered="#{not empty item.prontuario and mf:hasPermission(securityController, '/paciente/prontuarioonline/arvorePOL.xhtml, render')}"
+				onclick="parent.addPOLProntuario(#{item.prontuario})"
+				styleClass="silk-icon silk-pol16 silk-icon" ajax="true" />		
+	        </p:column>  
+	        <p:column style="background-color:#{listaPacientesEmergenciaPaginatorController.colorirTabela(item)} !important; width:55px;" sortBy="#{item.codigo}" sortable="true"> 
+	          <f:facet name="header"> 
+	            <h:outputText value="#{messages.LABEL_CODIGO_PAC_EMERG}"/> 
+	          </f:facet>  
+	          <h:outputText value="#{item.codigo}"/> 
+	        </p:column>  
+	        <p:column style="background-color:#{listaPacientesEmergenciaPaginatorController.colorirTabela(item)} !important;white-space:nowrap;width:auto;" sortBy="#{item.nome}" sortable="true"> 
+	          <f:facet name="header"> 
+	            <h:outputText value="#{messages.LABEL_NOME_PAC_EMERG}"/> 
+	          </f:facet>  
+	          <h:outputText value="#{item.nome}"/> 
+	        </p:column>  
+	        <p:column style="background-color:#{listaPacientesEmergenciaPaginatorController.colorirTabela(item)} !important; width:53px;" sortBy="#{item.idade}" sortable="true"> 
+	          <f:facet name="header"> 
+	            <h:outputText value="#{messages.LABEL_IDADE_PAC_EMERG_ACOLHIMENTO}"/> 
+	          </f:facet>  
+	          <h:outputText value="#{item.idade} anos"/> 
+	        </p:column>  
+	        <p:column style="background-color:#{listaPacientesEmergenciaPaginatorController.colorirTabela(item)} !important; width:120px;" sortBy="#{item.queixaPrincipal}" sortable="true"> 
+	          <f:facet name="header"> 
+	            <h:outputText value="#{messages.LABEL_QUEIXA_PRINCIPAL_PAC_EMERG_ACOLHIMENTO}"/> 
+	          </f:facet>  
+	          <h:outputText value="#{listaPacientesEmergenciaPaginatorController.obterStringTruncada(item.queixaPrincipal,50)}" id="queixaToolTip"/>  
+	          <p:tooltip style="width:300px; word-wrap: break-word; width:8%;" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{item.queixaPrincipal.length() &gt; 50}"
+	          	for="queixaToolTip"> 
+	            <h:outputText value="#{item.queixaPrincipal}"/> 
+	          </p:tooltip> 
+	        </p:column>  
+	        <p:column style="background-color:#{listaPacientesEmergenciaPaginatorController.colorirTabela(item)} !important; width:91px;" sortBy="#{item.dtHrSituacao}" sortable="true"> 
+	          <f:facet name="header"> 
+	            <h:outputText value="#{messages.LABEL_CHEGADA_PAC_EMERG_ACOLHIMENTO}"/> 
+	          </f:facet>  
+	          <h:outputText value="#{item.dtHrSituacao}"> 
+	            <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+	          </h:outputText> 
+	        </p:column>  
+	        <p:column sortBy="#{item.ordem}" sortable="true" style="background-color:#{item.codCor} !important; width:82px;" > 
+	          <f:facet name="header"> 
+	            <h:outputText value="#{messages.LABEL_GRAVIDADE_PAC_EMERG_ACOLHIMENTO}"/> 
+	          </f:facet>  
+	          <p:spacer width="100px" height="10px" id="gravidadeToolTip"/>  
+	          <p:tooltip for="gravidadeToolTip" style="width:300px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block" rendered="#{item.descricaoGravidade != null and item.descricaoGravidade.length() &gt; 0 and item.codCor != null and not empty item.codCor}"> 
+	            <h:outputText value="#{item.descricaoGravidade}"/> 
+	          </p:tooltip> 
+	        </p:column> 
+	      </mec:serverDataTable>  
+         <h:outputFormat value="#{messages.LABEL_REGISTROS_ENCONTRADOS_PAC_EMERG_ACOLHIMENTO}"> 
+          <f:param value="#{listaPacientesEmergenciaPaginatorController.pacientesAcolhimentoListSize &gt; 0 ? listaPacientesEmergenciaPaginatorController.pacientesAcolhimentoListSize : 0}"/> 
+        </h:outputFormat> 
+	</p:outputPanel>
+  </ui:composition>
+</html>

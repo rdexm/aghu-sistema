@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_MANTER_DIAGNOSTICOS}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{diagnosticosPacienteController.carregar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+        <mec:pageConfig controller="#{diagnosticosPacienteController}" print="true" />
+        
+      <h:form prependId="false" id="formConfigurarLista"> 
+        <aghu:panelGeral id="dadosPaciente" legend="#{messages.LABEL_DADOS_PACIENTE}"> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" value="#{diagnosticosPacienteController.paciente.prontuario}" size="11" maxlength="9" emptyStringToNullConverter="emptyStringToNullConverter" readonly="true" id="prontuarioPaciente" converter="#{prontuarioConverter}"/>  
+              <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" value="#{diagnosticosPacienteController.paciente.nome}" size="70" maxlength="50" style="text-transform:uppercase" readonly="true" id="nomePaciente"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+            <div class="caixa-texto-amarela ui-state-highlight" style="font-size: 10pt;white-space: nowrap;width: 900px;height:50px;"> 
+                <h:outputText value="#{messages.MENSAGEM_DIAGNOSTICOS_PACIENTE_PARTE1}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.MENSAGEM_DIAGNOSTICOS_PACIENTE_PARTE2}"/>  
+                <br clear="none"/>  
+                <h:outputText value="#{messages.MENSAGEM_DIAGNOSTICOS_PACIENTE_PARTE3}"/> 
+              </div> 
+              </aghu:linha> 
+        </aghu:panelGeral>
+          
+        <aghu:panelGeral id="outputCidSuggestion" legend="#{messages.TITLE_MANTER_DIAGNOSTICOS_PACIENTE}"> 
+          <aghu:linha> 
+           	<p:outputPanel id="panelCid" layout="inline"> 
+              <mec:suggestionBox id="suggestionCID" label="#{messages.LABEL_CID}" title="#{messages.LABEL_CID_DIAGNOSTICO}" descricaoInput="codigo" 
+              	ajaxRendered="true" size="80" maxlength="80" width="500" required="true" readonly="#{diagnosticosPacienteController.cidNaoEditavel}" descricaoLabel="descricao" suggestionAction="pesquisarCids" posSelectionAction="selecionouCid" 
+              	controller="#{diagnosticosPacienteController}" value="#{diagnosticosPacienteController.aghCid}"> 
+                <p:column> 
+                  <h:outputText value="#{item.codigo}"/> 
+                </p:column>  
+                <p:column> 
+                  <h:outputText value="#{item.descricao}"/> 
+                </p:column> 
+              </mec:suggestionBox>  
+              <mec:commandButton immediate="true" style="vertical-align:-20px;!important;" name="botaoPesquisaCidCapitulo" id="botaoPesquisaCidCapitulo" value="#{messages.LABEL_CID_POR_CAPITULO}" focus="suggestionCIDDecorate:suggestionCID" disabled="#{diagnosticosPacienteController.cidNaoEditavel}" action="#{diagnosticosPacienteController.pesquisaCidCapitulo()}" 
+              	reRender="panelLinksuggestionCID, suggestionCID, suggestion_suggestionCID, suggestionCIDDecorate:suggestionCID" styleClass="bt_cinza"> 
+                <f:setPropertyActionListener target="#{pesquisaCidController.fromPageManterDiagnosticosPaciente}" value="true" for="command"/>  
+                <f:setPropertyActionListener target="#{pesquisaCidController.codigoPaciente}" value="#{diagnosticosPacienteController.paciente.codigo}" for="command"/>  
+                <f:setPropertyActionListener target="#{pesquisaCidController.limpar}" value="true" for="command"/> 
+              </mec:commandButton> 
+              </p:outputPanel> 
+          <br />  
+          </aghu:linha>  
+           
+            <p:outputPanel id="outputCamposEdicao" layout="inline"> 
+						<mec:inputText label="#{messages.LABEL_COMPLEMENTO}" size="45"
+							title="#{messages.LABEL_COMPLEMENTO_HELP}" maxlength="45"
+							value="#{diagnosticosPacienteController.mamDiagnostico.complemento}"
+							id="complementoCid"
+							readonly="#{not diagnosticosPacienteController.edicaoHabilitada or diagnosticosPacienteController.resolveMode}">
+                <p:ajax event="change" process="@this"/> 
+              </mec:inputText>  
+						<mec:inputTextData label="#{messages.LABEL_DATA_INICIO}"
+							title="#{messages.LABEL_DATA_INICIO_HELP}" id="dataInicio"
+							value="#{diagnosticosPacienteController.mamDiagnostico.data}"
+							required="#{not(not diagnosticosPacienteController.edicaoHabilitada or diagnosticosPacienteController.resolveMode)}"
+							readonly="#{not diagnosticosPacienteController.edicaoHabilitada or diagnosticosPacienteController.resolveMode}"
+							tipo="data" />
+						<mec:inputTextData label="#{messages.LABEL_RESOLVIDO_EM}"
+							title="#{messages.TITLE_RESOLVIDO_EM}" id="resolvidoEm"
+							value="#{diagnosticosPacienteController.mamDiagnostico.dataFim}"
+							required="#{diagnosticosPacienteController.resolveMode}"
+							readonly="#{not diagnosticosPacienteController.edicaoHabilitada}"
+							tipo="data" />
+              <aghu:acao> 
+						<mec:commandButton id="bt_adicionar"
+							style="vertical-align:-20px;!important;"
+							value="#{messages.LABEL_ADICIONAR}"
+							action="#{diagnosticosPacienteController.adicionar}"
+							disabled="#{not diagnosticosPacienteController.edicaoHabilitada}"
+							rendered="#{not diagnosticosPacienteController.editMode and not diagnosticosPacienteController.resolveMode}"
+							reRender="tabelaMamDiagnosticosAtivos, outputCamposEdicao, outputCidSuggestion,tabPanelAbas, formAtivos, formResolvidos"
+							profile="add" styleClass="bt_verde " />
+                <mec:commandButton id="bt_resolver" style="vertical-align:-20px;!important;" value="#{messages.LABEL_ALTERAR}" action="#{diagnosticosPacienteController.resolver}" disabled="#{not diagnosticosPacienteController.edicaoHabilitada}" rendered="#{diagnosticosPacienteController.resolveMode}" reRender="tabelaMamDiagnosticosAtivos, outputCamposEdicao, tabPanelAbas, formAtivos, formResolvidos" profile="ok"/>  
+						<mec:commandButton id="bt_alterar"
+							style="vertical-align:-20px;!important;"
+							value="#{messages.LABEL_ALTERAR}"
+							action="#{diagnosticosPacienteController.alterar}"
+							disabled="#{not diagnosticosPacienteController.edicaoHabilitada}"
+							rendered="#{diagnosticosPacienteController.editMode}"
+							reRender="tabelaMamDiagnosticosAtivos, outputCamposEdicao, tabPanelAbas, formAtivos, formResolvidos"
+							profile="ok" />
+						<mec:commandButton id="bt_canceledit"
+							style="vertical-align:-20px;!important;"
+							value="#{messages.LABEL_CANCELAR_EDICAO}"
+							action="#{diagnosticosPacienteController.cancelarEdicao}"
+							disabled="#{not diagnosticosPacienteController.edicaoHabilitada}"
+							rendered="#{diagnosticosPacienteController.editMode or diagnosticosPacienteController.resolveMode}"
+							ajax="true"
+							process="@this"
+							render="outputCidSuggestion,bt_adicionar,bt_alterar,bt_resolver, bt_canceledit, bt_gravar, bt_limpar, bt_voltar, outputCamposEdicao, tabPanelAbas, formAtivos, formResolvidos,resolvidoEm,panelLinksAtivos"
+							styleClass="bt_cinza" />
+              </aghu:acao> 
+            </p:outputPanel> 
+          <aghu:linha> 
+            <p:tabView id="tabPanelAbas" dynamic="true" prependId="false"> 
+              <p:tab id="aba1" action="#{diagnosticosPacienteController.trocarDeAba}" labelWidth="95px" title="#{messages.LABEL_ATIVOS}"> 
+                <ui:include src="manterDiagnosticosPacienteAtivos.xhtml"/> 
+              </p:tab>  
+              <p:tab id="aba2" action="#{diagnosticosPacienteController.trocarDeAba}" labelWidth="95px" title="#{messages.LABEL_RESOLVIDOS}"> 
+                <ui:include src="manterDiagnosticosPacienteResolvidos.xhtml"/> 
+              </p:tab> 
+            </p:tabView> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_gravar" immediate="true" value="#{messages.LABEL_GRAVAR}" disabled="#{not diagnosticosPacienteController.edicaoHabilitada}" block="true" action="#{diagnosticosPacienteController.salvar}" profile="ok"/>  
+          <mec:commandButton id="bt_limpar" immediate="true" value="#{messages.LABEL_LIMPAR}" disabled="#{not diagnosticosPacienteController.edicaoHabilitada}" block="true" action="#{diagnosticosPacienteController.limpar}" styleClass="bt_cinza" profile="clear"/>  
+          
+     
+          <mec:commandButton id="bt_voltar" immediate="true" 
+          					 action="#{diagnosticosPacienteController.verificaPendencias}" 
+          					 value="#{messages.LABEL_VOLTAR}" styleClass=" alinha-direita bt_cinza" 
+              				 rendered="#{diagnosticosPacienteController.voltarPara ne 'pol-diagnostico'}"
+          					 ajax="true" profile="back"
+          					 />
+          					 
+          <mec:commandButton id="bt_voltarPOL" immediate="true" 
+          					 action="#{diagnosticosPacienteController.verificaPendencias}" 
+          					 value="#{messages.LABEL_VOLTAR}" styleClass=" alinha-direita bt_cinza" 
+          					 onclick="parent.openModalPOL()"
+              				 rendered="#{diagnosticosPacienteController.voltarPara eq 'pol-diagnostico'}"
+          					 ajax="true" profile="back"/>
+        </aghu:acao> 
+			
+			<p:dialog id="modalPendenciasNaoSalvas"
+				width="400" height="150" modal="true" resizable="false"
+				widgetVar="modalPendenciasNaoSalvasWG">
+          <f:facet name="header"> 
+            <h:panelGroup> 
+						<h:outputText
+							value="#{messages.TITLE_PENDENCIA_DIAGNOSTICO_PACIENTE}" />
+            </h:panelGroup> 
+				</f:facet>
+					#{messages.MENSAGEM_ALTERACOES_PENDENTES_DIAGNOSTICO_ATENDIMENTO} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+					<mec:commandButton id="bt_okpen" value="#{messages.LABEL_OK}"
+						immediate="true"
+						onclick="PF('modalPendenciasNaoSalvasWG').hide();"
+						profile="ok" />
+          </h:panelGroup> 
+        </p:dialog>  
+               
+		<p:dialog id="modalConfirmacaoPendencia" width="400" height="150" 
+			autosized="false"
+			modal="true" resizable="false"
+			widgetVar="modalConfirmacaoPendenciaWG">
+          <f:facet name="header"> 
+            <h:panelGroup> 
+						<h:outputText
+							value="#{messages.TITLE_PENDENCIAS_DIAGNOSTICOS_PACIENTE}" />
+            </h:panelGroup> 
+				</f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup> 
+					<h:form prependId="false" id="formModalPendencias">
+						<mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}"
+							action="#{diagnosticosPacienteController.voltarOK}"
+							profile="ok" ajax="true" immediate="true" />
+						<mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}"
+							onclick="PF('modalConfirmacaoPendenciaWG').hide();return false;"
+							profile="cancel" ajax="true" />
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+        </h:form>
+        
+    </ui:define> 
+  </ui:composition> 
+</html>

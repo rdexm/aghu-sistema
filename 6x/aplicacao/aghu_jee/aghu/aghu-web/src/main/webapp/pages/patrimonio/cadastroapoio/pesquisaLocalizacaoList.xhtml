@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.LABEL_TITULO_PAGINA_PESQUISA_LOCALIZACAO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{localizacaoListPaginatorController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{localizacaoListPaginatorController}" ignoreEnter="true" />
+		<h:form prependId="false" id="formConsultarLocalizacao" >
+			<aghu:panelGeral legend="#{messages.LABEL_TITULO_PAGINA_LOCALIZACAO}">
+				<aghu:linha>
+					<mec:inputText id="nomeLocalizacao"
+						label="#{messages.LABEL_LOCALIZACAO_NOME}" 
+						title="#{messages.TITLE_NOME_LOCALIZACAO}" 
+						style="text-transform:uppercase"
+						value="#{localizacaoListPaginatorController.localizacaoFiltroVO.nome}" size="28" maxlength="50" />
+					<mec:inputText id="descricaoLocalizacao"
+						label="#{messages.LABEL_LOCALIZACAO_DESCRICAO}" 
+						title="#{messages.TITLE_LOCALIZACAO_DESCRICAO}"
+						style="text-transform:uppercase"
+						value="#{localizacaoListPaginatorController.localizacaoFiltroVO.descricao}" size="68" maxlength="250" />
+					<mec:suggestionBox label="#{messages.LABEL_PATRIMONIO_EDIFICACAO}"
+						title="#{messages.TITLE_PATRIMONIO_EDIFICACAO}" descricaoInput="seq" descricaoLabel="numBemConcatenadoNome"
+						id="sbEdificacao" descricaoLimite="15" suggestionAction="obteSbEdificacao" size="33" maxlength="15"
+						controller="#{localizacaoListPaginatorController}"
+						value="#{localizacaoListPaginatorController.localizacaoFiltroVO.edificacao}">
+						<p:column>						
+							<f:facet name="header">
+								<b>#{messages.LABEL_PATRIMONIO_SB1_NRO_BEM}</b>
+							</f:facet> #{item.numeroBem}
+			                </p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_PATRIMONIO_SB1_NOME}</b>
+							</f:facet> #{item.nome}
+			            </p:column>
+			            <p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_PATRIMONIO_SEQ}</b>
+							</f:facet> #{item.seq}
+			            </p:column>
+					</mec:suggestionBox>
+					<mec:selectOneMenu label="#{messages.LABEL_LOCALIZACAO_SITUACAO}"
+						title="#{messages.TITLE_LOCALIZACAO_SITUACAO}" enum="DominioSituacao" size="15"
+						style="width: 100px !important" value="#{localizacaoListPaginatorController.localizacaoFiltroVO.indSituacao}"
+						id="tipoSituacaoCombo"/>
+				</aghu:linha>
+				<aghu:linha>
+					<mec:suggestionBox id="sbCentroCusto" label="#{messages.LABEL_CENTRO_CUSTO}"
+						title="#{messages.TITLE_PATRIMONIO_CENTRO_CUSTO}"
+						suggestionAction="obterCentroCusto" size="35"
+						descricaoLimite="15"
+						width="500" descricaoInput="codigo"
+						descricaoLabel="descricao" block="true"
+						controller="#{areaTecnicaAvaliacaoPaginatorController}"
+						value="#{localizacaoListPaginatorController.localizacaoFiltroVO.centroCusto}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_CODIGO}</b>
+							</f:facet> #{item.codigo}
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.descricao}
+						</p:column>
+					</mec:suggestionBox>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<br clear="none"/> 
+				<aghu:acao>
+					<mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" render="bt_novo"
+						action="#{localizacaoListPaginatorController.pesquisar}" styleClass="bt_cinza" profile="search" />
+					<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{localizacaoListPaginatorController.limpar}"
+						styleClass="bt_cinza" profile="clear"  render="formConsultarLocalizacao, form_lista" process="@this" ajax="true" immediate="true"/>
+					<mec:commandButton value="#{messages.LABEL_NOVO}" rendered="#{localizacaoListPaginatorController.dataModel.pesquisaAtiva}"
+						id="bt_novo" action="#{localizacaoListPaginatorController.novo}" styleClass="bt_cinza" profile="add" />
+				</aghu:acao>
+			<br clear="none"/> 
+			<br clear="none"/> 
+			<h:form prependId="false" id="form_lista">
+				<h:panelGroup rendered="#{localizacaoListPaginatorController.dataModel.pesquisaAtiva}">
+					<mec:serverDataTable id="table_Localizacoes" dataModel="dataModel" controller="#{localizacaoListPaginatorController}">
+						<c:set var="item" value="#{item}" />
+						<p:column style="width:6%;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_ACAO}" />
+							</f:facet>
+							<center>
+								<mec:commandLink title="#{messages.LABEL_EDITAR}" immediate="true"
+									action="#{localizacaoListPaginatorController.editar}"
+									profile="edit" ajax="true"  style="align:center;">
+									<f:setPropertyActionListener
+										target="#{localizacaoCrudController.seqPtmLocalizacoes}"
+										value="#{item.seq}" for="command" />  
+									<f:setPropertyActionListener
+										target="#{localizacaoCrudController.update}"
+										value="#{true}" for="command" />
+									<f:setPropertyActionListener
+										target="#{localizacaoListPaginatorController.localizacaoFiltroVOII}"
+										value="#{item}" for="command" />  
+								</mec:commandLink>
+							</center>
+						</p:column>
+						<p:column style="width:20%;" sortBy="#{item.nome}" sortable="true">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_LOCALIZACAO_NOME}" />
+							</f:facet>
+							<h:outputText id="nome" value="#{localizacaoListPaginatorController.obterHint(item.nome, 29)}" />
+							<p:tooltip id="hintNome" for="nome"
+									showEvent="mouseover" hideEvent="mouseout"
+									rendered="#{item.nome.length() > 29}">
+									<h:outputText value="#{item.nome}" />
+							</p:tooltip>
+						</p:column>
+						<p:column style="width:20%;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_LOCALIZACAO_DESCRICAO}" />
+							</f:facet>
+							<h:outputText id="descricao" value="#{localizacaoListPaginatorController.obterHint(item.descricao, 29)}" />
+							<p:tooltip id="hintDescricao" for="descricao" style="width:50%;"
+									showEvent="mouseover" hideEvent="mouseout"
+									rendered="#{item.descricao.length() > 29}">
+									<h:outputText value="#{item.descricao}" />
+							</p:tooltip>
+						</p:column>
+						<p:column style="width:20%;"  sortBy="#{item.edificacaoNome}" sortable="true">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_LOCALIZACAO_EDIFICACAO}" />
+							</f:facet>
+							<h:outputText id="nomeEdificacao" value="#{localizacaoListPaginatorController.obterHint(item.edificacaoNome, 29)}" />
+							<p:tooltip id="hintEdificacao" for="nomeEdificacao"
+									showEvent="mouseover" hideEvent="mouseout"
+									rendered="#{item.edificacaoNome.length() > 29}">
+									<h:outputText value="#{item.edificacaoNome}" />
+							</p:tooltip>
+						</p:column>
+						<p:column style="width:20%;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_LOCALIZACAO_CCUSTO}" />
+							</f:facet>
+							<h:outputText id="descricaoCCusto" value="#{localizacaoListPaginatorController.obterHint(item.concatenarCodigoDescricao(), 29)}" />
+							<p:tooltip id="hintCCusto" for="descricaoCCusto"
+									showEvent="mouseover" hideEvent="mouseout"
+									rendered="#{item.concatenarCodigoDescricao().length() > 29}">
+									<h:outputText value="#{item.concatenarCodigoDescricao()}" />
+							</p:tooltip>
+						</p:column>
+						<p:column style="width:4%;">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_LOCALIZACAO_SITUACAO}" />
+							</f:facet>
+							<h:outputText id="situacao" value="#{item.indSituacao.descricao}" />
+						</p:column>
+					</mec:serverDataTable>
+				</h:panelGroup>
+			</h:form>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

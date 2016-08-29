@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+	
+	<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+		<ui:define name="head">
+			<title>#{messages.LABEL_PESQUISAR_ORIGEM_PACIENTE}</title>
+		</ui:define>
+		<ui:define name="metadata">
+		</ui:define>
+		<ui:define name="body">
+			<mec:pageConfig controller="#{origemPacientePaginatorController}"/>  
+		      <h:form prependId="false" id="campos"> 
+		        <aghu:panelGeral legend="#{messages.LABEL_ORIGEM_PACIENTE}">
+		          <aghu:linha> 
+	            	<mec:inputTextArea id="pesquisarDescricao" label="#{messages.LABEL_DESCRICAO_ORIGEM_PACIENTE}" rows="3" cols="150" size="250" maxlength="250" 
+	            	value="#{origemPacientePaginatorController.descricao}" style="text-transform: uppercase;"/>
+	            	<mec:selectOneMenu id="situacao" enum="DominioSituacao" label="#{messages.LABEL_SITUACAO_ORIGEM_PACIENTE}" value="#{origemPacientePaginatorController.situacao}"> 
+		              <p:ajax event="change" process="@this"/> 
+		            </mec:selectOneMenu> 
+		          </aghu:linha>
+		        </aghu:panelGeral>
+		        <aghu:acao> 
+		          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR_ORIGEM_PACIENTE}" action="#{origemPacientePaginatorController.pesquisar()}" profile="search"/>  
+		          <mec:commandButton id="limpar" value="#{messages.LABEL_LIMPAR_ORIGEM_PACIENTE}" block="true" action="#{origemPacientePaginatorController.limparPesquisa()}" profile="clear"/>  
+		          <mec:commandButton id="novo" value="#{messages.LABEL_NOVO_ORIGEM_PACIENTE}" action="#{origemPacientePaginatorController.incluir()}" profile="add" rendered="#{origemPacientePaginatorController.dataModel.pesquisaAtiva}"/> 
+		        </aghu:acao> 
+		      </h:form>
+		      <h:form prependId="false" id="formLista">
+		        <aghu:panelGeral legend="#{messages.LABEL_LISTA_ORIGEM_PACIENTE}" rendered="#{origemPacientePaginatorController.dataModel.pesquisaAtiva}">
+		          <mec:serverDataTable id="lista" dataModel="dataModel" emptyMessage="#{messages.DADOS_NAO_ENCONTRADOS}" controller="#{origemPacientePaginatorController}" selection="mtxOrigensSelect">
+		            <c:set var="item" value="#{item}"/>
+		            <p:column headerText="#{messages.LABEL_ACAO}" styleClass="first-column auto-adjust" exportable="false">
+		              <mec:commandLink id="lista_link_editar" profile="edit" title="#{messages.TITLE_EDITAR}" action="#{origemPacientePaginatorController.editar()}">
+		                <f:setPropertyActionListener for="command" target="#{origemPacienteController.mtxOrigens}" value="#{item}"/>
+		                <f:setPropertyActionListener for="command" target="#{origemPacienteController.modoEdicao}" value="#{true}"/>
+		                 <f:setPropertyActionListener for="command" target="#{origemPacienteController.indSituacao}" value="#{item.situacao.isAtivo() ? true : false}"/>
+		              </mec:commandLink>
+		              <mec:commandLink id="lista_link_remover" title="#{messages.TITLE_EXCLUIR}" onclick="PF('modalConfirmacaoExcluirOrigemPaciente').show();"  styleClass="silk-icon silk-delete" ajax="true">
+		                <f:setPropertyActionListener for="command" target="#{origemPacientePaginatorController.mtxOrigensExcluir}" value="#{item}"/>
+		              </mec:commandLink>
+		            </p:column>
+		            <p:column>
+		              <f:facet name="header">
+		                <h:outputText value="#{messages.LABEL_DESCRICAO_ORIGEM_PACIENTE}"/>
+		              </f:facet>
+		                <h:outputText value="#{item.descricao}"/>
+		            </p:column> 
+		            <p:column>
+		              <f:facet name="header">
+		                <h:outputText value="#{messages.LABEL_ATIVO_ORIGEM_PACIENTE}"/>
+		              </f:facet>
+		              <h:outputText value="#{item.situacao.isAtivo() ? 'Sim' : 'Não'}"/>
+		            </p:column>  
+		          </mec:serverDataTable> 
+		        </aghu:panelGeral>
+		        <p:dialog id="modalConfirmacaoExcluirOrigemPaciente" width="350" height="120" modal="true" resizable="false" widgetVar="modalConfirmacaoExcluirOrigemPaciente"> 
+		          <f:facet name="header"> 
+		            <h:outputText value="#{messages.LABEL_EXCLUIR_ORIGEM_PACIENTE}"/> 
+		          </f:facet>
+		         <h:outputText value="#{messages.CONFIRMA_EXCLUSAO_ORIGEM}"/>
+		          <br clear="none"/>
+				  <br clear="none"/>
+				  <br clear="none"/>
+				  <br clear="none"/>
+		          <h:panelGroup>
+					<mec:commandButton id="bt_sim_mf" value="#{messages.LABEL_SIM}" action="#{origemPacientePaginatorController.excluir()}" oncomplete="PF('modalConfirmacaoExcluirOrigemPaciente').hide();"
+						profile="ok" ajax="true" render="formLista" process="@this" />
+					<mec:commandButton id="bt_nao_mf" value="#{messages.LABEL_NAO}" oncomplete="PF('modalConfirmacaoExcluirOrigemPaciente').hide();" profile="cancel" ajax="true" process="@this"/> 
+		          </h:panelGroup> 
+	         	</p:dialog>
+		      </h:form>
+		</ui:define>
+	</ui:composition>
+</html>

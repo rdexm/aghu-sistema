@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+		<title>#{messages.TITLE_CADASTRO_PALAVRAS_CHAVE} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+      <style xml:space="preserve">
+			.checked {
+	background-image: url('../../../resources/img/icons/checked.png')
+		!important;
+				background-repeat: no-repeat;
+				background-position: center;
+			}
+		</style> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{cadastroPalavrasChaveController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{cadastroPalavrasChaveController}"/>  
+      <ui:param name="stopEnter" value="true"/>  
+      <h:form prependId="false" id="cadastroPalavrasChaveForm"> 
+			<aghu:panelGeral
+				legend="#{messages.TITLE_DOENCA_CONDICAO_PALAVRAS_CHAVE}">
+          <p:outputPanel id="panelCabecalho" layout="inline"> 
+            <aghu:linha> 
+						<mec:inputNumero id="codigo_patologia"
+							value="#{cadastroPalavrasChaveController.codigoPatologia}"
+							label="#{messages.LABEL_CODIGO_PALAVRAS_CHAVE}" maxlength="5"
+							size="5"
+							readonly="true" />
+						<mec:inputText id="descricao_patologia"
+							value="#{cadastroPalavrasChaveController.descricaoPatologia}"
+							label="#{messages.LABEL_DESCRICAO_PALAVRAS_CHAVE}" maxlength="60"
+							size="60" style="text-transform:uppercase"
+							readonly="true" />
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+			<aghu:panelGeral
+				legend="#{messages.TITLE_PALAVRA_CHAVE_DOENCA_CONDICAO}">
+          <p:outputPanel id="panelCadastro" layout="inline"> 
+            <aghu:linha> 
+						<mec:inputNumero id="codigo"
+							value="#{cadastroPalavrasChaveController.palavraChavePatologia.id.seqp}"
+							label="#{messages.LABEL_CODIGO_PALAVRAS_CHAVE}"
+							title="#{messages.TITLE_CODIGO_PALAVRAS_CHAVE}" maxlength="3"
+							size="3" readonly="true" />
+						<mec:inputText id="descricao"
+							value="#{cadastroPalavrasChaveController.palavraChavePatologia.descricao}"
+							label="#{messages.LABEL_DESCRICAO_PALAVRAS_CHAVE}"
+							title="#{messages.TITLE_DESCRICAO_PALAVRAS_CHAVE}" maxlength="60"
+							size="60" required="true"
+							readonly="#{cadastroPalavrasChaveController.palavraChavePatologia.id.seqp != null or cadastroPalavrasChaveController.permConsultaTela}"
+							style="text-transform:uppercase" />
+						<mec:selectBooleanCheckbox id="situacao"
+							label="#{messages.LABEL_SITUACAO_PALAVRAS_CHAVE}"
+							title="#{messages.TITLE_SITUACAO_PALAVRAS_CHAVE}"
+							value="#{cadastroPalavrasChaveController.situacao}"
+							readonly="#{cadastroPalavrasChaveController.permConsultaTela}" />
+              <aghu:acao style="margin-top: 18px !important" newLine="false"> 
+							<mec:commandButton id="bt_adicionar"
+								value="#{messages.LABEL_ADICIONAR}"
+								rendered="#{cadastroPalavrasChaveController.palavraChavePatologia.id.seqp == null}"
+								disabled="#{not mf:hasPermission(securityController,'manterPalavrasChavePatologia,executar') or cadastroPalavrasChaveController.permConsultaTela}"
+								ajaxSingle="true"
+								action="#{cadastroPalavrasChaveController.adicionarPalavraChave}"
+								render="panelCadastro,panelLista" profile="add" />
+							<mec:commandButton id="bt_alterar"
+								value="#{messages.LABEL_ALTERAR}"
+								rendered="#{cadastroPalavrasChaveController.palavraChavePatologia.id.seqp != null}"
+								ajaxSingle="true"
+								action="#{cadastroPalavrasChaveController.alterarPalavraChave}"
+								render="panelCadastro,panelLista" profile="ok" />
+							<mec:commandButton id="bt_cancelar" 
+								value="#{messages.LABEL_CANCELAR_EDICAO_PALAVRAS_CHAVE}"
+								rendered="#{cadastroPalavrasChaveController.palavraChavePatologia.id.seqp != null}"
+								block="true" immediate="true"
+								action="#{cadastroPalavrasChaveController.cancelarEdicao}"
+								render="panelCadastro,panelLista"
+								profile="cancel"
+								styleClass="bt_cancel_edit bt_cinza" />
+              </aghu:acao> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <h:form prependId="false" id="gradePalavrasChaveForm"> 
+        <p:outputPanel id="panelLista" layout="inline"> 
+          <aghu:linha> 
+					<p:outputPanel layout="block"
+						style="max-height: 267px; overflow-y: auto;">
+						<mec:serverDataTable id="tabelaListaPalavrasChave"
+							rowKeyVar="_itemId"
+							list="#{cadastroPalavrasChaveController.listaPalavrasChavePatologia}"
+							scrollable="true">
+                <c:set var="_item" value="#{item}"/>  
+							<p:column styleClass="tdAcao" 
+								style="width: 50px !important;#{(_item.id.paiSeq == cadastroPalavrasChaveController.palavraChavePatologia.id.paiSeq and _item.id.seqp == cadastroPalavrasChaveController.palavraChavePatologia.id.seqp) ? 'background-color:#EEE8AA' : ''}"
+								rendered="#{mf:hasPermission(securityController,'manterPalavrasChavePatologia,executar')}">
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                  </f:facet>  
+								<mec:commandLink
+									action="#{cadastroPalavrasChaveController.editar(_item)}"
+									title="#{messages.LABEL_EDITAR}" process="@this"
+									rendered="#{_item.id.paiSeq != cadastroPalavrasChaveController.palavraChavePatologia.id.paiSeq and _item.id.seqp != cadastroPalavrasChaveController.palavraChavePatologia.id.seqp and !cadastroPalavrasChaveController.permConsultaTela}"
+									profile="edit" ajax="true" render="panelCadastro,panelLista" />
+
+								<mec:commandLink id="lista_link_remover" profile="delete"
+									title="excluir"
+									rendered="#{_item.id.paiSeq != cadastroPalavrasChaveController.palavraChavePatologia.id.paiSeq and _item.id.seqp != cadastroPalavrasChaveController.palavraChavePatologia.id.seqp and !cadastroPalavrasChaveController.permConsultaTela}"
+									action="#{cadastroPalavrasChaveController.excluir}">
+									<f:setPropertyActionListener
+										target="#{cadastroPalavrasChaveController.palavraChaveExclusao}"
+										value="#{_item}" for="command" />
+                  </mec:commandLink> 
+                </p:column>  
+							<p:column
+								style="#{(_item.id.paiSeq == cadastroPalavrasChaveController.palavraChavePatologia.id.paiSeq and _item.id.seqp == cadastroPalavrasChaveController.palavraChavePatologia.id.seqp) ? 'background-color:#EEE8AA' : ''}">
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_PALAVRA_CHAVE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.descricao}"/> 
+                </p:column>  
+							<p:column
+								style="white-space:nowrap;#{(_item.id.paiSeq == cadastroPalavrasChaveController.palavraChavePatologia.id.paiSeq and _item.id.seqp == cadastroPalavrasChaveController.palavraChavePatologia.id.seqp) ? 'background-color:#EEE8AA'  : ''}"
+								styleClass="#{_item.indSituacao == 'A' ? 'checked' : ''}">
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ATIVO_PALAVRA_CHAVE}"/> 
+                  </f:facet> 
+                </p:column>  
+							<p:column
+								style="#{(_item.id.paiSeq == cadastroPalavrasChaveController.palavraChavePatologia.id.paiSeq and _item.id.seqp == cadastroPalavrasChaveController.palavraChavePatologia.id.seqp) ? 'background-color:#EEE8AA'  : ''}">
+                  <f:facet name="header"> 
+									<h:outputText
+										value="#{messages.LABEL_ALTERADO_CRIADO_EM_PALAVRA_CHAVE}" />
+                  </f:facet>  
+								<h:outputText
+									value="#{_item.alteradoEm != null ? _item.alteradoEm : _item.criadoEm}">
+                    <f:convertDateTime pattern="dd/MM/yyyy"/> 
+                  </h:outputText> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </p:outputPanel>  
+        <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+				immediate="true" action="#{cadastroPalavrasChaveController.voltar}"
+				styleClass=" alinha-direita icon-back bt_cinza" profile="back" />
+      </h:form>  
+      <p:outputPanel id="panelModalConfirmacaoExclusao" layout="inline"> 
+			<p:dialog onshow="aghu.system.style.rich_modal();"
+				id="modalConfirmacaoExclusao" width="450" height="150"
+				rendered="#{cadastroPalavrasChaveController.mostraModalConfirmacaoExclusao}"
+				modal="true" resizable="false"
+				widgetVar="modalConfirmacaoExclusaoWG">
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.LABEL_EXCLUSAO_PALAVRA_CHAVE}"/> 
+            </h:panelGroup> 
+          </f:facet> #{messages.MENSAGEM_EXCLUSAO_PALAVRA_CHAVE} #{cadastroPalavrasChaveController.palavraChaveExclusao.descricao} #{messages.MENSAGEM_SERA_EXCLUIDO_PALAVRA_CHAVE} 
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <h:panelGroup id="panelGroupExclusaoId"> 
+            <h:form prependId="false" id="formModalExclusao"> 
+						<mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir"
+							action="#{cadastroPalavrasChaveController.excluir}"
+							block="true"
+							profile="delete" />
+						<mec:commandButton value="#{messages.LABEL_NAO}"
+							action="#{cadastroPalavrasChaveController.setMostraModalConfirmacaoExclusao(false)}"
+							onclick="PF('modalConfirmacaoExclusaoWG').hide();"
+							id="bt_cancelarExcluir" profile="cancel" ajax="true"
+							render="panelLista" />
+            </h:form> 
+          </h:panelGroup> 
+        </p:dialog>  
+			<h:form
+				rendered="#{cadastroPalavrasChaveController.mostraModalConfirmacaoExclusao}">
+          <script xml:space="preserve">
+				PF('modalConfirmacaoExclusaoWG').show();;
+			</script> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

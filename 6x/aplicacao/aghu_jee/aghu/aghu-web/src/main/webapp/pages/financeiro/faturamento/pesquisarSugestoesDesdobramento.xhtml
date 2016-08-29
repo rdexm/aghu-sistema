@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.PESQUISA_SUGESTOES_DESDOBRAMENTO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{pesquisarSugestoesDesdobramentoPaginatorController}"/>  
+      <p:ajaxStatus onstart="PF('waitDialogWG').hide();PF('loadDialogWG').hide();" oncomplete="PF('waitDialogWG').hide();PF('loadDialogWG').hide();"/>
+      <h:form prependId="false" id="formPesquisa"> 
+        <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_SUGESTOES_DESDOBRAMENTO}"> 
+          <aghu:linha> 
+            <mec:inputTextData label="#{messages.LABEL_DATA_HORA_SUGESTAO}" title="#{messages.TITLE_DATA_HORA_SUGESTAO}" size="16" maxlength="16" value="#{pesquisarSugestoesDesdobramentoPaginatorController.dataHoraSugestao}" id="dataHoraSugestao" tipo="datahora"/>  
+            <mec:inputText size="3" maxlength="3" label="#{messages.LABEL_ORIGEM}" title="#{messages.TITLE_ORIGEM_SUGESTAO_DESDOBRAMENTO}" style="text-transform: uppercase" value="#{pesquisarSugestoesDesdobramentoPaginatorController.origem}" id="origem"/>  
+            <mec:inputText size="14" maxlength="14" label="#{messages.LABEL_LEITO}" title="#{messages.TITLE_LEITO_SUGESTAO_DESDOBRAMENTO}" style="text-transform: uppercase" value="#{pesquisarSugestoesDesdobramentoPaginatorController.leito}" id="leito"/>  
+            <mec:inputNumero size="8" maxlength="8" label="#{messages.LABEL_PRONTUARIO_FAT}" title="#{messages.TITLE_PRONTUARIO_FAT}" value="#{pesquisarSugestoesDesdobramentoPaginatorController.prontuario}" id="pacProntuario"/>  
+            <mec:selectOneMenu enum="DominioSimNao" value="#{pesquisarSugestoesDesdobramentoPaginatorController.considera}" label="#{messages.LABEL_CONSIDERAR}" title="#{messages.TITLE_CONSIDERAR}" id="considera"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:linha> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{pesquisarSugestoesDesdobramentoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{pesquisarSugestoesDesdobramentoPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_gerar_sugestoes_desdobramento" block="true" value="#{messages.LABEL_GERAR_SUGESTOES_DESDOBRAMENTO}" onclick="PF('modalConfirmacaoGerarSugestoesDesdobramentoWG').show();;" ajax="true" styleClass="bt_cinza"> 
+            <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+          </mec:commandButton> 
+        </aghu:linha> 
+      </h:form>  
+      <h:form prependId="false" id="resultado"> 
+        <p:outputPanel id="panelResultado" rendered="#{pesquisarSugestoesDesdobramentoPaginatorController.dataModel.pesquisaAtiva}" layout="inline"> 
+          <aghu:linha> 
+            <mec:serverDataTable dataModel="dataModel" id="tabelaSugestoes" controller="#{pesquisarSugestoesDesdobramentoPaginatorController}"> 
+              <c:set var="_sugestaoDesdobramento" value="#{item}"/>  
+              <p:column style="white-space:nowrap;"> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_ACAO}</b> 
+                </f:facet>  
+                <mec:commandLink action="#{pesquisarSugestoesDesdobramentoPaginatorController.desdobrarContaHospitalar}" title="#{messages.LABEL_DESDOBRAR_CONTA_HOSPITALAR}" style="padding-bottom: 0px; height:16px;" styleClass=" silk-conta-desdobramento silk-icon" ajax="true" render="panelMessageDesconsiderar,panelMessageConsiderar,panelMessageExcluir"> 
+                  <f:setPropertyActionListener target="#{desdobramentoContaHospitalarPaginatorController.cthSeq}" value="#{_sugestaoDesdobramento.id.cthSeq}" for="command"/>
+                  <f:setPropertyActionListener target="#{desdobramentoContaHospitalarPaginatorController.mdsSeq}" value="#{_sugestaoDesdobramento.id.mdsSeq}" for="command"/>
+                  <f:setPropertyActionListener target="#{desdobramentoContaHospitalarPaginatorController.strDthrSugestao}" value="#{_sugestaoDesdobramento.id.dthrSugestaoFormatada}" for="command"/>
+                  <f:setPropertyActionListener target="#{desdobramentoContaHospitalarPaginatorController.from}" value="pesquisarSugestoesDesdobramento" for="command"/>
+                </mec:commandLink>  
+                <mec:commandLink rendered="#{_sugestaoDesdobramento.considera}" title="#{messages.LABEL_DESCONSIDERAR}" action="#{pesquisarSugestoesDesdobramentoPaginatorController.setFatContaSugestaoDesdobrId(_sugestaoDesdobramento.id)}" oncomplete="PF('modalConfirmacaoDesconsiderarWG').show();;" styleClass=" silk-deactivate silk-icon" ajax="true" render="panelMessageDesconsiderar,panelMessageConsiderar,panelMessageExcluir"/>  
+                <mec:commandLink rendered="#{!_sugestaoDesdobramento.considera}" title="#{messages.LABEL_CONSIDERAR}" action="#{pesquisarSugestoesDesdobramentoPaginatorController.setFatContaSugestaoDesdobrId(_sugestaoDesdobramento.id)}" oncomplete="PF('modalConfirmacaoConsiderarWG').show();;" styleClass=" silk-activate silk-icon" ajax="true" render="panelMessageDesconsiderar,panelMessageConsiderar,panelMessageExcluir"/>  
+                <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{pesquisarSugestoesDesdobramentoPaginatorController.setFatContaSugestaoDesdobrId(_sugestaoDesdobramento.id)}" oncomplete="PF('modalConfirmacaoExclusaoWG').show();;" profile="delete" ajax="true" render="panelMessageDesconsiderar,panelMessageConsiderar,panelMessageExcluir"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DATA_HORA_SUGESTAO_GRID}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.id.dthrSugestao}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_ORIGEM_GRID}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.origem}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_LEITO}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.ltoId}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO_MOTIVO}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.motivoDesdobramento.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CONS}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.considera ? 'Sim' : 'Não'}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CONTA}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.id.cthSeq}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_PRONTUARIO}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.viewFatContasHospitalarPac.pacProntuario}"/>  
+                <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block"> 
+                  <h:outputText value="#{_sugestaoDesdobramento.viewFatContasHospitalarPac.pacCodigo}"/>  
+                  <h:outputText value=" - "/>  
+                  <h:outputText value="#{_sugestaoDesdobramento.viewFatContasHospitalarPac.pacNome}"/> 
+                </p:tooltip> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DATA_INTERNACAO}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.viewFatContasHospitalarPac.cthDtIntAdministrativa}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DATA_ALTA}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.viewFatContasHospitalarPac.cthDtAltaAdministrativa}"> 
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/> 
+                </h:outputText> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO_PROCEDIMENTO}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.viewFatContasHospitalarPac.procedimentoHospitalarInternoRealizado.descricao}"/> 
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_AIH}</b> 
+                </f:facet>  
+                <h:outputText value="#{_sugestaoDesdobramento.viewFatContasHospitalarPac.tipoAih.codigoSus}"/> 
+              </p:column> 
+            </mec:serverDataTable> 
+          </aghu:linha> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoGerarSugestoesDesdobramento" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoGerarSugestoesDesdobramentoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_GERAR_SUGESTOES_DESDOBRAMENTO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_GERACAO_SUGESTOES_DESDOBRAMENTO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalGerarSugestoesDesdobramento"> 
+            <aghu:linha> 
+              <mec:commandButton  id="bt_gerar_sug_desdobramento" value="#{messages.LABEL_CONFIRMAR}" 
+					              action="#{pesquisarSugestoesDesdobramentoPaginatorController.gerarSugestoesDesdobramento}"
+					              onclick="PF('modalConfirmacaoGerarSugestoesDesdobramentoWG').hide();PF('waitDialogWG').show();" 
+					              oncomplete="PF('waitDialogWG').hide();
+					              			  PF('bt_gerar_sug_desdLoadingModalBoxWG').show();
+					              			  PF('pollDesdobrarContas').start();"
+					              block="true" profile="search" ajax="true" render="panelMessageDesconsiderar,panelMessageConsiderar,panelMessageExcluir,progressPanel"> 
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+              </mec:commandButton>  
+              <mec:commandButton id="bt_cancelar_gerar_sug_desd" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoGerarSugestoesDesdobramentoWG').hide();" profile="cancel" ajax="true" render="panelMessageDesconsiderar,panelMessageConsiderar,panelMessageExcluir"> 
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+              </mec:commandButton> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:outputPanel id="progressPanel" layout="inline"> 
+        <p:dialog   style="text-align:center;" id="bt_gerar_sug_desdLoadingModalBox" height="200" top="200" resizeable="false" moveable="false" 
+        			width="400" zindex="2000" modal="true" resizable="false" widgetVar="bt_gerar_sug_desdLoadingModalBoxWG"> 
+          <f:facet name="header"> 
+            <h:outputText value="Operação em andamento"/> 
+          </f:facet>  
+          <div style="text-align: center;"> 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:graphicImage value="/resources/img/loading.gif"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:form prependId="false" id="formProgressBar"> 
+		        <!-- Usado poll pois não foi resolvido o problema da progressbar por parte da arquitetura -->
+	        	<p:poll id="pollProgressBarPanel" widgetVar="pollDesdobrarContas" interval="1" autoStart="false" update="progressPanelFake :resultado" process="@this"
+	         		 	listener="#{pesquisarSugestoesDesdobramentoPaginatorController.getPorcentagemProgresso}" />
+				<p:outputPanel id="progressPanelFake" layout="inline">
+		       		<h:outputText value="#{pesquisarSugestoesDesdobramentoPaginatorController.labelProgresso}" id="outputLabelProgress"/>
+		      	</p:outputPanel>
+            </h:form>  
+            <br clear="none"/>  
+            <h:outputText value="#{mf:getDefaultValue(blockMsg,'Seu pedido está sendo processado, aguarde.')}"/>  
+            <br clear="none"/> 
+          </div> 
+        </p:dialog>
+      </p:outputPanel>  
+      <p:dialog id="modalConfirmacaoExclusao" width="250" height="150" resizeable="false" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_EXCLUSAO_SUGESTAO_DESDOBRAMENTO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <p:outputPanel id="panelMessageExcluir" layout="inline"> 
+          <h:outputFormat value="#{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO_SUGESTAO_DESDOBRAMENTO}"> 
+            <f:param value="#{pesquisarSugestoesDesdobramentoPaginatorController.fatContaSugestaoDesdobrId.cthSeq.toString()}"/> 
+          </h:outputFormat> 
+        </p:outputPanel>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_excluir" value="#{messages.LABEL_EXCLUIR}" block="true" action="#{pesquisarSugestoesDesdobramentoPaginatorController.excluir}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_excluir" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoExclusaoWG').hide();" profile="cancel" ajax="true"> 
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+              </mec:commandButton> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoConsiderar" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoConsiderarWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CONSIDERAR_SUGESTAO_DESDOBRAMENTO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <p:outputPanel id="panelMessageConsiderar" layout="inline"> 
+          <h:outputFormat value="#{messages.MENSAGEM_CONFIRMACAO_CONSIDERAR_DESCONSIDERAR_SUGESTAO_DESDOBRAMENTO}"> 
+            <f:param value="considerar"/>  
+            <f:param value="#{pesquisarSugestoesDesdobramentoPaginatorController.fatContaSugestaoDesdobrId.cthSeq.toString()}"/> 
+          </h:outputFormat> 
+        </p:outputPanel>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalConsiderar"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_considerar" value="#{messages.LABEL_CONSIDERAR}" block="true" action="#{pesquisarSugestoesDesdobramentoPaginatorController.considerarDesconsiderarSugestaoDesdobramento}" profile="search"/>  
+              <mec:commandButton id="bt_cancelar_considerar" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoConsiderarWG').hide();" profile="cancel" ajax="true"> 
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+              </mec:commandButton> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoDesconsiderar" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoDesconsiderarWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_DESCONSIDERAR_SUGESTAO_DESDOBRAMENTO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <p:outputPanel id="panelMessageDesconsiderar" layout="inline"> 
+          <h:outputFormat value="#{messages.MENSAGEM_CONFIRMACAO_CONSIDERAR_DESCONSIDERAR_SUGESTAO_DESDOBRAMENTO}"> 
+            <f:param value="desconsiderar"/>  
+            <f:param value="#{pesquisarSugestoesDesdobramentoPaginatorController.fatContaSugestaoDesdobrId.cthSeq.toString()}"/> 
+          </h:outputFormat> 
+        </p:outputPanel>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalDesconsiderar"> 
+            <aghu:linha> 
+              <mec:commandButton id="bt_desconsiderar" value="#{messages.LABEL_DESCONSIDERAR}" block="true" action="#{pesquisarSugestoesDesdobramentoPaginatorController.considerarDesconsiderarSugestaoDesdobramento}" profile="search"> 
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+              </mec:commandButton>  
+              <mec:commandButton id="bt_cancelar_desconsiderar" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoDesconsiderarWG').hide();" profile="cancel" ajax="true"> 
+                <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+              </mec:commandButton> 
+            </aghu:linha> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>
+    </ui:define> 
+  </ui:composition> 
+</html>

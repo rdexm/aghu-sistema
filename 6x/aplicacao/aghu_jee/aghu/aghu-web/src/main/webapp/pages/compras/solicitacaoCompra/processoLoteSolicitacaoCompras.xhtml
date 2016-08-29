@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PROCESSOS_LOTE}</title>  
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{processoLoteSolicitacaoComprasPaginatorController}"/>  
+      <h:form prependId="false" id="formDadosCabecalho"> 
+        <aghu:panelGeral legend="#{messages.TITLE_PROCESSOS_LOTE}"> 
+          <p:outputPanel id="panelFiltros" layout="inline"> 
+            <aghu:linha> 
+              <mec:suggestionBox id="suggestionPontoParada" label="#{messages.LABEL_SOL_PONTO_PARADA}" title="#{messages.TITLE_PONTO_PARADA}" suggestionAction="pesquisarPontoParadaSolicitacaoPorCodigoEDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" required="false" controller="#{processoLoteSolicitacaoComprasPaginatorController}" value="#{processoLoteSolicitacaoComprasPaginatorController.pontoParada}"> 
+                <p:column>#{item.codigo}</p:column>  
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox>  
+              <mec:inputNumero id="numeroSc" label="#{messages.LABEL_SOL_NUMERO_SC}" size="12" title="#{messages.TITLE_SOL_NUMERO_SC}" maxlength="7" value="#{processoLoteSolicitacaoComprasPaginatorController.numeroSolicitacaoCompra}"> 
+                <p:ajax event="change" update="@(#panelFiltros)" process="@this" listener="#{processoLoteSolicitacaoComprasPaginatorController.atualizarPontoParada}"/> 
+              </mec:inputNumero>  
+              <mec:inputTextData label="#{messages.LABEL_DATA_SOLICITACAO_COMPRAS}" id="dtSolicitacao" title="#{messages.TITLE_DATA_SOLICITACAO_COMPRAS}" size="10" maxlength="10" onkeypress="Pesquisar(event);" value="#{processoLoteSolicitacaoComprasPaginatorController.dataSolicitacaoCompra}" required="false" tipo="data"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox id="suggestionGrupoMaterial" label="#{messages.LABEL_FILTRO_GRUPO_MATERIAL}" title="#{messages.TITLE_FILTRO_GRUPO_MATERIAL}" suggestionAction="pesquisarGrupoMaterialPorCodigoDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" required="false" readonly="#{processoLoteSolicitacaoComprasPaginatorController.desabilitaSuggestionGrupoMaterial}" controller="#{processoLoteSolicitacaoComprasPaginatorController}" value="#{processoLoteSolicitacaoComprasPaginatorController.grupoMaterial}"> 
+                <p:column>#{item.codigo}</p:column>  
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox>  
+              <p:outputPanel id="panelMaterial" layout="inline"> 
+                <mec:suggestionBox id="suggestionMaterial" label="#{messages.LABEL_FILTRO_MATERIAL}" title="#{messages.TITLE_FILTRO_MATERIAL}" descricaoInput="codigo" descricaoLabel="nome" suggestionAction="pesquisarMaterialPorCodigoDescricao" posSelectionAction="verificarGrupoMaterialHabilitado" posDeleteAction="verificarGrupoMaterialHabilitado" controller="#{processoLoteSolicitacaoComprasPaginatorController}" value="#{processoLoteSolicitacaoComprasPaginatorController.material}" render="panelFiltros,materialToolTip"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.codigo}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_NOME}</b> 
+                    </f:facet>  
+                    <h:outputText value="#{(item.nome.length() > 40) ? fn:substring(item.nome,0,40) : item.nome}#{(item.nome.length() &gt; 40) ? '...' : '' }"/> 
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet>  
+                    <h:outputText value="#{(item.descricao.length() &gt; 40) ? fn:substring(item.descricao,0,40) : item.descricao}#{(item.descricao.length() &gt; 40) ? '...' : '' }"/> 
+                  </p:column> 
+                </mec:suggestionBox>  
+                <p:tooltip id="materialToolTip" style="layout:block;width:300px" for="panelMaterial" mode="ajax" disabled="#{empty processoLoteSolicitacaoComprasPaginatorController.material}">  
+                  <h:outputText value="#{messages.LABEL_NOME}: #{processoLoteSolicitacaoComprasPaginatorController.material.nome}"/>  
+                  <br clear="none"/>  
+                  <h:outputText value="#{messages.LABEL_DESCRICAO}: #{processoLoteSolicitacaoComprasPaginatorController.material.descricao}" rendered="#{not empty processoLoteSolicitacaoComprasPaginatorController.material.descricao}"/> 
+                </p:tooltip> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:suggestionBox id="suggestionCcSolicitante" label="#{messages.LABEL_CCUSTO_SOLICITANTE}" title="#{messages.TITLE_CCUSTO_SOLICITANTE}" suggestionAction="pesquisarCentroCustoPorCodigoDescricao" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" size="30" required="false" controller="#{processoLoteSolicitacaoComprasPaginatorController}" value="#{processoLoteSolicitacaoComprasPaginatorController.centroCustoSolicitante}"> 
+                <p:column>#{item.codigo}</p:column>  
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox>  
+              <mec:suggestionBox id="suggestionCcAplicacao" label="#{messages.LABEL_CCUSTO_APLICACAO}" title="#{messages.TITLE_CCUSTO_APLICACAO}" suggestionAction="pesquisarCentroCustoUsuarioGerarSCSuggestion" descricaoInput="codigo" descricaoLabel="descricao" maxlength="60" size="30" required="false" controller="#{processoLoteSolicitacaoComprasPaginatorController}" value="#{processoLoteSolicitacaoComprasPaginatorController.centroCustoAplicacao}"> 
+                <p:column>#{item.codigo}</p:column>  
+                <p:column>#{item.descricao}</p:column> 
+              </mec:suggestionBox> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" action="#{processoLoteSolicitacaoComprasPaginatorController.pesquisar}" profile="search" ajax="false"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" action="#{processoLoteSolicitacaoComprasPaginatorController.limparPesquisa}" render="panelFiltros, panelListaSolicitacoes" styleClass="bt_cinza" profile="clear"/> 
+        </aghu:acao> 
+        
+	      <p:outputPanel id="panelListaSolicitacoes" rendered="#{processoLoteSolicitacaoComprasPaginatorController.dataModel.pesquisaAtiva and (processoLoteSolicitacaoComprasPaginatorController.pontoParada != null or processoLoteSolicitacaoComprasPaginatorController.numeroSolicitacaoCompra != null)}" layout="inline" styleClass="aghu-panel-geral"> 
+	        <aghu:panelGeral legend="#{messages.LEGENDA_SOLICITACOES_COMPRA_PONTO_PARADA}"> 
+	          <aghu:column type="table">
+
+	             <mec:serverDataTableMultipleSelection draggableColumns="false" render="panelBotoes" updateCheckOnPage="atualizarAllChecked" rowCheckListener="selecionarLinha" rowUncheckListener="desmarcarLinha" toggleSelectListener="marcarTodos" dataModel="dataModel" id="solcomprasTable" value="#{processoLoteSolicitacaoComprasPaginatorController}"  selection="listaChecked" rendered="#{processoLoteSolicitacaoComprasPaginatorController.dataModel.pesquisaAtiva}" controller="#{processoLoteSolicitacaoComprasPaginatorController}">   		
+	               <c:set var="_item" value="#{item}"/>
+        		   <p:column exportable="false" selectionMode="multiple" />  
+	               <p:column sortBy="#{item.numero}"> 
+	                 <f:facet name="header"> 
+	                   <h:outputText value="#{messages.LABEL_GRID_SC}"/> 
+	                 </f:facet>  
+	                 <h:outputText value="#{item.numero}"/> 
+	               </p:column>  
+	               <p:column sortBy="#{item.dtSolicitacao}"> 
+	                 <f:facet name="header"> 
+	                   <h:outputText value="#{messages.LABEL_DATA_GRID_SOLICITACAO_COMPRAS_PLAN}"/> 
+	                 </f:facet>  
+	                 <h:outputText value="#{_item.dtSolicitacao}"> 
+	                   <f:convertDateTime pattern="dd/MM/yyyy"/> 
+	                 </h:outputText> 
+	               </p:column>  
+	               <p:column sortBy="#{item.centroCusto}"> 
+	                 <f:facet name="header"> 
+	                   <h:outputText value="#{messages.LABEL_GRID_CC_SOLICITANTE}"/> 
+	                 </f:facet>  
+	                 <h:outputText value="#{_item.centroCusto.getCodigoDescricao()}"/> 
+	               </p:column>  
+	               <p:column sortBy="#{item.centroCustoAplicada}"> 
+	                 <f:facet name="header"> 
+	                   <h:outputText value="#{messages.LABEL_GRID_CC_APLICACAO}"/> 
+	                 </f:facet>  
+	                 <h:outputText value="#{_item.centroCustoAplicada.getCodigoDescricao()}"/> 
+	               </p:column>  
+	               <p:column sortBy="#{item.material}"> 
+	                 <f:facet name="header"> 
+	                   <h:outputText value="#{messages.LABEL_MATERIAL}"/> 
+	                 </f:facet>  
+	                 <h:outputText value="#{_item.material.getCodigoNome()}"/> 
+	               </p:column>  
+	               <p:column> 
+	                 <f:facet name="header"> 
+	                   <h:outputText value="#{messages.LABEL_QTD_SOLICITADA}" title="#{messages.LABEL_QUANTIDADE_SOLICITADA}"/> 
+	                 </f:facet>  
+	                 <h:outputText value="#{_item.qtdeSolicitada}"/> 
+	               </p:column>  
+	               <p:column> 
+	                 <f:facet name="header"> 
+	                   <h:outputText value="#{messages.LABEL_GRID_UNIDADE}" title="#{messages.LABEL_UNIDADE_MEDIDA_MATERIAL_SOLICITADO}"/> 
+	                 </f:facet>  
+	                 <h:outputText value="#{_item.unidadeMedida.codigo}"/> 
+	               </p:column> 
+	             </mec:serverDataTableMultipleSelection>
+ 
+	           </aghu:column>
+	           <aghu:column type="button" id="columnBotoes"> 
+	              <p:outputPanel id="panelBotoes" rendered="#{processoLoteSolicitacaoComprasPaginatorController.desabilitaBotoes == false}" layout="inline"> 
+	                  <mec:commandButton id="bt_encaminhar" rendered="#{mf:hasPermission(securityController,'encaminharSolicitacaoCompras,gravar')}" action="#{processoLoteSolicitacaoComprasPaginatorController.limparModalEncaminhamento()}" oncomplete="PF('modalEncaminharScoWG').show();" disabled="#{fn:length(processoLoteSolicitacaoComprasPaginatorController.listaChecked)==0}" value="#{messages.LABEL_BOTAO_ENCAMINHAR}" ajax="true" styleClass="bt_cinza"/>  
+	                  <mec:commandButton id="bt_devolver" render="modalDevolverSco" action="#{processoLoteSolicitacaoComprasPaginatorController.limparModalDevolucao()}" oncomplete="PF('modalDevolverScoWG').show();" value="#{messages.LABEL_BOTAO_DEVOLVER}" disabled="#{fn:length(processoLoteSolicitacaoComprasPaginatorController.listaChecked)==0}" rendered="#{mf:hasPermission(securityController,'encaminharSolicitacaoServico, gravar')}" ajax="true" styleClass="bt_cinza"/>  
+	                  <mec:commandButton id="bt_exclusao" render="modalExclusaoSco" action="#{processoLoteSolicitacaoComprasPaginatorController.limparModalExclusao()}" oncomplete="PF('modalExclusaoScoWG').show();" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar')   or                   mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or                mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or                mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or                mf:hasPermission(securityController,'cadastrarSCChefias,gravar')}" disabled="#{fn:length(processoLoteSolicitacaoComprasPaginatorController.listaChecked)==0}" value="#{messages.LABEL_BOTAO_EXCLUIR}" ajax="true" styleClass="bt_cinza"/>  
+	                  <mec:commandButton id="bt_imprimirsol" rendered="#{mf:hasPermission(securityController,'cadastrarSolicitacaoCompras,gravar') or                     mf:hasPermission(securityController,'consultarSolicitacaoCompras,visualizar')   or                     mf:hasPermission(securityController,'cadastrarSCPlanejamento,gravar') or                  mf:hasPermission(securityController,'cadastrarSCComprador,gravar') or                  mf:hasPermission(securityController,'cadastrarSCAreasEspecificas,gravar') or                  mf:hasPermission(securityController,'cadastrarSCChefias,gravar')}" action="#{processoLoteSolicitacaoComprasPaginatorController.imprimirItens}" name="bt_imprimirsolicitacao" disabled="#{fn:length(processoLoteSolicitacaoComprasPaginatorController.listaChecked)==0}" value="#{messages.LABEL_IMPRIMIR}" profile="print"> 
+	                    <f:setPropertyActionListener target="#{imprimirSolicitacaoDeComprasController.voltarParaUrl}" value="compras-processoLoteSolicitacaoCompras" for="command"/> 
+	                  </mec:commandButton> 
+	              </p:outputPanel>
+	           </aghu:column>        
+	        </aghu:panelGeral> 
+	      </p:outputPanel>
+      </h:form>  
+      <h:form prependId="false"> 
+        <p:outputPanel layout="inline"> 
+          <ui:decorate template="/pages/compras/solicitacaoCompra/modalExclusaoSolicitacaoScSsEmLote.xhtml"> 
+            <ui:param name="controllerBean" value="#{processoLoteSolicitacaoComprasPaginatorController}"/>  
+            <ui:param name="obsTextArea" value="observacaoExclusao"/>  
+            <ui:param name="deleteAction" value="excluirItens"/>  
+            <ui:param name="clearModalAction" value="limparModalExclusao"/>  
+            <ui:param name="keepOnError" value="true"/>  
+            <ui:param name="goBack" value="voltarPanel"/>  
+            <ui:param name="reRenderOnSuccess" value=":formDadosCabecalho:panelListaSolicitacoes"/>  
+            <ui:param name="modalTitle" value="#{messages.LABEL_EXCLUIR_SOLICITACAO_COMPRAS}"/> 
+          </ui:decorate> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false"> 
+        <p:outputPanel layout="inline"> 
+          <ui:decorate template="/pages/compras/solicitacaoCompra/modalEncaminharSolicitacaoScSsEmLote.xhtml"> 
+           <ui:param name="controllerBean" value="#{processoLoteSolicitacaoComprasPaginatorController}"/>  
+           <ui:param name="disableSuggestion" value="#{processoLoteSolicitacaoComprasPaginatorController.desabilitaSuggestionComprador}"/>  
+           <ui:param name="forwardAction" value="encaminharItens"/>  
+           <ui:param name="clearModalAction" value="limparModalEncaminhamento"/>  
+           <ui:param name="goBack" value="voltarPanel"/>  
+           <ui:param name="varPontoParada" value="#{processoLoteSolicitacaoComprasPaginatorController.proximoPontoParada}"/>  
+           <ui:param name="varComprador" value="#{processoLoteSolicitacaoComprasPaginatorController.funcionarioComprador}"/>  
+           <ui:param name="reRenderOnSuccess" value=":formDadosCabecalho:panelListaSolicitacoes"/>  
+           <ui:param name="modalTitle" value="#{messages.LABEL_ENCAMINHAR_SOLICITACAO_COMPRAS}"/> 
+          </ui:decorate> 
+        </p:outputPanel> 
+      </h:form>  
+      <h:form prependId="false"> 
+        <p:outputPanel layout="inline"> 
+          <ui:decorate template="/pages/compras/solicitacaoCompra/modalDevolverSolicitacaoScSsEmLote.xhtml"> 
+            <ui:param name="controllerBean" value="#{processoLoteSolicitacaoComprasPaginatorController}"/>  
+            <ui:param name="forwardAction" value="devolverItens"/>  
+            <ui:param name="clearModalAction" value="limparModalDevolucao"/>  
+            <ui:param name="goBack" value="voltarPanel"/>  
+            <ui:param name="reRenderOnSuccess" value=":formDadosCabecalho:panelListaSolicitacoes" />  
+            <ui:param name="modalTitle" value="#{messages.LABEL_DEVOLVER_SOLICITACAO_COMPRAS}"/> 
+          </ui:decorate> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

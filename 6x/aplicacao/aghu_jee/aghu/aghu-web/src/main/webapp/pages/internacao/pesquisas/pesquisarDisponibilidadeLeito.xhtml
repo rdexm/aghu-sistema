@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>Disponibilidade de Vagas/Leitos para Internação :: AGHU	- MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{disponibilidadeLeitoPaginatorController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{disponibilidadeLeitoPaginatorController}" />
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral legend="#{messages.LABEL_PESQUISAR}">
+				<p:outputPanel id="camposPesquisa" layout="inline">
+					<aghu:linha>
+						<aghu:linha>
+							<mec:suggestionBox label="#{messages.LABEL_ACOMODACAO2}"
+								title="#{messages.TITLE_LABEL_ACOMODACOES_PESQ}" breakTo="40"
+								descricaoInput="seq" descricaoLabel="descricao"
+								suggestionAction="pesquisarAcomodacoes" id="acomodacao"
+								controller="#{disponibilidadeLeitoPaginatorController}"
+								value="#{disponibilidadeLeitoPaginatorController.acomodacao}">
+								<p:column>#{item.descricao}</p:column>
+							</mec:suggestionBox>
+							<mec:suggestionBox label="#{messages.LABEL_ANDAR}"
+								title="#{messages.TITLE_ANDAR_PESQ_INTERNACAO}" breakTo="40"
+								descricaoInput="seq" descricaoLabel="LPADAndarAlaDescricao"
+								suggestionAction="pesquisarUnidadeFuncionalInternacaoAtiva" width="500"
+								id="andar"
+								controller="#{disponibilidadeLeitoPaginatorController}"
+								value="#{disponibilidadeLeitoPaginatorController.unidadeFuncional}"
+								render="panelAla">
+								<p:column>#{item.seq}</p:column>
+								<p:column>#{item.LPADAndarAlaDescricao}</p:column>
+							</mec:suggestionBox>
+							<p:outputPanel id="panelAla" layout="inline">
+								<mec:inputText label="#{messages.LABEL_ALA}"
+									value="#{disponibilidadeLeitoPaginatorController.unidadeFuncional.indAla.descricao}"
+									rendered="#{not empty disponibilidadeLeitoPaginatorController.unidadeFuncional.indAla}"
+									readonly="true" id="ala" />
+							</p:outputPanel>
+						</aghu:linha>
+					</aghu:linha>
+					<aghu:linha>
+						<aghu:linha>
+							<mec:suggestionBox label="#{messages.LABEL_QUARTO}"
+								title="Selecione ou digite o número do quarto e a localização do leito para efetuar a pesquisa por este campo."
+								externalDescricaoLabel="descricaoCompletaQuarto"
+								descricaoInput="descricao" suggestionAction="pesquisarQuartos"
+								breakTo="40" id="quarto"
+								controller="#{disponibilidadeLeitoPaginatorController}"
+								value="#{disponibilidadeLeitoPaginatorController.quarto}"
+								render="panelResultado">
+								<c:set var="_quarto" value="#{item}" />
+								<p:column>#{_quarto.descricao} / #{_quarto.unidadeFuncional.andar} #{_quarto.unidadeFuncional.indAla} - #{_quarto.unidadeFuncional.descricao}</p:column>
+							</mec:suggestionBox>
+							<mec:suggestionBox label="#{messages.LABEL_CLINICA}"
+								title="#{messages.TITLE_LABEL_CLINICA_PESQ}"
+								descricaoInput="codigo" descricaoLabel="descricao"
+								suggestionAction="pesquisarClinicas" breakTo="40" id="clinica"
+								controller="#{disponibilidadeLeitoPaginatorController}"
+								value="#{disponibilidadeLeitoPaginatorController.clinica}">
+								<p:column>#{item.descricao}</p:column>
+							</mec:suggestionBox>
+						</aghu:linha>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:suggestionBox label="#{messages.LABEL_LEITO}"
+							title="#{messages.TITLE_LABEL_LEITO_PESQ}"
+							descricaoInput="leitoID" width="300"
+							externalDescricaoLabel="descricaoCompletaLeito"
+							suggestionAction="pesquisarLeitos" breakTo="40" id="leito"
+							controller="#{disponibilidadeLeitoPaginatorController}"
+							value="#{disponibilidadeLeitoPaginatorController.leito}">
+							<p:column>#{item.leitoID}   #{item.unidadeFuncional.andar}   #{item.unidadeFuncional.indAla} - #{item.unidadeFuncional.descricao}</p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+				</p:outputPanel>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton block="true" id="bt_pesquisar"
+					value="#{messages.LABEL_PESQUISAR}" hotkey=""
+					action="#{disponibilidadeLeitoPaginatorController.pesquisar}"
+					profile="search" >
+					<p:hotkey bind="alt+P" actionListener="#{disponibilidadeLeitoPaginatorController.pesquisar}" />
+				</mec:commandButton>
+				<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="btn_limpar"
+					action="#{disponibilidadeLeitoPaginatorController.limparPesquisa}"
+					profile="clear" />
+				<mec:commandButton value="#{messages.LABEL_CANCELAR}"
+					rendered="#{disponibilidadeLeitoPaginatorController.cameFrom != null and disponibilidadeLeitoPaginatorController.cameFrom != '' and disponibilidadeLeitoPaginatorController.cameFrom != 'Internacao'}"
+					action="#{disponibilidadeLeitoPaginatorController.cancelar}"
+					profile="cancel" />
+			</aghu:acao>
+			<mec:serverDataTable id="tabelaDisponibilidadeLeito" selection="leitoSelecionado"
+				dataModel="dataModel"				
+				controller="#{disponibilidadeLeitoPaginatorController}"
+				draggableColumns="false">
+				<c:set var="item" value="#{item}" />
+				<p:column headerText="Ações" styleClass="first-column auto-adjust"
+					exportable="false" width="80">
+					<mec:commandLink id="quartoCrud"
+						title="#{messages.LABEL_DETALHAR}"
+						action="#{disponibilidadeLeitoPaginatorController.detalharQuarto}"
+						styleClass=" silk-magnifier silk-icon">
+						<f:setPropertyActionListener
+							target="#{quartoController.quartoNumero}"
+							value="#{item.numeroQuarto}" for="command" />
+						<f:setPropertyActionListener target="#{quartoController.leitoID}"
+							value="#{item.leitoId}" for="command" />
+						<f:setPropertyActionListener target="#{quartoController.consulta}"
+							value="true" for="command" />
+						<f:setPropertyActionListener
+							target="#{quartoController.voltarPara}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+					</mec:commandLink>
+					<mec:commandLink id="bt_internar"
+						rendered="#{disponibilidadeLeitoPaginatorController.exibirAcaoInternar(item)}"
+						title="#{messages.LABEL_INTERNAR}"
+						action="#{disponibilidadeLeitoPaginatorController.internarPaciente(item)}"
+						styleClass=" silk-internacao silk-icon">
+						<f:setPropertyActionListener
+							target="#{pesquisaPacienteController.idLeito}"
+							value="#{item.leitoId}" for="command" />
+						<f:setPropertyActionListener
+							target="#{pesquisaPacienteController.cameFrom}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+					</mec:commandLink>
+					<mec:commandLink id="transfPac"
+						title="#{messages.LABEL_TRANSFERIR}"
+						rendered="#{disponibilidadeLeitoPaginatorController.exibirAcaoTransferir}"
+						action="#{disponibilidadeLeitoPaginatorController.transferirPaciente}"
+						styleClass=" silk-arrow-switch silk-icon">
+						<f:setPropertyActionListener
+							target="#{transferirPacienteController.internacaoSeq}"
+							value="#{disponibilidadeLeitoPaginatorController.internacaoSeq}"
+							for="command" />
+						<f:setPropertyActionListener
+							target="#{transferirPacienteController.cameFrom}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+					</mec:commandLink>
+					<mec:commandLink id="bloqLeito"
+						title="#{messages.LABEL_BLOQUEAR}"
+						rendered="#{disponibilidadeLeitoPaginatorController.exibirAcaoInternar(item)}"
+						action="#{disponibilidadeLeitoPaginatorController.bloquearLeito}"
+						styleClass=" silk-flag-red silk-icon">
+						<f:setPropertyActionListener
+							target="#{bloqueiaLeitoController.idLeito}"
+							value="#{item.leitoId}" for="command" />
+						<f:setPropertyActionListener
+							target="#{bloqueiaLeitoController.voltarPara}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+					</mec:commandLink>
+					<mec:commandLink id="reservLeito"
+						title="#{messages.LABEL_RESERVAR}"
+						rendered="#{disponibilidadeLeitoPaginatorController.exibirAcaoInternar(item) and (!mf:hasPermission(securityController,'altaPacientes_Enfermeiro_Obstetra,pesquisar'))}"
+						action="#{disponibilidadeLeitoPaginatorController.reservarLeito}"
+						styleClass=" silk-flag-blue silk-icon">
+						<f:setPropertyActionListener
+							target="#{reservaLeitoController.codigoLeitos}"
+							value="#{item.leitoId}" for="command" />
+						<f:setPropertyActionListener
+							target="#{reservaLeitoController.voltarPara}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+					</mec:commandLink>
+				</p:column>
+				<p:column width="40">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_LEITO}" />
+					</f:facet>
+					<h:outputText id="outLeito" value="#{item.leitoId}" />
+					<p:tooltip verticalOffset="16" showDelay="400" for="outLeito">
+						<h:outputText value="#{messages.LABEL_DTHR_INFORMADA}"
+							style="font-weight: bold;padding-right:5px;" />
+						<h:outputText value="#{item.dataHoraLancamento}">
+							<f:convertDateTime pattern="dd/MM/yyy HH:mm" />
+						</h:outputText>
+						<br clear="none" />
+						<h:outputText value="#{messages.LABEL_LANCADO_EM}"
+							style="font-weight: bold;padding-right:5px;" />
+						<h:outputText value="#{item.criadoEm}">
+							<f:convertDateTime pattern="dd/MM/yyy HH:mm" />
+						</h:outputText>
+					</p:tooltip>
+				</p:column>
+				<p:column width="50">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_ANDARALA}" />
+					</f:facet>
+					<h:outputText id="outAlaAndar" value="#{item.alaAndar}" />
+					<p:tooltip verticalOffset="16" showDelay="400" for="outAlaAndar">
+						<h:outputText value="#{messages.LABEL_DTHR_INFORMADA}"
+							style="font-weight: bold;padding-right:5px;" />
+						<h:outputText value="#{item.dataHoraLancamento}">
+							<f:convertDateTime pattern="dd/MM/yyy HH:mm" />
+						</h:outputText>
+						<br clear="none" />
+						<h:outputText value="#{messages.LABEL_LANCADO_EM}"
+							style="font-weight: bold;padding-right:5px;" />
+						<h:outputText value="#{item.criadoEm}">
+							<f:convertDateTime pattern="dd/MM/yyy HH:mm" />
+						</h:outputText>
+					</p:tooltip>
+				</p:column>
+				<p:column width="100">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CLINICA}" />
+					</f:facet>
+					<h:outputText id="outClinica" value="#{item.clinicaDescricao}" />
+					<p:tooltip verticalOffset="16" showDelay="400" for="outClinica">
+						<h:outputText value="#{messages.LABEL_DTHR_INFORMADA}"
+							style="font-weight: bold;padding-right:5px;" />
+						<h:outputText value="#{item.dataHoraLancamento}">
+							<f:convertDateTime pattern="dd/MM/yyy HH:mm" />
+						</h:outputText>
+						<br clear="none" />
+						<h:outputText value="#{messages.LABEL_LANCADO_EM}"
+							style="font-weight: bold;padding-right:5px;" />
+						<h:outputText value="#{item.criadoEm}">
+							<f:convertDateTime pattern="dd/MM/yyy HH:mm" />
+						</h:outputText>
+					</p:tooltip>
+				</p:column>
+				<p:column width="100">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_ACOMODACAO}" />
+					</f:facet>
+					<h:outputText value="#{item.acomodacaoDescricao}" />
+				</p:column>
+				<p:column width="70">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_SEXO_OCUPACAO}" />
+					</f:facet>
+					<p:outputPanel layout="block"
+						rendered="#{item.sexoOcupacaoFeminino}"
+						styleClass="silk-icon silk-female"
+						style="min-width: cursor: default;" />
+					<p:outputPanel rendered="#{item.sexoOcupacaoMasculino}"
+						styleClass="silk-icon silk-male" style="cursor: default;"
+						layout="inline" /> #{item.sexoOcupacao.descricao}
+          </p:column>
+				<p:column styleClass="auto-adjust" width="70">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_SEXO_DETERMINANTE}" />
+					</f:facet>
+					<p:outputPanel layout="block"
+						rendered="#{item.sexoDeterminanteFeminino}"
+						styleClass="silk-icon silk-female"
+						style="min-width: cursor: default;" />
+					<p:outputPanel rendered="#{item.sexoDeterminanteMasculino}"
+						styleClass="silk-icon silk-male" style="cursor: default;"
+						layout="inline" /> #{item.sexoDeterminante.descricao}
+          </p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_JUSTIFICATIVA}" />
+					</f:facet>
+					<h:outputText value="#{item.descricao}" />
+				</p:column>
+				<p:column width="90">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_CARACTERISTICAS}" />
+					</f:facet>
+					<h:outputText value="#{item.descricaoCaracteristica}" />
+				</p:column>
+				<p:column width="90">
+					<f:facet name="header">
+						<h:outputText value="#{messages.LABEL_SITUACAO}" />
+					</f:facet>
+					<h:outputText value="#{item.grupoMovimentoLeito.descricao}" />
+				</p:column>
+			</mec:serverDataTable>
+			<aghu:acao style="padding-top:15px;">
+				<p:outputPanel id="botoesAcao" layout="inline">
+					<mec:commandButton id="bt_pesquisarDispUnid"
+						value="#{messages.VAGAS_POR_UNIDADE}"
+						action="#{disponibilidadeLeitoPaginatorController.pesquisarDisponibilidadeUnidade}"
+						styleClass="bt_cinza">
+						
+						<f:setPropertyActionListener
+							target="#{disponibilidadeUnidadePaginatorController.voltarPara}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+
+						<f:setPropertyActionListener
+							target="#{disponibilidadeUnidadePaginatorController.cameFrom}"
+							value="#{disponibilidadeLeitoPaginatorController.cameFrom}" for="command" />
+
+						<f:setPropertyActionListener
+							target="#{disponibilidadeUnidadePaginatorController.codigoClinica}"
+							value="#{disponibilidadeLeitoPaginatorController.clinica.codigo}" for="command" />
+							
+						<f:setPropertyActionListener
+							target="#{disponibilidadeUnidadePaginatorController.codigoUnidadeFuncional}"
+							value="#{disponibilidadeLeitoPaginatorController.unidadeFuncional.seq}" for="command" />
+
+						<f:setPropertyActionListener 
+							target="#{disponibilidadeUnidadePaginatorController.codigoPaciente}"
+							value="#{disponibilidadeLeitoPaginatorController.pacCodigo}" for="command"/>	
+					
+					</mec:commandButton>
+					<mec:commandButton id="bt_vagas_por_quarto"
+						rendered="#{disponibilidadeLeitoPaginatorController.isExibirBotaoVagasQuarto()}"
+						value="#{messages.VAGAS_POR_QUARTO}"
+						action="#{disponibilidadeLeitoPaginatorController.pesquisarDisponibilidadeQuarto}"
+						styleClass="bt_cinza">
+						<f:setPropertyActionListener
+							target="#{disponibilidadeQuartoPaginatorController.voltarPara}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+					</mec:commandButton>		
+					<mec:commandButton id="bt_solicitacoes_pendentes"
+						value="#{messages.LABEL_SOLICITCOES_PENDENTES}"
+						action="#{disponibilidadeLeitoPaginatorController.buscarSolicitacoesInternacoesPendentes}"
+						styleClass="bt_cinza">
+						<f:setPropertyActionListener
+							target="#{solicitacoesTransferenciaPacientePaginatorController.voltarPara}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+					</mec:commandButton>
+					<mec:commandButton id="bt_transferir"
+						value="#{messages.LABEL_TRANSFERIR}"
+						action="#{disponibilidadeLeitoPaginatorController.transferir}"
+						styleClass="bt_cinza">
+						<f:setPropertyActionListener
+							target="#{transferirPacientePaginatorController.voltarPara}"
+							value="internacao-pesquisarDisponibilidadeLeito" for="command" />
+					</mec:commandButton>
+				</p:outputPanel>
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

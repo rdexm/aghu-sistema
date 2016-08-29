@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_DIAGNOSTICOS_DO_ATENDIMENTO}</title>  
+      <script type="text/javascript" xml:space="preserve">
+			function suggestionCIDVazia() {
+				if ((document.getElementById('suggestionCID').value == null) ||
+					(document.getElementById('suggestionCID').value == '')) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		</script> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterDiagnosticosAtendimentoController.carregar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterDiagnosticosAtendimentoController}" ignoreEnter="true"/>  
+      <p:outputPanel id="corpoPagina" layout="inline"> 
+        <h:form prependId="false" id="formPrescricaoCabecalho"> 
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <mec:inputTextProntuario label="#{messages.LABEL_PRONTUARIO}" id="prontuarioPaciente" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prontuario}" size="8" maxlength="9" emptyStringToNullConverter="emptyStringToNullConverter" readonly="true" converter="#{prontuarioConverter}"/>  
+              <mec:inputText label="#{messages.LABEL_NOME_DO_PACIENTE}" id="nomePaciente" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.nome}" size="56" maxlength="50" style="text-transform:uppercase" readonly="true"/>  
+              <mec:inputText label="#{messages.LABEL_LOCAL}" id="localPaciente" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.local}" size="15" maxlength="15" style="text-transform:uppercase" readonly="true"/>
+              <mec:inputText label="#{messages.LABEL_VALIDADE_INICIAL}" id="dataValidadeInicial" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.dthrInicio}" readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm"/>  
+              <mec:inputText label="#{messages.LABEL_VALIDADE_FINAL}" id="dataValidadeFinal" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.dthrFim}" readonly="true" size="17" datePattern="dd/MM/yyyy HH:mm"/> 
+            </aghu:linha> 
+          </aghu:panelGeral> 
+        </h:form>  
+        <h:form prependId="false" id="formManterDiagnosticos"> 
+          <aghu:panelGeral style="padding: 0px 5px 5px 5px;" legend="#{messages.LABEL_DIAGNOSTICOS_DO_ATENDIMENTO}"> 
+            <aghu:linha> 
+              <p:outputPanel id="outputCidSuggestion" layout="inline">
+               
+                <mec:suggestionBox 
+                	id="suggestionCID" 
+                	label="#{messages.LABEL_CID}" 
+                	title="#{messages.LABEL_CID_DIAGNOSTICO}" 
+                	descricaoInput="codigo" 
+                	ajaxRendered="true" 
+                	size="80" 
+                	maxlength="80" 
+                	width="500" 
+                	required="true" 
+                	readonly="#{manterDiagnosticosAtendimentoController.notInsertMode}" 
+                	descricaoLabel="descricao" 
+                	suggestionAction="pesquisarCids" 
+                	posSelectionAction="selecionouCid" 
+                	controller="#{manterDiagnosticosAtendimentoController}" 
+                	value="#{manterDiagnosticosAtendimentoController.aghCid}">
+                	 
+                  <p:column> 
+                    <h:outputText value="#{item.codigo}"/> 
+                  </p:column>  
+                  <p:column> 
+                    <h:outputText value="#{item.descricao}"/> 
+                  </p:column> 
+                </mec:suggestionBox>
+                 
+              </p:outputPanel> 
+            	<p:outputPanel id="panelBotaoCidPorCapitulo" layout="inline">
+            	<br/>
+					<mec:commandButton immediate="true"
+                                       id="botaoPesquisaCidCapitulo"
+                                       value="#{messages.LABEL_CID_POR_CAPITULO}"
+                                       focus="suggestionCID"
+                                       disabled="#{manterDiagnosticosAtendimentoController.notInsertMode}"
+                                       action="#{manterDiagnosticosAtendimentoController.pesquisarCidCapitulo}"
+                                       ajax="true"
+                                       render="panelLinksuggestionCID, suggestionCID, suggestion_suggestionCID"
+                                       styleClass="bt_cinza">
+						<f:setPropertyActionListener target="#{pesquisaCidController.codigoPaciente}" value="#{manterDiagnosticosAtendimentoController.atendimento.paciente.codigo}" for="command"/>  
+						<f:setPropertyActionListener target="#{pesquisaCidController.fromPageManterDiagnosticos}" value="true" for="command"/> 
+              		</mec:commandButton>
+              	</p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText style="text-transform:uppercase" label="#{messages.LABEL_COMPLEMENTO}" size="65" title="#{messages.LABEL_COMPLEMENTO_HELP}" maxlength="45" value="#{manterDiagnosticosAtendimentoController.complemento}" id="complementoCid">
+                <p:ajax event="change" process="@this" listener="#{manterDiagnosticosAtendimentoController.setChanged}"/> 
+              </mec:inputText> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:linha> 
+            <aghu:acao> 
+              <mec:commandButton id="botaoGravar"
+                                 name="botaoGravar"
+                                 value="#{messages.LABEL_GRAVAR}"
+                                 ajax="true"
+                                 focus="suggestionCID"
+                                 oncomplete="document.getElementById('suggestionCID').value = '';"
+                                 action="#{manterDiagnosticosAtendimentoController.salvar}"
+                                 process="@this suggestionCID complementoCid"
+                                 render="panelExternoTabelaMpmCids, tabelaMpmCids, suggestionCID, complementoCid, panelBotaoCidPorCapitulo, botaoPesquisaCidCapitulo"
+                                 profile="ok"/>
+              <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" immediate="true" ajax="true" action="#{manterDiagnosticosAtendimentoController.limpar}" styleClass="bt_cinza" profile="clear" process="@this" render="suggestionCID, complementoCid, panelExternoTabelaMpmCids, panelBotaoCidPorCapitulo"/>  
+              <mec:commandButton id="bt_redireciona" value="#{messages.LABEL_HISTORICO}" immediate="true" action="#{manterDiagnosticosAtendimentoController.redirecionaHistorico}" render="panelModalRedirecionaHistorico" styleClass=" icon-historico bt_cinza"> 
+                <f:setPropertyActionListener target="#{consultarHistoricoDiagnosticosAtendimentoController.atendimentoSeq}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                <f:setPropertyActionListener target="#{consultarHistoricoDiagnosticosAtendimentoController.pmeSeq}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/>  
+                <f:setPropertyActionListener target="#{consultarHistoricoDiagnosticosAtendimentoController.prescricaoMedicaVO}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO}" for="command"/> 
+              </mec:commandButton>  
+              <mec:commandButton 
+              		id="bt_voltar" 
+              		action="#{manterDiagnosticosAtendimentoController.verificaPendencias}" 
+              		value="#{messages.LABEL_VOLTAR}" 
+              		styleClass=" alinha-direita bt_cinza" 
+              		ajax="true" 
+              		render="panelModal"
+              		immediate="true" 
+              		profile="back"> 
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+              </mec:commandButton> 
+            </aghu:acao> 
+          </aghu:linha>
+          <aghu:linha>   
+			<p:outputPanel id="panelExternoTabelaMpmCids">
+	           <p:outputPanel id="panelTabelaMpmCids" rendered="#{not empty manterDiagnosticosAtendimentoController.listaMpmCidAtendimentos}" layout="inline" styleClass="aghu-panel-geral"> 
+	             <aghu:panelGeral style="padding: 0px 5px 5px 5px;" legend="#{messages.LABEL_LISTA_DIAGNOSTICOS}"> 
+	               <mec:serverDataTable name="tabelaMpmCids" id="tabelaMpmCids" rowKeyVar="row" onRowMouseOver="this.style.backgroundColor='#F1F1F1'" onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'" 
+	               	list="#{manterDiagnosticosAtendimentoController.listaMpmCidAtendimentos}" scrollable="true"
+	               	scrollHeight="120"> 
+	                 <c:set var="mpmCidAtendimento" value="#{item}"/>  
+	                 <p:column style="width:5%;">
+	                   <f:facet name="header"> 
+	                     <h:outputText value="#{messages.LABEL_ACAO}"/> 
+	                   </f:facet>  
+	                   <mec:commandLink immediate="true"
+                                        id="editlinkMpmCidAtendimento"
+                                        title="#{messages.LABEL_EDITAR}"
+                                        rendered="#{(empty manterDiagnosticosAtendimentoController.diagnosticoAEditar and empty manterDiagnosticosAtendimentoController.mpmCidAtendimento) or manterDiagnosticosAtendimentoController.mpmCidAtendimento ne mpmCidAtendimento}"
+                                        action="#{manterDiagnosticosAtendimentoController.editarMpmCid(mpmCidAtendimento)}"
+                                        focus="complementoCid"
+                                        profile="edit"
+                                        ajax="true"
+                                        render="panelLinksuggestionCID, suggestionCID, complementoCid, outputCidSuggestion, panelExternoTabelaMpmCids, panelTabelaMpmCids, tabelaMpmCids, panelBotaoCidPorCapitulo, panelModalConfirmacaoEditar"
+                                        process="@this"/>
+                       <mec:commandLink immediate="true"
+                                        id="deletelinkMpmCidAtendimento"
+                                        title="#{messages.LABEL_EXCLUIR}"
+                                        action="#{manterDiagnosticosAtendimentoController.excluirMpmCid(mpmCidAtendimento)}"
+                                        profile="delete"
+                                        ajax="true"
+                                        render="suggestionCID, complementoCid, panelExternoTabelaMpmCids, tabelaMpmCids, panelBotaoCidPorCapitulo"
+                                        process="@this"/>
+	                 </p:column>  
+	                 <p:column style="width:10%;">
+	                   <f:facet name="header"> 
+	                     <h:outputText value="#{messages.LABEL_CID}"/> 
+	                   </f:facet>  
+	                   <h:outputText value="#{mpmCidAtendimento.cid.codigo}"/> 
+	                 </p:column>  
+	                 <p:column style="width:40%;">
+	                   <f:facet name="header"> 
+	                     <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+	                   </f:facet>  
+	                   <h:outputText value="#{mpmCidAtendimento.cid.descricao}"/> 
+	                 </p:column>  
+	                 <p:column style="width:50%;">
+	                   <f:facet name="header"> 
+	                     <h:outputText value="#{messages.LABEL_COMPLEMENTO}"/> 
+	                   </f:facet>  
+	                   <h:outputText value="#{mpmCidAtendimento.complemento}"/> 
+	                 </p:column> 
+	               </mec:serverDataTable> 
+	             </aghu:panelGeral> 
+	           </p:outputPanel>			
+			</p:outputPanel>
+          </aghu:linha> 
+        </h:form>  
+        <p:outputPanel id="panelModal" layout="inline"> 
+          <p:dialog id="modalConfirmacaoPendencia" rendered="#{manterDiagnosticosAtendimentoController.confirmaVoltar}" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIAS_DIAGNOSTICOS_ATENDIMENTO}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalPendencias"> 
+                <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{manterDiagnosticosAtendimentoController.voltar}" profile="search" ajax="true"> 
+                  <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeqAtendimento}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{manterPrescricaoMedicaController.pmeSeq}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+                </mec:commandButton>  
+                <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();" profile="cancel" ajax="true"/> 
+              </h:form> 
+            </h:panelGroup> 
+          </p:dialog>  
+          <h:form rendered="#{manterDiagnosticosAtendimentoController.confirmaVoltar}"> 
+            <script xml:space="preserve">
+                    PF('modalConfirmacaoPendenciaWG').show();;
+                </script> 
+          </h:form> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelModalConfirmacaoEditar" layout="inline"> 
+          <p:dialog id="modalConfirmacaoEditar" rendered="#{manterDiagnosticosAtendimentoController.confirmaNovaEdicao}" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoEditarWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIAS_DIAGNOSTICOS_ATENDIMENTO}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalConfirmacaoEditar"> 
+                <mec:commandButton id="bt_editar" value="#{messages.LABEL_SIM}" action="#{manterDiagnosticosAtendimentoController.confirmaEditar}" render="panelLinksuggestionCID, suggestionCID, suggestion_suggestionCID, complementoCid, outputCidSuggestion, panelExternoTabelaMpmCids, tabelaMpmCids, botaoPesquisaCidCapitulo, panelModalConfirmacaoEditar" profile="search" ajax="true"/>  
+                <mec:commandButton id="bt_nao_editar" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoEditarWG').hide();" profile="cancel" ajax="true"/> 
+              </h:form> 
+            </h:panelGroup> 
+          </p:dialog>  
+          <h:form rendered="#{manterDiagnosticosAtendimentoController.confirmaNovaEdicao}"> 
+            <script xml:space="preserve">
+                    PF('modalConfirmacaoEditarWG').show();;
+                </script> 
+          </h:form> 
+        </p:outputPanel>  
+        <p:outputPanel id="panelModalRedirecionaHistorico" layout="inline"> 
+          <p:dialog id="modalRedirecionaHistorico" rendered="#{manterDiagnosticosAtendimentoController.confirmaRedirecionaHistorico}" width="400" height="150" modal="true" resizable="false" widgetVar="modalRedirecionaHistoricoWG"> 
+            <f:facet name="header"> 
+              <h:panelGroup> 
+                <h:outputText value="#{messages.TITLE_PENDENCIAS_DIAGNOSTICOS_ATENDIMENTO}"/> 
+              </h:panelGroup> 
+            </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalHistorico"> 
+                <mec:commandButton id="bt_sim_historico" value="#{messages.LABEL_SIM}" action="#{manterDiagnosticosAtendimentoController.redirecionaHistoricoConfirmado}" profile="search" ajax="true"> 
+                  <f:setPropertyActionListener target="#{consultarHistoricoDiagnosticosAtendimentoController.atendimentoSeq}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prescricaoMedica.id.atdSeq}" for="command"/>  
+                  <f:setPropertyActionListener target="#{consultarHistoricoDiagnosticosAtendimentoController.pmeSeq}" value="#{manterDiagnosticosAtendimentoController.prescricaoMedicaVO.prescricaoMedica.id.seq}" for="command"/> 
+                </mec:commandButton>  
+                <mec:commandButton id="bt_nao_historico" value="#{messages.LABEL_NAO}" onclick="PF('modalRedirecionaHistoricoWG').hide();" profile="cancel" ajax="true"/> 
+              </h:form> 
+            </h:panelGroup> 
+          </p:dialog>
+        </p:outputPanel>  
+        <script language="javascript" type="text/javascript" xml:space="preserve">
+    	 	document.getElementById('suggestionCID').focus();
+		</script> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

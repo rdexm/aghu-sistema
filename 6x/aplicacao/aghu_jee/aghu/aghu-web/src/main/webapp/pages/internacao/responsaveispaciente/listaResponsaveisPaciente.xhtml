@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>Responsáveis Paciente :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{responsaveisPacienteController.inicio}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{responsaveisPacienteController}"/>  
+      <h:form prependId="false" id="responsaveisPacienteForm"> 
+        <aghu:panelGeral id="ffdl_responsaveis" legend="Atualizar Responsáveis pelo Paciente Internado"> 
+          <p:outputPanel id="responsaveisPacienteTable" layout="inline"> 
+            <aghu:linha> 
+              <h:outputText value="#{messages.NENHUM_RESPONSAVEL_ENCONTRADO}" rendered="#{empty responsaveisPacienteController.listaResponsaveisPaciente}"/>  
+              <mec:serverDataTable rendered="#{not empty responsaveisPacienteController.listaResponsaveisPaciente}" list="#{responsaveisPacienteController.listaResponsaveisPaciente}" scrollable="true"> 
+                <c:set var="_responsavelPaciente" value="#{item}"/>  
+                <p:column styleClass="tdAcao"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{responsaveisPacienteController.removerResponsavelPaciente(_responsavelPaciente)}" profile="delete" rendered="#{responsaveisPacienteController.pacienteMenorDeIdade eq false}"/>   
+                  <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{responsaveisPacienteController.editarResponsavelPaciente(_responsavelPaciente)}" profile="edit" ajax="true"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_responsavelPaciente.seq}   "/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_NOME}"/> 
+                  </f:facet>  
+                  <h:outputText style="text-transform:uppercase" value="#{responsaveisPacienteController.obterNomeResponsavel(_responsavelPaciente)}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_TIPO_RESPONSABILIDADE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_responsavelPaciente.tipoResponsabilidade.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel>  
+          <aghu:linha> 
+            <mec:commandButton id="bt_prepararAdicionarResponsavelPaciente" value="#{messages.LABEL_ADICIONAR}" action="#{responsaveisPacienteController.prepararAdicionarResponsavelPaciente}" profile="add" ajax="true"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton block="true" value="#{messages.LABEL_GRAVAR}" action="#{responsaveisPacienteController.salvarInternacaoResponsaveisPaciente}" profile="ok"/>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" block="true" action="#{responsaveisPacienteController.voltar}" styleClass="bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form>  
+      <p:outputPanel id="panelModal" layout="inline"> 
+        <p:dialog id="modalConfirmacao" rendered="#{cadastroInternacaoController.mostrarAlerta}" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup>
+              <h:outputText value="#{messages.LABEL_CONFIRMAR}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <p:outputPanel layout="inline">#{cadastroInternacaoController.getModalMessage()} 
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <br clear="none"/>  
+            <h:panelGroup> 
+              <h:form prependId="false" id="formModalConfirmacao"> 
+                <aghu:linha> 
+                  <mec:commandButton block="true" id="bt_verificar_cir" value="#{messages.LABEL_SIM}" onclick="PF('modalConfirmacaoWG').hide();" rendered="#{!cadastroInternacaoController.perguntouCirurgia}" action="#{cadastroInternacaoController.atribuirDataCirurgia}" render="dtInternacao" profile="ok" ajax="true"/>  
+                  <mec:commandButton block="true" id="bt_internar" value="#{cadastroInternacaoController.obterLabelBotaoConfirmacao()}" onclick="PF('modalConfirmacaoWG').hide();" rendered="#{cadastroInternacaoController.perguntouCirurgia}" action="#{cadastroInternacaoController.executarAcaoBotaoConfirmacao}" profile="ok"/>  
+                  <mec:commandButton block="true" id="bt_cancelarModal" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalConfirmacaoWG').hide();" rendered="#{!cadastroInternacaoController.verificouCERIH and !cadastroInternacaoController.verificouCnrac}" action="#{cadastroInternacaoController.cancelarModal}" profile="cancel" ajax="true"/> 
+                </aghu:linha> 
+              </h:form> 
+            </h:panelGroup> 
+          </p:outputPanel> 
+           <h:form> 
+	          <script xml:space="preserve">
+						PF('modalConfirmacaoWG').show();
+			  </script> 
+	        </h:form>
+        </p:dialog>  
+        
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

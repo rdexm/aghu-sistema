@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>Selecionar Prescrição a Consultar:: AGHU - MEC</title>
+		
+		<script type="text/javascript" xml:space="preserve">
+	      function funcaoPosicionaNaLinha() {
+	    	  var dt = document.getElementById('data_referencia:data_referencia:inputId_input').value;
+	    	  jQuery("#listaPrescricoesEnfermagem\\:resultList tr td").each(function() {
+	   		        var $td = $(this);
+	   		        if ($td.text() == dt) {
+	   		        	$('#listaPrescricoesEnfermagem\\:resultList').find('.ui-datatable-scrollable-body').scrollTop(0);
+	   		        	var rowpos = $td.position().top;
+	   		        	$('#listaPrescricoesEnfermagem\\:resultList').find('.ui-datatable-scrollable-body').scrollTop(rowpos-26);
+	   		        }
+	    		});
+	      }
+		</script>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{selecionarPrescricaoEnfermagemController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{selecionarPrescricaoEnfermagemController}" />
+		
+		<script type="text/javascript" xml:space="preserve">	
+			//<![CDATA[
+				$('body').on('keydown', 'input, select, textarea', function(e) {
+				    var self = $(this)
+				      , form = self.parents('form:eq(0)')
+				      , focusable
+				      , next
+				      ;
+				    if (e.keyCode == 13) {
+				        focusable = form.find('input,a,select,button,textarea').filter(':visible');
+				        next = focusable.eq(focusable.index(this)+1);
+				        if (next.length) {
+				            next.focus();
+				        } else {
+				            form.submit();
+				        }
+				        return false;
+				    }
+				});	           
+			// ]]>
+		</script>
+			
+		<h:form prependId="false" id="formPesquisa">
+			<aghu:panelGeral legend="Consultar Prescrição Enfermagem">
+				<aghu:linha> 
+					<mec:pesquisaPaciente id="pesqPaciente"
+						valueChangeListener="#{selecionarPrescricaoEnfermagemController.pesquisaPaciente}"
+						value="#{selecionarPrescricaoEnfermagemController.paciente}"
+						render="selecionaPaciente, tabelaItensPrescricao_panel, tabelaItensPrescricaoDados_panel, seqAtendimento, containerPrescricoes"
+						onchange="#{selecionarPrescricaoEnfermagemController.limparCampos()}"/>
+							
+					<aghu:acao newLine="false">			
+			              <mec:commandButton value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true" 
+				              	action="#{selecionarPrescricaoEnfermagemController.redirecionarPesquisaFonetica}" 
+				              	styleClass=" bt_cinza icon-pesquisa-fonetica"> 
+			                <f:setPropertyActionListener target="#{pesquisaPacienteController.cameFrom}" 
+			                	value="prescricaoenfermagem-selecionarPrescricaoEnfermagem" for="command"/>  
+			                <f:setPropertyActionListener target="#{pesquisaPacienteController.exibeBotaoEditar}" 
+			                	value="false" for="command"/>  
+			                <f:setPropertyActionListener target="#{pesquisaPacienteController.obrigarLista}" 
+			                	value="true" for="command"/>		                
+	                  		<f:setPropertyActionListener target="#{pesquisaPacienteController.paramExibeBotaoIncluir}" 
+	                  			value="false" for="command"/>  
+			              </mec:commandButton>
+			        </aghu:acao>       
+	          </aghu:linha>
+				<aghu:linha>
+					<mec:inputText label="#{messages.LABEL_ATENDIMENTO}" size="10"
+						value="#{selecionarPrescricaoEnfermagemController.atendimento.seq}"
+						readonly="true" styleclass="suggestion_input"
+						style="text-transform:uppercase" id="seqAtendimento" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<br/>
+			<aghu:panelGeral legend="Prescrições de Enfermagem">
+				<aghu:linha>
+					<mec:inputTextData label="#{messages.LABEL_DATA_REFERENCIA_PRESC}"
+						title="#{messages.TITLE_DATA_REFERENCIA_PRESC}" size="10"
+						maxlength="10"
+						value="#{selecionarPrescricaoEnfermagemController.dtReferencia}"
+						id="data_referencia" tipo="data" />
+					<aghu:acao newLine="false">
+						<mec:commandButton id="posicionar_na_data"
+							value="#{messages.LABEL_POSICIONAR_NA_DATA}"
+							title="#{messages.LABEL_POSICIONAR_NA_DATA}"
+							action="#{selecionarPrescricaoEnfermagemController.filtrarPrescricoes}"
+							styleClass="bt_cinza" ajax="true" 
+							oncomplete="funcaoPosicionaNaLinha();"
+							render="listaPrescricoesEnfermagem, tabelaItensPrescricao_panel, tabelaItensPrescricaoDados_panel"
+							/>
+					</aghu:acao>
+				</aghu:linha>
+				<aghu:linha>
+					<p:outputPanel id="containerPrescricoes">
+						<mec:serverDataTable id="listaPrescricoesEnfermagem"
+							rendered="#{ fn:length(selecionarPrescricaoEnfermagemController.listaPrescricoes) gt 0}"
+							list="#{selecionarPrescricaoEnfermagemController.listaPrescricoes}"
+							controller="#{selecionarPrescricaoEnfermagemController}"
+                    		draggableColumns="false" selection="prescricaoEnfermagem"
+                    		render="tabelaItensPrescricao_panel, tabelaItensPrescricaoDados_panel"
+                    		scrollable="true" scrollHeight="151" scrollWidth="600">
+							<c:set var="_prescricao" value="#{item}" />
+							
+							<p:column headerText="#{messages.LABEL_ACAO}" width="1%">
+								 <mec:commandLink
+					            	id="imprimir" title="#{messages.LABEL_REIMPRIMIR}" 
+					            	action="#{selecionarPrescricaoEnfermagemController.reimprimirPrescricaoEnfermagem(_prescricao.id)}"
+					            	rendered="#{selecionarPrescricaoEnfermagemController.verificarDataFimMaiorAtual(_prescricao.dthrFim)}"
+					            	block="true"
+					            	styleClass=" silk-printer silk-icon">
+					            </mec:commandLink>
+				            </p:column>
+							
+							<p:column headerText="#{messages.LABEL_DT_REFERENCIA}" width="7%">
+								<h:outputText value="#{_prescricao.dtReferencia}">
+									<f:convertDateTime pattern="dd/MM/yyyy" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText="#{messages.LABEL_DT_INICIO}" width="7%">
+								<h:outputText value="#{_prescricao.dthrInicio}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText="#{messages.LABEL_DT_FIM}" width="7%">
+								<h:outputText value="#{_prescricao.dthrFim}">
+									<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText="#{messages.LABEL_PRESCRICAO}" width="7%">
+								<h:outputText value="#{_prescricao.id.seq}" />
+							</p:column>
+						</mec:serverDataTable>
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<br/>
+			<aghu:panelGeral legend="Itens da Prescrição de Enfermagem">
+				<aghu:linha>
+					<p:outputPanel id="tabelaItensPrescricao_panel" layout="inline">
+							<mec:serverDataTable id="listaItensPrescricaoEnfermagem"
+								rowKeyVar="_itemId"
+								rendered="#{fn:length(selecionarPrescricaoEnfermagemController.listaItensPrescricao) gt 0}"
+								list="#{selecionarPrescricaoEnfermagemController.listaItensPrescricao}"
+								controller="#{selecionarPrescricaoEnfermagemController}"
+                    			draggableColumns="false" selection="itemPrescricaoEnfermagem"
+                    			scrollable="true" >
+								
+								<c:set var="_item" value="#{item}" />
+								<p:column headerText="#{messages.LABEL_DESCRICAO}" width="50%">
+									<p:outputPanel layout="block"
+										styleClass="silk-icon silk-anchor"
+										rendered="#{_item.hierarquico}"
+										style="cursor: default !important; float: left; margin: -2px 5px 0 1px" />
+									<div
+										class="silk-icon icon-#{_item.tipo.toString().toLowerCase()}"
+										style="cursor: default !important; float: left; margin: -2px 5px 0 1px"
+										title="#{_item.tipo.titulo}" />
+									<h:outputText escape="false" value="#{_item.descricao}" />
+								</p:column>
+								<p:column headerText="#{messages.LABEL_DT_HORA_INI}" width="20%">
+									<h:outputText value="#{_item.dthrInicio}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="#{messages.LABEL_DT_HORA_FIM}" width="20%" >
+									<h:outputText value="#{_item.dthrFim}">
+										<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+									</h:outputText>
+								</p:column>
+								<p:column headerText="#{messages.LABEL_SITUACAO}" width="10%">
+									<h:outputText value="#{_item.situacao.descricao}" />
+								</p:column>
+							</mec:serverDataTable>
+					</p:outputPanel>
+				</aghu:linha>
+				<aghu:linha>
+				<br clear="none" />
+				</aghu:linha>
+				
+				<aghu:linha>
+					<p:outputPanel id="tabelaItensPrescricaoDados_panel"
+						layout="inline">
+						<mec:inputText label="#{messages.LABEL_PRESC_VALIDADA_POR}"
+							size="50"
+							value="#{selecionarPrescricaoEnfermagemController.itemPrescricaoEnfermagem.servidorValidacao.pessoaFisica.nome}"
+							readonly="true" styleclass="suggestion_input"
+							style="text-transform:uppercase" id="prescValidPor" />
+						<mec:inputText label="#{messages.LABEL_FIM_PRESC_VALIDADA_POR}"
+							size="50"
+							value="#{selecionarPrescricaoEnfermagemController.itemPrescricaoEnfermagem.servidorValidaMovimentacao.pessoaFisica.nome}"
+							readonly="true" styleclass="suggestion_input"
+							style="text-transform:uppercase" id="fimPrescValidPor" />
+						<mec:inputText label="#{messages.LABEL_CRIADO_EM}" size="15"
+							value="#{selecionarPrescricaoEnfermagemController.itemPrescricaoEnfermagem.criadoEm}"
+							readonly="true" datePattern="dd/MM/yyyy HH:mm"
+							styleclass="suggestion_input" style="text-transform:uppercase"
+							id="dthrInicio" />
+						<mec:inputText label="#{messages.LABEL_ALTERADO_EM}" size="15"
+							value="#{selecionarPrescricaoEnfermagemController.itemPrescricaoEnfermagem.alteradoEm}"
+							readonly="true" datePattern="dd/MM/yyyy HH:mm"
+							styleclass="suggestion_input" style="text-transform:uppercase"
+							id="dthrFim" />
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+					rendered="#{selecionarPrescricaoEnfermagemController.cameFrom != null and selecionarPrescricaoEnfermagemController.cameFrom ne 'manterPrescricaoEnfermagem'}"
+					action="#{selecionarPrescricaoEnfermagemController.voltar}"
+					styleClass=" alinha-direita bt_cinza" profile="back" />
+				<mec:commandButton id="bt_voltarManterPrescricaoEnfermagem"
+					value="#{messages.LABEL_VOLTAR}"
+					rendered="#{selecionarPrescricaoEnfermagemController.cameFrom eq 'manterPrescricaoEnfermagem'}"
+					action="#{selecionarPrescricaoEnfermagemController.voltarManterPrescricaoEnfermagem}"
+					styleClass=" alinha-direita icon-back bt_cinza" profile="back">
+					<f:setPropertyActionListener
+						target="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+						value="#{selecionarPrescricaoEnfermagemController.penAtdSeq}"
+						for="command" />
+					<f:setPropertyActionListener
+						target="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+						value="#{selecionarPrescricaoEnfermagemController.penSeq}"
+						for="command" />
+				</mec:commandButton>
+			</aghu:acao>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_MODELO_BASICO_DIETA}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterDietasModeloBasicoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterDietasModeloBasicoController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="formCadastroDieta"> 
+        <p:outputPanel id="panelCadastroDieta" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.LABEL_MODELO_BASICO_DIETA}"> 
+            <aghu:linha> 
+              <mec:inputText label="#{messages.LABEL_DESCRICAO_MODELO}" id="descricao" value="#{manterDietasModeloBasicoController.modeloBasico.descricao}" readonly="true" size="80"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:panelGeral> 
+            <aghu:linha> 
+              <p:outputPanel id="panelSugestionItem" layout="inline"> 
+                <mec:suggestionBox required="true" label="#{messages.LABEL_ITEM}" title="#{messages.TITLE_TIPO_ITEM_DIETA}" 
+                     descricaoInput="seq" descricaoLabel="descricao" 
+                     suggestionAction="obterTiposItemDieta" posDeleteAction="limpar" 
+                     posSelectionAction="populaDependencias" readonly="#{manterDietasModeloBasicoController.altera}" width="400" id="itemDieta"
+                     controller="#{manterDietasModeloBasicoController}" value="#{manterDietasModeloBasicoController.itemDieta.tipoItemDieta}" 
+                     render="panelQuantidade,panelFrequencia,panelAprazamento,panelNumeroVezes"
+                      var="_itemTipoDieta" itemValue="#{_itemTipoDieta}"> 
+                  <p:column>#{_itemTipoDieta.descricao}</p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelQuantidade" layout="inline">
+				<mec:inputDecimal
+					id="quantidade_input_decimal"
+					label="#{messages.LABEL_QUANTIDADE}"
+					title="#{messages.TITLE_QUANTIDADE}"				
+					inteiros="5"
+					decimais="2"
+					maxlength="8"
+					required="#{manterDietasModeloBasicoController.verificaRequiredQuantidade()}"
+					disabled="#{manterDietasModeloBasicoController.verificaDisabledQuantidade()}"
+					value="#{manterDietasModeloBasicoController.quantidade}">
+						<p:ajax event="change" immediate="true"
+							listener="#{manterDietasModeloBasicoController.marcarAlteracaoCampoFormularioItem}" />
+				</mec:inputDecimal>
+															
+				<mec:inputText label="#{messages.LABEL_UNIDADE}" value="#{manterDietasModeloBasicoController.unidade}" readonly="true" size="15" id="unidade"> 
+                  <p:ajax event="change" immediate="true" listener="#{manterDietasModeloBasicoController.marcarAlteracaoCampoFormularioItem}"/> 
+                </mec:inputText> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelFrequencia" layout="inline"> 
+                <mec:inputNumero
+                	id="input_frequencia"
+                	required="#{manterDietasModeloBasicoController.verificaRequiredFrequencia()}"
+					readonly="#{manterDietasModeloBasicoController.verificaDisabledAprazamento()}"
+                    disabled="#{manterDietasModeloBasicoController.verificaDisabledAprazamento()}"
+                   	size="5"
+                	maxlength="3"
+                	label="#{messages.LABEL_FREQUENCIA}"
+                	title="#{messages.TITLE_FREQUENCIA}"
+                	value="#{manterDietasModeloBasicoController.frequencia}">
+                    <p:ajax id="frequenciaSupOnChange" event="change" bypassUpdates="false" update="@(#tipoAprazamentoLabelPanel)" process="@this" listener="#{manterDietasModeloBasicoController.marcarAlteracaoCampoFormularioItem}"/> 
+                </mec:inputNumero>
+              </p:outputPanel>  
+              <p:outputPanel id="panelAprazamento" layout="inline"> 
+                <mec:suggestionBox label="#{messages.LABEL_TIPO_APRAZAMENTO}" 
+                title="#{messages.TITLE_SELECIONE_FREQUENCIA_APRAZAMENTO}" 
+                readonly="#{manterDietasModeloBasicoController.verificaDisabledAprazamento()}" 
+                descricaoInput="sigla" externalDescricaoLabel="descricaoTipoFrequenciaAprazamento" 
+                labelId="tipoAprazamentoLabelPanel" suggestionAction="buscarTiposFrequenciaAprazamento" 
+                posSelectionAction="verificarFrequencia" 
+                posDeleteAction="verificarFrequencia" id="tipoAprazamento" 
+                controller="#{manterDietasModeloBasicoController}" 
+                value="#{manterDietasModeloBasicoController.tipoAprazamento}" 
+                render="panelFrequencia"
+                var="_itemAprazamento" itemValue="#{_itemAprazamento}"> 
+                  <p:column>#{manterDietasModeloBasicoController.buscaDescricaoTipoFrequenciaAprazamento(_itemAprazamento)}</p:column>  
+                  <p:column>#{_itemAprazamento.sigla}</p:column> 
+                </mec:suggestionBox> 
+              </p:outputPanel>  
+              <p:outputPanel id="panelNumeroVezes" layout="inline"> 
+                <mec:field name="numeroVezes" label="#{messages.LABEL_NUMERO_VEZES}" title="#{messages.TITLE_NUMERO_VEZES}"> 
+                 <p:inputText id="input_numeroVezes" styleClass="numerico" converter="#{javax.faces.Byte}" value="#{manterDietasModeloBasicoController.itemDieta.numeroVezes}" readonly="#{manterDietasModeloBasicoController.verificaDisabledNumeroVezes()}" disabled="#{manterDietasModeloBasicoController.verificaDisabledNumeroVezes()}" size="5" maxlength="2"> 
+                    <p:ajax event="change" immediate="true" listener="#{manterDietasModeloBasicoController.marcarAlteracaoCampoFormularioItem}"/> 
+                  </p:inputText> 
+                </mec:field> 
+              </p:outputPanel>  
+              <aghu:acao newLine="false"> 
+                <p:outputPanel id="panelAdicionar" layout="inline"> 
+                  <mec:commandButton id="bt_adicionarItem" value="#{manterDietasModeloBasicoController.altera ? messages.LABEL_ALTERAR : messages.LABEL_ADICIONAR}" action="#{manterDietasModeloBasicoController.adicionar}" profile="ok" styleClass="#{manterDietasModeloBasicoController.altera ? ' ' : ' '}"/>  
+                  <mec:commandButton id="bt_cancEdicItemDieta" value="#{messages.LABEL_CANCEL_EDI}" process="@this" rendered="#{manterDietasModeloBasicoController.altera == true}" action="#{manterDietasModeloBasicoController.preparaCancelamentoEdicao}" render="panelSugestionItem, panelQuantidade, panelFrequencia, panelAprazamento, panelNumeroVezes, panelTabelaItensDieta, panelAdicionar" ajax="true" immediate="true" profile="cancel"/> 
+                </p:outputPanel> 
+              </aghu:acao> 
+            </aghu:linha>  
+            <aghu:linha>              
+              <p:outputPanel id="panelTabelaItensDieta" styleClass="tabela-hachurada" layout="inline"> 
+                <mec:serverDataTable id="tabelaItensDieta" style="margin: 0px !important;" 
+                	list="#{manterDietasModeloBasicoController.listaItemModeloBasicoDieta}" draggableColumns="false"
+                	scrollable="true" scrollHeight="120"> 
+                  <c:set var="_item" value="#{item}"/>  
+                  <p:column styleClass="first-column auto-adjus" style="#{(_item.id.tipoItemDietaSeq == manterDietasModeloBasicoController.tipoItemDietaSeq)?'background-color:#EEE8AA':''}">
+                    <f:facet name="header"> 
+                         <h:outputText value="#{messages.LABEL_ACOES}"/> 
+                    </f:facet>
+                    <mec:commandLink rendered="#{_item.id.tipoItemDietaSeq == manterDietasModeloBasicoController.tipoItemDietaSeq}" onclick="return false;" styleClass=" silk-blank silk-icon" ajax="true"/>  
+                    <mec:commandLink action="#{manterDietasModeloBasicoController.preparaAlterar(_item.id.modeloBasicoPrescricaoSeq, _item.id.modeloBasicoDietaSeq, _item.id.tipoItemDietaSeq)}" title="#{messages.LABEL_EDITAR}" process="@this" rendered="#{_item.id.tipoItemDietaSeq != manterDietasModeloBasicoController.tipoItemDietaSeq}" profile="edit" ajax="true" render="panelSugestionItem, panelQuantidade, panelFrequencia, panelAprazamento, panelNumeroVezes, panelTabelaItensDieta, panelAdicionar" />  
+                    <mec:commandLink title="#{messages.LABEL_EXCLUIR}" styleClass="silk-icon silk-delete" immediate="true" onclick="PF('modalConfirmacaoExclusaoWG').show();" ajax="true" process="@this"> 
+                      <f:setPropertyActionListener target="#{manterDietasModeloBasicoController.mpmItemModeloBasicoDietaId.modeloBasicoPrescricaoSeq}" value="#{_item.id.modeloBasicoPrescricaoSeq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{manterDietasModeloBasicoController.mpmItemModeloBasicoDietaId.modeloBasicoDietaSeq}" value="#{_item.id.modeloBasicoDietaSeq}" for="command"/>  
+                      <f:setPropertyActionListener target="#{manterDietasModeloBasicoController.mpmItemModeloBasicoDietaId.tipoItemDietaSeq}" value="#{_item.id.tipoItemDietaSeq}" for="command"/> 
+                    </mec:commandLink> 
+                  </p:column>  
+                  <p:column style="#{(_item.id.tipoItemDietaSeq == manterDietasModeloBasicoController.tipoItemDietaSeq)?'background-color:#EEE8AA':''}"> 
+                  	<f:facet name="header"> 
+                         <h:outputText value="#{messages.LABEL_ITENS}"/> 
+                    </f:facet>
+                    <h:outputText value="#{_item.descricaoEditada}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+              </p:outputPanel> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <p:outputPanel id="panelObservacao" layout="inline"> 
+                <mec:inputTextArea cols="120" rows="2" label="#{messages.LABEL_OBSERVACAO}" value="#{manterDietasModeloBasicoController.modeloBasicoDieta.observacao}" id="observacao" title="#{messages.TITLE_OBSERVACAO_DIETA}" required="false" maxlength="500"/>  
+                <mec:selectBooleanCheckbox label="#{messages.LABEL_BOMBA_INFUSAO}" title="#{messages.TITLE_BOMBA_INFUSAO_DIETA}" value="#{manterDietasModeloBasicoController.modeloBasicoDieta.indBombaInfusao}" id="bombaInfusao"> 
+                  <p:ajax event="change" process="@this"/> 
+                </mec:selectBooleanCheckbox> 
+              </p:outputPanel> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" action="#{manterDietasModeloBasicoController.gravar}" process="@this, @(#observacao)" profile="ok" ajax="true" render="panelCadastroDieta,panelTabelaItensDieta"/>  
+            <mec:commandButton id="bt_limparItem" value="#{messages.LABEL_LIMPAR}" action="#{manterDietasModeloBasicoController.limpar}" profile="clear" ajax="true" render="panelCadastroDieta,panelTabelaItensDieta" process="@this"/>  
+            <mec:commandButton immediate="true" id="bt_voltar" action="#{manterDietasModeloBasicoController.verificaPendencias}" value="#{messages.LABEL_VOLTAR}" styleClass=" alinha-direita bt_cinza" ajax="true" profile="back"/> 
+          </aghu:acao> 
+        </p:outputPanel> 
+      </h:form>  
+      <p:dialog id="modalConfirmacaoExclusao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_EXCLUSAO_ITENS_DIETA}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalExclusao"> 
+            <mec:commandButton id="bt_excluir" value="#{messages.LABEL_SIM}" action="#{manterDietasModeloBasicoController.excluir}" profile="ok"/>  
+            <mec:commandButton id="bt_cancelar" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoExclusaoWG').hide();;return false;" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoPendencia" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoPendenciaWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalPendencias"> 
+            <mec:commandButton id="bt_sim" value="#{messages.LABEL_SIM}" action="#{manterDietasModeloBasicoController.voltar}" profile="ok"/>  
+            <mec:commandButton id="bt_nao" value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoPendenciaWG').hide();;return false;" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>   
+      
+      <p:dialog id="modalConfirmacaoEdicao" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoEdicaoWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_PENDENCIAS_ITENS_MODELO_BASICO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalEdicao"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" action="#{manterDietasModeloBasicoController.editarItem()}" oncomplete="PF('modalConfirmacaoEdicaoWG').hide();return false;" profile="ok" ajax="true" render="panelSugestionItem, panelQuantidade, panelFrequencia, panelAprazamento, panelNumeroVezes, panelTabelaItensDieta, panelAdicionar" process="@this"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" onclick="PF('modalConfirmacaoEdicaoWG').hide();return false;" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog> 
+   
+    </ui:define> 
+  </ui:composition> 
+</html>

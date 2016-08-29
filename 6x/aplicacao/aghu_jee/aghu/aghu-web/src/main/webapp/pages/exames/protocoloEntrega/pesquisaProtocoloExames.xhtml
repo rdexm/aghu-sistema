@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+xmlns:mf="http://www.mec.gov.br/taglib">
+
+  <ui:composition>  
+    <script type="text/javascript" xml:space="preserve">
+		/*  <![CDATA[ */
+			function sliderClick(sliderIndex) {
+				setSliderPosAlta(sliderIndex);
+				var tpArray = new Array();
+				tpArray[0] = "togglePanelPesquisaProtocoloExames";					
+				controlaSliderClick(sliderIndex, tpArray);
+			}
+			
+		/* ]]> */
+		</script>  
+   
+    <p:accordionPanel id="togglePanelPesquisaProtocoloExames" prependId="false"> 
+    
+      <p:tab title="#{messages.LABEL_PESQUISA_LAUDO_ENTREGA}">
+        <aghu:panelGeral legend="#{messages.LABEL_PACIENTE}"  layout="block"> 
+          <aghu:linha> 
+             
+                <mec:serverDataTable id="tblistaPacientes" 
+                					 scrollHeight="100"
+                					 controller="#{pesquisaProtocoloExamesController}"
+                					 list="#{pesquisaProtocoloExamesController.listaPacientes}" 
+                					 selection="pacienteSelecionado"
+                					 scrollable="true"> 
+                
+                					  
+                  <c:set var="_item" value="#{item}"/>
+                  <p:ajax event="rowSelect" update="@(#tblistaProtocolo)" listener="#{pesquisaProtocoloExamesController.selecionarPaciente()}" />    
+                  <p:column width="50%" style="#{pesquisaProtocoloExamesController.isPacienteEmEdicao(_item.codigo, _item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_NOME_SOCIAL_DO_PACIENTE}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.nomePaciente}"/> 
+                  </p:column>  
+                  <p:column width="25%" style="#{pesquisaProtocoloExamesController.isPacienteEmEdicao(_item.codigo, _item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_PRONTUARIO_PAC}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.prontuario}" styleClass="mask_prontuario"> 
+                    	<f:converter converterId="prontuarioConverter"/> 
+                    </h:outputText> 
+                  </p:column>  
+                  <p:column width="25%" style="#{pesquisaProtocoloExamesController.isPacienteEmEdicao(_item.codigo, _item.consulta) ? 'background-color:#EEE8AA' : ''}"> 
+                    <f:facet name="header"> 
+                      <h:outputText value="#{messages.LABEL_CONSULTA}"/> 
+                    </f:facet>  
+                    <h:outputText value="#{_item.consulta}"/> 
+                  </p:column> 
+                </mec:serverDataTable> 
+           
+          </aghu:linha> 
+        </aghu:panelGeral>
+        
+        
+        <aghu:panelGeral legend="#{messages.LABEL_LAUDO_ENTREGUE}"> 
+            <aghu:column type="table">
+                  <p:outputPanel id="panelExames" layout="block"> 
+                      <mec:serverDataTable 
+                      				   id="tblistaProtocolo" 
+                					   list="#{pesquisaProtocoloExamesController.listaResultadoPesquisaProtocolo}" 
+                					   scrollHeight="200"
+                					   scrollable="true"
+                					   selection="resultadoPesquisaProtocoloVO"
+                					   controller="#{pesquisaProtocoloExamesController}">  
+                					   
+                	<p:ajax event="rowSelect" listener="#{pesquisaProtocoloExamesController.selecionaPaciente}"	update="@(#panelItensProtocolo) @(#panelGerarNovoProtocolo)" />	
+                					   
+                    <c:set var="item" value="#{item}"/>
+                        
+                        <p:column width="10%"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_PROTOCOLO_ENTREGA_EXAMES}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{item.protocolo}"/> 
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_RETIRADO_EM}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{item.retiradoEm}"> 
+                           	<f:convertDateTime pattern="dd/MM/yy HH:mm"/>
+                          </h:outputText> 
+                        </p:column> 
+                        <p:column width="50%"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_RETIRADO_POR}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{item.retiradoPor}"/> 
+                        </p:column> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_USUARIO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{item.usuario}"/> 
+                        </p:column> 
+                      </mec:serverDataTable> 
+                  </p:outputPanel> 
+            </aghu:column>
+         </aghu:panelGeral> 
+         <aghu:panelGeral legend="#{messages.LABEL_ITENS_PROTOCOLO}"> 
+            <aghu:column type="table">
+                  <p:outputPanel id="panelItensProtocolo" layout="block"> 
+                      <mec:serverDataTable id="tblistaItesProtocolo" 
+                      					   list="#{pesquisaProtocoloExamesController.listaItensProtocolo}" 
+                      					   scrollHeight="200"
+                      					   rendered="#{pesquisaProtocoloExamesController.selecionado}"
+                                       	   style="width: 60px"
+                      					   scrollable="true">  
+                        <c:set var="item" value="#{item}"/>
+                        <p:column width="20%"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_SOLICITACAO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{item.solicitacao}"/> 
+                        </p:column>  
+                        <p:column  width="80%"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_EXAMES_AMOSTRA}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{item.exame}"/> 
+                        </p:column> 
+                      </mec:serverDataTable> 
+                  </p:outputPanel> 
+            </aghu:column>
+         </aghu:panelGeral> 
+         <aghu:linha> 
+          <p:outputPanel id="panelGerarNovoProtocolo" layout="inline"> 
+            <mec:commandButton id="btGerarNovoProtocolo"  
+            	value="#{messages.LABEL_GERAR_NOVO_PROTOCOLO}" 
+            	action="#{pesquisaProtocoloExamesController.gerarNovoProtocolo}"
+            	profile="ok"
+	            disabled="#{!pesquisaProtocoloExamesController.selecionado}"> 
+	              <f:setPropertyActionListener target="#{protocoloEntregaExamesController.numeroNovoProtocolo}" value="#{pesquisaProtocoloExamesController.numeroProtocolo}" for="command"/> 
+	              <f:setPropertyActionListener target="#{protocoloEntregaExamesController.listaPacientes}" value="#{pesquisaProtocoloExamesController.listaPacientes}" for="command"/>  
+	              <f:setPropertyActionListener target="#{protocoloEntregaExamesController.listaResultado}" value="#{pesquisaProtocoloExamesController.listaResultadoPesquisa}" for="command"/>
+            </mec:commandButton> 
+          </p:outputPanel> 
+        </aghu:linha>
+      </p:tab>
+    </p:accordionPanel> 
+  </ui:composition>
+</html>

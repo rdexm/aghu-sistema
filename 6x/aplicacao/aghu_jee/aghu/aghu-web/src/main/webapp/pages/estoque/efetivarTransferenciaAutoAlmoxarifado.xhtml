@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+	<ui:define name="head">
+		<title>#{messages.LABEL_EFETIVACAO_TRANSF_AUTO_ALMOXARIFADOS}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction
+				action="#{efetivarTransfAutoAlmoxarifadoController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig
+			controller="#{efetivarTransfAutoAlmoxarifadoController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formTransferenciaAlmoxarifados">
+			<pe:remoteCommand name="excluir">
+				<pe:assignableParam name="param1"
+					assignTo="#{efetivarTransfAutoAlmoxarifadoController.ealSeq}" />
+				<pe:assignableParam name="param2"
+					assignTo="#{efetivarTransfAutoAlmoxarifadoController.trfSeq}" />
+			</pe:remoteCommand>
+		
+			<aghu:panelGeral
+				legend="#{messages.LABEL_EFETIVACAO_TRANSF_AUTO_ALMOXARIFADOS}">
+				<aghu:linha>
+					<mec:inputNumero label="#{messages.LABEL_NUMERO}" size="15"
+						readonly="true"
+						value="#{efetivarTransfAutoAlmoxarifadoController.transferencia.seq}"
+						id="numTransf" />
+					<mec:inputText label="#{messages.LABEL_DATA_HORA_GERADO_EM}"
+						size="95" readonly="true"
+						value="#{efetivarTransfAutoAlmoxarifadoController.getGeradoEm()}"
+						id="geradoEm" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:inputText label="#{messages.LABEL_ALMOXARIFADO_ORIGEM}"
+						readonly="true"
+						value="#{efetivarTransfAutoAlmoxarifadoController.getAlmoxarifadoOrigem()}"
+						size="55" id="almoxarifadoOrig" />
+					<mec:inputText label="#{messages.LABEL_ALMOXARIFADO_DESTINO}"
+						readonly="true"
+						value="#{efetivarTransfAutoAlmoxarifadoController.getAlmoxarifadoDestino()}"
+						size="55" id="almoxarifadoDest" />
+				</aghu:linha>
+				<aghu:linha>
+					<mec:suggestionBox id="sbClassificacaoMaterial"
+						label="#{messages.LABEL_CLASSIFICACAO_MATERIAL}"
+						title="#{messages.TITLE_TRANSF_AUTO_ALMOXARIFADO_CLASSIFICACAO_MATERIAL}"
+						suggestionAction="obterClassificacaoMaterial"
+						descricaoInput="id.numero" descricaoLabel="id.descricao"
+						maxlength="30" width="650" required="true"
+						controller="#{efetivarTransfAutoAlmoxarifadoController}"
+						value="#{efetivarTransfAutoAlmoxarifadoController.classificacaoMaterial}">
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_NUMERO}</b>
+							</f:facet> #{item.id.numero}
+             			</p:column>
+						<p:column>
+							<f:facet name="header">
+								<b>#{messages.LABEL_DESCRICAO}</b>
+							</f:facet> #{item.id.descricao}
+              			</p:column>
+					</mec:suggestionBox>
+					
+					<mec:selectBooleanCheckbox label="#{messages.LABEL_EFETIVADO}" 
+						value="#{efetivarTransfAutoAlmoxarifadoController.transferencia.efetivada}" id="efetivado"
+						readonly="true" />
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<mec:commandButton id="bt_gravarTransf"
+					value="#{messages.LABEL_GRAVAR}" block="true"
+					action="#{efetivarTransfAutoAlmoxarifadoController.gravar}"
+					profile="ok" />
+				<mec:commandButton id="bt_efetivar"
+					value="#{messages.LABEL_EFETIVAR}"
+					disabled="#{efetivarTransfAutoAlmoxarifadoController.transferencia.efetivada}"
+					block="true"
+					action="#{efetivarTransfAutoAlmoxarifadoController.efetivar}"
+					render="panelItensTransferencia" profile="ok" />
+				<mec:commandButton id="bt_imprime_buttonView"
+					value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+					action="#{relatorioTransferenciaMaterialController.print}"
+					profile="view" onclick="PF('loadDialogWG').show()">
+					<f:setPropertyActionListener target="#{relatorioTransferenciaMaterialController.numTransferenciaMaterial}" value="#{efetivarTransfAutoAlmoxarifadoController.transferencia.seq}" for="command"/>
+					<f:setPropertyActionListener target="#{relatorioTransferenciaMaterialController.origem}" value="estoque-efetivarTransferenciaAutoAlmoxarifado" for="command"/>
+				</mec:commandButton>
+				<mec:commandButton id="bt_imprime_buttonPrint"
+					value="#{messages.LABEL_IMPRIMIR}"
+					action="#{relatorioTransferenciaMaterialController.impressaoDireta}"
+					profile="print" onclick="PF('loadDialogWG').show()" immediate="true" >
+					<f:setPropertyActionListener target="#{relatorioTransferenciaMaterialController.numTransferenciaMaterial}" value="#{efetivarTransfAutoAlmoxarifadoController.transferencia.seq}" for="command"/>
+					<f:setPropertyActionListener target="#{relatorioTransferenciaMaterialController.origem}" value="estoque-efetivarTransferenciaAutoAlmoxarifado" for="command"/>
+				</mec:commandButton>
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+					profile="back" bean="#{efetivarTransfAutoAlmoxarifadoController}" immediate="true"
+					action="#{efetivarTransfAutoAlmoxarifadoController.cancelar}" />
+			</aghu:acao>
+		</h:form>
+		<p:outputPanel id="panelItensTransferencia" layout="inline">
+			<p:outputPanel
+				rendered="#{not empty efetivarTransfAutoAlmoxarifadoController.listaItensTranferencia}"
+				layout="inline">
+				<h:form prependId="false" id="formItensTransferencia">
+					<aghu:panelGeral legend="#{messages.LABEL_ITENS_TRANSFERENCIA}">
+						<aghu:linha>
+							<mec:suggestionBox id="sbMaterial"
+								label="#{messages.LABEL_MATERIAL}"
+								title="#{messages.TITLE_MATERIAL}"
+								suggestionAction="obterMaterial"
+								posSelectionAction="habilitaBotaoGravar"
+								posDeleteAction="desabilitaBotaoGravar"
+								descricaoInput="material.codigo" descricaoLabel="material.nome"
+								styleClassField="frm_obrigatorio" width="620" maxlength="30"
+								controller="#{efetivarTransfAutoAlmoxarifadoController}"
+								value="#{efetivarTransfAutoAlmoxarifadoController.estoqueAlmoxarifado}"
+								render="button_Div">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_CODIGO}</b>
+									</f:facet> #{item.material.codigo}
+                  </p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_DESCRICAO}</b>
+									</f:facet> #{item.material.nome}
+                  </p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_UNIDADE_MEDIDA}</b>
+									</f:facet> #{item.material.unidadeMedida.descricao}
+                  </p:column>
+							</mec:suggestionBox>
+							<mec:inputNumero id="qtdeEnviadaItem"
+								value="#{efetivarTransfAutoAlmoxarifadoController.qtdeEnviada}"
+								size="8" maxlength="7" label="#{messages.LABEL_QTDE_ENVIADA}"
+								styleClassField="frm_obrigatorio" styleclass="suggestion_input" />
+							<p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" for="qtdeEnviadaItem"> 
+								<h:outputText value="#{messages.TITLE_QTDE_ENVIADA}"/> 
+							</p:tooltip>
+							<div style="float: left; margin-top: 21px;">
+								<p:outputPanel layout="block" id="button_Div">
+									<mec:commandButton id="bt_gravar"
+										disabled="#{not efetivarTransfAutoAlmoxarifadoController.habilitaBotao}"
+										value="#{messages.LABEL_GRAVAR}" block="true"
+										action="#{efetivarTransfAutoAlmoxarifadoController.adicionar}"
+										render="panelItensTransferencia" profile="search" />
+								</p:outputPanel>
+							</div>
+						</aghu:linha>
+						<aghu:linha>
+								<mec:serverDataTable
+									list="#{efetivarTransfAutoAlmoxarifadoController.listaItensTranferencia}"
+									selection="itemTrsSelecionado"
+									controller="#{efetivarTransfAutoAlmoxarifadoController}"
+									scrollable="true">
+									<c:set var="_itemTransferencia" value="#{item}" />
+									<p:column>
+										<f:facet name="header">
+											<h:outputText value="#{messages.LABEL_ACAO}" />
+										</f:facet>
+										<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+											onclick="excluir('#{_itemTransferencia.id.ealSeq}','#{_itemTransferencia.id.trfSeq}'); PF('modalConfirmacaoExclusaoWG').show();;"
+											styleClass="silk-icon silk-delete" ajax="true" />
+										<mec:commandLink
+											title="#{messages.TITLE_VISUALIZAR_SALDO_ESTOQUE}"
+											action="#{efetivarTransfAutoAlmoxarifadoController.pesquisarEstoqueAlmoxarifado}"
+											styleClass=" silk-magnifier silk-icon" ajax="true">
+											<f:setPropertyActionListener
+												target="#{pesquisaEstoqueAlmoxPaginatorController.estoqueAlmox.seq}"
+												value="#{_itemTransferencia.estoqueAlmoxarifado.seq}"
+												for="command" />
+											<f:setPropertyActionListener
+												target="#{pesquisaEstoqueAlmoxPaginatorController.voltarPara}"
+												value="estoque-efetivarTransferenciaAutoAlmoxarifado"
+												for="command" />
+										</mec:commandLink>
+										<mec:commandLink
+											title="#{messages.TITLE_DESBLOQUEAR_SEM_PROBLEMA}"
+											action="#{efetivarTransfAutoAlmoxarifadoController.desbloquearMaterial}"
+											styleClass=" silk-lock-open silk-icon" ajax="true">
+											<f:setPropertyActionListener
+												target="#{materialBloqueioDesbloqueioController.estAlmoxSeq}"
+												value="#{_itemTransferencia.estoqueAlmoxarifado.seq}"
+												for="command" />
+											<f:setPropertyActionListener
+												target="#{materialBloqueioDesbloqueioController.voltarPara}"
+												value="estoque-efetivarTransferenciaAutoAlmoxarifado"
+												for="command" />
+											<f:setPropertyActionListener
+												target="#{materialBloqueioDesbloqueioController.acaoBloDesb}"
+												value="DESB" for="command" />
+										</mec:commandLink>
+										<mec:commandLink
+											title="#{messages.TITLE_DESBLOQUEAR_COM_PROBLEMA}"
+											action="#{efetivarTransfAutoAlmoxarifadoController.desbloquearMaterialProblema}"
+											styleClass=" silk-lock-open silk-icon" ajax="true">
+											<f:setPropertyActionListener
+												target="#{pesquisarMaterialBloqueioDesbloqueioProblemaPaginatorController.almSeq}"
+												value="#{_itemTransferencia.estoqueAlmoxarifado.almoxarifado.seq}"
+												for="command" />
+											<f:setPropertyActionListener
+												target="#{pesquisarMaterialBloqueioDesbloqueioProblemaPaginatorController.codMaterial}"
+												value="#{_itemTransferencia.estoqueAlmoxarifado.material.codigo}"
+												for="command" />
+											<f:setPropertyActionListener
+												target="#{pesquisarMaterialBloqueioDesbloqueioProblemaPaginatorController.frnNumero}"
+												value="#{_itemTransferencia.estoqueAlmoxarifado.fornecedor.numero}"
+												for="command" />
+											<f:setPropertyActionListener
+												target="#{pesquisarMaterialBloqueioDesbloqueioProblemaPaginatorController.voltarPara}"
+												value="estoque-efetivarTransferenciaAutoAlmoxarifado"
+												for="command" />
+										</mec:commandLink>
+									</p:column>
+									<p:column>
+										<f:facet name="header" style="white-space:nowrap;">
+											<h:outputText value="#{messages.LABEL_MATERIAL}" />
+										</f:facet>
+										<h:outputText
+											value="#{_itemTransferencia.estoqueAlmoxarifado !=null and _itemTransferencia.estoqueAlmoxarifado.material != null ? _itemTransferencia.estoqueAlmoxarifado.material.codigo : ''}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header" style="white-space:nowrap;">
+											<h:outputText
+												value="#{messages.LABEL_NOME_MATERIAL_CATALOGO}" />
+										</f:facet>
+										<h:outputText
+											value="#{_itemTransferencia.estoqueAlmoxarifado !=null and _itemTransferencia.estoqueAlmoxarifado.material != null ? _itemTransferencia.estoqueAlmoxarifado.material.nome : ''}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header" style="white-space:nowrap;">
+											<h:outputText
+												value="#{messages.LABEL_UNIDADE_MEDIDA_MATERIAL_CATALOGO}" />
+										</f:facet>
+										<h:outputText
+											value="#{_itemTransferencia.estoqueAlmoxarifado !=null and _itemTransferencia.estoqueAlmoxarifado.unidadeMedida != null ? _itemTransferencia.estoqueAlmoxarifado.unidadeMedida.descricao : ''}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header" style="white-space:nowrap;">
+											<h:outputText
+												value="#{messages.LABEL_QUANTIDADE_CONSULTAR_NR}" />
+										</f:facet>
+										<h:outputText
+											value="#{_itemTransferencia.quantidade !=null ? _itemTransferencia.quantidade : ''}" />
+									</p:column>
+									<p:column>
+										<f:facet name="header" style="white-space:nowrap;">
+											<h:outputText value="#{messages.LABEL_QTDE_ENVIADA}" />
+										</f:facet>
+										<h:inputText id="qtdeEnviada" value="#{_itemTransferencia.qtdeEnviada}" size="4" maxlength="3" showLabel="false" styleclass="numerico">
+											<p:ajax event="blur" process="@this" listener="#{efetivarTransfAutoAlmoxarifadoController.selecionarItem(_itemTransferencia)}" />
+										</h:inputText>
+									</p:column>
+									<p:column>
+										<f:facet name="header" style="white-space:nowrap;">
+											<h:outputText value="#{messages.LABEL_ENDERECO}" />
+										</f:facet>
+										<h:outputText
+											value="#{_itemTransferencia.estoqueAlmoxarifado !=null and _itemTransferencia.estoqueAlmoxarifado.endereco!=null ? _itemTransferencia.estoqueAlmoxarifado.endereco : ''}" />
+									</p:column>
+								</mec:serverDataTable>
+						</aghu:linha>
+					</aghu:panelGeral>
+				</h:form>
+			</p:outputPanel>
+		</p:outputPanel>
+		<p:dialog id="modalConfirmacaoExclusao" width="400" height="150"
+			modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG">
+			<f:facet name="header">
+				<h:outputText value="#{messages.LABEL_EXCLUSAO_ITENS_TRANSFERENCIA}" />
+			</f:facet> #{messages.MENSAGEM_CONFIRMACAO_EXCLUSAO} 
+        <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalExclusao"
+					name="formModalExclusao">
+					<mec:commandButton value="#{messages.LABEL_SIM}" id="bt_excluir"
+						block="true"
+						action="#{efetivarTransfAutoAlmoxarifadoController.excluir}"
+						profile="ok" />
+					<mec:commandButton value="#{messages.LABEL_NAO}"
+						onclick="PF('modalConfirmacaoExclusaoWG').hide();"
+						id="bt_cancelarExcluir" profile="cancel" ajax="true" />
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

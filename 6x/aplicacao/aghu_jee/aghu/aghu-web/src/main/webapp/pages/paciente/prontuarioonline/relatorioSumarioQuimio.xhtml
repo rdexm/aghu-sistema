@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	  xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	  xmlns:p="http://primefaces.org/ui" 
+	  xmlns:pe="http://primefaces.org/ui/extensions" 
+	  xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets" 
+	  xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	  xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	  xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	  xmlns:mf="http://www.mec.gov.br/taglib">  
+	  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_SUMARIO_PRESCRICAO_QUIMIO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{sumarioQuimioPOLController}"/>  
+      <h:form prependId="false" id="form_relatoriosPrescricaoQuimio"> 
+        <aghu:panelGeral id="ffdl_informacoes" legend="#{messages.TITLE_SUMARIO_PRESCRICAO_QUIMIO}"> 
+          <p:tabView id="atenderTab" dynamic="true" activeIndex="#{sumarioQuimioPOLController.indexTabSelecionado}" prependId="false" >
+            <c:forEach items="#{sumarioQuimioPOLController.listQuinzenaQuimioSelecionada}" var="vo">  
+            
+              <p:tab id="tab#{vo.idx}" > 
+                <f:facet name="title"> 
+                  <p:outputPanel id="outputPanelId#{vo.idx}" layout="inline"> 
+                    <h:outputText value="#{vo.dtInicio}"> 
+                      <f:convertDateTime pattern="dd/MM/yy"/> 
+                    </h:outputText>  
+                    <h:outputText value=" - "/>  
+                    <h:outputText value="#{vo.dtFim}"> 
+                      <f:convertDateTime pattern="dd/MM/yy"/> 
+                    </h:outputText> 
+                  </p:outputPanel> 
+                </f:facet>  
+                <p:media id="media-#{vo.idx}" align="middle" rendered="#{not empty vo.colecao}" width="98%" height="400" reRenderAfterComplete="media-#{vo.idx}" player="pdf" value="#{sumarioQuimioPOLController.renderPdf}" cache="false"> 
+                  <f:param name="cid" value="#{javax.enterprise.context.conversation.id}"/> 
+                </p:media>  
+                <div align="center"> 
+                  <h:outputText value="#{messages.MENSAGEM_RELATORIO_NAO_DISPONIVEL}" rendered="#{empty vo.colecao}"/> 
+                </div> 
+              </p:tab> 
+            </c:forEach> 
+          </p:tabView>  
+          <h:outputText value="#{messages.MENSAGEM_NENHUMA_PRESCRICAO_SELECIONADA}" rendered="#{empty sumarioQuimioPOLController.listQuinzenaQuimioSelecionada}"/> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_imprimir" value="#{messages.LABEL_IMPRIMIR}" action="#{sumarioQuimioPOLController.directPrint}" disabled="#{!mf:hasPermission(securityController,'permiteImprimirSumarioPrescrQuimioPOL,permitir')}" profile="print"/>  
+          <mec:commandButton value="#{messages.LABEL_VOLTAR}" action="#{sumarioQuimioPOLController.voltar}" styleClass="bt_voltar bt_cinza" profile="back"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

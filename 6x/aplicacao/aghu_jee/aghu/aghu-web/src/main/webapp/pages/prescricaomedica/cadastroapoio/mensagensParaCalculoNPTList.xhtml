@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" 
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" 
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:pe="http://primefaces.org/ui/extensions" 
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component" 
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core" 
+	xmlns:h="http://xmlns.jcp.org/jsf/html" 
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" 
+	xmlns:mf="http://www.mec.gov.br/taglib">  
+	 
+  	<ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+  	
+    <ui:define name="head"> 
+      <title> :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{mensagemParaCalculoNPTPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+    
+    	<aghu:panelGeral legend="#{messages.LABEL_PANEL_FILTRO}">
+    		<aghu:linha>
+    			<mec:inputNumero id="codigo" value="#{mensagemParaCalculoNPTPaginatorController.filtro.seq}" 
+    			label="#{messages.LABEL_CODIGO}" size="5"
+    			title="#{messages.INFORMAR_CODIGO_SEQUENCIAL}"
+    			jsfConverter="javax.faces.Long"/>
+    			
+    			<mec:inputText id="descricao" label="#{messages.LABEL_DESCRICAO}" 
+    			title="#{messages.INFORMAR_DESCRICAO_MENSAGEM}"  style="text-transform:uppercase"
+    			value="#{mensagemParaCalculoNPTPaginatorController.filtro.descricao}" 
+    			maxlength="2000" size="100"/>
+    			
+    			<mec:selectOneMenu id="situacao"
+				label="#{messages.LABEL_TIPO_FREQUENCIA_APRAZAMENTO_SITUACAO}"
+				title="#{messages.SELECIONAR_SITUACAO_MENSAGEM}"
+				value="#{mensagemParaCalculoNPTPaginatorController.situacao}"
+				enum="DominioSituacao" />
+    			
+    		</aghu:linha>
+    	</aghu:panelGeral>
+    	<br />
+    	<aghu:acao>
+	   		<mec:commandButton id="bt_pesquisar" title="#{messages.BT_GERAR_ARQ_LIC}" value="#{messages.LABEL_PESQUISAR}" action="#{mensagemParaCalculoNPTPaginatorController.pesquisar}" profile="search"/>  
+	       	<mec:commandButton id="bt_limpar" immediate="true" process="@this" value="#{messages.LABEL_LIMPAR}"  action="#{mensagemParaCalculoNPTPaginatorController.limparPesquisa}"  profile="clear"/>
+	       	<mec:commandButton value="#{messages.LABEL_NOVO}" id="bt_iniciarInclusao" action="#{mensagemParaCalculoNPTPaginatorController.novo}" 
+	       	rendered="#{mensagemParaCalculoNPTPaginatorController.dataModel.pesquisaAtiva and  mf:hasPermission(securityController,'manterCadastrosNPT,executar')}" profile="add"/>
+    	</aghu:acao>
+    	<br />
+    	<br />
+      </h:form>
+
+	<h:form prependId="false" id="formMensagens">
+		<aghu:linha>
+		<mec:serverDataTable id="tabelaMensagens" dataModel="dataModel"
+		controller="#{mensagemParaCalculoNPTPaginatorController}" selection="mensagemMouseOver">
+				
+			<p:column headerText="#{messages.LABEL_ACOES_TIPOS_RESPOSTAS_CONSULTORIA}" style="width:7%; text-align: center" exportable="false"
+			rendered="#{mf:hasPermission(securityController,'manterCadastrosNPT,executar')}">
+			
+				<mec:commandLink action="#{mensagemParaCalculoNPTPaginatorController.editar}" title="#{messages.LABEL_EDITAR}" id="bt_editar" style="padding-bottom: 0px; height:16px;" profile="edit"
+				  rendered="#{item.indSituacao eq 'A'}"> 
+	              <f:setPropertyActionListener target="#{mensagemParaCalculoNPTPaginatorController.acaoSelection}" value="#{item}" for="command"/> 
+	            </mec:commandLink> 
+			
+				<mec:commandLink action="#{mensagemParaCalculoNPTPaginatorController.excluir}" title="Excluir" id="bt_excluir" profile="delete"> 
+	              <f:setPropertyActionListener target="#{mensagemParaCalculoNPTPaginatorController.acaoSelection}" value="#{item}" for="command"/> 
+	            </mec:commandLink> 
+	            
+			</p:column>  	
+          
+          <p:column style="width:5% !important">
+          	<f:facet name="header">
+				<h:outputText value="#{messages.LABEL_CODIGO}" />
+			</f:facet>
+				<h:outputText value="#{item.seq}" title="#{mensagemParaCalculoNPTPaginatorController.obterHint(item)}"/>
+          </p:column> 
+          
+          <p:column style="width:83% !important">
+          	<f:facet name="header">
+				<h:outputText value="#{messages.LABEL_DESCRICAO}" />
+			</f:facet>
+				<h:outputText value="#{mensagemParaCalculoNPTPaginatorController.obterDescricaoTruncada(item.descricao, 110)}" title="#{item.descricao.length() > 110 ? item.descricao : ''}" />
+          </p:column>
+          
+          <p:column style="width:5% !important">
+          	<f:facet name="header">
+				<h:outputText value="#{messages.LABEL_SITUACAO_GCN}" />
+			</f:facet>
+			<h:graphicImage id="item_situacao_ativo" value="/resources/img/icons/icone-ativo.png" rendered="#{item.indSituacao eq 'A'}" />
+          </p:column> 
+				
+		</mec:serverDataTable>
+		</aghu:linha>
+	</h:form>
+	</ui:define> 
+  </ui:composition> 
+</html>

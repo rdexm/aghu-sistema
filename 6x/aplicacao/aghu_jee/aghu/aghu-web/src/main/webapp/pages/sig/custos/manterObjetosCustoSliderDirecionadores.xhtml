@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition> 
+    <p:tab id="togglePanelDirecionadorRateio"> 
+        <f:facet name="title"> 
+			<p:outputPanel id="panelTitleDirecionador" layout="inline">
+				<h:outputText value="#{messages.LEGENDA_SLIDER_DIRECIONADOR_RATEIO} (#{fn:length(manterObjetosCustoSliderDirecionadoresController.listaObjetoCustoDirRateios)})" />
+			</p:outputPanel>
+		</f:facet> 
+        <p:outputPanel id="panelFormularioDirecionadorRateio" rendered="#{mf:hasPermission(securityController,'editarObjetoCusto,editar') and not manterObjetosCustoController.visualizar}" layout="inline"> 
+          <aghu:linha> 
+            <p:outputPanel id="panelCamposDirecionadorRateio" layout="inline"> 
+              <mec:selectOneMenu id="direcionadorRateio" label="#{messages.LABEL_OBJETO_CUSTO_DIRECIONADOR}" title="#{messages.TITLE_OBJETO_CUSTO_DIRECIONADOR}" itemLabel="nome" required="true" value="#{manterObjetosCustoSliderDirecionadoresController.objetoCustoDirRateio.direcionadores}" items="#{manterObjetosCustoSliderDirecionadoresController.listaDirecionadoresRateio}" itemsType="entity" style="width:200px !important;"/>  
+
+			 <!--  <mec:inputNumero 
+              	id="percentualCustoAnt" 
+              	label="#{messages.LABEL_PERCENTUAL_CUSTO}" 
+              	title="#{messages.TITLE_PERCENTUAL_CUSTO}" 
+              	value="#{manterObjetosCustoSliderDirecionadoresController.objetoCustoDirRateio.percentual}" 
+              	maxlength="5" size="5" inteiros="3" decimais="2" required="true"/> -->
+
+              <mec:field id="fieldPercentualCusto" label="#{messages.LABEL_PERCENTUAL_CUSTO}" 
+				title="#{messages.TITLE_PERCENTUAL_CUSTO}" 
+        		posicaoLabel="acima"  escape="true" required="true">
+        			<p:outputPanel layout="block" style="text-align:center">
+				        <p:inputText id="percentualCusto" value="#{manterObjetosCustoSliderDirecionadoresController.objetoCustoDirRateio.percentual}" maxlength="3" required="true">
+				        	<p:ajax event="change" process="@this" update="percentualCusto, sliderPercentualCusto" global="false"  async="true" ignoreAutoUpdate="true" listener="#{manterObjetosCustoSliderDirecionadoresController.verificarPercentualDirecionador}"/>
+				        </p:inputText>
+				        <br/><br/>
+				        <p:slider id="sliderPercentualCusto" for="percentualCusto" minValue="0" maxValue="100">
+				        	<p:ajax event="slideEnd" process="percentualCusto" global="false"  async="true" ignoreAutoUpdate="true" />	
+				        </p:slider>	
+			        </p:outputPanel>		        
+	          </mec:field>
+              
+              <mec:selectOneMenu id="situacaoDirecionadorRateio" label="#{messages.LABEL_SITUACAO}" required="true" title="#{messages.TITLE_SITUACAO_DIRECIONADOR_RATEIO}" enum="DominioSituacao" value="#{manterObjetosCustoSliderDirecionadoresController.objetoCustoDirRateio.situacao}"/> 
+            </p:outputPanel> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:outputPanel id="panelBotoesDirecionadorRateio" layout="inline"> 
+              <mec:commandButton id="bt_adicionar_direcionador_rateio" value="#{messages.LABEL_ADICIONAR}" action="#{manterObjetosCustoSliderDirecionadoresController.adicionarDirecionadorRateio}" rendered="#{not manterObjetosCustoSliderDirecionadoresController.edicaoDirecionadorRateio}" process="@this, direcionadorRateio, percentualCusto, situacaoDirecionadorRateio" profile="add" ajax="true" render="panelCamposDirecionadorRateio, panelBotoesDirecionadorRateio, panelTabelaDirecionadoresRateio, comboDirecionadorClientes, panelTabelaClientes, panelTitleDirecionador"/>  
+              <mec:commandButton id="bt_alterar_direcionador_rateio" value="#{messages.LABEL_ALTERAR}" action="#{manterObjetosCustoSliderDirecionadoresController.gravarDirecionadorRateio}" rendered="#{manterObjetosCustoSliderDirecionadoresController.edicaoDirecionadorRateio}" process="@this, direcionadorRateio, percentualCusto, situacaoDirecionadorRateio" profile="ok" ajax="true" render="panelCamposDirecionadorRateio, panelBotoesDirecionadorRateio, panelTabelaDirecionadoresRateio, comboDirecionadorClientes, panelTabelaClientes"/>  
+              <mec:commandButton id="bt_cancelar_edicao_direcionador_rateio" value="#{messages.LABEL_CANCELAR_EDICAO}" action="#{manterObjetosCustoSliderDirecionadoresController.cancelarEdicaoDirecionadorRateio}" rendered="#{manterObjetosCustoSliderDirecionadoresController.edicaoDirecionadorRateio}" profile="cancel" ajax="true" render="panelCamposDirecionadorRateio, panelBotoesDirecionadorRateio, panelTabelaDirecionadoresRateio" process="@this"/> 
+            </p:outputPanel> 
+          </aghu:linha> 
+        </p:outputPanel>   
+        <aghu:linha id="panelTabelaDirecionadoresRateio"> 
+          <mec:serverDataTable id="tabelaListaDirecionadorRateio" rowKeyVar="indexLinha" rendered="#{not empty manterObjetosCustoSliderDirecionadoresController.listaObjetoCustoDirRateios}" list="#{manterObjetosCustoSliderDirecionadoresController.listaObjetoCustoDirRateios}" scrollable="true" scrollHeight="#{fn:length(manterObjetosCustoSliderDirecionadoresController.listaObjetoCustoDirRateios) > 8 ? '200' : 'auto'}"> 
+            <c:set var="objetoDirRateio" value="#{item}"/>  
+            <p:column rendered="#{mf:hasPermission(securityController,'editarObjetoCusto,editar') and not manterObjetosCustoController.visualizar}" style="#{objetoDirRateio.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink title="#{messages.LABEL_EDITAR}" action="#{manterObjetosCustoSliderDirecionadoresController.editarDirecionadorRateio(indexLinha)}" rendered="#{not objetoDirRateio.emEdicao and not manterObjetosCustoSliderDirecionadoresController.edicaoDirecionadorRateio}" profile="edit" ajax="true" process="@this" render="panelCamposDirecionadorRateio, panelBotoesDirecionadorRateio, panelTabelaDirecionadoresRateio" />  
+              <mec:commandLink rendered="#{not objetoDirRateio.emEdicao and manterObjetosCustoSliderDirecionadoresController.edicaoDirecionadorRateio}" title="#{messages.LABEL_EDITAR}" onclick="PF('modalRegistroEmEdicaoEditarWG').show();" profile="edit" ajax="true" process="@this"/>  
+              <h:graphicImage styleClass="silk-icon silk-blank" style="margin:1px; padding:2px" rendered="#{objetoDirRateio.emEdicao}"/>  
+              <mec:commandLink rendered="#{not manterObjetosCustoSliderDirecionadoresController.edicaoDirecionadorRateio}" title="#{messages.LABEL_EXCLUIR}" action="#{manterObjetosCustoSliderDirecionadoresController.excluirDirecionadorRateio}" profile="delete" ajax="true" process="@this" render="panelTabelaDirecionadoresRateio, comboDirecionadorClientes, panelTabelaClientes, panelTitleDirecionador"> 
+                <f:setPropertyActionListener value="#{indexLinha}" target="#{manterObjetosCustoSliderDirecionadoresController.posicaoDirecionadorRateio}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink rendered="#{manterObjetosCustoSliderDirecionadoresController.edicaoDirecionadorRateio}" title="#{messages.LABEL_EXCLUIR}" onclick="PF('modalRegistroEmEdicaoExcluirWG').show();" styleClass="silk-icon silk-delete" ajax="true" process="@this"/> 
+            </p:column>  
+            <p:column style="#{objetoDirRateio.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+              </f:facet>
+              <mec:commandLink 
+              		block="true"
+               		value="#{objetoDirRateio.direcionadores.nome}"
+               		title="#{messages.TITLE_EDITAR_DIRECIONADOR}" 
+               		action="#{manterObjetosCustoSliderDirecionadoresController.visualizarCadastroDirecionadores(item.direcionadores.seq)}"
+               		ajax="true" process="@this"
+               		rendered="#{mf:hasPermission(securityController,'editarObjetoCusto,editar') and not manterObjetosCustoController.visualizar}">
+              </mec:commandLink>    
+                
+              <h:outputText value="#{objetoDirRateio.direcionadores.nome}" title="#{objetoDirRateio.direcionadores.descricao}" rendered="#{not mf:hasPermission(securityController,'editarObjetoCusto,editar') or manterObjetosCustoController.visualizar}"/> 
+            </p:column>  
+            <p:column style="#{objetoDirRateio.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_PERCENTUAL_DIRECIONADOR_RATEIO}"/> 
+              </f:facet>
+              	<p:outputPanel layout="block" style="text-align:center; margin-bottom:10px" rendered="#{mf:hasPermission(securityController,'editarObjetoCusto,editar') and not manterObjetosCustoController.visualizar}">
+	              	<h:outputText id="textoPercentualCustoTabela" value="#{objetoDirRateio.percentual}" />% 
+			        <h:inputHidden id="percentualCustoTabela" value="#{objetoDirRateio.percentual}" />
+			        <p:slider id="sliderPercentualCustoTabela" for="percentualCustoTabela" display="textoPercentualCustoTabela">
+			        	<p:ajax event="slideEnd" process="percentualCustoTabela" listener="#{manterObjetosCustoSliderDirecionadoresController.setPossuiAlteracaoDirecionadorRateio(true)}"/>	
+			        </p:slider>
+		        </p:outputPanel>
+		        
+              <h:outputText value="#{objetoDirRateio.percentual}%" rendered="#{not mf:hasPermission(securityController,'editarObjetoCusto,editar') or manterObjetosCustoController.visualizar}"> 
+                <f:converter converterId="currencyConverter"/> 
+              </h:outputText>
+              
+            </p:column>  
+            <p:column style="#{objetoDirRateio.emEdicao ? 'background-color:#F1F1F1'  : ''}"> 
+              <f:facet name="header"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO}"/> 
+              </f:facet>  
+              <h:outputText value="#{objetoDirRateio.situacao.descricao}"/> 
+            </p:column> 
+          </mec:serverDataTable>  
+          <h:outputText value="#{messages.MENSAGEM_NENHUM_DIRECIONADOR_RATEIO_ASSOCIADA}" rendered="#{empty manterObjetosCustoSliderDirecionadoresController.listaObjetoCustoDirRateios and (not mf:hasPermission(securityController,'editarObjetoCusto,editar') or manterObjetosCustoController.visualizar)}"/> 
+        </aghu:linha> 
+    </p:tab> 
+  </ui:composition> 
+</html>

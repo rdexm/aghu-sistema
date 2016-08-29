@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>Planos do Convênio :: AGHU - MEC</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{convenioSaudeController}" ignoreEnter="true"/>  
+      <h:form prependId="false" id="convenio"> 
+        <aghu:panelGeral legend="Convênio"> 
+          <aghu:linha> 
+            <p:outputPanel rendered="#{convenioSaudeController.fatConvenioSaude.codigo != null}" layout="inline"> 
+              <mec:inputNumero label="#{messages.LABEL_CODIGO}" value="#{convenioSaudeController.fatConvenioSaude.codigo}" title="#{messages.TITLE_CODIGO_CONVENIO}" readonly="true" maxlength="6" size="6" id="codigoConv"/> 
+            </p:outputPanel>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO}" readonly="true" size="100" maxlength="60" title="#{messages.TITLE_DESCRICAO}" value="#{convenioSaudeController.fatConvenioSaude.descricao}" style="text-transform:uppercase" id="descricaoConv"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_GRUPO}" readonly="true" enum="DominioGrupoConvenio" title="#{messages.TITLE_GRUPO}" noSelectionOption="true" value="#{convenioSaudeController.fatConvenioSaude.grupoConvenio}" id="grupoConvenioItens"/>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_ATIVO}" readonly="true" title="#{messages.TITLE_ATIVO}" value="#{convenioSaudeController.csAtivo}" id="ativo"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="Plano do Convênio"> 
+          <aghu:linha> 
+            <p:outputPanel rendered="#{convenioSaudeController.convenioSaudePlano.id != null}" layout="inline"> 
+              <mec:inputNumero label="#{messages.LABEL_CODIGO}" value="#{convenioSaudeController.convenioSaudePlano.id.seq}" title="#{messages.TITLE_CODIGO_PLANO}" maxlength="6" size="6" id="codigoPlano"/> 
+            </p:outputPanel>  
+            <mec:inputText label="#{messages.LABEL_DESCRICAO}" size="50" maxlength="60" required="true" title="#{messages.TITLE_DESCRICAO_PLANO}" value="#{convenioSaudeController.convenioSaudePlano.descricao}" style="text-transform:uppercase" id="descricaoPlano"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_TIPO}" enum="DominioTipoPlano" title="#{messages.TITLE_TIPO_PLANO}" value="#{convenioSaudeController.convenioSaudePlano.indTipoPlano}" id="tipoPlanosItens"/>  
+            <mec:selectOneMenu label="#{messages.LABEL_EMISSAO}" enum="DominioPeriodicidade" title="#{messages.TITLE_EMISSAO}" value="#{convenioSaudeController.convenioSaudePlano.periodicidadeEmissao}" id="periodicidadeItens"> 
+              <p:ajax event="change" listener="#{convenioSaudeController.verificaPeriodoEmissao}"/> 
+            </mec:selectOneMenu>  
+            <mec:selectBooleanCheckbox label="#{messages.LABEL_ATIVO}" title="#{messages.TITLE_ATIVO}" value="#{convenioSaudeController.csPlanoAtivo}" id="ativoPlano"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="Períodos de Emissão"> 
+          <aghu:linha> 
+            <mec:inputNumero label="#{messages.LABEL_DIA_INICIO}" size="5" maxlength="2" title="#{messages.TITLE_DIA_INICIO}" value="#{convenioSaudeController.diaInicio}" id="diaInicio"/>  
+            <mec:inputNumero label="#{messages.LABEL_DIA_FIM}" size="5" maxlength="2" title="#{messages.TITLE_DIA_FIM}" value="#{convenioSaudeController.diaFim}" id="diaFim"/>  
+            <mec:inputNumero label="#{messages.LABEL_DIA_SEMANA}" size="5" maxlength="2" title="#{messages.TITLE_DIA_SEMANA}" value="#{convenioSaudeController.diaSemana}" id="diaSemana"/>  
+            <aghu:acao id="panelBtAdicionar2" newLine="false"> 
+              <mec:commandButton value="Adicionar" action="#{convenioSaudeController.associarPeriodoEmissaoPlano}" ajax="true" render="periodos, diaInicio, diaFim, diaSemana" styleClass="bt_cinza"/> 
+            </aghu:acao> 
+          </aghu:linha>  
+          <p:outputPanel id="periodos" layout="inline"> 
+            <aghu:linha> 
+              <h:outputText value="#{messages.NENHUM_PERIODO_EMISSAO_ENCONTRADO}" rendered="#{empty convenioSaudeController.convPeriodos}"/>  
+              <mec:serverDataTable width="'100%" rendered="#{not empty convenioSaudeController.convPeriodos}" list="#{convenioSaudeController.convPeriodos}" scrollable="true"> 
+                <c:set var="_item" value="#{item}"/>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{convenioSaudeController.removerPeriodoEmissaoPlano(_item)}" profile="delete" ajax="true" render="periodos"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DIA_INICIO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.diaInicio}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DIA_FIM}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.diaFim}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DIA_SEMANA}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.diaSemana}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="Tipo de Documentos Exigidos"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestionTipoDocumento" styleClassField="frm_obrigatorio" label="#{messages.LABEL_TIPO_DOCUMENTO}" title="#{messages.LABEL_TIPO_DOCUMENTO}" descricaoInput="seq" size="15" maxlength="45" width="500" disabled="false" descricaoLabel="descricao" suggestionAction="pesquisarTipoDocumento" controller="#{convenioSaudeController}" value="#{convenioSaudeController.tipoDocumento}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <aghu:acao id="panelBtAdicionar" newLine="false"> 
+              <mec:commandButton value="Adicionar" action="#{convenioSaudeController.associarTipoDocConvenioPlano}" ajax="true" render="convenio, docs, suggestionTipoDocumento" styleClass="bt_cinza"/> 
+            </aghu:acao> 
+          </aghu:linha>  
+          <p:outputPanel id="docs" layout="inline"> 
+            <aghu:linha> 
+              <h:outputText value="#{messages.NENHUM_DOCUMENTO_ENCONTRADO}" rendered="#{empty convenioSaudeController.convTipoDocumentos}"/>  
+              <mec:serverDataTable width="'100%" rendered="#{not empty convenioSaudeController.convTipoDocumentos}" list="#{convenioSaudeController.convTipoDocumentos}" scrollable="true"> 
+                <c:set var="_item" value="#{item}"/>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{convenioSaudeController.removerTipoDocConvenioPlano(_item)}" profile="delete" ajax="true" render="docs"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.tipoDocumento.seq}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.tipoDocumento.descricao}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_OBRIGATORIO}"/> 
+                  </f:facet>  
+                  <h:selectBooleanCheckbox value="#{_item.obrigatorio}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:panelGeral legend="Acomodações Permitidas"> 
+          <aghu:linha> 
+            <mec:suggestionBox id="suggestionAcomodacoes" styleClassField="frm_obrigatorio" label="#{messages.LABEL_ACOMODACAO}" title="#{messages.LABEL_ACOMODACAO}" descricaoInput="seq" size="15" maxlength="45" disabled="false" descricaoLabel="descricao" suggestionAction="pesquisarAcomodacoes" controller="#{convenioSaudeController}" value="#{convenioSaudeController.acomodacao}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.seq}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <aghu:acao id="panelBtAdicionar3" newLine="false"> 
+              <mec:commandButton value="Adicionar" action="#{convenioSaudeController.associarAcomodacaoConvenioPlano}" ajax="true" render="convenio, suggestionAcomodacoes, acoms" styleClass="bt_cinza"/> 
+            </aghu:acao> 
+          </aghu:linha>  
+          <p:outputPanel id="acoms" layout="inline"> 
+            <aghu:linha> 
+              <h:outputText value="#{messages.NENHUMA_ACOMODACAO_ENCONTRADA}" rendered="#{empty convenioSaudeController.convPlanoAcomodacoes}"/>  
+              <mec:serverDataTable width="'100%" rendered="#{not empty convenioSaudeController.convPlanoAcomodacoes}" list="#{convenioSaudeController.convPlanoAcomodacoes}" scrollable="true"> 
+                <c:set var="_item" value="#{item}"/>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{convenioSaudeController.removerAcomodacaoConvenioPlano(_item)}" profile="delete" ajax="true" render="acoms"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.acomodacao.seq}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.acomodacao.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </p:outputPanel> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton value="#{messages.LABEL_CONFIRMAR}" action="#{convenioSaudeController.confirmarPlano}" profile="ok"/>  
+          <mec:commandButton value="#{messages.LABEL_CANCELAR}" id="cancelar" immediate="true" action="#{convenioSaudeController.canceladoConvSaudePlanoCrud}" profile="cancel"/> 
+        </aghu:acao> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

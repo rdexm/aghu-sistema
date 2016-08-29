@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+ 
+  <ui:composition>
+  <script type="text/javascript">
+	jQuery(document).ready(function($){
+		$.mask.definitions['X'] = '[1-9]';
+		$.mask.definitions['N'] = '[1-9N]';
+		$.mask.definitions['Y'] = '[0-9]';
+	});
+  </script>
+  
+  <p:outputPanel id="panelAbaLaminaLaudoUnicoGeral">
+  <!-- Inicio do painel dos indices de bloco Novos -->
+  <p:outputPanel id="panelExternoIndiceBlocosNovos" rendered="#{!laudoUnicoController.laudoAntigo}">
+  <!-- rendered="#{laudoUnicoController.telaVo.exibeIndiceBlocos}"> -->
+    <p:outputPanel id="panelObsTecnica">
+      <mec:inputText id="obsTecnica" 
+	    	caixaAlta="false" size="95"
+			maxlength="500"
+			value="#{laminaLaudoUnicoController.exameAp.observacaoTecnica}"
+			label="#{messages.INDICE_BLOCOS_OBSERVACAO_TECNICA}"
+			title="#{messages.TITLE_INDICE_BLOCOS_OBSERVACAO_TECNICA}" />
+	</p:outputPanel>
+	<aghu:linha>
+	<aghu:panelGeral legend="#{messages.ABA_INDICE_BLOCO_LAUDO_UNICO_CAPSULAS}">
+	  <p:outputPanel id="tabela_geracaoCapsulas_externa">
+		<p:outputPanel id="tabela_geracaoCapsulas" rendered="#{empty laminaLaudoUnicoController.laminasEmMemoria and !laminaLaudoUnicoController.exameAp.indIndiceBloco}">
+	      <aghu:linha>
+		    <div style="width:99%; max-height:265px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;">
+			  <mec:serverDataTable id="tableGeracaoCapsulas"
+					styleClass="tbl_docs fixedHeader"
+					controller="#{laminaLaudoUnicoController}"
+					list="#{laminaLaudoUnicoController.listaMateriaisGeracaoCapsulas}"
+					style="margin: 0px !important;" 
+					width="99%" >
+				<c:set var="_itemMatGerCapsulas" value="#{item}" />
+			    <p:column style="width: 50px; white-space:nowrap;">
+				  <f:facet name="header">#{messages.LABEL_ORDEM}</f:facet>
+				  <h:outputText value="#{_itemMatGerCapsulas.aelMaterialAp.ordem}"/>
+				</p:column>
+				<p:column>
+				  <f:facet name="header">#{messages.LABEL_MATERIAL}</f:facet>
+				  <h:outputText id="materialGerCapsulas" value="#{(_itemMatGerCapsulas.aelMaterialAp.material.length() > 20) ? fn:substring(_itemMatGerCapsulas.aelMaterialAp.material,0,20) : _itemMatGerCapsulas.aelMaterialAp.material}" />
+				  <h:outputText value="#{(_itemMatGerCapsulas.aelMaterialAp.material.length() > 20) ? '...' : '' }" />
+				  <p:tooltip for="materialGerCapsulas" direction="bottom-right" styleClass="tooltip"
+						layout="block" style="width:300px; word-wrap: break-word;" 
+						rendered="#{_itemMatGerCapsulas.aelMaterialAp.material.length() ge 20}"> 
+					 <h:outputText value="#{_itemMatGerCapsulas.aelMaterialAp.material}" />
+				  </p:tooltip>
+				</p:column>
+				<p:column style="width: 120px;">
+				  <f:facet name="header">
+				  	#{messages.LABEL_NRO_CAPSULAS_GR}
+				  	<span style="float:right;" class="aghu-iconeinput aghu-asterisco" />
+				  	<span style="float:right;" class="aghu-iconeinput aghu-interrog" />
+				  </f:facet>
+				  <p:outputPanel id="nrCap_grPanel">
+					<p:inputText id="nrCap_gr"  
+							maxlength="2" size="8"
+							value="#{_itemMatGerCapsulas.numeroCapsula}"
+							onfocus="jQuery(this).mask('X?Y')" >
+						<p:ajax event="change" process="@this" update="@(#nrCap_grPanel"/>
+					</p:inputText>
+				  </p:outputPanel>
+				</p:column>
+				<p:column style="width: 130px;">
+					<f:facet name="header">
+						#{messages.LABEL_NRO_FRAGMENTOS_GR}
+						<span style="float:right;" class="aghu-iconeinput aghu-asterisco" />
+						<span style="float:right;" class="aghu-iconeinput aghu-interrog" />
+					</f:facet>
+					<p:outputPanel id="nrFrag_grPanel">
+					  <p:inputText id="nrFrag_gr" 
+					  		maxlength="2" size="8"
+							value="#{_itemMatGerCapsulas.numeroFragmentos}"
+							onfocus="jQuery(this).mask('N?Y')">
+					    <p:ajax event="change" process="@this" update="@(#nrFrag_grPanel)"/>
+					  </p:inputText>
+					</p:outputPanel>
+				</p:column>
+				<p:column style="width: 200px;">
+				  <f:facet name="header">
+				  	#{messages.TITLE_CESTO_MATERIAL}
+				  	<span style="float:right;" class="aghu-iconeinput aghu-asterisco" />
+				  	<span style="float:right;" class="aghu-iconeinput aghu-interrog" />
+				  </f:facet>
+				  <p:outputPanel id="cesto_gr_capsulaPanel">
+					<p:selectOneMenu id="cesto_gr_capsula"
+						value="#{_itemMatGerCapsulas.cestoPatologia}" 
+						requiredMessage="#{messages.TITLE_VALOR_OBRIGATORIO}"
+						required="true">
+					  <f:selectItem itemLabel="Selecione" itemValue=""
+							noSelectionOption="true" />
+					  <f:selectItems value="#{laminaLaudoUnicoController.listaCestos}" 
+							var="_cestoPatologia"
+							itemLabel="#{laminaLaudoUnicoController.obterDescCestoTruncada(_cestoPatologia)}"/>
+					  <f:converter converterId="baseEntityConverter" for="inputId"/>
+					  <p:ajax event="change" process="@this" update="@(#cesto_gr_capsulaPanel)"/>														
+					</p:selectOneMenu>
+				  </p:outputPanel>
+				</p:column>
+				<p:column style="width: 20%;">
+				  <f:facet name="header">#{messages.LABEL_OBSERVACAO}</f:facet>
+				  <p:outputPanel id="obs_grPanel">
+				  <h:inputText id="obs_gr" 
+						value="#{_itemMatGerCapsulas.observacao}" 
+						maxlength="2000" size="30">
+				    <p:ajax event="change" process="@this" update="@(#obs_grPanel)"/>
+				  </h:inputText>
+				  </p:outputPanel>
+				</p:column>
+			  </mec:serverDataTable>
+			</div>
+	      </aghu:linha>
+		  <aghu:acao>
+			<mec:commandButton id="btGerarCapsula"
+					value="#{messages.LABEL_GERAR}"
+					action="#{laminaLaudoUnicoController.gerarCapsulas}"
+					render="cesto_gr_capsulaPanel, nrFrag_grPanel, nrCap_grPanel, tabela_geracaoCapsulas_externa, panelLaminasExterno"
+					process="@this"
+					ajax="true"
+					style="margin-top : 10px !important;"							
+					styleClass="bt_secund icon-gerar-indice"/>
+		  </aghu:acao>
+		</p:outputPanel>
+	  </p:outputPanel>
+	  <aghu:linha>
+	    <aghu:panelGeral legend="#{messages.ABA_INDICE_BLOCO_LAUDO_UNICO_GERACAO_CAPSULAS}"> 	
+	      <p:outputPanel id="panelFieldsExterno">
+		    <p:outputPanel id="panelFields">
+		      <mec:suggestionBox id="materialCapsula"
+					label="#{messages.LABEL_MATERIAL}"
+					title="#{messages.TITLE_MATERIAL_ABA_INDICE_BLOCOS}"
+					suggestionAction="pesquisaMateriaisCapsula"
+					controller="#{laminaLaudoUnicoController}"
+					value="#{laminaLaudoUnicoController.material}" 
+					descricaoInput="seq"
+					descricaoLabel="material" 
+					width="300" 
+					size="10"
+					descricaoLimite="35" 
+					required="true"
+					itemValue="#{_itemMatCapsula}"
+					var="_itemMatCapsula">
+		        <p:column>
+			      <f:facet name="header">
+				    <h:outputText value="#{messages.LABEL_ORDEM}" />
+			      </f:facet>
+			      #{_itemMatCapsula.ordem}
+			    </p:column>
+			    <p:column>
+			      <f:facet name="header">
+				    <h:outputText value="#{messages.LABEL_MATERIAL}" />
+			      </f:facet>
+			      #{_itemMatCapsula.material}
+			    </p:column>
+			  </mec:suggestionBox>
+			  <mec:inputText id="nroCapsulas" 
+					maxlength="2" size="8"
+					jsfConverter="javax.faces.Integer"
+					label="#{messages.LABEL_NRO_CAPSULAS}"
+					title="#{messages.TITLE_NRO_CAPSULAS_LAUDO_UNICO}"
+					value="#{laminaLaudoUnicoController.nroCapsulas}"
+					required="#{laudoUnicoController.telaVo.stNroCapsulas}"
+					readonly="#{laminaLaudoUnicoController.editando}" 
+					onfocus="jQuery(this).mask('X?Y')"/>
+			  <mec:inputText id="nroFragmentos" 
+					maxlength="2" size="8"
+					label="#{messages.LABEL_NRO_FRAGMENTOS}"
+					title="#{messages.TITLE_NRO_FRAGMENTOS_LAUDO_UNICO}"
+					value="#{laminaLaudoUnicoController.nroFragmentos}"
+					required="#{laudoUnicoController.telaVo.stNroFragmentos}"
+					readonly="#{!laudoUnicoController.telaVo.stNroFragmentos}"
+					onfocus="jQuery(this).mask('N?Y')"/>
+			  <mec:suggestionBox id="cesto"
+					label="#{messages.TITLE_CESTO_MATERIAL}"
+					title="#{messages.TITLE_CESTO_PATOLOGIA}" 
+					suggestionAction="pesquisarAelCestoPatologia"
+					controller="#{laminaLaudoUnicoController}"
+					value="#{laminaLaudoUnicoController.cesto}" 
+					descricaoInput="seq"
+					descricaoLabel="siglaDescricao" 
+					width="300" 
+					size="10"
+					descricaoLimite="35"
+					required="#{laudoUnicoController.telaVo.stCesto}"
+					readonly="#{!laudoUnicoController.telaVo.stCesto}"
+					itemValue="#{_itemCesto}"
+					var="_itemCesto">
+			    <p:column>
+			      <f:facet name="header">
+				    <h:outputText value="#{messages.LABEL_CODIGO}" />
+			      </f:facet>
+			      #{_itemCesto.seq}
+			    </p:column>
+			    <p:column>
+			      <f:facet name="header">
+				    <h:outputText value="#{messages.LABEL_SIGLA}" />
+			      </f:facet>
+			      #{_itemCesto.sigla}
+			    </p:column>
+			    <p:column>
+			      <f:facet name="header">
+				    <h:outputText value="#{messages.LABEL_DESCRICAO}" />
+			      </f:facet>
+			      #{_itemCesto.descricao}
+			    </p:column>
+			  </mec:suggestionBox>
+		   </p:outputPanel>
+		  </p:outputPanel>
+		  <aghu:linha>					
+		    <mec:inputText id="dsObservacao" 
+		    	caixaAlta="false" size="40"
+				maxlength="2000" label="#{messages.LABEL_OBSERVACAO}"
+				title="#{messages.TITLE_OBSERVACAO_INDICE_BLOCOS}"
+				value="#{laminaLaudoUnicoController.observacao}"
+				readonly="#{!laudoUnicoController.telaVo.stDsLamina}" />
+		    <p:outputPanel id="combotextoPadraoColoracs">
+		      <mec:selectOneMenu id="textoPadraoColoracs"
+					readonly="#{!laudoUnicoController.telaVo.stTextoPadraoColoracs}"
+					semSelecione="false"
+					value="#{laminaLaudoUnicoController.textoPadraoColoracs}" 
+					items="#{laminaLaudoUnicoController.listarTextoPadraoColoracs()}"
+					itemLabel="descricao"
+					label="#{messages.LABEL_COLORACAO}"
+					title="#{messages.TITLE_COLORACAO_LAUDO_UNICO}"
+					style="width: 200px"/>
+		    </p:outputPanel>
+		    <p:outputPanel id="buttonsPanelExterno">
+			  <aghu:acao newLine="false">
+			    <mec:commandButton id="bt_adicionarLaminas"
+					action="#{laminaLaudoUnicoController.gravaLaminasEmMEmoria}"
+					profile="add" 
+					style="width:95px"
+					value="#{messages.LABEL_ADICIONAR}" 
+					ajax="true"
+					process="@this @(#materialCapsula) @(#nroCapsulas) @(#nroFragmentos) @(#cesto) @(#dsObservacao) @(#textoPadraoColoracs)" 
+					render="panelLaminasExterno, panelFieldsExterno, tabela_geracaoCapsulas_externa, panelExternoIndiceBlocosAntigos"
+					disabled="#{!(mf:hasPermission(securityController, 'informarIndiceBlocos,executar') and laminaLaudoUnicoController.exameAp.indIndiceBloco != true)}"
+					rendered="#{!(laminaLaudoUnicoController.editando)}"/>
+			  </aghu:acao>		
+		    </p:outputPanel>
+		  </aghu:linha>
+		  <p:outputPanel id="panelLaminasExterno">
+		    <p:outputPanel id="panelLaminas" rendered="#{laminaLaudoUnicoController.geracaoCapOk}">
+			  <aghu:linha>
+			    <div style="width:99%; max-height:265px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;">
+				  <mec:serverDataTable id="tableLaminas"
+						styleClass="tbl_docs fixedHeader" 
+						controller="#{laminaLaudoUnicoController}"
+						selection="laminasEmMemoriaSelecionado"
+						list="#{laminaLaudoUnicoController.laminasEmMemoria}"
+						style="margin: 0px !important;" 
+						width="99%">
+			        <c:set var="_itemLamMemoria" value="#{item}" />
+				    <p:column style="width: 15px; white-space:nowrap;">
+					  <f:facet name="header">#{messages.LABEL_ACAO}</f:facet>
+					  <mec:commandLink id="deleteLamina"
+							styleClass="silk-icon silk-delete"
+							profile="delete"
+							process="@this"
+							ajax="true"
+							render="buttonsPanelExterno, panelLaminasExterno, panelFieldsExterno"
+							title="#{messages.LABEL_EXCLUIR}"
+							action="#{laminaLaudoUnicoController.excluir()}"
+							rendered="#{mf:hasPermission(securityController,'informarIndiceBlocos,executar')}">
+					    <f:setPropertyActionListener target="#{laminaLaudoUnicoController.laminasEmMemoriaSelecionado}" value="#{_itemLamMemoria}" for="command" /> 
+					  </mec:commandLink>
+				    </p:column>
+				    <p:column style="width: 15px;">
+					  <f:facet name="header">#{messages.LABEL_FRACAO}</f:facet>
+					  <h:outputText value="#{_itemLamMemoria.numeroCapsula} / #{laminaLaudoUnicoController.laminasEmMemoria.size()}"/>
+				    </p:column>
+			        <p:column style="width: 200px;">
+				      <f:facet name="header">#{messages.LABEL_MATERIAL_INDICE_BLOCOS}</f:facet>
+					  <h:outputText value="#{laminaLaudoUnicoController.obterCampoTruncado(_itemLamMemoria.aelMaterialAp.material, 20, true)}" />
+					  <p:tooltip style="width:300px; word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block">
+					    <h:outputText value="#{_itemLamMemoria.aelMaterialAp.material}" />
+					  </p:tooltip>
+				    </p:column>
+				    <p:column style="width: 20px;">
+				      <f:facet name="header">#{messages.LABEL_NRO_FRAGMENTOS}</f:facet>
+					  <p:outputPanel id="nrFrag_cpPanel">
+					    <p:inputText id="nrFrag_cp" 
+					  		maxlength="2" size="8" 
+					  		value="#{_itemLamMemoria.numeroFragmentos}"
+					  		required="true" 
+							onfocus="jQuery(this).mask('N?Y')">
+						  <p:ajax event="change" process="@this" partialSubmit="true" /> 
+					    </p:inputText>
+						  <script>
+						    jQuery('[id$="required_nrFrag_cpDecorate"]').css('display', 'none');
+						  </script>
+					  </p:outputPanel>
+				    </p:column>
+				    <p:column style="width: 100px;">
+				      <f:facet name="header">#{messages.TITLE_CESTO_MATERIAL}</f:facet>
+					  <p:selectOneMenu id="cesto_combo_cp_capsula" 
+	 						value="#{item.cestoPatologia}" 
+							required="true">
+					    <f:selectItems value="#{laminaLaudoUnicoController.listaCestos}" 
+					   		var="_itemDaLIstaCestos" 
+					   		itemLabel="#{laminaLaudoUnicoController.obterDescCestoTruncada(_itemDaLIstaCestos)}"/>
+					    <f:converter converterId="baseEntityConverter" for="inputId"/>
+					    <p:ajax event="change" process="@this" partialSubmit="true" /> 
+					  </p:selectOneMenu>
+				    </p:column>
+				    <p:column style="width: 40px;">
+					  <f:facet name="header">#{messages.LABEL_OBSERVACAO}</f:facet>
+					  <h:inputText id="obs_cp" value="#{item.observacao}" maxlength="2000" size="30">
+					    <p:ajax event="change" process="@this" partialSubmit="true" />
+					  </h:inputText> 
+				    </p:column>
+				    <p:column style="width: 100px;">
+				      <f:facet name="header">#{messages.LABEL_COLORACAO}</f:facet>
+				      <p:selectOneMenu id="coloracao_cp" value="#{item.aelTextoPadraoColoracs}">
+				        <f:selectItem itemLabel="Selecione" itemValue=""
+							noSelectionOption="true" />
+					    <f:selectItems value="#{laminaLaudoUnicoController.listarTextoPadraoColoracs()}"
+						  var="_coloracao"
+						  itemLabel="#{laminaLaudoUnicoController.obterDescColoracaoAbreviada(_coloracao)}"/> 
+					    <f:converter converterId="baseEntityConverter" for="inputId"/>
+					    <p:ajax event="change" process="@this" partialSubmit="true" /> 
+				      </p:selectOneMenu>
+				    </p:column>
+				  </mec:serverDataTable>
+			    </div>
+			  </aghu:linha>
+		    </p:outputPanel>
+		  </p:outputPanel>
+	    </aghu:panelGeral>
+	    <aghu:acao>
+		  <mec:commandButton id="bt_salvarLamina"
+				action="#{laminaLaudoUnicoController.gravar}"
+				profile="ok" 
+				style="width:95px; float: left;"
+				value="#{messages.LABEL_GRAVAR}"
+				process="@this @(#obsTecnica)"
+				ajax="true" 
+				render="panelLaminasExterno, panelFieldsExterno, tabela_geracaoCapsulas_externa, buttonsPanelExterno "
+				rendered="true" 
+				disabled="#{not mf:hasPermission(securityController, 'informarIndiceBlocos,executar')}" />
+		  <mec:commandButton id="bt_desfazer"
+				profile="back" 
+				immediate="true"
+				ajax="true"
+				style="width:95px; float: left;"
+				value="#{messages.LABEL_DESFAZER}" 
+				onclick="PF('modalConfirmacaoDesfazerWG').show();;"
+				disabled="#{not mf:hasPermission(securityController,'informarIndiceBlocos,executar')}" />
+	    </aghu:acao>
+	  </aghu:linha>
+	</aghu:panelGeral>
+	<!-- Fim do painel dos indices de bloco Novos -->
+
+	<!-- Inicio do painel dos indices de bloco Antigos -->
+	<p:outputPanel id="panelExternoIndiceBlocosAntigos">
+	<p:outputPanel id="panelExternoIndiceBlocosAntigosCond" rendered="#{laudoUnicoController.laudoAntigo}">
+	  <aghu:panelGeral legend="#{messages.ABA_INDICE_BLOCO_LAUDO_UNICO}"> 				
+		<p:outputPanel id="panelLaminasAntigo">
+		  <p:outputPanel id="panelLaminas_subPanel" rendered="#{not empty laminaLaudoUnicoController.laminas}">
+			<aghu:linha>
+			  <div style="width:99%; max-height:265px;overflow-y:auto; margin-left:4px !important; margin-right:4px !important; margin-top:1px !important;">
+			    <mec:serverDataTable id="tableLaminasAntigo"
+						styleClass="tbl_docs fixedHeader"
+						controller="#{laminaLaudoUnicoController}"
+						list="#{laminaLaudoUnicoController.laminas}" 
+						style="margin: 0px !important;"				
+						width="99%">
+				  <c:set var="_itemLaminas" value="#{item}" />						
+				  <p:column>
+					<f:facet name="header">#{messages.LABEL_DATA}</f:facet>
+					<h:outputText value="#{_itemLaminas.dthrLamina}">
+					  <f:convertDateTime pattern="dd/MM/yyyy"/>
+					</h:outputText>
+				  </p:column>
+				  <p:column style="width: 10%;">
+					<f:facet name="header">#{messages.TITLE_CESTO_MATERIAL}</f:facet>
+					<h:outputText value="#{_itemLaminas.cestoPatologia.descricao}"/>
+				  </p:column>
+				  <p:column style="width: 10%;">
+					<f:facet name="header">#{messages.LABEL_NRO_CAPSULAS}</f:facet>
+					<h:outputText value="#{_itemLaminas.numeroCapsula}"/>
+				  </p:column>
+				  <p:column style="width: 10%;">
+				    <f:facet name="header">#{messages.LABEL_NRO_FRAGMENTOS}</f:facet>
+					<h:outputText value="#{_itemLaminas.numeroFragmentos}" />
+				  </p:column>
+				  <p:column style="width: 20%;">
+					<f:facet name="header">#{messages.LABEL_MATERIAL}</f:facet>
+					<h:outputText value="#{_itemLaminas.descricao}" />
+				  </p:column>
+				  <p:column style="width: 20%;">
+					<f:facet name="header">#{messages.LABEL_COLORACAO}</f:facet>
+					<h:outputText value="#{_itemLaminas.coloracao}" />
+				  </p:column>
+				  <p:column style="width: 20%;">
+					<f:facet name="header">#{messages.LABEL_OBSERVACAO}</f:facet>
+					<h:outputText value="#{_itemLaminas.observacao}" />
+				  </p:column>
+			    </mec:serverDataTable>
+		      </div>
+		    </aghu:linha>
+		  </p:outputPanel>
+	    </p:outputPanel>
+	  </aghu:panelGeral>
+    </p:outputPanel>
+    </p:outputPanel>
+	  <p:dialog id="modalConfirmacaoDesfazer" 
+		width="400"
+		height="150" 
+		autosized="true"
+		modal="true" 
+		resizeable="false"
+		widgetVar="modalConfirmacaoDesfazerWG">
+		<f:facet name="header">
+			<h:panelGroup>
+				<h:outputText value="#{messages.LABEL_DESFAZER}"></h:outputText>
+			</h:panelGroup>
+		</f:facet>
+		#{messages.LBL_CANCELAR_ALTERACOES_INDICE_BLOCOS}
+	    <br clear="none"/>
+	    <br clear="none"/>
+	    <br clear="none"/>
+		<h:panelGroup>
+			<h:form prependId="false" id="formModalConfirmacaoDesfazer">
+				<aghu:linha>
+					<mec:commandButton id="bt_executar_desfazer_lamina"
+						profile="ok"
+						styleClass="bt_secund icon-yes"
+						process="@this"
+						ajax="true" 
+						render="buttonsPanelExterno, panelLaminasExterno, panelFieldsExterno, tabela_geracaoCapsulas_externa"
+						value="#{messages.LABEL_SIM}"
+						action="#{laminaLaudoUnicoController.desfazer()}"
+						oncomplete="PF('modalConfirmacaoDesfazerWG').hide();" />
+					<mec:commandButton id="bt_cancelar_desfazer_lamina"
+						styleClass="bt_error icon-no" 
+						value="#{messages.LABEL_NAO}"
+						profile="cancel"
+						onclick="PF('modalConfirmacaoDesfazerWG').hide();" />
+				</aghu:linha>
+			</h:form>
+		</h:panelGroup>
+	</p:dialog>
+    <!-- Fim do painel dos indices de bloco Antigos -->
+    </aghu:linha>
+  </p:outputPanel>
+  </p:outputPanel>
+  </ui:composition>
+</html>

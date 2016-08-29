@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_CADASTRAR_ATIVIDADES}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{manterAtividadesController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{manterAtividadesController}"/>  
+      <h:form prependId="false" id="formCadastroAtividade"> 
+        <aghu:panelGeral id="panelCadastroAtividade" legend="#{messages.LABEL_CADASTRAR_ATIVIDADES}"> 
+          <aghu:linha> 
+            <mec:inputText id="idNomeAtividade" size="80" maxlength="120" label="#{messages.LABEL_NOME_ATIVIDADE}" title="#{messages.TITLE_NOME_ATIVIDADE}" value="#{manterAtividadesController.atividade.nome}" caixaAlta="false" removerCaratersEspeciais="false" required="true" readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar')}"> 
+              <p:ajax event="change" process="@this" listener="#{manterAtividadesController.marcarAlteracao}"/> 
+            </mec:inputText>  
+            <mec:selectOneMenu id="idSituacaoAtividade" required="true" label="#{messages.LABEL_SITUACAO_ATIVIDADE}" title="#{messages.TITLE_SITUACAO_ATIVIDADE}" enum="DominioSituacao" value="#{manterAtividadesController.atividade.indSituacao}" readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar')}"> 
+              <p:ajax event="change" process="@this" listener="#{manterAtividadesController.marcarAlteracao}"/> 
+            </mec:selectOneMenu> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <mec:suggestionBox readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar')}" label="#{messages.LABEL_CENTRO_CUSTO_ATIVIDADE}" title="#{messages.TITLE_CENTRO_CUSTO_ATIVIDADE}" descricaoInput="codigo" descricaoLabel="descricao" suggestionAction="pesquisarCentroCusto" posDeleteAction="limparCentroCusto" posSelectionAction="marcarAlteracao" maxlength="30" width="350" id="suggestionCentroCusto" controller="#{manterAtividadesController}" value="#{manterAtividadesController.fccCentroCustos}"> 
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_CODIGO}</b> 
+                </f:facet> #{item.codigo}
+              </p:column>  
+              <p:column> 
+                <f:facet name="header"> 
+                  <b>#{messages.LABEL_DESCRICAO}</b> 
+                </f:facet> #{item.descricao}
+              </p:column> 
+            </mec:suggestionBox>  
+            <mec:selectOneMenu id="origemDadosAtividade" required="true" label="#{messages.LABEL_ORIGEM_DADOS}" title="#{messages.TITLE_ORIGEM_DADOS}" enum="DominioOrigemDadoAtividade" value="#{manterAtividadesController.atividade.indOrigemDados}" noSelectionOption="false" readonly="#{not mf:hasPermission(securityController,'editarAtividade,editar')}"> 
+              <p:ajax event="change" process="@this" listener="#{manterAtividadesController.marcarAlteracao}"/> 
+            </mec:selectOneMenu> 
+          </aghu:linha>  
+          <aghu:linha> 
+            <p:tabView id="tabPanelItensAtividade" dynamic="false" activeIndex="#{manterAtividadesController.tabSelecionada}" prependId="false"> 
+              <p:tab id="abaAtividade" title="#{messages.LABEL_TAB_PESSOAL}"> 
+                <ui:include src="/pages/sig/custos/manterPessoasAtividade.xhtml"/> 
+              </p:tab>  
+              <p:tab id="abaInsumo" title="#{messages.LABEL_TAB_INSUMOS}" > 
+                <ui:include src="/pages/sig/custos/manterInsumosAtividade.xhtml"/> 
+              </p:tab>  
+              <p:tab id="abaEquipamento" title="#{messages.LABEL_TAB_EQUIPAMENTOS}"> 
+                <ui:include src="/pages/sig/custos/manterEquipamentosAtividade.xhtml"/> 
+              </p:tab>  
+              <p:tab id="abaServico" title="#{messages.LABEL_TAB_SERVICOS}"> 
+                <ui:include src="/pages/sig/custos/manterServicosAtividade.xhtml"/> 
+              </p:tab> 
+            </p:tabView> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao id="fsetAlteracao"> 
+          <mec:commandButton id="btn_gravar" value="#{messages.LABEL_GRAVAR}" action="#{manterAtividadesController.gravar}" process="@this, nomeAtividade, situacaoAtividade, suggestionCentroCusto, origemDadosAtividade" rendered="#{mf:hasPermission(securityController,'editarAtividade,editar')}" profile="ok" ajax="true" render="formCadastroAtividade, panelTabelaPessoas, panelTabelaEquipamentos, panelBotoesEquipamentos, panelTabelaServicos, paneltblistaInsumos"/>  
+          <mec:commandButton id="bt_objCusto" value="#{messages.LABEL_OBJETOS_CUSTO_ASSOCIADOS}" action="#{manterAtividadesController.visualizarObjetosCustoAssociados}" immediate="true" rendered="#{not empty manterAtividadesController.atividade.seq}" ajax="true" styleClass="bt_cinza"> 
+            <f:setPropertyActionListener target="#{visualizarObjetosCustoAssociadosPaginatorController.seqAtividade}" value="#{manterAtividadesController.atividade.seq}" for="command"/>  
+            <f:setPropertyActionListener target="#{visualizarObjetosCustoAssociadosPaginatorController.redirecionar}" value="edicao" for="command"/> 
+          </mec:commandButton>  
+          <mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{manterAtividadesController.verificaAlteracaoNaoSalva}" immediate="true" ajax="true" styleClass="bt_cinza" profile="back" rendered="#{manterAtividadesController.mostrarBotaoVoltar}" /> 
+        </aghu:acao> 
+      </h:form>  
+      <p:dialog id="modalRegistroEmEdicaoEditar" width="400" height="150" modal="true" resizable="false" widgetVar="modalRegistroEmEdicaoEditarWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_AVISO_REGISTRO_EM_EDICAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_ALTERACAO_PENDENTE_EDICAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalRegistroEmEdicaoEditar"> 
+            <mec:commandButton value="#{messages.LABEL_FECHAR}" id="bt_fechar_registroemedicao_editar" onclick="PF('modalRegistroEmEdicaoEditarWG').hide();" styleClass="bt_vermelho icon-close bt_cinza" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalRegistroEmEdicaoExcluir" width="400" height="150" modal="true" resizable="false" widgetVar="modalRegistroEmEdicaoExcluirWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_AVISO_REGISTRO_EM_EDICAO}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_ALTERACAO_PENDENTE_EXCLUSAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalRegistroEmEdicaoExcluir"> 
+            <mec:commandButton value="#{messages.LABEL_FECHAR}" id="bt_fechar_registroemedicao_excluir" onclick="PF('modalRegistroEmEdicaoExcluirWG').hide();" styleClass="bt_vermelho icon-close bt_cinza" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      <p:dialog id="modalConfirmacaoVoltar" width="400" height="150" modal="true" resizable="false" widgetVar="modalConfirmacaoVoltarWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.LABEL_CONFIRMACAO_VOLTAR_ATIVIDADE}"/> 
+          </h:panelGroup> 
+        </f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES_GRAVACAO} 
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <br clear="none"/>  
+        <h:panelGroup> 
+          <h:form prependId="false" id="formModalConfirmacaoVoltar"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="bt_sim_voltar" action="#{manterAtividadesController.voltar}" profile="ok"/>  
+            <mec:commandButton value="#{messages.LABEL_NAO}" id="bt_nao_voltar" onclick="PF('modalConfirmacaoVoltarWG').hide();" profile="cancel" ajax="true"/> 
+          </h:form> 
+        </h:panelGroup> 
+      </p:dialog>  
+      
+      <p:dialog id="modalRestricoes" width="300" height="200" modal="true" resizable="false" widgetVar="modalRestricoesWG"> 
+        <f:facet name="header"> 
+        	<h:panelGroup> 
+            	<h:outputText value="#{messages.LABEL_PESSOA_RESTRICOES}"/> 
+          	</h:panelGroup> 
+        </f:facet>
+		<h:form prependId="false" id="formRestricoes">
+			<p:outputPanel id="panelRestricoes" layout="inline" style="width:300px; height:150px">
+	       		<mec:serverDataTable id="tabelaRestricoes" list="#{manterPessoasAtividadeController.restricoes}" scrollable="true" scrollHeight="150">  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_NOME_PAGADOR}"/> 
+						</f:facet>  
+						<h:outputText value="#{item.pagador.seq} - #{item.pagador.descricao}"/> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_PERCENTUAL}"/> 
+						</f:facet> 						
+						<pe:inputNumber 
+	                  	 	id="valor" 
+	                  	 	value="#{item.percentual}"
+	                  	 	maxlength="5"
+	                  	 	maxValue="100.00"
+	                  	 	size="5" readonly="#{not mf:hasPermission(securityController,'editarPesoObjetoCusto,editar')}"
+	                  	 	decimalPlaces="2"/>
+					</p:column>  
+	     		</mec:serverDataTable>
+     		</p:outputPanel> 
+        	<h:panelGroup> 
+            	<mec:commandButton value="#{messages.LABEL_SALVAR}" id="bt_gravar_restricao" action="#{manterPessoasAtividadeController.salvarRestricoes}" ajax="true" process="@form" render="panelTabelaPessoas" profile="ok" oncomplete="PF('modalRestricoesWG').hide();"/>  
+            	<mec:commandButton value="#{messages.LABEL_FECHAR}" id="bt_fechar_restricao" onclick="PF('modalRestricoesWG').hide();return false;" profile="cancel" ajax="true"  process="@this"/> 
+        	</h:panelGroup>
+        </h:form>  
+      </p:dialog>  
+      
+    </ui:define> 
+  </ui:composition> 
+</html>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/templatePrescricaoEnfermagem.xhtml">
+	<ui:define name="head">
+		<title>#{messages.TITLE_PRESCRICAO_ENFERMAGEM_VISUALIZAR_E_ENCERRAR_DIAGNOSTICOS}
+			:: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{encerramentoDiagnosticoController.iniciar}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="bodyPrescricao">
+		<mec:pageConfig controller="#{encerramentoDiagnosticoController}" />
+		<h:form prependId="false" id="formDadosCabecalho">
+			<aghu:panelGeral
+				legend="#{messages.TITLE_PRESCRICAO_ENFERMAGEM_DIAGNOSTICO}">
+				<aghu:linha>
+					<p:outputPanel layout="block"
+						style="width:100%; max-height:400px; overflow-y: auto;">
+						<mec:serverDataTable id="tableDiagnosticosEtiologias"
+							list="#{encerramentoDiagnosticoController.listaDiagnosticoEtiologiaVO}"
+							scrollable="true">
+							<c:set var="_diagnosticoEtiologiaVO" value="#{item}" />
+							<p:column width="10%" style="text-align:center;">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_SELECIONE_DIAGNOSTICO}" />
+								</f:facet>
+								<h:selectBooleanCheckbox name="checkboxDiagnostico"
+									value="#{_diagnosticoEtiologiaVO.selecionado}">
+									<p:ajax event="change" 
+										update="@(#bt_encerrar_diagnostico), @(#panelBtns)" process="@this,@(#bt_encerrar_diagnostico)"
+										listener="#{encerramentoDiagnosticoController.verificarSelecaoDiagnostico()}" />
+								</h:selectBooleanCheckbox>
+							</p:column>
+							<p:column width="45%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_DIAGNOSTICO}" />
+								</f:facet>
+								<h:outputText
+									value="#{_diagnosticoEtiologiaVO.descricaoDiagnostico}" />
+							</p:column>
+							<p:column width="45%">
+								<f:facet name="header">
+									<h:outputText value="#{messages.LABEL_ETIOLOGIA}" />
+								</f:facet>
+								<h:outputText
+									value="#{_diagnosticoEtiologiaVO.descricaoEtiologia}" />
+							</p:column>
+						</mec:serverDataTable>
+					</p:outputPanel>
+				</aghu:linha>
+			</aghu:panelGeral>
+			<aghu:acao>
+				<p:outputPanel id="panelBtns">
+					<mec:commandButton id="bt_encerrar_diagnostico"
+						disabled="#{not encerramentoDiagnosticoController.existeDiagnosticoSelecionado}"
+						value="#{messages.LABEL_ENCERRAR_DIAGNOSTICO}"
+						onclick="PF('modalConfirmacaoExclusaoWG').show();;" ajax="true"
+						styleClass="bt_cinza" />
+					<mec:commandButton id="bt_continuar"
+						value="#{messages.LABEL_CONTINUAR}"
+						action="#{encerramentoDiagnosticoController.redirecionarManterPrescricaoEnfermagem}"
+						rendered="#{encerramentoDiagnosticoController.cameFrom eq 'elaboracaoPrescricaoEnfermagem'}"
+						styleClass="bt_cinza">
+						<f:setPropertyActionListener
+							target="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+							value="#{encerramentoDiagnosticoController.penAtdSeq}"
+							for="command" />
+						<f:setPropertyActionListener
+							target="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+							value="#{encerramentoDiagnosticoController.penSeq}" for="command" />
+					</mec:commandButton>
+					<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}"
+						action="#{encerramentoDiagnosticoController.redirecionarManterPrescricaoEnfermagem}"
+						rendered="#{encerramentoDiagnosticoController.cameFrom eq 'prescricaoenfermagem-manterPrescricaoEnfermagem'}"
+						styleClass="bt_cinza" profile="back">
+						<f:setPropertyActionListener
+							target="#{manutencaoPrescricaoEnfermagemController.penSeqAtendimento}"
+							value="#{encerramentoDiagnosticoController.penAtdSeq}"
+							for="command" />
+						<f:setPropertyActionListener
+							target="#{manutencaoPrescricaoEnfermagemController.penSeq}"
+							value="#{encerramentoDiagnosticoController.penSeq}" for="command" />
+					</mec:commandButton>
+				</p:outputPanel>
+			</aghu:acao>
+		</h:form>
+		<p:dialog id="modalConfirmacaoExclusao" width="400" height="150"
+			modal="true" resizable="false" widgetVar="modalConfirmacaoExclusaoWG">
+			<f:facet name="header">
+				<h:panelGroup>
+					<h:outputText value="#{messages.LABEL_EXCLUSAO_CUIDADOS}" />
+				</h:panelGroup>
+			</f:facet> #{messages.MENSAGEM_CONFIRMACAO_ENCERRAMENTO_DIAG_ETI} 
+        <br clear="none" />
+			<br clear="none" />
+			<br clear="none" />
+			<h:panelGroup>
+				<h:form prependId="false" id="formModalExclusao"
+					name="formModalExclusao">
+					<mec:commandButton value="#{messages.LABEL_CUIDADO_OK}"
+						id="bt_excluir" block="true"
+						action="#{encerramentoDiagnosticoController.removerPrescCuidadosDiagnosticosSelecionados}"
+						render="tableDiagnosticosEtiologias" profile="ok" />
+					<mec:commandButton value="#{messages.LABEL_CUIDADO_CANCELAR}"
+						onclick="PF('modalConfirmacaoExclusaoWG').hide();"
+						id="bt_cancelarExcluir" profile="cancel" ajax="true" />
+				</h:form>
+			</h:panelGroup>
+		</p:dialog>
+	</ui:define>
+</ui:composition>
+</html>

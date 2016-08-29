@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PROCEDIMENTO_CIRURGICO_TITULO_TELA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{procedimentoCirurgicoPaginatorController}"/>  
+      <h:form prependId="false" id="formPesquisa"> 
+        <pe:remoteCommand name="selecionarProcedCirurgico" update="panelLateralBotoes" actionListener="#{procedimentoCirurgicoPaginatorController.habilitarBotoesLaterais}" process="@this"> 
+          <pe:assignableParam name="param1" assignTo="#{procedimentoCirurgicoPaginatorController.seqSelecionado}"/> 
+        </pe:remoteCommand>  
+        <aghu:panelGeral legend="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO}"> 
+          <aghu:linha> 
+            <mec:inputNumero id="filtroSeq" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_CODIGO}" value="#{procedimentoCirurgicoPaginatorController.filtroSeq}" maxlength="5" size="5"/>  
+            <mec:inputText id="filtroDescricao" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_DESCRICAO}" value="#{procedimentoCirurgicoPaginatorController.filtroDescricao}" size="50" maxlength="120" style="text-transform:uppercase"/>  
+            <mec:selectOneMenu id="filtroIndSituacao" label="#{messages.LABEL_SITUACAO}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_SITUACAO}" value="#{procedimentoCirurgicoPaginatorController.filtroIndSituacao}" enum="DominioSituacao"/>  
+            <mec:selectOneMenu id="filtroIndGeraImagensPacs" label="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_GERA_IMAGENS_PACS}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_GERA_IMAGENS_PACS}" value="#{procedimentoCirurgicoPaginatorController.filtroIndGeraImagensPacs}" enum="DominioSimNao"/>  
+            <mec:selectOneMenu id="filtroIndInteresseCcih" label="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_INTERESSE_CCIH}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_INTERESSE_CCIH}" value="#{procedimentoCirurgicoPaginatorController.filtroIndInteresseCcih}" enum="DominioSimNao"/> 
+          </aghu:linha> 
+        </aghu:panelGeral>  
+        <aghu:acao> 
+          <mec:commandButton id="bt_pesquisar" value="#{messages.LABEL_PESQUISAR}" block="true" action="#{procedimentoCirurgicoPaginatorController.pesquisar}" profile="search"/>  
+          <mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}" ajaxSingle="true" action="#{procedimentoCirurgicoPaginatorController.limpar}" styleClass="bt_cinza" profile="clear"/>  
+          <mec:commandButton id="bt_novo" value="#{messages.LABEL_NOVO}" action="#{procedimentoCirurgicoPaginatorController.iniciarInclusao()}" rendered="#{procedimentoCirurgicoPaginatorController.exibeBotaoNovo}" disabled="#{not mf:hasPermission(securityController,'procedimentoCirurgico,cadastrar')}" profile="add"/> 
+        </aghu:acao>  
+        <p:outputPanel id="panelResultado" rendered="#{procedimentoCirurgicoPaginatorController.dataModel.pesquisaAtiva}" layout="inline" styleClass="aghu-panel-geral"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_LISTA_PROCEDIMENTOS_CIRURGICOS}">
+            <aghu:column type="table" id="panelTableProcedimentosCirurgicos">
+              <mec:serverDataTable id="tabelaProcedimentosCirurgicos"
+                                   ignoreScroll="true"
+                                   controller="#{procedimentoCirurgicoPaginatorController}"
+                                   dataModel="dataModel"> 
+                <p:column headerText="#{messages.LABEL_ACAO}" styleClass="first-column auto-adjust"> 
+                  
+                  <p:outputPanel rendered="#{item.seq.equals(procedimentoCirurgicoPaginatorController.seqSelecionado)}" layout="inline"> 
+                    <input type="radio" id="#{item.seq}" name="group1" onchange="selecionarProcedCirurgico(#{item.seq})" checked="checked"/> 
+                  </p:outputPanel>  
+                  <p:outputPanel rendered="#{not item.seq.equals(procedimentoCirurgicoPaginatorController.seqSelecionado)}" layout="inline"> 
+                    <input type="radio" id="#{item.seq}" name="group1" onchange="selecionarProcedCirurgico(#{item.seq})"/> 
+                  </p:outputPanel>  
+                  
+                  <mec:commandLink id="linkEditar" 
+                  		action="#{procedimentoCirurgicoPaginatorController.editar(item.seq)}" 
+                  		title="#{messages.LABEL_EDITAR}" 
+                  		profile="edit" styleClass="silk-icon silk-pencil"/>  
+                  
+                  <mec:commandLink id="linkAtivarInativar" 
+                  		title="#{item.indSituacao eq 'A' ? messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_CLIQUE_PARA_DESATIVAR : messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_CLIQUE_PARA_ATIVAR}" 
+                  		action="#{procedimentoCirurgicoPaginatorController.ativarInativar(item.seq)}" 
+                  		rendered="#{mf:hasPermission(securityController,'procedimentoCirurgico,editar')}" 
+                  		styleClass=" #{item.indSituacao eq 'A' ? 'silk-activate' : 'silk-deactivate'} silk-icon" ajax="true" 
+                  		render="tabelaProcedimentosCirurgicos" process="@this"/> 
+
+                </p:column>  
+                <p:column headerText="#{messages.LABEL_CODIGO}"> 
+                  <h:outputText value="#{item.seq}"/> 
+                </p:column>  
+                <p:column headerText="#{messages.LABEL_PROCEDIMENTO_CIRURGICO}"> 
+                  <h:outputText value="#{procedimentoCirurgicoPaginatorController.abreviar(item.descricao, 75)}" id="abreviar"/>  
+                  <p:tooltip direction="bottom-right" styleClass="tooltip" layout="block" for="abreviar"> 
+                    <h:outputText value="#{item.descricao}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column headerText="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_PACS}"> 
+                  <h:outputText value="#{item.indGeraImagensPacs ? messages.LABEL_SIM : messages.LABEL_NAO}"/> 
+                </p:column>  
+                <p:column headerText="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_CCIH}"> 
+                  <h:outputText value="#{item.indInteresseCcih ? messages.LABEL_SIM : messages.LABEL_NAO}"/> 
+                </p:column>  
+                <p:column headerText="#{messages.LABEL_SITUACAO}"> 
+                  <h:outputText value="#{item.indSituacao.descricao}"/> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:column>
+            <aghu:column type="button" id="panelLateralBotoes"> 
+              <mec:commandButton id="bt_sinonimos" value="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_SINONIMOS}" action="#{procedimentoCirurgicoPaginatorController.redirecionarSinonimo()}" disabled="#{procedimentoCirurgicoPaginatorController.seqSelecionado == null or not mf:hasPermission(securityController,'/blococirurgico/cadastroapoio/sinonimoCRUD.xhtml,render')}" styleClass="bt_cinza"/>  
+              <mec:commandButton id="bt_areaTricotomia" value="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_AREA_TRICOTOMIA}" action="#{procedimentoCirurgicoPaginatorController.redirecionarTricotomia()}" disabled="#{procedimentoCirurgicoPaginatorController.seqSelecionado == null or not mf:hasPermission(securityController,'/blococirurgico/cadastroapoio/tricotomiaAssocProcedCRUD.xhtml,render')}" styleClass="bt_cinza"/>  
+              <mec:commandButton id="bt_especialidade" value="#{messages.LABEL_ESPECIALIDADE}" action="#{procedimentoCirurgicoPaginatorController.redirecionarEspecialidade()}" disabled="#{procedimentoCirurgicoPaginatorController.seqSelecionado == null or not mf:hasPermission(securityController,'/blococirurgico/cadastroapoio/especialidadeProcedimentoCirurgicoCRUD.xhtml,render')}" styleClass="bt_cinza"/>  
+              <mec:commandButton id="bt_cadFaturamento" action="#{procedimentoCirurgicoPaginatorController.redirecionarSigtap()}" value="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_CAD_FATURAMENTO}" disabled="#{procedimentoCirurgicoPaginatorController.seqSelecionado == null or not mf:hasPermission(securityController,'/blococirurgico/cadastroapoio/pesquisaProcedimentoSIGTAP.xhtml,render')}" styleClass="bt_cinza"/>  
+              <mec:commandButton id="bt_compSanguineo" action="#{procedimentoCirurgicoPaginatorController.redirecionarCompSang()}" value="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_COMP_SANGUINEO}" disabled="#{procedimentoCirurgicoPaginatorController.seqSelecionado == null or not mf:hasPermission(securityController,'/blococirurgico/cadastroapoio/compSangAssocProcedCRUD.xhtml,render')}" styleClass="bt_cinza"/> 
+            </aghu:column>        
+          </aghu:panelGeral> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

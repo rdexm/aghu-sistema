@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+    <ui:define name="head"> 
+      <title>messages['TITLE_DEVOLUCAO_FORNECEDOR']) :: #{messages['NOME_ABREVIADO_PROJETO']}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{geracaoDevolucaoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{geracaoDevolucaoController}"/>  
+      <h:form prependId="false" id="pesquisaFrm"> 
+        <aghu:panelGeral legend="#{messages.TITLE_DEVOLUCAO_FORNECEDOR}"> 
+          <aghu:linha> 
+            <h:panelGrid columns="2"> 
+              <p:column colspan="1" style="border:none"> 
+                <aghu:panelGeral legend="#{messages.TITLE_GROUPBOX_RECEBIMENTO}"> 
+                  <aghu:linha> 
+                    <mec:inputNumero id="seqNotaRecebProvisorio" label="#{messages.LABEL_NUMERO_ABREVIADO}" readonly="true" value="#{geracaoDevolucaoController.seqNotaRecebProvisorio}" size="10"/>  
+                    <mec:inputNumero id="seqNotaRecebimento" label="#{messages.LABEL_NR}" readonly="true" value="#{geracaoDevolucaoController.seqNotaRecebimento}" size="10"/> 
+                  </aghu:linha> 
+                </aghu:panelGeral> 
+              </p:column>  
+              <p:column colspan="1" style="border:none"> 
+                <aghu:panelGeral legend="#{messages.TITLE_GROUPBOX_DOC_FISCAL_ENTRADA}"> 
+                  <aghu:linha> 
+                    <mec:inputNumero id="numeroDfe" label="#{messages.LABEL_NUMERO}" readonly="true" value="#{geracaoDevolucaoController.numeroDfe}" size="10"/>  
+                    <mec:inputText id="serieDfe" label="#{messages.LABEL_SERIE}" readonly="true" value="#{geracaoDevolucaoController.serieDfe}" size="10"/>  
+                    <mec:inputText id="tipoDfe" label="#{messages.LABEL_TIPO}" readonly="true" value="#{geracaoDevolucaoController.tipoDfe.descricao}" size="10"/>  
+                    <mec:inputTextData label="#{messages.LABEL_DATA_EMISSAO_DFE}" required="false" id="dataEmissaoDfe" readonly="true" size="10" value="#{geracaoDevolucaoController.dataEmissaoDfe}" tipo="data"/>  
+                    <mec:inputTextData label="#{messages.LABEL_DATA_EMISSAO_DFE}" required="false" id="dataEntradaDfe" readonly="true" size="10" value="#{geracaoDevolucaoController.dataEntradaDfe}" tipo="data"/>  
+                    <mec:inputNumero id="valorTotalNfDfe" value="#{geracaoDevolucaoController.valorTotalNfDfe}" label="#{messages.LABEL_VALOR_TOTAL_DFE}" required="false" inteiros="11" decimais="2" actionBean="#{geracaoDevolucaoController}" style="text-align:right;" readonly="true"/> 
+                  </aghu:linha> 
+                </aghu:panelGeral> 
+              </p:column> 
+            </h:panelGrid> 
+          </aghu:linha> 
+        </aghu:panelGeral> 
+      </h:form>  
+      <ui:fragment rendered="#{geracaoDevolucaoController.ativo}"> 
+        <h:form prependId="false" id="resultados"> 
+          <aghu:panelGeral legend="#{messages.TITLE_GROUPBOX_ITENS_DEVOLUCAO}"> 
+            <aghu:linha> 
+              <mec:serverDataTable id="tabela_pendencias" name="tabela_pendencias" list="#{geracaoDevolucaoController.listaPendencias}" scrollable="true"> 
+                <c:set var="_item" value="#{item}"/>  
+                <p:column style="white-space: nowrap"> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                  </f:facet>  
+                  <h:selectBooleanCheckbox value="#{_item.isMarked}"> 
+                    <p:ajax event="click" update="@(#panelQtdeSaida) @(#panelBtnModal) @(#panelDescricaoProblema)" process="@this" listener="#{geracaoDevolucaoController.limparItem(_item)}"/> 
+                  </h:selectBooleanCheckbox>  
+                  <p:outputPanel id="panelBtnModal" layout="inline"> 
+                    <mec:commandLink id="btn_modalDescricaoProblema" title="#{messages.LABEL_MOTIVO_DEVOLUCAO}" action="#{geracaoDevolucaoController.inicializarModalProblema(_item)}" oncomplete="PF('modalDescricaoProblemaScoWG').show();;" disabled="#{not (_item.isMarked)}" style="margin-bottom: -3px;" styleClass=" silk-lista-consultar silk-icon" ajax="true" render="modalDescricaoProblemaSco"/> 
+                  </p:outputPanel> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_ITEM}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.nroItem}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_CODIGO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.matCodigo}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_MATERIAL}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{(_item.nomeMaterial.length() &gt; 30) ? fn:substring(_item.nomeMaterial,0,30) : _item.nomeMaterial }#{(_item.nomeMaterial.length() &gt; 30) ? '...' : '' }"/>  
+                  <p:tooltip style="width:300px;                                         word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                    <h:outputText value="#{messages.LABEL_NOME_MATERIAL_CATALOGO}: #{_item.nomeMaterial}"/>  
+                    <br clear="none"/>  
+                    <h:outputText value="#{messages.LABEL_MAT_NOME_PESQUISAR_ESTQ_GERAL}: #{_item.descricaoMaterial}"/> 
+                  </p:tooltip> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_UND_GRID}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.unidadeMaterial}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_GRID_QTDE_ENTREGUE}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.qtdEntrada}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_GRID_QTDE_SALDO}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.getQtdSaldoCalculado()}"/> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_GRID_QTDE_SAIDA}"/> 
+                  </f:facet> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VALOR_UNITARIO_GRID}"/> 
+                  </f:facet>  
+                  <h:outputText value="#{_item.getValorUnitarioItemCalculado()}" style="float:right; "> 
+                    <f:convertNumber pattern="###,##0.00"/> 
+                  </h:outputText> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_VALOR_TOTAL_GRID}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelValorTotalItemNR" layout="inline"> 
+                    <h:outputText value="#{_item.valorTotalItemNr}" style="float:right; "> 
+                      <f:convertNumber pattern="###,##0.00"/> 
+                    </h:outputText> 
+                  </p:outputPanel> 
+                </p:column>  
+                <p:column> 
+                  <f:facet name="header"> 
+                    <h:outputText value="#{messages.LABEL_DESCRICAO_PROBLEMA}"/> 
+                  </f:facet>  
+                  <p:outputPanel id="panelDescricaoProblema" layout="inline"> 
+                    <h:outputText value="#{(_item.descricao.length() &gt; 40) ? fn:substring(_item.descricao,0,40) : _item.descricao }#{(_item.descricao.length() &gt; 40) ? '...' : '' }"/>  
+                    <p:tooltip style="width:300px;                                         word-wrap: break-word;" direction="bottom-right" styleClass="tooltip" layout="block"> 
+                      <h:outputText value="#{_item.descricao}"/> 
+                    </p:tooltip> 
+                  </p:outputPanel> 
+                </p:column> 
+              </mec:serverDataTable> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="bt_gerardevolucao" value="#{messages.LABEL_GERAR_DEVOLUCAO}" action="#{geracaoDevolucaoController.gerarDevolucao()}" oncomplete="if (#{geracaoDevolucaoController.geracaoOk}) { PF('confirmacaoDevolucaoModalWG').show(); }" profile="ok" ajax="true"/>  
+            <mec:commandButton id="bt_voltar" immediate="true" action="voltar" value="#{messages.LABEL_VOLTAR}" styleClass="bt_cinza" profile="back"/>  
+            <mec:commandButton value="#{messages.LABEL_DEVOLUCOES_PENDENTES_CONFIRMACAO}" id="bt_devolucao" immediate="true" action="confirmacaoDevolucao" disabled="#{not(geracaoDevolucaoController.isHabilitarBotaoConfirmarDevolucao())}" style="float: right;background-image:none !important;margin-right: 7px !important;padding: 5px 5px 5px 5px !important;" styleClass="bt_voltar bt_cinza"/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" immediate="true" action="#{geracaoDevolucaoController.iniciar()}" style="float: right;" styleClass="bt_cinza" profile="clear"/> 
+          </aghu:acao> 
+        </h:form> 
+      </ui:fragment>  
+      <h:form prependId="false"> 
+        <p:dialog id="modalDescricaoProblemaSco" resizeable="false" moveable="false" zindex="2" width="520" height="350" modal="true" resizable="false" widgetVar="modalDescricaoProblemaScoWG"> 
+          <f:facet name="header"> 
+            <h:panelGroup> 
+              <h:outputText value="#{messages.TITLE_MODAL_DESCRICAO_PROBLEMA}"/> 
+            </h:panelGroup> 
+          </f:facet>  
+          <aghu:panelGeral> 
+            <p:outputPanel id="modalDescricaoProblemaPanel" layout="inline"> 
+              <aghu:linha> 
+                <mec:suggestionBox label="#{messages.LABEL_SUGGESTION_PROBLEMA}" title="#{messages.TITLE_SUGGESTION_PROBLEMA}" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="pesquisaMotivosProblemasPorSeqDescricao" posSelectionAction="refreshMotivoDevolucao" posDeleteAction="refreshMotivoDevolucao" required="true" width="400" id="sgProblema" controller="#{geracaoDevolucaoController}" value="#{geracaoDevolucaoController.sceMotivoProblema}" render="panelDescricao"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.seq}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <p:outputPanel id="panelDescricao" layout="inline"> 
+                  <mec:inputTextArea cols="50" label="#{messages.LABEL_MOTIVO}" rows="10" required="true" value="#{geracaoDevolucaoController.descricaoProblema}" maxlength="2000" id="descricao"/> 
+                </p:outputPanel> 
+              </aghu:linha> 
+            </p:outputPanel>  
+            <aghu:acao> 
+              <mec:commandButton id="modal_bt_confirmar" value="#{messages.LABEL_CONFIRMAR}" action="#{geracaoDevolucaoController.alterarProblema()}" oncomplete="if(#{(facesContext.maximumSeverity.ordinal ne 2)}) PF('modalDescricaoProblemaScoWG').hide();;" profile="ok" ajax="true" render="panelDescricaoProblema"/>  
+              <mec:commandButton id="modal_canc_bt" value="#{messages.LABEL_CANCELAR}" onclick="PF('modalDescricaoProblemaScoWG').hide();" profile="cancel" ajax="true" render="modalDescricaoProblemaPanel" process="@this"/> 
+            </aghu:acao> 
+          </aghu:panelGeral> 
+        </p:dialog> 
+      </h:form>  
+      <p:dialog id="confirmacaoDevolucaoModal" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="confirmacaoDevolucaoModalWG"> 
+        <f:facet name="header"> 
+          <h:outputText value="#{messages.TITLE_MODAL_CONFIRMACAO_DEVOLUCAO}"/> 
+        </f:facet>  
+        <aghu:linha> 
+          <h:outputText value="#{messages.MSG_GERACAO_DEVOLUCAO_SUCESSO}"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/> 
+        </aghu:linha>  
+        <aghu:acao> 
+          <h:form prependId="false"> 
+            <mec:commandButton value="#{messages.LABEL_SIM}" id="confirmacaoDevolucaoButton" onclick="PF('confirmacaoDevolucaoModalWG').hide();" action="#{geracaoDevolucaoController.confirmarDevolucao}" profile="search"/>  
+            <mec:commandButton action="#{geracaoDevolucaoController.confirmarPendenciaDevolucao}" value="#{messages.LABEL_NAO}" id="naoConfirmacaoDevolucaoButton" onclick="PF('confirmacaoDevolucaoModalWG').show(); PF('pendenciaDevolucaoModalWG').hide(); return false;" profile="cancel"/> 
+          </h:form> 
+        </aghu:acao> 
+      </p:dialog>  
+      <p:dialog id="pendenciaDevolucaoModal" width="400" height="150" autosized="true" resizeable="false" modal="true" resizable="false" widgetVar="pendenciaDevolucaoModalWG"> 
+        <f:facet name="header"> 
+          <h:panelGroup> 
+            <h:outputText value="#{messages.TITLE_MODAL_PENDENCIA_DEVOLUCAO}"/> 
+          </h:panelGroup> 
+        </f:facet>  
+        <aghu:linha> 
+          <h:outputText value="#{messages.MENSAGEM_PENDENCIA_DEVOLUCAO}"/>  
+          <br clear="none"/>  
+          <br clear="none"/>  
+          <br clear="none"/> 
+        </aghu:linha>  
+        <aghu:acao> 
+          <h:form prependId="false"> 
+            <mec:commandButton action="#{geracaoDevolucaoController.confirmarPendenciaDevolucao}" value="#{messages.LABEL_OK}" id="confirmacaoPendenciaDevolucaoButton" onclick="PF('pendenciaDevolucaoModalWG').hide();" profile="search"/> 
+          </h:form> 
+        </aghu:acao> 
+      </p:dialog> 
+    </ui:define> 
+  </ui:composition> 
+</html>

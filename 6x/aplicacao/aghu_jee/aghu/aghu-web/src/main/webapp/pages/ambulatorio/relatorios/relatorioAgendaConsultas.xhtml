@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>#{messages.AACR_AGENDA_DT_REF_TITLE} ::
+			#{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{relatorioAgendaConsultasController}"
+			ignoreEnter="true" />
+		<h:form prependId="false" id="formPesquisa">
+			<p:outputPanel id="panelFields" layout="inline">
+				<aghu:panelGeral legend="#{messages.AACR_AGENDA_DT_REF_TITLE}">
+					<aghu:linha>
+						<mec:inputNumero readonly="false"
+							label="#{messages.LABEL_SEQ_GRADE_AGENDAMENTO}"
+							title="#{messages.TITLE_SEQ_GRADE_AGENDA_CONSULTAS}" size="6"
+							maxlength="6"
+							value="#{relatorioAgendaConsultasController.seqGrade}" id="seq"></mec:inputNumero>
+						<mec:suggestionBox label="#{messages.LABEL_ESPECIALIDADE}"
+							title="#{messages.TITLE_ESPECIALIDADE_AGENDA_CONSULTAS}"
+							descricaoInput="sigla" descricaoLabel="nomeEspecialidade"
+							suggestionAction="obterEspecialidade"
+							posDeleteAction="limparEspecialidade" id="especialidade"
+							controller="#{relatorioAgendaConsultasController}"
+							value="#{relatorioAgendaConsultasController.especialidade}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_SIGLA}</b>
+								</f:facet> #{item.sigla}
+                </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_ESPECIALIDADE}</b>
+								</f:facet> #{item.nomeEspecialidade}
+                </p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:selectOneMenu enum="DominioTurno"
+							label="#{messages.LABEL_PESQUISAR_PACIENTES_AGENDADOS_TURNO}"
+							title="#{messages.TITLE_TURNO_AGENDA_CONSULTAS}"
+							value="#{relatorioAgendaConsultasController.turno}"
+							noSelectionLabel="#{mf:getDefaultValue(noSelectionLabel, 'Todos os turnos')}"
+							id="turno"></mec:selectOneMenu>
+						<mec:suggestionBox
+							label="#{relatorioAgendaConsultasController.labelSetor}"
+							title="#{messages.TITLE_SETOR_AGENDA_CONSULTAS}"
+							suggestionAction="obterSetor" descricaoInput="sigla"
+							descricaoLabel="descricao" posDeleteAction="limparSetor"
+							id="zona" controller="#{relatorioAgendaConsultasController}"
+							value="#{relatorioAgendaConsultasController.unidadeFuncional}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_SIGLA}</b>
+								</f:facet> #{item.sigla}
+                </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{item.descricao}
+                </p:column>
+						</mec:suggestionBox>
+					</aghu:linha>
+					<aghu:linha>
+						<mec:inputTextData
+							label="#{messages.LABEL_DT_INICIAL_CONSULTAS_GRADE_AGENDAMENTO}"
+							title="#{messages.TITLE_DATA_INICIAL_AGENDA_CONSULTAS}" size="10"
+							maxlength="10" ajaxValidation="false"
+							value="#{relatorioAgendaConsultasController.dtInicio}"
+							id="dtInicio" tipo="data" />
+						<mec:inputTextData
+							label="#{messages.LABEL_DT_FINAL_CONSULTAS_GRADE_AGENDAMENTO}"
+							title="#{messages.TITLE_DT_FINAL_CONSULTAS_GRADE_AGENDAMENTO}"
+							size="10" maxlength="10" ajaxValidation="false"
+							value="#{relatorioAgendaConsultasController.dtFim}" id="dtFim"
+							tipo="data" />
+					</aghu:linha>
+				</aghu:panelGeral>
+			</p:outputPanel>
+			<p:outputPanel id="panelBotoes" layout="inline">
+				<aghu:acao>
+					<!-- Botoes visualizacao e impressao CUPS -->
+					<mec:commandButton id="bt_visualizarImpressao"
+						value="#{messages.LABEL_VISUALIZAR_IMPRESSAO_RELATORIO}"
+						action="#{relatorioAgendaConsultasController.print}"
+						profile="view" ajax="true" />
+					<mec:commandButton id="bt_imprimir"
+						value="#{messages.LABEL_IMPRIMIR}" block="true"
+						action="#{relatorioAgendaConsultasController.directPrint}"
+						profile="print" />
+					<mec:commandButton id="bt_verde"
+						value="#{messages.PROCED_CIR_PDT_ATIVOS_LABEL_BOTAO_CSV}"
+						action="#{relatorioAgendaConsultasController.gerarCSV}"
+						icon="icon-download-csv" />
+					<mec:commandButton id="bt_limpar" value="#{messages.LABEL_LIMPAR}"
+						action="#{relatorioAgendaConsultasController.limparPesquisa}"
+						render="formPesquisa, panelBotoes" profile="clear" ajax="true" process="@this" />	
+				</aghu:acao>
+			</p:outputPanel>
+	        <c:if xmlns:c="http://java.sun.com/jstl/core" test="#{relatorioAgendaConsultasController.gerouArquivo}">  
+	          <script type="text/javascript" xml:space="preserve">
+						jQuery(document).ready(function(){
+							Document.getElementById('abrirArquivoButton').click();
+						});
+					</script>
+				<mec:commandButton id="abrirArquivoButton" immediate="true"
+					action="#{relatorioAgendaConsultasController.dispararDownload()}"
+					value="Download do arquivo" style="visibility: hidden;">
+					<f:param name="cid"
+						value="#{javax.enterprise.context.conversation.id}" />
+				</mec:commandButton>
+			</c:if> 
+		</h:form>
+		<p:outputPanel id="openModal" layout="inline">
+			<p:dialog id="LoadingModalBox" style="text-align:center;" height="200" 
+				top="200" resizeable="false" moveable="false" width="400"
+				zindex="2000" modal="true" resizable="false"
+				widgetVar="LoadingModalBoxWG">
+				<f:facet name="header">
+					<h:outputText value="Em Andamento" />
+				</f:facet>
+				<div style="text-align: center;">
+					<br clear="none" /> <br clear="none" />
+					<h:graphicImage value="/img/loading.gif" />
+					<br clear="none" /> <br clear="none" />
+					<h:outputText
+						value="#{mf:getDefaultValue(blockMsg,'Processando, por favor aguarde.')}" />
+				</div>
+			</p:dialog>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

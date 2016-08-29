@@ -1,0 +1,392 @@
+package br.gov.mec.aghu.dominio;
+
+import br.gov.mec.aghu.core.dominio.Dominio;
+
+/**
+ * Dominio que mapeia o nome dos relatórios.
+ * 
+ * @author riccosta
+ * 
+ */
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
+public enum DominioNomeRelatorio implements Dominio {
+	AACR_AGENDA_DT_REF_TITLE,
+			
+	REIMPRESSAO_ETIQUETAS,
+
+	BOLETIM_IDENTIFICACAO,
+
+	CARTAO_SUS,
+
+	HISTORICO_PACIENTE,
+
+	MOVIMENTACAO_PRONTUARIO,
+
+	MOVIMENTACAO_PRONTUARIO_ETQ,
+	
+	MTXR_OBITO_ESPERA_TRANSPLANTES,
+	
+	PRONTS_EXCLUIDOS,
+
+	PRONTS_IDENTIFICADOS,
+
+	PRONTS_IDENTIFICADOS_ETQ,
+
+	TICKET_EXAMES,
+
+	SUMARIO_ALTA,
+
+	SUMARIO_OBITO,
+
+	RECEITUARIO_MANTER_ALTA,
+
+	CONSULTORIA,
+
+	PRESCRICAO_MEDICA,
+
+	SOLICITACAO_PRONTUARIOS,
+
+	DESARQUIVAMENTO_PRONTUARIO,
+
+	CONTROLES_PACIENTE,
+
+	ADMIN_SITUCAO_PRONTUARIO_ETQ,
+
+	DISPENSACAO_FARMARCIA,
+
+	SOL_HEMOTERAPICA,
+	
+	PENDENCIAS_ENCERRAMENTO,
+	
+	REIMPRIMIR_LAUDOS_PROCEDIMENTOS,
+	
+	MATERIAL_COLETAR_INTERNACAO,
+	
+	AGENDAMENTO_CONSULTA,
+	
+	FATR_RESUMO_AIH,
+	
+	FATR_INT_LOG_ERRO,
+	
+	FATR_INT_AIH_NOME,
+	
+	FATR_REINTERNACOES,
+	
+	FATR_INT_FAT_DCIH,
+		
+	FATR_INT_DCIH_AIH,
+	
+	FATR_INT_OPM_NAO_FAT,
+	
+	FATR_INT_OPM,
+	
+	FATR_INT_AIH_CLINICA,
+	
+	PRESCRICAO_UNIDADE,
+	
+	AELR_EXME_A_REAL_EME, 
+	
+	AELR_EXM_A_REAL_PREP, 
+	
+	AELR_EXME_A_REAL_PAC, 
+
+	AELR_MAPA_LAMINA,
+	
+	AELR_EXME_A_REALIZAR,
+
+	PENDENCIAS_ASSINATURA_DIGITAL,
+	
+	ANAMNSESE_EVOLUCAO,
+	
+	TICKET_DISP_MDTO,
+	
+	ETIQUETAS_MEDICAMENTOS,
+	
+	RECEITAS_MEDICAS,
+	
+	FATR_AIH_PAC,
+	
+	FATR_INT_AIH_POR_SSM,
+	
+	FATR_INT_NAO_FAT,
+	
+	FATR_INT_FAT_PROD, 
+	
+	AFAR_QUANT_PRCR_DISP,
+	
+	FATR_LAUD_CONTAS,
+	
+	FATR_INT_AIH_PROCED,
+	
+	RELATORIO_INTERMEDIARIO_LANCAMENTOS_CONTA,
+	
+	FATR_AMB_LOG_MSG,
+	
+	IMPRIMIR_REQUISICAO_MATERIAL,
+	
+	IMPRIMIR_NOTA_RECEBIMENTO,
+	
+	IMPRIMIR_REQUISICAO_MATERIAL_REMOTA,
+
+	MEDICAMENTO_SINTETICO ,
+
+	MEDICAMENTO_DISPENSADO_POR_BOX,
+	
+	RELATORIO_MATERIAIS_VALIDADE_VENCIDA, 
+	
+	RELATORIO_MENSAL_POSICAO_ESTOQUE,
+	
+	RELATORIO_AJUSTE_ESTOQUE,
+	
+	RELATORIO_CLASSIFICACAO_ABC,
+	
+	AUTORIZACAO_FORNECIMENTO_SALDO_ENTREGA,
+	
+	RELATORIO_ESPELHO,
+	
+	RELATORIO_TRANSFERENCIA_MATERIAL, 
+	
+	RELATORIO_DEVOLUCAO_ALMOXARIFADO, 
+	
+	RELATORIO_RESUMO_GERAL_MATERIAIS, 
+	
+	RELATORIO_RESUMO_GERAL_MATERIAIS_CONSIG, 
+	
+	RELATORIO_CONSIGNADOS_FORN, 
+	
+	RELATORIO_EXTRATO_CONTA_FORN, 
+	
+	RELATORIO_QUANTIDADE_MOV_TIPO, 
+	
+	RELATORIO_GERAL_MATERIAIS_TERCEIROS,
+	
+	RELATORIO_RESUMO_MATERIAIS_ESTOCAVEIS, 
+	
+	RELATORIO_CONSUMO_ANALITICO, 
+	
+	RELATORIO_CONSUMO_POR_CONTA_CC_GRUPO, 
+	
+	RELATORIO_CONSUMO_SINTETICO, 
+	
+	RELATORIO_PRODUCAO_GRAFICA, 
+	
+	RELATORIO_PRODUCAO_ROUPARIA, 
+	
+	RELATORIO_PRODUCAO_FARMACIA,
+
+	RELATORIO_SOLICITACOES_COMPRA_MATERIAL_ESTOCAVEL,
+	
+	RELATORIO_MOVIMENTO_MATERIAIS,
+	
+	RELATORIO_AFS_NAO_EFETIVADAS,
+	
+	RELATORIO_MATERIAIS_SALDO_ATE_VINTE_DIAS,
+	
+	RELATORIO_MATERIAIS_COM_CONTRATO_SALDO_ATE_VINTE_DIAS,
+	
+	RELATORIO_MATERIAIS_ALMOXARIFADO_SALDO_ATE_VINTE_DIAS,
+	
+	RELATORIO_ENTRADA_MATERIAIS_NO_DIA,
+	
+	RELATORIO_PRODUCAO_INTERNA_MATERIAIS,
+	
+	RELATORIO_AFS_SEM_EMPENHO_EMP_PARCIAL_COM_TOTAL,
+	
+	RELATORIO_SCS_PLANEJAMENTO_COMPRAS,
+	
+	RELATORIO_GERACAO_SOLICITACOES_COMPRAS_MATERIAL_ESTOCAVEL,
+	
+	RELATORIO_GERACAO_SOLICITACOES_COMPRAS_MATERIAL_DIRETOS,
+	
+	RELATORIO_EFETIVACOES_NO_DIA,
+	
+	RELATORIO_AFS_SEM_EMPENHO_EMP_PARCIAL,
+	
+	RELATORIO_AFS_GERADAS_ALTERADAS_EXCLUIDAS,
+	
+	RELATORIO_MATERIAIS_GRAFICA_EM_PONTO_PEDIDO,
+	
+	RELATORIO_TITULOS_EXTORNADOS,
+	
+	RELATORIO_CONSUMO_MATERIAIS_NO_DIA,
+	
+	RELATORIO_EMPENHOS_GERADOS_ALTERADOS,
+	
+	RELATORIO_MATERIAIS_EM_CONSIGNADO_COM_ESTOQUE_ATE_VINTE_DIAS,
+	
+	SCER_MAT_EST_GRP_ABC,
+	
+	RELATORIO_MENSAL_MATERIAL,
+	
+	TABVAL,
+
+	FATR_PRV_GRP_FIN,
+	
+	FATR_CON_RAT_ATIV,
+	
+	NOME_ARQUIVO_PRODUCAO_PHI,
+	
+	RELATORIO_ANAMNESE_EVOLUCAO_INTERNACAO,
+	
+	ENVELOPE_PACIENTE,
+	
+	FATR_FATURA_AMB,
+	
+	FATR_ITENS_INDIV,
+	
+	AELR_MOTIVOS_CANC,
+	
+	AELR_ESTAT_RESP_LIB,
+	
+	RELATORIO_TOTAIS_EXAMES_POR_PERIODO,
+	
+	RELAT_CIRUR_REALIZ_POR_ESPEC_PROF,
+	
+	MBC_PROF,
+	
+	TMO,
+	
+	TRANSPLANTES,
+	
+	RELAT_CIRURGIAS_EXPOSICAO_RADIACAO_IONIZANTE,
+	
+	RELATORIO_DIAGNOSTICOS_PRE_POS_OPERATORIO,
+	
+	MBCR_PROCED_ESPECIAL,
+	
+	MBCR_CIR_AGENDADA,
+	
+	CIR_CANCELADA,
+	
+	MBCR_NOTAS_PENDENTES,
+	
+	REL_AF_PENDENTE_COMPRADOR,
+	
+	ANDAMENTO_PROCESSO_COMPRAS,
+	
+	ULTIMAS_COMPRAS_MATERIAL,
+	
+	ARQUIVO_DADOS_SCO_EP_, 
+	CONTA_NUTRICAO_ENTERAL,
+	FATR_INT_ESPEC_MES,
+	
+	FATR_INT_CLC_PROCED,
+	
+	RELATORIO_SUGESTOES_DESDOBRAMENTO,
+	
+	REL_RATEIO_VALORES_SADT_POR_PONTOS,
+	
+	SCER_DEST_MAT_DIR_RE,
+	
+	ARQUIVO_DADOS_SCO_ES,
+	
+	RELATORIO_CSV_NRS_MARCAS_DIVERGENTES,
+	
+	ARQUIVO_DADOS_SCE_ES,
+
+	SCEF_GERA_ARQ_PARAM,
+	
+	RELATORIO_CSV_NRS_MES,
+	
+	RELATORIO_CSV_ESSL,
+	
+	REL_ROTINA_CUIDADOS,
+	RELATORIO_PROGRAMACAO_GRADE,
+	MTX_EXTRATO_TRANSPLANTES,
+	
+	RELATORIO_CVS_TRANSPLANTES_TEMPO_FILA,
+	MTXR_EXTRATO_TRANSPLANTES,
+	RELATORIO_CVS_TRANSPLANTES_SOBREVIDA,
+	RELATORIO_RATEIO_VALORES_SADT_POR_PONTOS,
+	RELATORIO_PACIENTE_TRANSPLANTE_ORGAOS_SITUACAO;
+
+	public static final String EXTENSAO_CSV = ".csv";
+
+	
+	@Override
+	public int getCodigo() {
+		return this.ordinal();
+	}
+
+	@Override
+	public String getDescricao() {
+		
+		switch (this) {
+			case RELATORIO_TRANSFERENCIA_MATERIAL:							return "Transferências entre Almoxarifados";
+			case RELATORIO_DEVOLUCAO_ALMOXARIFADO:							return "Devolução ao Almoxarifado";
+			case RELATORIO_RESUMO_GERAL_MATERIAIS: 							return "RG - Resumo Geral de Materiais";
+			case RELATORIO_RESUMO_GERAL_MATERIAIS_CONSIG: 					return "RC - Resumo Geral de Materiais Consignados";
+			case RELATORIO_CONSIGNADOS_FORN: 								return "RF - Resumo Geral Consignados Fornecedores";
+			case RELATORIO_EXTRATO_CONTA_FORN: 								return "EX - Extrato Conta Fornecedores";
+			case RELATORIO_CLASSIFICACAO_ABC:								return "CL - Classificação ABC";
+			case RELATORIO_AJUSTE_ESTOQUE:									return "AJ - Ajuste de Estoque";
+			case RELATORIO_QUANTIDADE_MOV_TIPO:								return "QM - Quantidade Movimento por Tipo";
+			case RELATORIO_GERAL_MATERIAIS_TERCEIROS:						return "RT - Resumo Geral Materiais de Terceiros";
+			case RELATORIO_RESUMO_MATERIAIS_ESTOCAVEIS:						return "RE - Resumo Materiais Estocáveis (903)";
+			case RELATORIO_CONSUMO_ANALITICO:								return "CA - Consumo Analítico";	
+			case RELATORIO_CONSUMO_POR_CONTA_CC_GRUPO:						return "CC - Consumo por Conta CC e Grupo Materiais";	
+			case RELATORIO_CONSUMO_SINTETICO:								return "CS - Consumo Sintético";
+			case RELATORIO_PRODUCAO_GRAFICA:								return "PG - Produção Gráfica";	
+			case RELATORIO_PRODUCAO_ROUPARIA:								return "PR - Produção Rouparia";
+			case RELATORIO_PRODUCAO_FARMACIA:								return "PF - Produção Farmácia";
+			case RELATORIO_SOLICITACOES_COMPRA_MATERIAL_ESTOCAVEL:			return "SE - Solicitações Compra Mat Estoc";
+			case RELATORIO_MOVIMENTO_MATERIAIS:								return "MM - Movimento de Materiais";
+			case RELATORIO_AFS_NAO_EFETIVADAS:								return "AF - AF's não Efetivadas";
+			case RELATORIO_MATERIAIS_SALDO_ATE_VINTE_DIAS:					return "MS - Materiais com Saldo até 20 dias";
+			case RELATORIO_MATERIAIS_COM_CONTRATO_SALDO_ATE_VINTE_DIAS:		return "MC - Materiais em Contrato Saldo até 20 dias";
+			case RELATORIO_MATERIAIS_ALMOXARIFADO_SALDO_ATE_VINTE_DIAS:		return "MC - Materiais Almox Saldo até 20 dias";	
+			case RELATORIO_ENTRADA_MATERIAIS_NO_DIA:						return "EM - Entrada de Materiais no dia";
+			case RELATORIO_PRODUCAO_INTERNA_MATERIAIS:						return "PI - Produção Interna de Materiais";
+			case RELATORIO_AFS_SEM_EMPENHO_EMP_PARCIAL_COM_TOTAL:			return "AT - AF's sem Empenho/Emp Parcial c/ Tot";
+			case RELATORIO_SCS_PLANEJAMENTO_COMPRAS:						return "PC - SC's Planejamento de Compras";
+			case FATR_RESUMO_AIH:											return "Resumo Cobrança AIH ";
+			case RELATORIO_GERACAO_SOLICITACOES_COMPRAS_MATERIAL_ESTOCAVEL:	return "GS - Geração Solicitações Compra Mat Estocáveis";
+			case RELATORIO_GERACAO_SOLICITACOES_COMPRAS_MATERIAL_DIRETOS:	return "SD - Solicitações Compra Mat Diretos";
+			case RELATORIO_EFETIVACOES_NO_DIA:								return "ED - Efetivações no dia";
+			case RELATORIO_AFS_SEM_EMPENHO_EMP_PARCIAL:						return "AE - AF's sem Empenho/Empenho Parcial";
+			case RELATORIO_AFS_GERADAS_ALTERADAS_EXCLUIDAS:					return "AG - AF's Geradas/Alteradas/Excluídas";
+			case RELATORIO_MATERIAIS_GRAFICA_EM_PONTO_PEDIDO:				return "MG - Materiais Gráfica em Ponto Pedido";
+			case RELATORIO_TITULOS_EXTORNADOS:								return "TE - Títulos Extornados";
+			case RELATORIO_CONSUMO_MATERIAIS_NO_DIA:						return "CM - Consumo de Materiais no dia";
+			case RELATORIO_EMPENHOS_GERADOS_ALTERADOS:						return "EA - Empenhos Gerados/Alterados";
+			case RELATORIO_MATERIAIS_EM_CONSIGNADO_COM_ESTOQUE_ATE_VINTE_DIAS:	return "CG - Materiais em Consignados com estoque até 20 dias";
+			case RELATORIO_ESPELHO:												return "Espelho do Processo Administrativo de Compra";
+			case NOME_ARQUIVO_PRODUCAO_PHI:										return "ARQ_PHI";
+			case RELATORIO_ANAMNESE_EVOLUCAO_INTERNACAO:						return "Relatório Anamnese Evolução Internação";
+			case FATR_ITENS_INDIV :												return "Relatório Itens Realizados Individuais";
+			case AELR_MOTIVOS_CANC :											return "Motivos de Cancelamento";
+			case TICKET_EXAMES :												return "Ticket de Exames";		
+			case AELR_ESTAT_RESP_LIB :											return "Total de laudos digitados por funcionários na: ";
+			case RELATORIO_TOTAIS_EXAMES_POR_PERIODO:							return "TEP - Totais de Exames por Período";
+			case RELAT_CIRUR_REALIZ_POR_ESPEC_PROF:								return "MBCR_CIR_ESP_PROF";
+			case RELAT_CIRURGIAS_EXPOSICAO_RADIACAO_IONIZANTE:					return "MBC_UTIL_EQUIP_";
+			case RELATORIO_DIAGNOSTICOS_PRE_POS_OPERATORIO:						return "CID_";
+			case MBCR_PROCED_ESPECIAL:											return "Procedimentos Cirúrgicos e de Diagnóstico e Terapêuticos Ativos - Ordem Especialidade";
+			case CIR_CANCELADA:													return "Pacientes com Cirurgias Canceladas com Motivo";
+			case ANDAMENTO_PROCESSO_COMPRAS:									return "ANDAMENTO_PROCESSO_COMPRAS";
+			case ULTIMAS_COMPRAS_MATERIAL:										return "rel_ultimas_compras_material";
+			case ARQUIVO_DADOS_SCO_EP_:											return "ARQUIVO_DADOS_SCO_EP_";
+			case REL_AF_PENDENTE_COMPRADOR:										return "AFS_PENDENTES_POR_COMPRADOR";
+			case AACR_AGENDA_DT_REF_TITLE: 										return "Agenda de Consultas";
+			case FATR_INT_OPM:													return "Relatório Relação de Órteses e Próteses";
+			case FATR_INT_ESPEC_MES:											return "Relação do Faturamento Internação por Especialidade no Mês ";
+			case FATR_INT_AIH_CLINICA:											return "Visualizar AIHs Faturadas por Clínica";	
+			case FATR_INT_CLC_PROCED:											return "Relatório de Faturamento por Clínica e Procedimento";
+			case RELATORIO_SUGESTOES_DESDOBRAMENTO: 					     	return "SugestoesDesdobramento";
+			case REL_RATEIO_VALORES_SADT_POR_PONTOS:							return "Relatório de Rateio de Valores SADT por Pontos";
+			case SCER_DEST_MAT_DIR_RE:											return "CONTROLE ESTOQUE - Destino dos Materiais Diretos Recebidos";
+			case SCEF_GERA_ARQ_PARAM:											return "Entradas de Material e Serviço no Período";
+			case RELATORIO_CSV_NRS_MARCAS_DIVERGENTES:							return "NRS_MARCAS_DIVERGENTES";
+			case ARQUIVO_DADOS_SCO_ES:											return "ARQUIVO_DADOS_SCO_ES_";
+			case ARQUIVO_DADOS_SCE_ES:											return "ARQUIVO_DADOS_SCE_ES";
+			case RELATORIO_CSV_ESSL:											return "ARQUIVO_DADOS_SCE_SL";
+			case RELATORIO_PROGRAMACAO_GRADE:									return "Relatório_de_Programação_de_Grade";
+			case RELATORIO_PACIENTE_TRANSPLANTE_ORGAOS_SITUACAO:				return "Relatório de Pacientes de Transplante de Órgãos por Situação";
+			case RELATORIO_CVS_TRANSPLANTES_TEMPO_FILA:							return "MTX_TEMPO_PERMANENCIA_EM_LISTA";
+			case RELATORIO_CVS_TRANSPLANTES_SOBREVIDA:							return "MTX_SOBREVIDA_TRANSPLANTADO";
+			case MTXR_OBITO_ESPERA_TRANSPLANTES:                                return "Pacientes com Óbito em Lista de Espera de Transplante";
+			case MTXR_EXTRATO_TRANSPLANTES:                                      return "Extrato do Transplante por Paciente";
+			default:															return this.toString();	
+		}
+	}
+}

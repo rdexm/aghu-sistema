@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+	<ui:define name="head">
+		<title>Cadastro Impressora Padrão Unidade :: AGHU - MEC</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{impressoraPadraoUnidController.inicio}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<script type="text/javascript">
+			function escondeDiv(id) {
+				var divElementStyle = document.getElementById(id).style;
+				if (divElementStyle) {
+					if (divElementStyle.display == "") {
+						divElementStyle.display = "none";
+					}
+				}
+			}
+			function keypress(e) {
+		            var keynum;
+		            if(window.event) { // IE                 
+		                keynum = e.keyCode;
+		            } else if(e.which){ // Netscape/Firefox/Opera                   
+		                keynum = e.which;
+		            }
+                    var unicode=e.keyCode? e.keyCode : e.charCode;
+		            if (unicode == 32){
+			            return false;
+			        }
+			 }
+			 function keyup(element){
+			      var value = element.value;
+			      var match = value.match(/^\\{2}[\w]+(\\[\w]*)*$/g);
+			      if (match){
+				      return true;
+				  } else {
+					  if (value == '\\' || value == '\\\\'){
+						return true;
+					} else {
+						element.value = "";
+					    return false;
+					}
+				 }
+			 } 
+						
+			
+		</script>
+		<mec:pageConfig controller="#{impressoraPadraoUnidController}"
+			ignoreEnter="true" />
+		<p:outputPanel id="panelTudo" layout="inline">
+			<h:form prependId="false" id="cadastroImpressoraPadraoForm">
+				<aghu:panelGeral id="ffdl_impressoras"
+					legend="Cadastro Impressora Padrão Unidade">
+					<aghu:linha>
+						<mec:inputNumero label="Código" size="4" maxlength="4"
+							readonly="true" title="Código da Unidade Funcional"
+							value="#{impressoraPadraoUnidController.unidadeFuncional.seq}"
+							id="codigoUnidade">
+							<p:ajax event="change" process="@this"
+								listener="#{impressoraPadraoUnidController.setFormChanged}" />
+						</mec:inputNumero>
+						<mec:inputText title="Nome da unidade Funcional"
+							value="#{impressoraPadraoUnidController.unidadeFuncional.descricao}"
+							label="#{messages.LABEL_NOME_UNIDADE}" readonly="true"
+							maxlength="50" size="60" id="nomeUnidadetxt">
+							<p:ajax event="change" process="@this"
+								listener="#{impressoraPadraoUnidController.setFormChanged}" />
+						</mec:inputText>
+					</aghu:linha>
+				</aghu:panelGeral>
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.LABEL_IMPRESSORAS}" />
+					</h:panelGroup>
+				</f:facet>
+				<aghu:panelGeral id="ffdadosImpressoras"
+					legend="Impressora Padrão Unidade">
+					<p:outputPanel id="campos" layout="inline">
+						<aghu:linha>
+							<mec:selectOneMenu label="#{messages.LABEL_TIPO_IMPRESSAO}"
+								title="#{messages.TITLE_TIPO_IMPRESSAO}"  required="true"
+								enum="TipoDocumentoImpressao"  immediate="false"
+								value="#{impressoraPadraoUnidController.cpTipoImpressao}"
+								id="dominioTipoImpressora">
+								<p:ajax event="change" process="@this"
+									listener="#{impressoraPadraoUnidController.setFormChanged}" />
+							</mec:selectOneMenu>
+						</aghu:linha>
+						<aghu:linha>
+							<mec:inputText id="descImpressora"
+								label="#{messages.LABEL_CAMINHO_IMPRESSORA}" size="60" immediate="false"
+								maxlength="128" caixaAlta="false" onkeypress="return keypress(event);" onkeyup="return keyup(this);"
+								alt="#{messages.TITLE_CAMINHO_IMPRESSORA}" removerCaratersEspeciais="false" removerEspacosBrancos="true"
+								value="#{impressoraPadraoUnidController.cpNomeImpressao}"
+								title="#{messages.TITLE_CAMINHO_IMPRESSORA}">
+								<p:ajax id="descImpressoraOnChange" event="change"
+									bypassUpdates="false" process="@this"
+									listener="#{impressoraPadraoUnidController.pathImpressoraListener}" />
+							</mec:inputText>
+						</aghu:linha>
+						<aghu:linha>
+							<mec:suggestionBox id="impressoraDecorate"
+								size="60" maxlength="30" label="#{messages.LABEL_FILA_IMPRESSAO}"
+								title="#{messages.TITLE_FILA_IMPRESSAO}" descricaoInput="filaImpressora"
+								descricaoLabel="descricao"
+								suggestionAction="pesquisarImpressora"
+								posSelectionAction="setFormChanged"
+								controller="#{impressoraPadraoUnidController}"
+								value="#{impressoraPadraoUnidController.cpImpressora}">
+								<p:column>
+									<f:facet name="header">Fila de impressão</f:facet>
+									<h:outputText value="#{item.filaImpressora}" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">Descrição</f:facet>
+									<h:outputText value="#{item.descricao}" />
+								</p:column>
+							</mec:suggestionBox>
+						</aghu:linha>
+						<aghu:linha>
+							<mec:selectOneMenu label="#{messages.LABEL_MODO_IMPRESSAO}"
+								title="Selecione o modo de impressão da impressora (Caracter,Bitmap ou Default)."
+								required="false" enum="DominioModoRelatorio"
+								value="#{impressoraPadraoUnidController.cpModoRelatorio}"
+								id="dominioModo">
+								<p:ajax event="change" process="@this"
+									listener="#{impressoraPadraoUnidController.setFormChanged}" />
+							</mec:selectOneMenu>
+							<mec:selectOneMenu label="#{messages.LABEL_LINGUAGEM}"
+								title="#{messages.TITLE_LINGUAGEM}" required="false"
+								enum="DominioLinguagemImpressora"
+								value="#{impressoraPadraoUnidController.cpTipoLinguagem}"
+								id="dominioLinguagem">
+								<p:ajax event="change" process="@this"
+									listener="#{impressoraPadraoUnidController.setFormChanged}" />
+							</mec:selectOneMenu>
+							<p:outputPanel id="botoesAdicionar"
+								rendered="#{!impressoraPadraoUnidController.isUpdate}"
+								layout="inline">
+								<aghu:acao newLine="false">
+									<mec:commandButton value="Adicionar"
+										action="#{impressoraPadraoUnidController.associarImpressoras}"
+										profile="add" ajax="true" render="tabelaImpressoras,campos" />
+								</aghu:acao>
+							</p:outputPanel>
+							<p:outputPanel id="botoesEditar"
+								rendered="#{impressoraPadraoUnidController.isUpdate}"
+								layout="inline">
+								<aghu:acao newLine="false">
+									<mec:commandButton value="#{messages.LABEL_ALTERAR}"
+										action="#{impressoraPadraoUnidController.confirmarEdicao}"
+										id="bt_editar" name="botaoEditar"
+										reRender="tabelaImpressoras,campos"
+										icon="aghu-icon-pencil" />
+								</aghu:acao>
+							</p:outputPanel>
+							<p:outputPanel id="botoesCancelarEdicao"
+								rendered="#{impressoraPadraoUnidController.isUpdate}"
+								layout="inline">
+								<aghu:acao newLine="false">
+									<mec:commandButton value="#{messages.LABEL_CANCELAR_EDICAO}"
+										action="#{impressoraPadraoUnidController.cancelarEdicao}"
+										id="bt_cancelar_edicao" immediate="true" name="botaoCancelarEdicao"
+										reRender="tabelaImpressoras,campos"
+										profile="cancel" />
+								</aghu:acao>
+							</p:outputPanel>
+						</aghu:linha>
+					</p:outputPanel>
+				</aghu:panelGeral>
+				<aghu:panelGeral legend="Impressoras">
+					<p:outputPanel id="tabelaImpressoras" layout="inline">
+						<aghu:linha>
+							<mec:serverDataTable width="'100%"
+								rendered="#{not empty impressoraPadraoUnidController.listaImpressorasUnidades}"
+								list="#{impressoraPadraoUnidController.listaImpressorasUnidades}"
+								scrollable="true">
+								<c:set var="_impressora" value="#{item}" />
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_ACAO}" />
+									</f:facet>
+									<mec:commandLink title="#{messages.LABEL_EDITAR}"
+										action="#{impressoraPadraoUnidController.editarImpressora(_impressora)}"
+										rendered="#{!impressoraPadraoUnidController.isUpdate}"
+										profile="edit" ajax="true" process="@this"
+										render="tabelaImpressoras, campos, panelModalEditar, acoesGravar" />
+									<mec:commandLink title="#{messages.LABEL_EXCLUIR}"
+										immediate="true"
+										action="#{impressoraPadraoUnidController.removerImpressora(_impressora)}"
+										rendered="#{!impressoraPadraoUnidController.isUpdate}"
+										profile="delete" ajax="true"
+										render="tabelaImpressoras, campos" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_TIPO_IMPRESSAO}" />
+									</f:facet>
+									<h:outputText value="#{_impressora.descricaoTipoImpressao}" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_CAMINHO_IMPRESSORA}" />
+									</f:facet>
+									<h:outputText value="#{_impressora.nomeImpressora}" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_FILA_IMPRESSAO}" />
+									</f:facet>
+									<h:outputText value="#{_impressora.impImpressora.descricao}" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_MODO_RELATORIO}" />
+									</f:facet>
+									<h:outputText value="#{_impressora.modoRelatorio}" />
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_TIPO_LINGUAGEM}" />
+									</f:facet>
+									<h:outputText value="#{_impressora.tipoLinguagem}" />
+								</p:column>
+							</mec:serverDataTable>
+						</aghu:linha>
+					</p:outputPanel>
+				</aghu:panelGeral>
+				<aghu:acao id="acoesGravar">
+					<mec:commandButton value="#{messages.LABEL_GRAVAR}"
+						id="bt_confirmar" immediate="true"
+						action="#{impressoraPadraoUnidController.confirmar}"
+						disabled="#{impressoraPadraoUnidController.isUpdate}" profile="ok"
+						ajax="true" render="panelModalGravar" 
+						rendered="#{!mf:hasPermission(securityController, 'internacao,somenteLeitura')}"/>
+					<mec:commandButton includePageParams="false"
+						value="#{messages.LABEL_CANCELAR}" immediate="true" id="bt_cancelar"
+						action="#{impressoraPadraoUnidController.cancelar}"
+						disabled="#{impressoraPadraoUnidController.isUpdate}"
+						profile="cancel" ajax="true"
+						render="tabelaImpresoras, panelOperacaoConluida, panelModalVoltar" />
+				</aghu:acao>
+			</h:form>
+		</p:outputPanel>
+		<p:outputPanel id="panelModalEditar" layout="inline">
+			<p:dialog id="modalEditar"
+				rendered="#{impressoraPadraoUnidController.confirmEditarRequired}"
+				width="400" height="150" modal="true" resizable="false"
+				widgetVar="modalEditarWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}" />
+					</h:panelGroup>
+				</f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br />
+				<br />
+				<br />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalEditar">
+						<mec:commandButton id="bt_sim_editar"
+							value="#{messages.LABEL_SIM}"
+							action="#{impressoraPadraoUnidController.editarOutroItem}"
+							profile="search" />
+						<mec:commandButton id="bt_nao_editar"
+							value="#{messages.LABEL_NAO}"
+							onclick="PF('modalEditarWG').hide();" profile="cancel"
+							ajax="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+			<h:form
+				rendered="#{impressoraPadraoUnidController.confirmEditarRequired}">
+				<script>
+					PF('modalEditarWG').show();
+					;
+				</script>
+			</h:form>
+		</p:outputPanel>
+		<p:outputPanel id="panelModalGravar" layout="inline">
+			<p:dialog id="modalGravar"
+				rendered="#{impressoraPadraoUnidController.confirmGravarRequired}"
+				width="400" height="150" modal="true" resizable="false"
+				widgetVar="modalGravarWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}" />
+					</h:panelGroup>
+				</f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br />
+				<br />
+				<br />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalGravar">
+						<mec:commandButton id="bt_sim_gravar_sem_editar"
+							value="#{messages.LABEL_SIM}"
+							action="#{impressoraPadraoUnidController.gravarEDescartarAlteracoes}"
+							profile="search" />
+						<mec:commandButton id="bt_nao_gravar_sem_editar"
+							value="#{messages.LABEL_NAO}"
+							onclick="PF('modalGravarWG').hide();" profile="cancel"
+							ajax="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+			<h:form
+				rendered="#{impressoraPadraoUnidController.confirmGravarRequired}">
+				<script>
+					PF('modalGravarWG').show();
+					;
+				</script>
+			</h:form>
+		</p:outputPanel>
+		<p:outputPanel id="panelModalVoltar" layout="inline">
+			<p:dialog id="modalVoltar"
+				rendered="#{impressoraPadraoUnidController.confirmVoltarRequired}"
+				width="400" height="150" modal="true" resizable="false"
+				widgetVar="modalVoltarWG">
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="#{messages.TITLE_PENDENCIAS_ALTERACAO}" />
+					</h:panelGroup>
+				</f:facet> #{messages.MENSAGEM_ALTERACOES_PENDENTES} 
+          <br />
+				<br />
+				<br />
+				<h:panelGroup>
+					<h:form prependId="false" id="formModalVoltar">
+						<mec:commandButton id="bt_sim_voltar"
+							value="#{messages.LABEL_SIM}"
+							action="#{impressoraPadraoUnidController.confirmaVoltar}"
+							profile="search" />
+						<mec:commandButton id="bt_nao_voltar"
+							value="#{messages.LABEL_NAO}"
+							onclick="PF('modalVoltarWG').hide();" profile="cancel"
+							ajax="true" />
+					</h:form>
+				</h:panelGroup>
+			</p:dialog>
+			<h:form
+				rendered="#{impressoraPadraoUnidController.confirmVoltarRequired}">
+				<script>
+					PF('modalVoltarWG').show();
+					;
+				</script>
+			</h:form>
+		</p:outputPanel>
+	</ui:define>
+</ui:composition>
+</html>

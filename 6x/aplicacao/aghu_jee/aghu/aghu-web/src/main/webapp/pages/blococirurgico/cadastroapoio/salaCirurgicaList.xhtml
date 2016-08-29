@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.LABEL_PESQUISAR_SALA_CIRURGICA}</title> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{salaCirurgicaController}" ignoreEnter="false"/>  
+      <p:outputPanel id="panelTodos" layout="inline"> 
+        <h:form prependId="false" id="formDadosSalas"> 
+          <aghu:panelGeral legend="#{messages.LABEL_PESQUISAR_SALA_CIRURGICA}"> 
+            <p:outputPanel id="dadosPesquisa" layout="inline"> 
+              <aghu:linha> 
+                <mec:suggestionBox id="unidadeCirurgica" width="600" label="#{messages.LABEL_UNIDADE_CIRURGICA_SALA_CIRURGICA}" title="#{messages.TITLE_UNIDADE_CIRURGICA_SALA_CIRURGICA}" required="true" descricaoInput="sigla" descricaoLabel="descricao" suggestionAction="listarUnidades" controller="#{salaCirurgicaController}" value="#{salaCirurgicaController.salaCirurgica.unidadeFuncional}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.seq}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_SIGLA}</b> 
+                    </f:facet> #{item.sigla}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:inputNumero id="codigo" value="#{salaCirurgicaController.salaCirurgica.id.seqp}" label="#{messages.LABEL_CODIGO_SALA_CIRURGICA}" title="#{messages.TITLE_CODIGO_SALA_CIRURGICA}" size="6" maxlength="5"/>  
+                <mec:inputText id="nome" value="#{salaCirurgicaController.salaCirurgica.nome}" label="#{messages.LABEL_NOME_SALA_CIRURGICA}" title="#{messages.TITLE_NOME_SALA_CIRURGICA}" size="69" maxlength="60" style="text-transform:uppercase"/> 
+              </aghu:linha>  
+              <aghu:linha> 
+                <mec:suggestionBox id="tipoSala" width="450" label="#{messages.LABEL_TIPO_SALA_SALA_CIRURGICA}" title="#{messages.TITLE_TIPO_SALA_SALA_CIRURGICA}" required="false" descricaoInput="seq" descricaoLabel="descricao" suggestionAction="listarTipoSala" controller="#{salaCirurgicaController}" value="#{salaCirurgicaController.salaCirurgica.mbcTipoSala}"> 
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_CODIGO}</b> 
+                    </f:facet> #{item.seq}
+                  </p:column>  
+                  <p:column> 
+                    <f:facet name="header"> 
+                      <b>#{messages.LABEL_DESCRICAO}</b> 
+                    </f:facet> #{item.descricao}
+                  </p:column> 
+                </mec:suggestionBox>  
+                <mec:selectOneMenu id="monitor" enum="DominioSimNao" value="#{salaCirurgicaController.monitor}" label="#{messages.LABEL_MONITOR_SALA_CIRURGICA}" title="#{messages.TITLE_MONITOR_SALA_CIRURGICA}"/>  
+                <mec:selectOneMenu id="situacao" enum="DominioSituacao" value="#{salaCirurgicaController.salaCirurgica.situacao}" label="#{messages.LABEL_SITUACAO_SALA_CIRURGICA}" title="#{messages.TITLE_SITUACAO_SALA_CIRURGICA}"/> 
+              </aghu:linha> 
+            </p:outputPanel> 
+          </aghu:panelGeral>  
+          <aghu:acao> 
+            <mec:commandButton id="pesquisar" value="#{messages.LABEL_PESQUISAR}" rendered="#{mf:hasPermission(securityController,'cadastroSala,pesquisar')}" action="#{salaCirurgicaController.pesquisar}" profile="search"/>  
+            <mec:commandButton value="#{messages.LABEL_LIMPAR}"
+                               id="limpar"
+                               action="#{salaCirurgicaController.limparPesquisa}"
+                               profile="clear"
+                               ajax="true"
+                               render="formDadosSalas, resultados, salasCirurgicas, panelSalasCirurgicasCadastradas"
+                               process="@this"/>
+            <mec:commandButton rendered="#{mf:hasPermission(securityController,'cadastroSala,persistir') and salaCirurgicaController.exibirBotaoNovo}" id="bt_iniciarInclusao" value="#{messages.LABEL_NOVO}" action="#{salaCirurgicaController.novo}" profile="add"> 
+              <f:setPropertyActionListener target="#{salaCirurgicaCRUDController.salaCirurgica}" value="#{null}" for="command"/>  
+              <f:setPropertyActionListener target="#{salaCirurgicaCRUDController.unfSeq}" value="#{salaCirurgicaController.salaCirurgica.unidadeFuncional.seq}" for="command"/> 
+            </mec:commandButton> 
+          </aghu:acao> 
+        </h:form>  
+        <h:form prependId="false" id="resultados"> 
+          <mec:serverDataTable id="salasCirurgicas"
+                               scrollHeight="300"
+                               rowKeyVar="_itemId"
+                               rendered="#{salaCirurgicaController.exibirBotaoNovo}"
+                               onRowMouseOver="this.style.backgroundColor='#F1F1F1'"
+                               onRowMouseOut="this.style.backgroundColor='#{a4jSkin.tableBackgroundColor}'"
+                               list="#{salaCirurgicaController.salasCirurgicas}"
+                               scrollable="true">
+            <c:set var="_salas" value="#{item}"/>  
+            <p:column label="#{messages.LABEL_ACAO}" style="white-space:nowrap; !important; background-color:''" styleClass="first-column">
+              <f:facet name="header" style="white-space:nowrap;"> 
+                <h:outputText value="#{messages.LABEL_ACAO}"/> 
+              </f:facet>  
+              <mec:commandLink id="mapeamento" action="#{salaCirurgicaController.mapeamento}" title="#{messages.LABEL_MAPEAMENTO_SALA}" rendered="#{mf:hasPermission(securityController,'mapearSalas,pesquisar')}" styleClass=" silk-mapeamento silk-icon"> 
+                <f:setPropertyActionListener target="#{mapeamentoSalasController.seqp}" value="#{_salas.id.seqp}" for="command"/>  
+                <f:setPropertyActionListener target="#{mapeamentoSalasController.unfSeq}" value="#{_salas.id.unfSeq}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink action="#{salaCirurgicaController.editar}"
+                               title="#{messages.LABEL_EDITAR}"
+                               rendered="#{mf:hasPermission(securityController,'cadastroSala,persistir') }"
+                               profile="edit">
+                <f:setPropertyActionListener target="#{salaCirurgicaCRUDController.salaCirurgica}" value="#{_salas}" for="command"/> 
+              </mec:commandLink>  
+              <mec:commandLink id="bt_mostrarHistorico"
+                               oncomplete="PF('modalHistoricoSalaCirurgicaWG').show();"
+                               title="#{messages.LABEL_HISTORICO_SALA}"
+                               rendered="#{mf:hasPermission(securityController,'historicoCadastroSalas,pesquisar')}"
+                               styleClass=" silk-historico-cirurgias silk-icon"
+                               ajax="true"
+                               render="modalHistoricoSalaCirurgicaPanel,modalHistoricoSalaCirurgica,salasCirurgicas"
+                               process="@this">
+                <f:setPropertyActionListener value="#{salaCirurgicaController.obterHistoricoSalaCirurgica(_salas.id.seqp, _salas.id.unfSeq)}"
+                                             target="#{salaCirurgicaController.listaHistoricoSalaCirurgica}"
+                                             for="command"/>
+              </mec:commandLink> 
+            </p:column>  
+            <p:column style="width:70px; white-space:nowrap; !important; background-color:''"> 
+              <f:facet name="header" style="white-space:nowrap;"> 
+                <h:outputText value="#{messages.LABEL_CODIGO_SALA_CIRURGICA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_salas.id.seqp}"/>  
+              <p:tooltip rendered="#{_salas.situacao eq 'I'}" direction="bottom-left" value="#{messages.LABEL_MOTIVO_INATIVACAO_HISTORICO_SALA_CIRURGICA}: #{salaCirurgicaController.quebrarToolTipMotivoInativacao(_salas.motivoInat, 40)}"/> 
+            </p:column>  
+            <p:column style=" white-space:nowrap; !important; background-color:''"> 
+              <f:facet name="header" style="white-space:nowrap;"> 
+                <h:outputText value="#{messages.LABEL_NOME_SALA_CIRURGICA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_salas.nome}"/>  
+              <p:tooltip rendered="#{_salas.situacao eq 'I'}" direction="bottom-left" value="#{messages.LABEL_MOTIVO_INATIVACAO_HISTORICO_SALA_CIRURGICA}: #{salaCirurgicaController.quebrarToolTipMotivoInativacao(_salas.motivoInat, 40)}"/> 
+            </p:column>  
+            <p:column style="white-space:nowrap; !important; background-color:''"> 
+              <f:facet name="header" style="white-space:nowrap;"> 
+                <h:outputText value="#{messages.LABEL_TIPO_SALA_SALA_CIRURGICA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_salas.mbcTipoSala.descricao}"/>  
+              <p:tooltip rendered="#{_salas.situacao eq 'I'}" direction="bottom-left" value="#{messages.LABEL_MOTIVO_INATIVACAO_HISTORICO_SALA_CIRURGICA}: #{salaCirurgicaController.quebrarToolTipMotivoInativacao(_salas.motivoInat, 40)}"/> 
+            </p:column>  
+            <p:column style="width:90px; white-space:nowrap; !important; background-color:''"> 
+              <f:facet name="header" style="white-space:nowrap;"> 
+                <h:outputText value="#{messages.LABEL_MONITOR_SALA_CIRURGICA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_salas.visivelMonitor ? 'Sim' : 'Não'}"/>  
+              <p:tooltip rendered="#{_salas.situacao eq 'I'}" direction="bottom-left" value="#{messages.LABEL_MOTIVO_INATIVACAO_HISTORICO_SALA_CIRURGICA}: #{salaCirurgicaController.quebrarToolTipMotivoInativacao(_salas.motivoInat, 40)}"/> 
+            </p:column>  
+            <p:column style="width:110px; white-space:nowrap; !important; background-color:''"> 
+              <f:facet name="header" style="white-space:nowrap;"> 
+                <h:outputText value="#{messages.LABEL_SITUACAO_SALA_CIRURGICA}"/> 
+              </f:facet>  
+              <h:outputText value="#{_salas.situacao eq 'A' ? 'Ativa' : 'Inativa'}"/>  
+              <p:tooltip rendered="#{_salas.situacao eq 'I'}" direction="bottom-left" value="#{messages.LABEL_MOTIVO_INATIVACAO_HISTORICO_SALA_CIRURGICA}: #{salaCirurgicaController.quebrarToolTipMotivoInativacao(_salas.motivoInat, 40)}"/> 
+            </p:column> 
+          </mec:serverDataTable> 
+        </h:form> 
+      </p:outputPanel>  
+      <h:form prependId="false"> 
+        <p:outputPanel layout="inline"> 
+          <ui:decorate template="/pages/blococirurgico/cadastroapoio/modalHistoricoSalaCirurgica.xhtml"/> 
+        </p:outputPanel> 
+      </h:form> 
+    </ui:define> 
+  </ui:composition> 
+</html>

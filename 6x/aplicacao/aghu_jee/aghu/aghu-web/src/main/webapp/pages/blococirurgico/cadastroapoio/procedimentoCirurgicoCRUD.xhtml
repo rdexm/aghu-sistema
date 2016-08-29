@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+  <ui:composition template="/WEB-INF/templates/form_template.xhtml"> 
+    <ui:define name="head"> 
+      <title>#{messages.TITLE_PROCEDIMENTO_CIRURGICO_TITULO_TELA} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+    </ui:define>  
+    <ui:define name="metadata"> 
+      <f:metadata> 
+        <f:viewAction action="#{procedimentoCirurgicoController.iniciar}"/> 
+      </f:metadata> 
+    </ui:define>  
+    <ui:define name="body"> 
+      <mec:pageConfig controller="#{procedimentoCirurgicoController}" ignoreEnter="true"/>  
+      <script type="text/javascript" xml:space="preserve">
+			//<![CDATA[ 
+			function aplicarMascara(elemento) {
+				var strValor = "" + jQuery(elemento).val();
+
+				while (strValor.length > 0 && strValor.length < 4) 
+				{
+					// Coloca zeros a esquerda 
+					strValor = "0" + strValor;
+				}
+
+				strValor = strValor.substring(0, 2) + ":" + strValor.substring(2, 4);					
+				jQuery(elemento).val(strValor);
+			}
+
+			function removerMascara(elemento) {
+				var strValor = "" + jQuery(elemento).val();
+				strValor = strValor.replace(":", "");
+				jQuery(elemento).val(strValor);
+			}
+
+			function verificarNumeroTempo(evt) {
+				evt = (evt) ? evt : event;
+				var charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode :
+			           ((evt.which) ? evt.which : 0));
+				if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+					return false;
+				}
+				return true;
+			}
+			//]]> 
+		</script>  
+      <p:outputPanel id="panelTodo" layout="inline"> 
+        <h:form prependId="false" id="formCadastro"> 
+          <aghu:panelGeral legend="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_TITULO_TELA}"> 
+            <aghu:linha> 
+              <mec:inputNumero id="seq" label="#{messages.LABEL_CODIGO}" value="#{procedimentoCirurgicoController.seq}" maxlength="5" size="5" readonly="true"/>  
+              <mec:inputText id="descricao" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_DESCRICAO}" value="#{procedimentoCirurgicoController.descricao}" size="80" maxlength="120" style="text-transform:uppercase" required="true" readonly="#{procedimentoCirurgicoController.seq ne null}"/>  
+              <mec:selectBooleanCheckbox id="situacaoAtiva" label="#{messages.LABEL_ATIVO}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_SITUACAO}" value="#{procedimentoCirurgicoController.situacaoAtiva}"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputText id="cuidadosPreOper" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_CUIDADOS_PRE_OPER}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_CUIDADOS_PRE_OPER}" value="#{procedimentoCirurgicoController.cuidadosPreOper}" style="text-transform:uppercase" removerCaratersEspeciais="false" size="100" maxlength="100"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:selectOneMenu id="indContaminacao"
+                                 label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_CONTAMINACAO}"
+                                 title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_CONTAMINACAO}"
+                                 value="#{procedimentoCirurgicoController.indContaminacao}"
+                                 enum="DominioIndContaminacao"
+                                 required="true"/>  
+              <mec:selectOneMenu id="tipo"
+                                 label="#{messages.LABEL_TIPO}"
+                                 title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_TIPO}"
+                                 value="#{procedimentoCirurgicoController.tipo}"
+                                 enum="DominioTipoProcedimentoCirurgico"
+                                 required="true"/>  
+              <mec:selectOneMenu id="regimeProcedSus" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_REGIME_SUS}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_REGIME_SUS}" value="#{procedimentoCirurgicoController.regimeProcedSus}" enum="DominioRegimeProcedimentoCirurgicoSus"/>  
+              <mec:inputText id="tempoMinimo"
+                             label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_TEMPO_MINIMO}"
+                             title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_TEMPO_MINIMO}"
+                             value="#{procedimentoCirurgicoController.strTempoMinimo}"
+                             size="5"
+                             maxlength="4"
+                             incluirMascaraHora="true"
+                             onkeypress="return verificarNumeroTempo(event)"
+                             required="true"
+                             removerCaratersEspeciais="false"> 
+                <p:ajax event="change" process="@this" listener="#{procedimentoCirurgicoController.converterTempoMinimo()}"/> 
+              </mec:inputText>  
+              <mec:inputNumero id="numeroDoadores" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_NRO_DOADORES_SANGUE}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_NRO_DOADORES_SANGUE}" value="#{procedimentoCirurgicoController.numeroDoadores}" maxlength="2" size="2"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:selectBooleanCheckbox id="indProcRealizadoLeito" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_REALIZADO_NO_LEITO}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_REALIZADO_NO_LEITO}" value="#{procedimentoCirurgicoController.indProcRealizadoLeito}" styleClassField="no-line-break width-20"/>  
+              <mec:selectBooleanCheckbox id="indProcMultiplo" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_MULTIPLO}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_MULTIPLO}" value="#{procedimentoCirurgicoController.indProcMultiplo}" styleClassField="no-line-break width-20"/>  
+              <mec:selectBooleanCheckbox id="indNsSemPront" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_PERMITE_PACIENTE_SEM_PRONTUARIO}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_PERMITE_PACIENTE_SEM_PRONTUARIO}" value="#{procedimentoCirurgicoController.indNsSemPront}" styleClassField="no-line-break width-30"/>  
+              <mec:selectBooleanCheckbox id="indTipagemSangue" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_EXIGE_TIPAGEM_SANGUINEA}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_EXIGE_TIPAGEM_SANGUINEA}" value="#{procedimentoCirurgicoController.indTipagemSangue}" styleClassField="width-20"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:selectBooleanCheckbox id="indAplicacaoQuimio" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_APLICACAO_QUIMIO}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_APLICACAO_QUIMIO}" value="#{procedimentoCirurgicoController.indAplicacaoQuimio}" styleClassField="no-line-break width-20"/>  
+              <mec:selectBooleanCheckbox id="indInteresseCcih" label="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_INTERESSE_CCIH}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_INTERESSE_CCIH}" value="#{procedimentoCirurgicoController.indInteresseCcih}" styleClassField="no-line-break width-20"/>  
+              <mec:selectBooleanCheckbox id="indGeraImagensPacs" label="#{messages.LABEL_PESQUISA_PROCEDIMENTO_CIRURGICO_GERA_IMAGENS_PACS}" title="#{messages.TITLE_PESQUISA_PROCEDIMENTO_CIRURGICO_GERA_IMAGENS_PACS}" value="#{procedimentoCirurgicoController.indGeraImagensPacs}" styleClassField="no-line-break width-30"/>  
+              <mec:selectBooleanCheckbox id="ladoCirurgia" label="#{messages.LABEL_PROCEDIMENTO_CIRURGICO_INFORMA_LADO_CIRURGIA}" title="#{messages.TITLE_PROCEDIMENTO_CIRURGICO_INFORMA_LADO_CIRURGIA}" value="#{procedimentoCirurgicoController.ladoCirurgia}" styleClassField="width-20"/> 
+            </aghu:linha>  
+            <aghu:linha> 
+              <mec:inputTextData id="criadoEm" label="#{messages.LABEL_DATA_CRIACAO}" size="16" maxlength="16" value="#{procedimentoCirurgicoController.criadoEm}" readonly="true" tipo="datahora"/>  
+              <mec:inputText id="id_phi" label="#{messages.LABEL_PROCED_INT}" value="#{procedimentoCirurgicoController.phi}" size="20" readonly="true"/> 
+            </aghu:linha> 
+          </aghu:panelGeral>  
+          <p:outputPanel id="panelInferior" rendered="#{procedimentoCirurgicoController.exibirPainelInferior}" layout="inline"> 
+            <p:outputPanel id="panelInferiorInterno" layout="inline" styleClass="aghu-panel-geral"> 
+              <aghu:panelGeral style="margin-left: 4px !important; margin-right: 4px !important;" legend="#{messages.TITLE_PROCEDIMENTOS_INTERNOS_RELACIONADOS}"> 
+                <aghu:panelGeral style="margin-left: 1px !important; margin-right: 1px !important;"> 
+                  <aghu:linha> 
+                    <p:outputPanel id="panelConvenio" layout="inline"> 
+                      <mec:suggestionBox label="#{messages.LABEL_CONVENIO}" title="#{messages.TITLE_EXC_CONVENIO}"
+                       descricaoInput="cphCspCnvCodigo" descricaoLabel="cnvDescricao" suggestionAction="listarConvenios" requiredFake="true" 
+                       width="300" readonly="#{procedimentoCirurgicoController.edicao or procedimentoCirurgicoController.itemProcedHosp != null}" id="convenio" 
+                       controller="#{procedimentoCirurgicoController}" value="#{procedimentoCirurgicoController.convenio}" render="lista, listagem, panelLista, panelProcedSus, panel_bt_ed_ad"> 
+                        <p:column>#{item.cphCspCnvCodigo}</p:column>  
+                        <p:column>#{item.cnvDescricao}</p:column> 
+                      </mec:suggestionBox> 
+                    </p:outputPanel>  
+                    <p:outputPanel id="panelProcedSus" layout="inline"> 
+                      <mec:suggestionBox label="#{messages.LABEL_PROCED_SUS}" 
+                      title="#{messages.TITLE_PROCED_SUS}" required="fake" descricaoInput="codTabela" 
+                      descricaoLabel="seqDescricao" requiredFake="true" suggestionAction="listarItensProcedHospAtivosPorCodTabelaOuDescricaoEPhoSeq" 
+                      width="500" id="procedSus" controller="#{procedimentoCirurgicoController}" value="#{procedimentoCirurgicoController.itemProcedHospSus}"> 
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_SIGLA_COD_SUS}</b> 
+                          </f:facet> #{item.codTabela}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_IPH}</b> 
+                          </f:facet> #{item.id.seq}
+                        </p:column>  
+                        <p:column> 
+                          <f:facet name="header"> 
+                            <b>#{messages.LABEL_DESCRICAO}</b> 
+                          </f:facet> #{item.descricao}
+                        </p:column> 
+                      </mec:suggestionBox> 
+                    </p:outputPanel> 
+	                <p:outputPanel id="panel_tempoVald" layout="inline">
+						<mec:inputNumero id="tempoValid"
+							value="#{procedimentoCirurgicoController.convGrupoItemProced.tempoValidade}"
+							title="#{messages.TITLE_TEMPO_VALID}"
+							jsfConverter="javax.faces.Short"
+							label="#{messages.LABEL_TEMPO_VALID}" maxlength="5" size="6">
+								<p:ajax event="change" bypassUpdates="false" process="@this" listener="#{procedimentoCirurgicoController.convGrupoItemProced.tempoValidade}"/>							
+						</mec:inputNumero>
+					</p:outputPanel>
+                
+                  </aghu:linha>  
+                  
+                  <aghu:linha>
+                  
+                  		<mec:selectBooleanCheckbox id="tempoTratamento"
+							label="#{messages.LABEL_TEMPO_TRATAMENTO}"
+							title="#{messages.TITLE_TEMPO_TRATAMENTO}"
+							value="#{procedimentoCirurgicoController.convGrupoItemProced.indInformaTempoTrat}" >
+								<p:ajax event="change" bypassUpdates="false" process="@this" listener="#{procedimentoCirurgicoController.convGrupoItemProced.indInformaTempoTrat}"/>
+						</mec:selectBooleanCheckbox>
+
+						<mec:selectBooleanCheckbox id="exigeJust"
+							label="#{messages.LABEL_EXIGE_JUSTIFICATIVA}"
+							title="#{messages.TITLE_EXIGE_JUSTIFICATIVA}"
+							value="#{procedimentoCirurgicoController.convGrupoItemProced.indExigeJustificativa}" >
+								<p:ajax event="change" bypassUpdates="false" process="@this" listener="#{procedimentoCirurgicoController.convGrupoItemProced.indExigeJustificativa}"/>
+						</mec:selectBooleanCheckbox>
+						
+						<mec:selectBooleanCheckbox id="imprimeLaudo"
+							label="#{messages.LABEL_IMP_LAUDO}"
+							title="#{messages.TITLE_IMP_LAUDO}"
+							value="#{procedimentoCirurgicoController.convGrupoItemProced.indImprimeLaudo}" >
+								<p:ajax event="change" bypassUpdates="false" process="@this" listener="#{procedimentoCirurgicoController.convGrupoItemProced.indImprimeLaudo}"/>
+						</mec:selectBooleanCheckbox>
+						
+						<mec:selectBooleanCheckbox id="cobrancaFrac"
+							label="#{messages.LABEL_COBRANCA_FRAC}"
+							title="#{messages.TITLE_COBRANCA_FRAC}"
+							value="#{procedimentoCirurgicoController.convGrupoItemProced.indCobrancaFracionada}" >
+								<p:ajax event="change" bypassUpdates="false" process="@this" listener="#{procedimentoCirurgicoController.convGrupoItemProced.indCobrancaFracionada}"/>
+						</mec:selectBooleanCheckbox>
+						
+						<mec:selectBooleanCheckbox id="exigeAutor"
+							label="#{messages.LABEL_EXIGE_AUTOR}"
+							title="#{messages.TITLE_EXIGE_AUTOR}"
+							value="#{procedimentoCirurgicoController.convGrupoItemProced.indExigeAutorPrevia}" >
+								<p:ajax event="change" bypassUpdates="false" process="@this" listener="#{procedimentoCirurgicoController.convGrupoItemProced.indExigeAutorPrevia}"/>						
+						</mec:selectBooleanCheckbox>
+
+						<mec:selectBooleanCheckbox id="paga"
+							label="#{messages.LABEL_PAGA}" title="#{messages.TITLE_PAGA}"
+							value="#{procedimentoCirurgicoController.convGrupoItemProced.indPaga}" >
+								<p:ajax event="change" bypassUpdates="false" process="@this" listener="#{procedimentoCirurgicoController.convGrupoItemProced.indPaga}"/>
+						</mec:selectBooleanCheckbox>
+
+						<mec:selectBooleanCheckbox id="exigeNotaFiscal"
+							label="#{messages.LABEL_EXIGE_NOTA_FISCAL}"
+							title="#{messages.TITLE_EXIGE_NOTA_FISCAL}"
+							value="#{procedimentoCirurgicoController.convGrupoItemProced.indExigeNotaFiscal}" >
+								<p:ajax event="change" bypassUpdates="false" process="@this" listener="#{procedimentoCirurgicoController.convGrupoItemProced.indExigeNotaFiscal}"/>
+						</mec:selectBooleanCheckbox>
+							
+						<p:outputPanel id="panel_bt_ed_ad" layout="inline"> 
+	                    	<p:outputPanel id="panel_adicionar" rendered="#{!procedimentoCirurgicoController.edicao}" layout="inline"> 
+	                    		<mec:commandButton id="bt_adicionar" 
+	                    			value="#{messages.LABEL_ADICIONAR}" 
+	                      			requestDelay="950" process="@this" 
+	                      			status="commonstatus" 
+	                      			action="#{procedimentoCirurgicoController.adicionar}" 
+	                      			profile="add" 
+	                      			styleClass="bt_verde" 
+	                      			ajax="true" 
+	                      			render="lista, listagem, panelLista, tempoValid, panelProcedSus, panel_bt_ed_ad, panelLista, panelProcedSus, panel_tempoVald, 
+	                      			tempoTratamento, exigeJust, imprimeLaudo, cobrancaFrac, exigeAutor, paga, exigeNotaFiscal"/> 
+	                    	</p:outputPanel>  
+	                   		<p:outputPanel id="panel_editar" rendered="#{procedimentoCirurgicoController.edicao}" layout="inline"> 
+	                      		<mec:commandButton id="bt_editar_item" 
+	                      			value="#{messages.LABEL_ALTERAR}" 
+	                      			process="@this" 
+	                      			status="commonstatus" 
+	                      			action="#{procedimentoCirurgicoController.adicionar}" 
+	                      			profile="ok" 
+	                      			ajax="true" 
+	                      			render="lista, listagem, panelLista, tempoValid, panelProcedSus, panel_bt_ed_ad, panelLista, panelProcedSus, panel_tempoVald, 
+	                      			tempoTratamento, exigeJust, imprimeLaudo, cobrancaFrac, exigeAutor, paga, exigeNotaFiscal">
+	                      		</mec:commandButton>  
+	                      		
+	                      		<mec:commandButton id="bt_cancelar_edicao" 
+	                      			value="#{messages.LABEL_CANCELAR_EDICAO}" 
+	                      			immedite="true" 
+	                      			status="commonstatus" 
+	                      			action="#{procedimentoCirurgicoController.cancelarEdicao}" 
+	                      			ajax="true" 
+	                      			render="lista, listagem, panelLista, tempoValid, panelProcedSus, panel_bt_ed_ad, panelLista, panelProcedSus, panel_tempoVald, 
+	                      				tempoTratamento, exigeJust, imprimeLaudo, cobrancaFrac, exigeAutor, paga, exigeNotaFiscal" 
+	                      			process="@this" 
+	                      			styleClass="bt_cinza">
+	                      		</mec:commandButton> 
+	                    	</p:outputPanel> 
+	                  </p:outputPanel> 	
+							
+                  </aghu:linha>
+                  
+                </aghu:panelGeral>  
+                <p:outputPanel id="panelLista" layout="inline"> 
+                  <p:outputPanel id="listagem" rendered="#{not empty procedimentoCirurgicoController.convGrupoItemProcedList}" layout="inline"> 
+                      <mec:serverDataTable id="lista" rowKeyVar="itemRowKeyVar" list="#{procedimentoCirurgicoController.convGrupoItemProcedList}" scrollable="true"> 
+                        <c:set var="_item" value="#{item}"/>  
+                        <p:column width="8%"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_ACAO}"/> 
+                          </f:facet>  
+                          <mec:commandLink title="#{messages.LABEL_EDITAR}" 
+                          action="#{procedimentoCirurgicoController.editar(_item)}" disabled="#{procedimentoCirurgicoController.edicao}"
+                           profile="edit" ajax="true" render="lista, listagem, panelLista, tempoValid, panelProcedSus, panel_bt_ed_ad, panelLista, panelProcedSus, panel_tempoVald, 
+	                      			tempoTratamento, exigeJust, imprimeLaudo, cobrancaFrac, exigeAutor, paga, exigeNotaFiscal" 
+                           process="@this"/>  
+                          <mec:commandLink title="#{messages.LABEL_EXCLUIR}" action="#{procedimentoCirurgicoController.excluir(_item)}" 
+                          	disabled="#{procedimentoCirurgicoController.edicao}" profile="delete" ajax="true" render="panelLista" process="@this"/> 
+                        </p:column>  
+                        <p:column width="30%" sortBy="#{_item.itemProcedHospitalar.codTabela}" selfSorted="true" sortOrder="ASCENDING"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_PROCED_SUS}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{_item.itemProcedHospitalar.codTabela} - #{_item.itemProcedHospitalar.descricao} "/> 
+                        </p:column>  
+                        <p:column width="30%"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_CONVENIO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{_item.convenioSaudePlano.convenioSaude.descricao}"/> 
+                        </p:column>  
+                        <p:column width="30%" sortBy="#{_item.convenioSaudePlano.id.seq}" selfSorted="true" sortOrder="ASCENDING"> 
+                          <f:facet name="header"> 
+                            <h:outputText value="#{messages.LABEL_PLANO}"/> 
+                          </f:facet>  
+                          <h:outputText value="#{_item.convenioSaudePlano.id.seq} - #{_item.convenioSaudePlano.descricao}"/> 
+                        </p:column> 
+                        
+                        <p:column width="6%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_TEMP}" />
+							</f:facet>
+							<h:outputText value="#{_item.tempoValidade}" />
+						</p:column>
+						<p:column width="6%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_TEMPO_TRATAMENTO}" />
+							</f:facet>
+							<h:outputText
+								value="#{procedimentoCirurgicoController.getSimNao(_item.indInformaTempoTrat)}" />
+						</p:column>
+						<p:column width="6%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_EXIG_JUST}" />
+							</f:facet>
+							<h:outputText
+								value="#{procedimentoCirurgicoController.getSimNao(_item.indExigeJustificativa)}" />
+						</p:column>
+						<p:column width="6%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_IMP_LAUDO}" />
+							</f:facet>
+							<h:outputText
+								value="#{procedimentoCirurgicoController.getSimNao(_item.indImprimeLaudo)}" />
+						</p:column>
+						<p:column width="6%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_COBRANCA_FRAC}" />
+							</f:facet>
+							<h:outputText
+								value="#{procedimentoCirurgicoController.getSimNao(_item.indCobrancaFracionada)}" />
+						</p:column>
+						<p:column width="6%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_EXIGE_AUTOR}" />
+							</f:facet>
+							<h:outputText
+								value="#{procedimentoCirurgicoController.getSimNao(_item.indExigeAutorPrevia)}" />
+						</p:column>
+						<p:column width="4%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_PAGA}" />
+							</f:facet>
+							<h:outputText
+								value="#{procedimentoCirurgicoController.getSimNao(_item.indPaga)}" />
+						</p:column>
+						<p:column width="5%">
+							<f:facet name="header">
+								<h:outputText value="#{messages.LABEL_EXIGE_NF}" />
+							</f:facet>
+							<h:outputText
+								value="#{procedimentoCirurgicoController.getSimNao(_item.indExigeNotaFiscal)}" />
+						</p:column>
+                   
+                        
+                        
+                        
+                        
+                      </mec:serverDataTable> 
+                  </p:outputPanel> 
+                </p:outputPanel> 
+              </aghu:panelGeral> 
+            </p:outputPanel> 
+          </p:outputPanel>  
+          <aghu:linha> 
+            <mec:commandButton id="bt_gravar" value="#{messages.LABEL_GRAVAR}" 
+		           disabled="#{not mf:hasPermission(securityController,'procedimentoCirurgico,cadastrar') and not mf:hasPermission(securityController,'procedimentoCirurgico,editar')}" 
+		           rendered="#{not mf:hasPermission(securityController,'procedimentoCirurgico,ordenadorDespesas')}" 
+		           action="#{procedimentoCirurgicoController.gravarProcedimentoCirurgico}" 
+		           profile="ok"/>  
+            <mec:commandButton id="bt_gravar_sem_sigtap" 
+            	   value="#{messages.LABEL_GRAVAR}" rendered="#{mf:hasPermission(securityController,'procedimentoCirurgico,ordenadorDespesas')}" 
+            	   action="#{procedimentoCirurgicoController.gravarProcedimentoCirurgicoSemSigtap}" profile="ok"/>  
+            <mec:commandButton id="bt_cancelar"
+                               value="#{messages.LABEL_CANCELAR}"
+                               action="#{procedimentoCirurgicoController.cancelar}"
+                               immediate="true"
+                               profile="cancel"/> 
+          </aghu:linha> 
+        </h:form> 
+      </p:outputPanel> 
+    </ui:define> 
+  </ui:composition> 
+</html>

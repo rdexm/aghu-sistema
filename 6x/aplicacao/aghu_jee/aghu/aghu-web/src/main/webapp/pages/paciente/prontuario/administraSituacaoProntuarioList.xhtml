@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions" xmlns:mec="http://xmlns.jcp.org/jsf/composite/components" xmlns:p="http://primefaces.org/ui" xmlns:pe="http://primefaces.org/ui/extensions" xmlns:aghu="http://xmlns.jcp.org/jsf/component" xmlns:ui="http://xmlns.jcp.org/jsf/facelets" xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:c="http://xmlns.jcp.org/jsp/jstl/core" xmlns:mf="http://www.mec.gov.br/taglib">  
+	<ui:composition xmlns:fn="http://java.sun.com/jsp/jstl/functions" template="/WEB-INF/templates/form_template.xhtml">  
+		<ui:define name="head"> 
+			<title>#{messages.TITLE_PESQUISA_ADMINISTRACAO_SITUACAO_PRONTUARIO} :: #{messages.NOME_ABREVIADO_PROJETO}</title> 
+		</ui:define>  
+		<ui:define name="body"> 
+			<mec:pageConfig controller="#{administraSituacaoProntuarioPaginatorController}"/>  
+			<h:form prependId="false" id="formPesquisa"> 
+				<aghu:panelGeral legend="#{messages.TITLE_PESQUISAR_SITUACAO_PRONTUARIO}"> 
+					<aghu:linha> 
+						<mec:inputNumero value="#{administraSituacaoProntuarioPaginatorController.filtroProntuario}" label="#{messages.LABEL_PRONTUARIO}" title="#{messages.TITLE_PRONTUARIO_PACIENTE}" maxlength="8" size="8" id="prontuario"/>  
+						<mec:selectBooleanCheckbox label="#{messages.LABEL_CONSIDERAR_DIGITO_PRONTUARIO}" title="#{messages.TITLE_CONSIDERAR_DIGITO_PRONTUARIO}" rendered="#{administraSituacaoProntuarioPaginatorController.exibeCheckbox}" value="#{administraSituacaoProntuarioPaginatorController.consideraDigito}" id="consideraDigito"> 
+							<p:ajax event="click" process="@this"/> 
+						</mec:selectBooleanCheckbox> 
+					</aghu:linha>  
+					<aghu:linha> 
+					  <!--<mec:inputInteger value="#{administraSituacaoProntuarioPaginatorController.paciente.codigo}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO}" maxlength="8" size="8" id="codigo"/>-->
+						<mec:inputNumero value="#{administraSituacaoProntuarioPaginatorController.paciente.codigo}" label="#{messages.LABEL_CODIGO}" title="#{messages.TITLE_CODIGO}" maxlength="8" size="8" id="codigo"/>
+						<mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_VIP}" value="#{administraSituacaoProntuarioPaginatorController.paciente.indPacienteVip}" title="#{messages.TITLE_PESQUISA_IND_PACIENTE_VIP}" id="indPacienteVip"/>  
+						<mec:selectOneMenu enum="DominioSimNao" label="#{messages.LABEL_PROTEGIDO}" value="#{administraSituacaoProntuarioPaginatorController.paciente.indPacProtegido}" title="#{messages.TITLE_PESQUISA_IND_PAC_PROTEGIDO}" id="indPacProtegido"/> 
+					</aghu:linha>  
+					<aghu:linha> 
+						<mec:inputText label="#{messages.LABEL_NOME}" maxlength="50" title="#{messages.TITLE_NOME_PACIENTE_SEM_ACENTO}" value="#{administraSituacaoProntuarioPaginatorController.paciente.nome}" style="text-transform:uppercase; width: 263px;" id="nome"/> 
+					</aghu:linha> 
+				</aghu:panelGeral>  
+				<aghu:acao> 
+					<mec:commandButton value="#{messages.LABEL_PESQUISAR}" id="bt_pesquisar" disabled="#{not mf:hasPermission(securityController, 'paciente,pesquisarSituacaoProntuario')}" action="#{administraSituacaoProntuarioPaginatorController.pesquisar}" styleClass="bt_cinza" profile="search"/>  
+					<mec:commandButton value="#{messages.LABEL_LIMPAR}" id="bt_limpar" action="#{administraSituacaoProntuarioPaginatorController.limparPesquisa}" styleClass="bt_cinza" profile="clear"/> 
+				</aghu:acao> 
+			</h:form>  
+			<h:form prependId="false" id="resultados"> 
+				<mec:serverDataTable id="tabelaResult" dataModel="dataModel" controller="#{administraSituacaoProntuarioPaginatorController}"> 
+					<c:set var="_paciente" value="#{item}"/>  
+					<p:column headerText="Ações" styleClass="first-column auto-adjust" exportable="false"> 
+						<mec:commandLink id="tabelaResult_link_editar" profile="edit" title="editar" action="#{administraSituacaoProntuarioPaginatorController.editar}"> 
+							<f:setPropertyActionListener for="command" target="#{administraSituacaoProntuarioPaginatorController.pacienteSelecionado}" value="#{_paciente}"/> 
+						</mec:commandLink> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_PRONTUARIO}"/> 
+						</f:facet>  
+						<h:outputText value="#{administraSituacaoProntuarioPaginatorController.obterProntuarioFormatado(_paciente.prontuario)}"/> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_CODIGO}"/> 
+						</f:facet>  
+						<h:outputText value="#{_paciente.codigo}"/> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_NOME}"/> 
+						</f:facet>  
+						<h:outputText value="#{_paciente.nome}"/> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_VIP}"/> 
+						</f:facet>  
+						<h:outputText value="#{_paciente.indPacienteVip}"/> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_PROTEGIDO}"/> 
+						</f:facet>  
+						<h:outputText value="#{_paciente.indPacProtegido}"/> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_NOME_MAE}"/> 
+						</f:facet>  
+						<h:outputText value="#{_paciente.nomeMae}"/> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_DATA_NASCIMENTO}"/> 
+						</f:facet>  
+						<h:outputText value="#{_paciente.dtNascimento}" isDate="true"> 
+							<f:convertDateTime pattern="dd/MM/yyyy"/> 
+						</h:outputText> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_PRNT_ATIVO}"/> 
+						</f:facet>  
+						<h:outputText value="#{_paciente.prntAtivo.descricao}"/> 
+					</p:column>  
+					<p:column> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_CONTRA_CAPAS}"/> 
+						</f:facet>  
+						<h:outputText value="#{_paciente.volumes}"/> 
+					</p:column> 
+					<p:column rendered="#{administraSituacaoProntuarioPaginatorController.verificarComputadorUbs()}"> 
+						<f:facet name="header"> 
+							<h:outputText value="#{messages.LABEL_BLOQUEIO_PACIENTE_UBS_PESQUISA}"/> 
+						</f:facet>  
+						<h:outputText value="#{administraSituacaoProntuarioPaginatorController.obterBloqueioUbs(_paciente)}" />
+					</p:column> 
+				</mec:serverDataTable>  
+				<br clear="none"/>  
+				<br clear="none"/> 
+			</h:form> 
+		</ui:define> 
+	</ui:composition> 
+</html>

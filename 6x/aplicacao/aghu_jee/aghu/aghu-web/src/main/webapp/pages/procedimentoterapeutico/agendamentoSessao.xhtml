@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fn="http://xmlns.jcp.org/jsp/jstl/functions"
+	xmlns:mec="http://xmlns.jcp.org/jsf/composite/components"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:aghu="http://xmlns.jcp.org/jsf/component"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:mf="http://www.mec.gov.br/taglib">
+<ui:composition template="/WEB-INF/templates/form_template.xhtml">
+
+	<ui:define name="head">
+		<title>#{messages.TITLE_REALIZAR_AGENDAMENTO_AGENDAR_SESSAO} :: #{messages.NOME_ABREVIADO_PROJETO}</title>
+	</ui:define>
+	<ui:define name="metadata">
+		<f:metadata>
+			<f:viewAction action="#{agendamentoSessaoController.inicio}"/>
+		</f:metadata>
+	</ui:define>
+	<ui:define name="body">
+		<mec:pageConfig controller="#{agendamentoSessaoController}" ignoreEnter="true" />
+		<h:form prependId="false" id="formPrincipal">
+			<aghu:panelGeral legend="#{messages.TITLE_AGENDAR_SESSAO}">
+				<aghu:linha>
+					<aghu:panelGeral legend="#{messages.TITLE_SESSAO_TERAP_AGENDAR_SESSAO}">
+						<mec:suggestionBox var="row" itemValue="#{row}"
+							id="sbTipoSessao"
+							label="#{messages.LABEL_TIPO_SESSAO_AGENDAR_SESSAO}"
+							title="#{messages.TITLE_TIPO_SESSAO_AGENDAR_SESSAO}"
+							required="true"
+							suggestionAction="listarTiposSessao"
+							posSelectionAction="obterTurnos"
+							posDeleteAction="limparSbSalaTurnos"
+							render="sbSala, turno, idDias"
+							descricaoInput="seq" descricaoLabel="descricao"
+							maxlength="60" width="600"
+							controller="#{agendamentoSessaoController}"
+							value="#{agendamentoSessaoController.tipoSessao}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{row.seq}
+			        </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{row.descricao}
+			        </p:column>
+						</mec:suggestionBox>
+
+						<mec:suggestionBox var="row" itemValue="#{row}"
+							id="sbSala"
+							label="#{messages.LABEL_SALA_AGENDAR_SESSAO}"
+							title="#{messages.TITLE_SALA_AGENDAR_SESSAO}"
+							required="true"
+							readonly="#{agendamentoSessaoController.tipoSessao == null}"
+							suggestionAction="listarSalas"
+							descricaoInput="seq" descricaoLabel="descricao"
+							maxlength="60" width="600"
+							controller="#{agendamentoSessaoController}"
+							value="#{agendamentoSessaoController.sala}">
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_CODIGO}</b>
+								</f:facet> #{row.seq}
+				        </p:column>
+							<p:column>
+								<f:facet name="header">
+									<b>#{messages.LABEL_DESCRICAO}</b>
+								</f:facet> #{row.descricao}
+				        </p:column>
+						</mec:suggestionBox>
+					</aghu:panelGeral>
+				</aghu:linha>
+				
+				<aghu:linha>
+					<aghu:panelGeral legend="#{messages.TITLE_DADOS_PACIENTE_AGENDAR_SESSAO}">
+						<aghu:linha>
+							<p:outputPanel id="pacienteDecorate" layout="inline">
+								<mec:pesquisaPaciente id="pesqPaciente"
+									valueChangeListener="#{agendamentoSessaoController.pesquisaPaciente}"
+									posDeleteAction="#{agendamentoSessaoController.limparListas}"
+									value="#{agendamentoSessaoController.paciente}"
+									render="formPrincipal" readonly="false" />
+									
+								<br clear="none" />
+								
+								<mec:commandButton id="pesqPacienteBt"
+									value="#{messages.LABEL_PESQUISA_FONETICA}" immediate="true"
+									readonly="false"
+									action="#{agendamentoSessaoController.redirecionarPesquisaFonetica()}"
+									styleClass="bt_cinza icon-pesquisa-fonetica" profile="search">
+									<f:setPropertyActionListener
+										target="#{pesquisaPacienteController.cameFrom}"
+										value="agendamentoSessao" for="command" />
+									<f:setPropertyActionListener
+										target="#{pesquisaPacienteController.exibeBotaoEditar}"
+										value="false" for="command" />
+									<f:setPropertyActionListener
+										target="#{pesquisaPacienteController.paramExibeBotaoIncluir}"
+										value="false" for="command" />
+									<f:setPropertyActionListener
+										target="#{pesquisaPacienteController.exibirBotaoIncluirPacienteCirurgico}"
+										value="false" for="command" />
+									<f:param name="cid"
+										value="#{javax.enterprise.context.conversation.id}" />
+								</mec:commandButton>
+							</p:outputPanel>
+						</aghu:linha>
+						
+						<aghu:linha>
+							<p:dataTable id="tabelaPrescricoes"
+								widgetVar="tabelaPrescricoesWG"
+								var="_item"
+								rowKey="#{_item}"
+								styleClass="aghu-server-datatable"
+								scrollable="true"
+								scrollHeight="52"
+								value="#{agendamentoSessaoController.listaPrescricoes}"
+								selection="#{agendamentoSessaoController.prescricaoSelecionada}" selectionMode="single"
+								rendered="#{agendamentoSessaoController.listaPrescricoes != null}"
+								emptyMessage="Nenhum registro encontrado!"
+								filterDelay="50">
+								<p:ajax event="rowSelect"
+                	listener="#{agendamentoSessaoController.carregarListaHorariosPrescricao}"
+                  update="@(#tabelaPrescricoes) @(#dataInicio) @(#sbProtocolo) @(#idDia) @(#tempo) @(#idCiclo), @(#panelAcoes), @(#panelHorarios)" />
+								
+								<p:column>
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_DATA_SUGERIDA_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="#{_item.dataSugerida}">
+										<f:convertDateTime pattern="dd/MM/yyyy"/>
+									</h:outputText>
+								</p:column>
+								
+								<p:column>
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_CICLO_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="#{_item.ciclo}" />
+								</p:column>
+								
+								<p:column>
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_PROTOCOLO_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="#{_item.protocolo}" />
+								</p:column>
+								
+								<p:column>
+									<f:facet name="header">
+										<h:outputText
+											value="#{messages.LABEL_RESPONSAVEL_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="#{_item.responsavel1 != null ? _item.responsavel1 : _item.responsavel2}" />
+								</p:column>
+							
+							</p:dataTable>
+						</aghu:linha>
+					</aghu:panelGeral>
+				</aghu:linha>
+				
+				<aghu:linha>
+					<aghu:panelGeral legend="#{messages.TITLE_OPCOES_AGENDA_AGENDAR_SESSAO}">
+						<aghu:linha>
+							<mec:inputTextData id="dataInicio"
+								label="#{messages.LABEL_DATA_INICIAL_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_DATA_INICIAL_AGENDAR_SESSAO}"
+								value="#{agendamentoSessaoController.dataInicio}"
+								required="true"
+								tipo="data" />
+								
+							<mec:inputTextData id="dataFim"
+								label="#{messages.LABEL_DATA_FIM_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_DATA_FIM_AGENDAR_SESSAO}"
+								value="#{agendamentoSessaoController.dataFim}"
+								required="true"
+								tipo="data" />
+								
+							<mec:selectOneMenu id="acomodacao"
+								label="#{messages.LABEL_ACOMODACAO_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_ACOMODACAO_AGENDAR_SESSAO}"
+								enum="DominioTipoLocal" style="width:85px;"
+								noSelectionOption="false"
+								value="#{agendamentoSessaoController.acomodacao}" />
+	
+							<mec:selectOneMenu id="turno"
+								label="#{messages.LABEL_TURNO_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_TURNO_AGENDAR_SESSAO}"
+								noSelectionLabel="Todos"
+								items="#{agendamentoSessaoController.turnos}"
+								itemsType="entity" itemLabel="turno.descricao"
+								readonly="#{agendamentoSessaoController.tipoSessao == null}"
+								style="width:85px;"
+								value="#{agendamentoSessaoController.turnoTipoSessao}" />
+							
+							<mec:suggestionBox var="row" itemValue="#{row}"
+								id="sbProtocolo"
+								label="#{messages.LABEL_PROTOCOLO_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_PROTOCOLO_AGENDAR_SESSAO}"
+								suggestionAction="listarProtocolos"
+								posSelectionAction="carregarListaHorarios"
+								posDeleteAction="limparListaHorarios"
+								render="idDia, tempo, idCiclo, panelAcoes, panelHorarios"
+								descricaoInput="mpaProtocoloAssistencial.titulo" descricaoLabel="mpaProtocoloAssistencial.titulo"
+								maxlength="60" width="600"
+								controller="#{agendamentoSessaoController}"
+								value="#{agendamentoSessaoController.protocolo}"
+								readonly="#{agendamentoSessaoController.prescricaoSelecionada != null}">
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_TITULO_AGENDAR_SESSAO}</b>
+									</f:facet> #{row.mpaProtocoloAssistencial.titulo}
+				        </p:column>
+								<p:column>
+									<f:facet name="header">
+										<b>#{messages.LABEL_VERSAO_AGENDAR_SESSAO}</b>
+									</f:facet> Versão #{row.id.seqp}
+				        </p:column>
+							</mec:suggestionBox>
+							
+							<mec:inputNumero id="idCiclo" name="idCiclo"
+								label="#{messages.LABEL_CICLO_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_CICLO_AGENDAR_SESSAO}"
+								value="#{agendamentoSessaoController.ciclo}"
+								maxlength="4"
+								size="4"
+								readonly="#{agendamentoSessaoController.protocolo != null or agendamentoSessaoController.prescricaoSelecionada != null}" />
+						</aghu:linha>
+						
+						<aghu:linha>
+							<mec:inputTextData id="idHoraInicio"
+								label="#{messages.LABEL_HORARIO_INICIO}"
+								title="#{messages.TITLE_INFORME_HORA_INICIO}"
+								value="#{agendamentoSessaoController.dthrHoraInicio}"
+								tipo="hora"
+								size="6" />
+
+							<mec:field id="idDias" label="#{messages.LABEL_DIAS_SEMANA}"
+								title="#{messages.TITLE_INFORME_DIAS_SEMANA}">
+								<p:selectCheckboxMenu id="menu"
+									value="#{agendamentoSessaoController.diasSelecionados}"
+									label="#{messages.LABEL_DIAS}" filter="true"
+									filterMatchMode="startsWith" panelStyle="width:250px"
+									disabled="#{agendamentoSessaoController.tipoSessao == null}">
+									<f:selectItems value="#{agendamentoSessaoController.diaSemana}" />
+								</p:selectCheckboxMenu>
+							</mec:field>
+						</aghu:linha>
+						
+					</aghu:panelGeral>
+				</aghu:linha>
+				
+				<aghu:linha>
+					<aghu:panelGeral legend="#{messages.TITLE_DIAS_AGENDAR_SESSAO}">
+						<aghu:linha>
+							<mec:inputNumero id="idDia" name="idDia"
+								label="#{messages.LABEL_DIA_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_DIA_AGENDAR_SESSAO}"
+								value="#{agendamentoSessaoController.dia}"
+								required="true"
+								maxlength="4"
+								size="4"
+								readonly="#{agendamentoSessaoController.protocolo != null or agendamentoSessaoController.prescricaoSelecionada != null}"/>
+								
+							<mec:inputTextData id="tempo"
+								label="#{messages.LABEL_TEMPO_AGENDAR_SESSAO}"
+								title="#{messages.TITLE_TEMPO_AGENDAR_SESSAO}"
+								readonly="#{agendamentoSessaoController.protocolo != null or agendamentoSessaoController.prescricaoSelecionada != null}"
+								required="true"
+								value="#{agendamentoSessaoController.tempo}"
+								size="5" tipo="hora" />
+	
+							<p:outputPanel id="panelAcoes" layout="inline">
+								<aghu:acao newLine="false">
+									<mec:commandButton id="bt_adicionar"
+										value="#{messages.LABEL_ADICIONAR}"
+										action="#{agendamentoSessaoController.adicionarHorario}"
+										process="@this, dataInicio, dataFim, idDia, tempo, idCiclo" profile="add" ajax="true"
+										render="panelHorarios, idDia, tempo, idCiclo"
+										rendered="#{agendamentoSessaoController.prescricaoSelecionada == null}" />
+								</aghu:acao>
+							</p:outputPanel>
+						</aghu:linha>
+	
+						<p:outputPanel id="panelHorarios" layout="inline">
+	
+							<mec:serverDataTable id="tabelaHorarios" scrollable="true"
+								scrollHeight="140" controller="#{agendamentoSessaoController}"
+								rendered="#{not empty agendamentoSessaoController.listaHorarios}"
+								list="#{agendamentoSessaoController.listaHorarios}">
+								<c:set var="item" value="#{item}" />
+	
+								<p:column headerText="#{messages.LABEL_ACAO}"
+									style="width: 28px;" exportable="false">
+									<mec:commandLink id="tabelaHorarios_link_remover"
+										profile="delete" title="Excluir"
+										ajax="true"
+										process="@this"
+										render="panelHorarios"
+										rendered="#{agendamentoSessaoController.protocolo == null
+											and agendamentoSessaoController.prescricaoSelecionada == null}"
+										action="#{agendamentoSessaoController.excluir}">
+										<f:setPropertyActionListener for="command"
+											target="#{agendamentoSessaoController.itemSelecionado}"
+											value="#{item}" />
+									</mec:commandLink>
+	
+								</p:column>
+	
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_DIA_AGENDAR_SESSAO}" />
+									</f:facet>
+									<h:outputText value="D#{item.diaReferencia}" />
+								</p:column>
+	
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_TEMPO_AGENDAR_SESSAO}" />
+									</f:facet>
+									<p:inputText id="colTempo"
+										value="#{item.qtdeHoras}"
+										onkeypress="formatar(this, '99:99', event)"
+										size="4" maxlength="5">
+										<f:convertDateTime pattern="HH:mm" type="time"/>
+										<p:ajax event="change" process="@this" listener="#{agendamentoSessaoController.atualizarTempo(item)}" />
+									</p:inputText>
+								</p:column>
+	
+								<p:column>
+									<f:facet name="header">
+										<h:outputText value="#{messages.LABEL_AGENDAR_AGENDAR_SESSAO}" />
+									</f:facet>
+									<p:selectBooleanCheckbox style="margin-top:3px;"
+										value="#{item.agendar}">
+										<p:ajax event="change" process="@this" />
+									</p:selectBooleanCheckbox>
+								</p:column>
+							</mec:serverDataTable>
+						</p:outputPanel>
+					</aghu:panelGeral>
+				</aghu:linha>
+			</aghu:panelGeral>
+
+			<aghu:acao>
+				<mec:commandButton id="bt_sugestao_agenda"
+					value="#{messages.LABEL_SUGESTAO_AGENDA_AGENDAR_SESSAO}"
+					title="#{messages.TITLE_SUGESTAO_AGENDA_AGENDAR_SESSAO}"
+					action="#{agendamentoSessaoController.sugerirAgenda}"
+					render="modalLogTentativas"
+					process="@this, sbTipoSessao, pesqPaciente, acomodacao, turno, idHoraInicio, idDias, dataInicio, dataFim, sbSala, sbProtocolo" ajax="true">
+				</mec:commandButton>
+				<mec:commandButton id="bt_voltar" value="#{messages.LABEL_VOLTAR}" action="#{agendamentoSessaoController.voltar}" profile="back"
+					rendered="#{agendamentoSessaoController.telaLista}" immediate="true">
+				</mec:commandButton>
+			</aghu:acao>
+
+			<p:dialog id="modalLogTentativas" modal="true"
+				resizable="false" draggable="true" widgetVar="modalLogTentativasWG"
+				width="550" height="400" closable="true">
+
+				<f:facet name="header">
+					<h:panelGroup>
+						<h:outputText value="Log de tentativas" />
+					</h:panelGroup>
+				</f:facet>
+
+				<h:panelGroup>
+					<p:outputPanel style="width:100%;">
+						<h:outputText value="#{agendamentoSessaoController.logTentativas}" escape="false"/>
+					</p:outputPanel>
+				</h:panelGroup>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>
