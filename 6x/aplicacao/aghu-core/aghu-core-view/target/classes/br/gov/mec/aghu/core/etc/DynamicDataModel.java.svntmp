@@ -1,0 +1,166 @@
+/**
+ * Classe responsável para paginação dinâmica do componente serverDataTable.
+ * 
+ * @author Cristiano Quadros
+ *
+ */
+package br.gov.mec.ebserh.core.etc;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
+
+import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.SelectableDataModel;
+import org.primefaces.model.SortOrder;
+
+import com.lowagie.text.BadElementException;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
+
+public class DynamicDataModel<T> extends LazyDataModel<T> implements SelectableDataModel<T>{
+
+	private static final long serialVersionUID = 9021023370420074735L;
+	
+	private ActionPaginator paginator;
+	private List<T> wrappedData;
+	private Boolean pesquisaAtiva=false;
+	private Date timeQuering;
+	private Long count;
+	private Boolean userEditPermission=true;
+	private Boolean userRemovePermission=true;
+	private Integer defaultMaxRow=10;
+	
+	public DynamicDataModel() {
+		super();
+	}
+	
+	
+	public DynamicDataModel(ActionPaginator paginator) {
+		super();
+		this.paginator = paginator;
+	}
+	
+	
+	public void reiniciarPaginator(){
+		pesquisaAtiva=true;
+	}
+	
+	@Override
+	public T getRowData(String rowKey) {
+		if (rowKey==null || rowKey.equals("null")){
+			return null;
+		}
+        return wrappedData.get(Integer.valueOf(rowKey));
+	}	
+
+	
+	@Override
+	public Object getRowKey(T bean) {
+		int pos = wrappedData.indexOf(bean);
+		if (pos==-1){
+			return null;
+		}		
+		return String.valueOf(wrappedData.indexOf(bean));
+	}
+	
+	
+	@Override
+	public List<T> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String, Object> filters) {
+		
+		Date startTime=new Date();
+		
+		count = paginator.recuperarCount();
+		wrappedData = paginator.recuperarListaPaginada(first, pageSize, sortField, sortOrder.equals(SortOrder.ASCENDING));
+        
+        setTimeQuering(new Date(new Date().getTime() - startTime.getTime()));		
+		
+        return wrappedData;
+	}
+
+	
+	@Override
+	public int getRowCount() {
+		return count.intValue();
+	}		
+	
+	
+	public void preProcessPDF(Object document) throws IOException, BadElementException, DocumentException {
+        Document pdf = (Document) document;
+        pdf.open();
+        pdf.setPageSize(PageSize.A4);
+ 
+        ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+        String logo = servletContext.getRealPath("") + File.separator + "resources" + File.separator + "img" + File.separator + "print" + File.separator + "logo-hcpa-pdf.jpg";
+        Image image = Image.getInstance(logo); 
+        image.scalePercent(25f);
+        image.setAlignment(Image.MIDDLE);
+        pdf.add(image);
+    }	
+	
+	
+	public ActionPaginator getPaginator() {
+		return paginator;
+	}
+
+	public void setPaginator(ActionPaginator paginator) {
+		this.paginator = paginator;
+	}
+
+	public Boolean getPesquisaAtiva() {
+		return pesquisaAtiva;
+	}
+
+	public void setPesquisaAtiva(Boolean pesquisaAtiva) {
+		this.pesquisaAtiva = pesquisaAtiva;
+	}
+	public Date getTimeQuering() {
+		return timeQuering;
+	}
+
+	public void setTimeQuering(Date timeQuering) {
+		this.timeQuering = timeQuering;
+	}
+
+	public Long getCount() {
+		return count;
+	}
+
+	public void setCount(Long count) {
+		this.count = count;
+	}
+
+	public Boolean getUserEditPermission() {
+		return userEditPermission;
+	}
+
+	public void setUserEditPermission(Boolean userEditPermission) {
+		this.userEditPermission = userEditPermission;
+	}
+
+	public Boolean getUserRemovePermission() {
+		return userRemovePermission;
+	}
+
+	public void setUserRemovePermission(Boolean userRemovePermission) {
+		this.userRemovePermission = userRemovePermission;
+	}
+
+
+	public Integer getDefaultMaxRow() {
+		return defaultMaxRow;
+	}
+
+
+	public void setDefaultMaxRow(Integer defaultMaxRow) {
+		this.defaultMaxRow = defaultMaxRow;
+	}
+	
+}
